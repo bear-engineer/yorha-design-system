@@ -126,10 +126,6 @@ const SIZE_EXEMPT_ITEMS: Record<string, string> = {
 const PENDING_FAMILY_SWEEP = new Set<string>([
   // sel: the multi-select story wraps chips onto a second row on purpose (FSEL-08), so the frame is not on the control scale.
   "combobox / States",
-  "tabs / Default",
-  "tabs / States",
-  "timeline / Default",
-  "timeline / States",
 ]);
 
 const px = (value: string) => {
