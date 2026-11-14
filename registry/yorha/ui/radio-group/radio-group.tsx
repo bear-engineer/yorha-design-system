@@ -44,7 +44,7 @@ export function Radio({ children, className, rowClassName, ...props }: RadioProp
     >
       <BaseRadio.Root
         className={cnState(
-          "grid size-4 shrink-0 place-items-center rounded-yorha border border-current bg-transparent",
+          "grid size-5 min-h-[24px] min-w-[24px] shrink-0 place-items-center rounded-yorha border border-current bg-transparent",
           className,
         )}
         {...props}

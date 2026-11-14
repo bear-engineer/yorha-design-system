@@ -25,7 +25,7 @@ export function Checkbox({ children, className, rowClassName, ...props }: Checkb
       <BaseCheckbox.Root
         className={cnState(
           cn(
-            "group grid size-5 shrink-0 place-items-center rounded-yorha border border-current bg-transparent text-yorha-fg",
+            "group grid size-5 min-h-[24px] min-w-[24px] shrink-0 place-items-center rounded-yorha border border-current bg-transparent text-yorha-fg",
             "transition-colors duration-(--motion-select) ease-yorha",
             "data-[checked]:bg-yorha-ink data-[checked]:text-yorha-on-ink",
             "data-[indeterminate]:bg-yorha-ink data-[indeterminate]:text-yorha-on-ink",

@@ -18,7 +18,7 @@ export interface BreadcrumbProps {
 // Links are underlined at all times, so the link state never depends on hover.
 const LINK =
   "font-yorha-medium uppercase tracking-yorha-wide text-yorha-fg-soft underline underline-offset-4 decoration-1 " +
-  "focus-visible:yorha-focus";
+  "inline-flex min-h-[24px] min-w-[24px] items-center justify-center focus-visible:yorha-focus";
 const CURRENT = "font-yorha-bold uppercase tracking-yorha-wide text-yorha-fg";
 const TEXT = "font-yorha-medium uppercase tracking-yorha-wide text-yorha-fg-soft";
 

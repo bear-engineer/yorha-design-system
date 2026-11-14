@@ -114,7 +114,7 @@ function RouteTabs() {
   const current = pathname.split("/")[1] || "items";
   return (
     <div>
-      <Link to="/map">지도로 이동</Link>
+      <Link to="/map" className="inline-flex min-h-[24px] items-center">지도로 이동</Link>
       <SystemMenuLayout sections={SECTIONS} value={current} onValueChange={(id) => navigate(`/${id}`)} />
     </div>
   );

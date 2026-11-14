@@ -21,7 +21,7 @@ function Hud({ hidden = false, onClose }: { hidden?: boolean; onClose?: () => vo
       </HudRegion>
       <HudRegion corner="bottom-end" label="메시지">
         <p role="status">포드: 적 반응 감지, 주의하세요.</p>
-        <button type="button" onClick={onClose}>메시지 닫기</button>
+        <button type="button" className="min-h-[24px] min-w-[24px]" onClick={onClose}>메시지 닫기</button>
       </HudRegion>
     </HudLayout>
   );
@@ -74,7 +74,7 @@ function Toggle() {
   const [hidden, setHidden] = useState(false);
   return (
     <div>
-      <button type="button" aria-pressed={hidden} onClick={() => setHidden((h) => !h)}>HUD 숨기기</button>
+      <button type="button" className="min-h-[24px] min-w-[24px]" aria-pressed={hidden} onClick={() => setHidden((h) => !h)}>HUD 숨기기</button>
       {frame(<Hud hidden={hidden} />)}
     </div>
   );

@@ -108,7 +108,7 @@ export function Chip({
           type="button"
           aria-label={`${label} ${removeLabel}`}
           onClick={onRemove}
-          className="inline-flex w-8 items-center justify-center border-l border-yorha-border text-yorha-fg focus-visible:yorha-focus"
+          className="inline-flex w-8 min-h-[24px] min-w-[24px] shrink-0 items-center justify-center border-l border-yorha-border text-yorha-fg focus-visible:yorha-focus"
         >
           <span aria-hidden="true">×</span>
         </button>

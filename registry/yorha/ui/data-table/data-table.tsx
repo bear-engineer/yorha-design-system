@@ -88,7 +88,7 @@ export function DataTableHeadCell({
         <button
           type="button"
           onClick={() => onSortChange?.(sortDirection === "ascending" ? "descending" : "ascending")}
-          className="inline-flex items-center gap-2 rounded-yorha font-inherit text-inherit focus-visible:yorha-focus"
+          className="inline-flex min-h-[24px] items-center gap-2 rounded-yorha font-inherit text-inherit focus-visible:yorha-focus"
         >
           {children}
           <span aria-hidden="true" className="text-yorha-alert-ui">

@@ -58,7 +58,7 @@ function SideSwitch() {
       <div role="radiogroup" aria-label="방향" className="flex gap-3 p-4 text-yorha-sm">
         {SIDES.map((s) => (
           <label key={s} className="flex items-center gap-1">
-            <input type="radio" name="side" checked={side === s} onChange={() => setSide(s)} />
+            <input type="radio" name="side" className="size-6" checked={side === s} onChange={() => setSide(s)} />
             {s}
           </label>
         ))}

@@ -49,7 +49,10 @@ export function Slider({ label, showValue = false, className, ...props }: Slider
               index={thumbs > 1 ? i : undefined}
               aria-label={thumbs > 1 ? `${label} ${i + 1}` : label}
               className={cn(
-                "size-4 rounded-yorha border-2 border-yorha-bg bg-yorha-ink outline outline-1 outline-yorha-ink",
+                // 24px hit area (SC 2.5.8); the square drawn is the ::before.
+                "grid size-6 min-h-[24px] min-w-[24px] place-items-center rounded-yorha",
+                "before:size-4 before:rounded-yorha before:border-2 before:border-yorha-bg before:bg-yorha-ink",
+                "before:outline before:outline-1 before:outline-yorha-ink before:content-['']",
                 "transition-[left] duration-(--motion-select) ease-yorha data-[dragging]:transition-none",
                 "has-[:focus-visible]:yorha-focus data-[disabled]:cursor-not-allowed",
               )}

@@ -308,7 +308,7 @@ export function TimelineGraph({
                     {onItemSelect ? (
                       <button
                         type="button"
-                        className="text-left underline decoration-yorha-border underline-offset-4 focus-visible:yorha-focus"
+                        className="inline-flex min-h-[24px] items-center text-left underline decoration-yorha-border underline-offset-4 focus-visible:yorha-focus"
                         onClick={() => onItemSelect(item)}
                       >
                         {item.title}
