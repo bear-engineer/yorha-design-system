@@ -13,6 +13,7 @@
         "@yorha/utils",
         "@yorha/base",
         "@yorha/button",
+        "@yorha/icons",
         "@yorha/sound"
       ],
       "files": [

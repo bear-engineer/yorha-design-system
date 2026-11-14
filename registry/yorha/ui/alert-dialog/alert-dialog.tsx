@@ -1,5 +1,6 @@
 import { AlertDialog as BaseAlertDialog } from "@base-ui/react/alert-dialog";
 import type { ComponentProps } from "react";
+import { buttonVariants, type ButtonVariant } from "@/components/ui/button";
 import { dialogStyles } from "@/components/ui/dialog";
 import { cn, cnState } from "@/lib/utils";
 import { useSound } from "@/lib/sound";
@@ -35,14 +36,33 @@ export function AlertDialogTrigger(props: ComponentProps<typeof BaseAlertDialog.
   return <BaseAlertDialog.Trigger {...props} />;
 }
 
-/** Dismisses without confirming. Put it first so it takes initial focus (least destructive action). */
-export function AlertDialogCancel(props: ComponentProps<typeof BaseAlertDialog.Close>) {
-  return <BaseAlertDialog.Close {...props} />;
+type ActionProps = ComponentProps<typeof BaseAlertDialog.Close> & {
+  /** Button look when no `render` is given. Cancel defaults to ghost, Action to primary; `danger` marks a destructive confirm. */
+  variant?: ButtonVariant;
+};
+
+/** Dismisses without confirming. Put it first so it takes initial focus (least destructive action). A ghost Button unless `render` is given. */
+export function AlertDialogCancel({ variant = "ghost", className, render, ...props }: ActionProps) {
+  return (
+    <BaseAlertDialog.Close
+      data-variant={render ? undefined : variant}
+      className={cnState(render ? undefined : buttonVariants({ variant }), className)}
+      render={render}
+      {...props}
+    />
+  );
 }
 
-/** Confirms the action and closes. */
-export function AlertDialogAction(props: ComponentProps<typeof BaseAlertDialog.Close>) {
-  return <BaseAlertDialog.Close {...props} />;
+/** Confirms the action and closes. A primary Button unless `render` is given; `variant="danger"` for destructive actions. */
+export function AlertDialogAction({ variant = "primary", className, render, ...props }: ActionProps) {
+  return (
+    <BaseAlertDialog.Close
+      data-variant={render ? undefined : variant}
+      className={cnState(render ? undefined : buttonVariants({ variant }), className)}
+      render={render}
+      {...props}
+    />
+  );
 }
 
 export function AlertDialogContent({
@@ -69,7 +89,7 @@ export function AlertDialogTitle({
   className,
   ...props
 }: ComponentProps<typeof BaseAlertDialog.Title>) {
-  return <BaseAlertDialog.Title className={cnState(dialogStyles.title, className)} {...props} />;
+  return <BaseAlertDialog.Title data-slot="alert-dialog-title" className={cnState(dialogStyles.title, className)} {...props} />;
 }
 
 export function AlertDialogDescription({
@@ -78,6 +98,7 @@ export function AlertDialogDescription({
 }: ComponentProps<typeof BaseAlertDialog.Description>) {
   return (
     <BaseAlertDialog.Description
+      data-slot="alert-dialog-description"
       className={cnState(cn(dialogStyles.body, dialogStyles.description), className)}
       {...props}
     />
@@ -85,5 +106,5 @@ export function AlertDialogDescription({
 }
 
 export function AlertDialogFooter({ className, ...props }: ComponentProps<"div">) {
-  return <div className={cn(dialogStyles.footer, className)} {...props} />;
+  return <div data-slot="alert-dialog-footer" className={cn(dialogStyles.footer, className)} {...props} />;
 }

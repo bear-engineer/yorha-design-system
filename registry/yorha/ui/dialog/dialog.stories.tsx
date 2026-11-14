@@ -137,9 +137,51 @@ export const CloseButton: Story = {
     const trigger = within(canvasElement).getByRole("button", { name: "유닛 정보 열기" });
     await userEvent.click(trigger);
     const dialog = await screen.findByRole("dialog");
-    await userEvent.click(within(dialog).getByRole("button", { name: "취소" }));
+    // FOVL-12: the header strip carries a close button (touch has no Esc); it is a >= 24px target at the strip's right end
+    const close = within(dialog).getByRole("button", { name: "닫기" });
+    const strip = within(dialog).getByRole("heading", { name: "유닛 정보" }).getBoundingClientRect();
+    await expect(close.getBoundingClientRect().right).toBeCloseTo(strip.right, 0);
+    await expect(close.getBoundingClientRect().width).toBeGreaterThanOrEqual(24);
+    await userEvent.click(close);
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     await waitFor(() => expect(trigger).toHaveFocus());
+  },
+};
+
+/** FOVL-03: long content scrolls inside the body; the title strip and the footer stay in view. */
+export const LongContent: Story = {
+  render: () => (
+    <Dialog>
+      <DialogTrigger render={<Button />}>긴 기록 열기</DialogTrigger>
+      <DialogContent>
+        <DialogTitle>작전 기록</DialogTitle>
+        <DialogBody>
+          <DialogDescription>
+            {Array.from({ length: 40 }, (_, i) => (
+              <span key={i} className="block">기록 {i + 1}: 유닛 상태를 점검한다.</span>
+            ))}
+          </DialogDescription>
+        </DialogBody>
+        <DialogFooter>
+          <DialogClose render={<Button variant="ghost" />}>닫기</DialogClose>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "긴 기록 열기" }));
+    const dialog = await screen.findByRole("dialog");
+    await new Promise((r) => setTimeout(r, 450));
+    const body = dialog.querySelector<HTMLElement>("[data-slot=dialog-body]")!;
+    await expect(body.scrollHeight).toBeGreaterThan(body.clientHeight);
+    const title = within(dialog).getByRole("heading", { name: "작전 기록" });
+    const top = title.getBoundingClientRect().top;
+    body.scrollTop = 300;
+    await expect(title.getBoundingClientRect().top).toBe(top);
+    const footer = dialog.querySelector("[data-slot=dialog-footer]")!.getBoundingClientRect();
+    await expect(footer.bottom).toBeLessThanOrEqual(dialog.getBoundingClientRect().bottom);
+    await expect(dialog.getBoundingClientRect().height).toBeLessThanOrEqual(window.innerHeight - 32);
+    await expect(Number.isInteger(dialog.getBoundingClientRect().top)).toBe(true);
   },
 };
 
