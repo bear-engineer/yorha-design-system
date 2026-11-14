@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+import { useSoundPreference } from "@/components/yorha-provider";
 // Procedural WebAudio cues. No audio files: every sound is an oscillator or noise envelope.
 // One AudioContext is created lazily on the first enabled play and shared afterwards.
 
@@ -163,4 +165,19 @@ export function resetSoundEngineForTests(): void {
   engine = null;
 }
 
-export { useSound } from "./use-sound";
+/**
+ * Returns `play(cue)`. Does nothing while the sound preference is off (the default).
+ * Volume comes from the provider's `sound.volume`.
+ * (Kept in this file so a consumer install puts everything in one lib file.)
+ */
+export function useSound() {
+  const { enabled, volume } = useSoundPreference();
+  const play = useCallback(
+    (cue: SoundCue) => {
+      if (!enabled) return;
+      playCue(cue, volume);
+    },
+    [enabled, volume],
+  );
+  return { play };
+}
