@@ -60,6 +60,10 @@
     "registry/yorha/router/route-transition/registry.json",
     "registry/yorha/blocks/yorha-demo/registry.json",
     "registry/yorha/ui/prose/registry.json",
-    "registry/yorha/ui/text/registry.json"
+    "registry/yorha/ui/text/registry.json",
+    "registry/yorha/ui/navigation-menu/registry.json",
+    "registry/yorha/ui/menubar/registry.json",
+    "registry/yorha/ui/toolbar/registry.json",
+    "registry/yorha/layout/bento/registry.json"
   ]
 }
