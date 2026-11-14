@@ -544,5 +544,26 @@
     "type": "registry:block",
     "alias": null,
     "file": null
+  },
+  {
+    "group": "ui",
+    "name": "drawer",
+    "type": "registry:ui",
+    "alias": "@/components/ui/drawer",
+    "file": "drawer.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "context-menu",
+    "type": "registry:ui",
+    "alias": "@/components/ui/context-menu",
+    "file": "context-menu.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "preview-card",
+    "type": "registry:ui",
+    "alias": "@/components/ui/preview-card",
+    "file": "preview-card.tsx"
   }
 ]
