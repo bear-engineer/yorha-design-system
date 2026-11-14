@@ -1,0 +1,160 @@
+# CI for yorha-design-system (unofficial fan project).
+#
+# Jobs:
+#   verify  - ubuntu-latest host: secrets scan, typecheck, unit, token drift,
+#             registry checks, Storybook a11y tests, static + GitHub-source e2e.
+#   vrt     - visual regression inside the Playwright container pinned to the
+#             repo's @playwright/test version (package.json: 1.65.1).
+#
+# Only GITHUB_TOKEN is used; no repository secrets are required.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "22.22"
+  PNPM_VERSION: "12.14.0"
+  GITLEAKS_VERSION: "8.30.1"
+  PLAYWRIGHT_IMAGE: "mcr.microsoft.com/playwright:v1.65.1-noble"
+
+jobs:
+  verify:
+    name: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out (full history for the secrets scan)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Activate pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare "pnpm@${PNPM_VERSION}" --activate
+          pnpm -v
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Install gitleaks
+        run: |
+          curl -sSfL -o "$RUNNER_TEMP/gitleaks.tgz" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          tar -xzf "$RUNNER_TEMP/gitleaks.tgz" -C "$RUNNER_TEMP" gitleaks
+          sudo install "$RUNNER_TEMP/gitleaks" /usr/local/bin/gitleaks
+          gitleaks version
+
+      - name: Secrets scan (full git history)
+        # `gitleaks detect` scans git history by default; fetch-depth 0 above provides it.
+        run: pnpm lint:secrets
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Token build is committed (no drift)
+        run: |
+          pnpm tokens:build
+          git diff --exit-code
+          test -z "$(git status --porcelain)"
+
+      - name: Registry validate
+        run: pnpm registry:validate
+
+      - name: Registry lint
+        run: pnpm registry:lint
+
+      - name: Registry build
+        run: pnpm registry:build
+
+      - name: Install Playwright Chromium (host)
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Storybook tests (a11y = error, play functions)
+        run: pnpm test:storybook
+
+      - name: e2e registry install, static path
+        # GitHub sets GITHUB_REF for every step; clear it so e2e/install.sh uses the local server.
+        env:
+          GITHUB_REF: ""
+        run: pnpm e2e:registry
+
+      - name: e2e registry install, GitHub-source path (push only)
+        # Installs from bear-engineer/yorha-design-system#<sha>, so the commit must already be on GitHub.
+        if: github.event_name == 'push'
+        env:
+          GITHUB_REF: ${{ github.sha }}
+        run: pnpm e2e:registry
+
+      - name: Upload e2e logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-logs
+          path: e2e/.out/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  vrt:
+    name: visual regression (Playwright container)
+    # Baselines in vrt/__screenshots__ are macOS-only (`-chromium-darwin`); no Linux
+    # baselines are committed yet. Until they exist this job reports but does not gate.
+    # Remove continue-on-error once Linux baselines are generated and committed.
+    continue-on-error: true
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      options: --user root
+    timeout-minutes: 30
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Activate pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare "pnpm@${PNPM_VERSION}" --activate
+          pnpm -v
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Visual regression tests
+        run: pnpm test:vrt
+
+      - name: Upload VRT diffs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vrt-output
+          path: |
+            vrt/__screenshots__/**/*-actual.png
+            vrt/__screenshots__/**/*-diff.png
+          if-no-files-found: ignore
+          retention-days: 7
