@@ -171,9 +171,7 @@ describe("pixel snap and control heights (comfortable density)", () => {
             // Parts of an InputGroup fill the frame's inner height; the frame is the control that sits on the scale.
             const frame = el.closest("[data-slot$=input-group]");
             const h = (frame ?? el).getBoundingClientRect().height;
-            // A multi-select frame grows by whole chip rows (FSEL-08): it must start on the scale and stay on whole pixels.
-            const chipRows = frame?.querySelector("[data-slot$=-chips]") && h >= Math.min(...allowed) && Number.isInteger(h);
-            if (!chipRows && ![...allowed].some((a) => Math.abs(a - h) < 0.01)) heights.push(`${label(el)}: height ${h}`);
+            if (![...allowed].some((a) => Math.abs(a - h) < 0.01)) heights.push(`${label(el)}: height ${h}`);
           }
         }
         const problems = [...snap, ...heights.map((h) => `${h} (allowed ${[...allowed].join("/")})`)];
