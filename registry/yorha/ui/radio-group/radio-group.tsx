@@ -8,6 +8,9 @@ export interface RadioGroupProps extends React.ComponentProps<typeof BaseRadioGr
   orientation?: "vertical" | "horizontal";
 }
 
+const DOT =
+  "size-2 rounded-yorha bg-current opacity-0 [scale:calc(1_-_(1_-_var(--motion-scale-pop))_*_var(--motion-spatial))] transition-[opacity,scale] [transition-duration:max(var(--motion-select),var(--motion-reduced-fade)),var(--motion-select)] ease-yorha data-[checked]:scale-100 data-[checked]:opacity-100";
+
 /** Group of mutually exclusive options. Arrow keys move the selection. */
 export function RadioGroup({ className, orientation = "vertical", ...props }: RadioGroupProps) {
   return (
@@ -49,7 +52,7 @@ export function Radio({ children, className, rowClassName, ...props }: RadioProp
         )}
         {...props}
       >
-        <BaseRadio.Indicator className="size-2 rounded-yorha bg-current" />
+        <BaseRadio.Indicator keepMounted className={DOT} />
       </BaseRadio.Root>
       <span>{children}</span>
     </label>
