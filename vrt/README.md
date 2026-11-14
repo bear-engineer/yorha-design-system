@@ -1,9 +1,14 @@
 # Visual regression (VRT)
 
-`pnpm test:vrt` renders the representative story of every `ui/` and `layout/` item
-(first named export of each `*.stories.tsx`) in light and dark themes, at a fixed
-1280×800 viewport with deviceScaleFactor 1, `data-motion="off"`, and frozen
-animations/transitions. Each render is compared to a PNG in `vrt/__screenshots__/`.
+`pnpm test:vrt` renders, at a fixed 1280×800 viewport with deviceScaleFactor 1,
+`data-motion="off"` and frozen animations/transitions, and compares to PNGs in `vrt/__screenshots__/`:
+
+- `item-stories`: every registry item with stories (86 of 89; `lib/utils`, `base/base`, `base/init` have none),
+  using the `States` story, else `Default`, else the first export, in light, dark and high-contrast
+  (blocks included).
+- `overlays`: 13 overlays rendered open, one per test (dialog, alert-dialog, popover, tooltip, menu, select,
+  combobox, autocomplete, drawer, context-menu, preview-card, navigation-menu, toast), light theme, 1280×800 stage.
+- `bento`: dashboard/feature/profile presets at 360/768/1280 (from the Bento `Presets` story).
 
 ## Baselines
 
@@ -24,6 +29,5 @@ The image tag must match the `playwright` version pinned in `package.json` (1.65
 
 ## Scope
 
-- Covered: one representative story per item, light and dark. Overlays that portal
-  out of the container (Dialog, Menu, Toast) are not captured by the element locator.
-- Not covered: the other stories of each item and the high-contrast/authentic themes.
+- Not covered: other stories per item, the authentic theme, overlays in dark/high-contrast.
+- Update baselines: `pnpm vitest run --project vrt --update`.
