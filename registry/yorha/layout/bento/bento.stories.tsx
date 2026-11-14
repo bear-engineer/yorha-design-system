@@ -212,7 +212,7 @@ export const Motion: Story = {
           <Frame width={768}>
             <Bento cols={4}>
               {[0, 1, 2, 3].map((i) => (
-                <BentoTile key={i} data-tile={`${mode}-${i}`}>
+                <BentoTile key={i} data-tile={`${mode}-${i}`} href={i === 1 ? `#${mode}` : undefined} label={i === 1 ? "열기" : undefined}>
                   <p>{i}</p>
                 </BentoTile>
               ))}
@@ -233,7 +233,10 @@ export const Motion: Story = {
       expect(stagger(tile("reduced", i)).duration).toBeLessThanOrEqual(0.12);
     }
     // Hover lift is transform-only (translate), and zero in reduced motion via --motion-spatial.
-    expect(getComputedStyle(tile("full", 0)).transitionProperty).not.toContain("all");
+    expect(getComputedStyle(tile("full", 1)).transitionProperty).toBe("translate");
+    expect(getComputedStyle(tile("full", 1)).transitionDuration).not.toBe("0s");
+    expect(getComputedStyle(tile("reduced", 1)).transitionDuration).toBe("0s");
+    expect(getComputedStyle(tile("reduced", 1)).getPropertyValue("--motion-spatial").trim()).toBe("0");
   },
 };
 
