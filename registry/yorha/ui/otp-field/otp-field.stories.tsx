@@ -19,7 +19,7 @@ type DemoProps = Omit<React.ComponentProps<typeof OTPFieldRoot>, "length"> & { l
 const Demo = ({ label = "인증 코드", separatorAt, id = "otp-demo", ...rootProps }: DemoProps) => {
   const descId = `${id}-desc`;
   return (
-    <div className="flex w-full max-w-80 flex-col items-start gap-1">
+    <div className="flex w-full max-w-sm flex-col items-start gap-1">
       <label htmlFor={id} className="font-yorha-medium text-yorha-sm text-yorha-fg-strong">
         {label}
       </label>

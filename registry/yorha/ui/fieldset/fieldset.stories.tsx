@@ -5,19 +5,16 @@ import { Fieldset, FieldsetLegend } from "./fieldset";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
-const controlClass =
-  "h-9 w-full rounded-yorha border border-yorha-border bg-yorha-bg px-3 font-yorha text-yorha-base text-yorha-fg-strong focus-visible:yorha-focus";
-
 const Billing = ({ disabled = false, label = "청구 정보" }: { disabled?: boolean; label?: string }) => (
   <Fieldset disabled={disabled}>
     <FieldsetLegend>{label}</FieldsetLegend>
     <Field name="company" className="flex flex-col gap-1">
       <FieldLabel>회사명</FieldLabel>
-      <FieldControl placeholder="회사 이름" className={controlClass} />
+      <FieldControl placeholder="회사 이름" />
     </Field>
     <Field name="taxId" className="flex flex-col gap-1">
       <FieldLabel>사업자 구분</FieldLabel>
-      <FieldControl placeholder="구분" className={controlClass} />
+      <FieldControl placeholder="구분" />
     </Field>
   </Fieldset>
 );
