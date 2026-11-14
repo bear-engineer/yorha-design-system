@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "timeline",
+      "type": "registry:ui",
+      "title": "Timeline",
+      "description": "Item timeline in SVG + CSS without chart dependencies: TimelineGraph (time axis, lanes, bars and instant markers, dependency arrows, now line, zoom, keyboard navigation in time order, real table view) and a vertical Timeline event list with info/success/warn/danger status.",
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "timeline.tsx",
+          "type": "registry:ui",
+          "target": "@ui/timeline.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Pure SVG and CSS. TimelineGraph needs a label; dates accept Date, ISO string or epoch ms; locale defaults to ko-KR. Set lang on the wrapper for CJK leading."
+    }
+  ]
+}
