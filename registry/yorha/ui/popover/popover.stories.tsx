@@ -112,7 +112,7 @@ export const CloseButtonReturnsFocus: Story = {
   play: async () => {
     const t = trigger();
     t.focus();
-    await userEvent.keyboard("{Space}");
+    await userEvent.keyboard(" ");
     const d = await dialog();
     // 팝업 안의 닫기 버튼으로 닫는다
     await userEvent.click(within(d).getByRole("button", { name: "닫기" }));

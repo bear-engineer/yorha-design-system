@@ -1,4 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "tooltip",
+      "type": "registry:ui",
+      "title": "Tooltip",
+      "description": "Tooltip on Base UI Tooltip: opens on hover and on keyboard focus, Escape dismisses (WCAG 1.4.13), popup text is the trigger's accessible description.",
+      "dependencies": ["@base-ui/react@^1.9.0"],
+      "registryDependencies": ["@yorha/utils", "@yorha/base"],
+      "files": [{ "path": "tooltip.tsx", "type": "registry:ui" }],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Tooltip, TooltipTrigger, TooltipContent. The wrapper sets aria-describedby on the trigger while open, because Base UI does not link them. Do not put interactive content inside TooltipContent; use Popover for that."
+    }
+  ]
 }
