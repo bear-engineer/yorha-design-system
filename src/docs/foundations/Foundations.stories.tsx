@@ -159,8 +159,10 @@ export const Motion: Story = {
     await expect(probe("full").transitionDuration).toBe(toSeconds(select.value));
     for (const mode of ["reduced", "off"] as const) {
       for (const duration of tokens.motion.durations) {
-        await expect(probe(mode).getPropertyValue(duration.cssVar).trim()).toBe("0ms");
-        await expect(probe(mode).getPropertyValue(duration.alias).trim()).toBe("0ms");
+        // --motion-loop is the exception: reduced keeps a slow (2400ms) loader pulse, off is 0
+        const expected = duration.name === "loop" && mode === "reduced" ? "2400ms" : "0ms";
+        await expect(probe(mode).getPropertyValue(duration.cssVar).trim()).toBe(expected);
+        await expect(probe(mode).getPropertyValue(duration.alias).trim()).toBe(expected);
       }
       await expect(probe(mode).transitionDuration).toBe("0s");
     }

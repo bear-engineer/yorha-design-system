@@ -133,6 +133,7 @@ describe("token generator", () => {
       "route-exit": "200ms",
       "shared-element": "360ms",
       press: "90ms",
+      loop: "1200ms",
     };
     const MOTION_UTILITIES = ["yorha-pop", "yorha-panel", "yorha-fade", "yorha-slide-up", "yorha-slide-down", "yorha-slide-left", "yorha-slide-right", "yorha-collapse", "yorha-press", "yorha-stagger"];
     const OTHER_UTILITIES = ["yorha-focus", "yorha-tabular", "yorha-break"];
@@ -168,7 +169,9 @@ describe("token generator", () => {
     it.each(["[data-motion=reduced]", "@media (prefers-reduced-motion: reduce)"])("reduced (%s): every duration 0, opacity fade of at most 120ms, no spatial movement", (selector) => {
       const names = [...tokenRoot().matchAll(/\n\s+--(motion-[a-z-]+): [\d.]+ms;/g)].map((match) => match[1]).filter((name) => name !== "motion-reduced-fade");
       expect(names).toEqual(expect.arrayContaining(Object.keys(DURATIONS).map((name) => `motion-${name}`)));
-      for (const name of names) expect(blockVar(selector, name as string), name).toBe("0ms");
+      // --motion-loop is the one exception: loaders keep a slow opacity pulse (2400ms) instead of stopping
+      for (const name of names.filter((n) => n !== "motion-loop")) expect(blockVar(selector, name as string), name).toBe("0ms");
+      expect(blockVar(selector, "motion-loop")).toBe("2400ms");
       const fade = parseFloat(blockVar(selector, "motion-reduced-fade") ?? "NaN");
       expect(fade).toBeGreaterThan(0);
       expect(fade).toBeLessThanOrEqual(120);

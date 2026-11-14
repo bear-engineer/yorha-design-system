@@ -7,9 +7,10 @@ export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 /**
- * Shimmer runs as a Web Animation (no keyframes in the kit CSS): three passes of a 1.4 s
- * scan (about 4.2 s total, under the 5 s pause threshold), then static. Only `data-motion="full"`
- * on <html> animates; reduced/off, or no attribute with reduced-motion preferred, stays static.
+ * Shimmer runs as a Web Animation (no keyframes in the kit CSS) for as long as the skeleton is
+ * mounted: one `--motion-loop` cycle per scan, eased with --yorha-ease-emphasized. full = the
+ * grid scans down; reduced (data-motion, or no attribute with reduced-motion preferred) = one
+ * opacity pulse of the grid; off = the grid rests still (the grid plus aria-busy mark it as loading).
  */
 function useScan(ref: RefObject<HTMLSpanElement | null>) {
   useEffect(() => {
@@ -22,12 +23,20 @@ function useScan(ref: RefObject<HTMLSpanElement | null>) {
     const sync = () => {
       anim?.cancel();
       anim = undefined;
-      if (motionOf() !== "full" || typeof el.animate !== "function") return;
-      anim = el.animate([{ transform: "translateY(-100%)" }, { transform: "translateY(100%)" }], {
-        duration: 1400,
-        iterations: 3,
-        easing: "linear",
-      });
+      const mode = motionOf();
+      if (mode === "off" || typeof el.animate !== "function") return;
+      const css = getComputedStyle(html);
+      const loop = parseFloat(css.getPropertyValue("--motion-loop")) || 0;
+      if (loop <= 0) return;
+      const easing = css.getPropertyValue("--yorha-ease-emphasized").trim() || "linear";
+      anim =
+        mode === "reduced"
+          ? el.animate([{ opacity: 0.3 }, { opacity: 1 }, { opacity: 0.3 }], { duration: loop, iterations: Infinity, easing })
+          : el.animate([{ transform: "translateY(-100%)" }, { transform: "translateY(100%)" }], {
+              duration: loop,
+              iterations: Infinity,
+              easing,
+            });
     };
     const observer = new MutationObserver(sync);
     observer.observe(html, { attributes: true, attributeFilter: ["data-motion"] });

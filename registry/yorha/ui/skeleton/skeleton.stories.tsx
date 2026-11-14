@@ -33,6 +33,7 @@ export const Default: Story = {
   },
 };
 
+/** Loops while mounted: still scanning after 6 s (full); reduced = one opacity animation; off = none. */
 export const ReducedMotion: Story = {
   render: (args) => (
     <div className="w-80 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
@@ -45,14 +46,18 @@ export const ReducedMotion: Story = {
     const c = within(canvasElement);
     const shimmer = shimmerOf(c.getByRole("status"));
     await expect(shimmer).not.toBeNull();
-    // shimmer is a Web Animation (no keyframes in kit CSS): count running animations
+    const keys = (a: Animation) => Object.keys((a.effect as KeyframeEffect).getKeyframes()[0]!);
     try {
       html.dataset.motion = "full";
-      await waitFor(() => expect(shimmer!.getAnimations().length).toBeGreaterThan(0));
+      await waitFor(() => expect(shimmer!.getAnimations().length).toBe(1));
+      await new Promise((r) => setTimeout(r, 6200));
+      await expect(shimmer!.getAnimations()[0]!.playState).toBe("running");
       html.dataset.motion = "reduced";
-      await waitFor(() => expect(shimmer!.getAnimations().length).toBe(0));
+      await waitFor(() => expect(shimmer!.getAnimations().length).toBe(1));
+      await expect(keys(shimmer!.getAnimations()[0]!)).toContain("opacity");
+      await expect(keys(shimmer!.getAnimations()[0]!)).not.toContain("transform");
       html.dataset.motion = "off";
-      await expect(shimmer!.getAnimations().length).toBe(0);
+      await waitFor(() => expect(shimmer!.getAnimations().length).toBe(0));
     } finally {
       html.dataset.motion = previous ?? "full";
     }

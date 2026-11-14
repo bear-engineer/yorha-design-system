@@ -36,19 +36,26 @@ export const Default: Story = {
   },
 };
 
+/** Loops while mounted: still animating after 6 s (full); reduced = one opacity animation; off = none. */
 export const ReducedMotion: Story = {
   play: async ({ canvasElement }) => {
     const html = document.documentElement;
     const previous = html.dataset.motion;
     const c = within(canvasElement);
-    const dots = dotsOf(c.getByRole("status"));
+    const status = c.getByRole("status");
+    const running = () => status.getAnimations({ subtree: true }).filter((a) => a.playState === "running");
     try {
       html.dataset.motion = "full";
-      await waitFor(() => expect(dots.some((d) => d.getAnimations().length > 0)).toBe(true));
+      await waitFor(() => expect(running().length).toBe(3));
+      await new Promise((r) => setTimeout(r, 6200));
+      await expect(running().length).toBe(3);
       html.dataset.motion = "reduced";
-      await waitFor(() => expect(dots.every((d) => d.getAnimations().length === 0)).toBe(true));
+      await waitFor(() => expect(status.getAnimations({ subtree: true }).length).toBe(1));
+      const [only] = status.getAnimations({ subtree: true });
+      await expect(Object.keys((only!.effect as KeyframeEffect).getKeyframes()[0]!)).toContain("opacity");
+      await expect(Object.keys((only!.effect as KeyframeEffect).getKeyframes()[0]!)).not.toContain("transform");
       html.dataset.motion = "off";
-      await expect(dots.every((d) => d.getAnimations().length === 0)).toBe(true);
+      await waitFor(() => expect(status.getAnimations({ subtree: true }).length).toBe(0));
     } finally {
       html.dataset.motion = previous ?? "full";
     }

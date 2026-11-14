@@ -46,6 +46,7 @@ export const Indeterminate: Story = {
   },
 };
 
+/** Indeterminate loops while mounted: still moving after 6 s (full); reduced = one opacity animation; off = none, striped. */
 export const ReducedMotion: Story = {
   args: { value: null, label: "처리 중" },
   play: async ({ canvasElement }) => {
@@ -54,13 +55,27 @@ export const ReducedMotion: Story = {
     const c = within(canvasElement);
     const indicator = c.getByRole("progressbar", { name: "처리 중" }).querySelector<HTMLElement>("[data-yorha-sweep]");
     await expect(indicator).not.toBeNull();
+    const track = indicator!.parentElement!;
+    const keys = (a: Animation) => Object.keys((a.effect as KeyframeEffect).getKeyframes()[0]!);
     try {
       html.dataset.motion = "full";
-      await waitFor(() => expect(indicator!.getAnimations().length).toBeGreaterThan(0));
+      await waitFor(() => expect(indicator!.getAnimations().length).toBe(1));
+      await expect(keys(indicator!.getAnimations()[0]!)).toContain("transform");
+      await new Promise((r) => setTimeout(r, 6200));
+      await expect(indicator!.getAnimations()[0]!.playState).toBe("running");
+      // a moving segment, not a 35% value bar
+      await expect(indicator!.getBoundingClientRect().width).toBeLessThan(track.getBoundingClientRect().width * 0.5);
       html.dataset.motion = "reduced";
-      await waitFor(() => expect(indicator!.getAnimations().length).toBe(0));
+      await waitFor(() => {
+        expect(indicator!.getAnimations().length).toBe(1);
+        expect(keys(indicator!.getAnimations()[0]!)).toContain("opacity");
+      });
+      await expect(keys(indicator!.getAnimations()[0]!)).not.toContain("transform");
       html.dataset.motion = "off";
-      await expect(indicator!.getAnimations().length).toBe(0);
+      await waitFor(() => expect(indicator!.getAnimations().length).toBe(0));
+      // static but busy: full-width stripes, never a lone block that reads as a value
+      await expect(getComputedStyle(indicator!).backgroundImage).toMatch(/repeating-linear-gradient/);
+      await expect(Math.round(indicator!.getBoundingClientRect().width)).toBe(Math.round(track.clientWidth));
     } finally {
       html.dataset.motion = previous ?? "full";
     }
