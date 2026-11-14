@@ -47,6 +47,7 @@ const meta = {
   component: AppShell,
   tags: ["autodocs"],
   decorators: [withRouter],
+  args: { children: null },
   parameters: { layout: "fullscreen" },
 } satisfies Meta<typeof AppShell>;
 export default meta;
