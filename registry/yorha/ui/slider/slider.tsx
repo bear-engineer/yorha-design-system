@@ -38,7 +38,7 @@ export function Slider({ label, showValue = false, className, ...props }: Slider
           )}
         >
           <BaseSlider.Indicator
-            className="h-full transition-[width] duration-(--motion-select) ease-yorha"
+            className="h-full"
             style={{
               backgroundImage: `repeating-linear-gradient(90deg, var(--yorha-ink) 0 ${SEGMENT}, transparent ${SEGMENT} ${PITCH})`,
             }}
@@ -53,7 +53,6 @@ export function Slider({ label, showValue = false, className, ...props }: Slider
                 "grid size-6 min-h-[24px] min-w-[24px] place-items-center rounded-yorha",
                 "before:size-4 before:rounded-yorha before:border-2 before:border-yorha-bg before:bg-yorha-ink",
                 "before:outline before:outline-1 before:outline-yorha-ink before:content-['']",
-                "transition-[left] duration-(--motion-select) ease-yorha data-[dragging]:transition-none",
                 "has-[:focus-visible]:yorha-focus data-[disabled]:cursor-not-allowed",
               )}
             />

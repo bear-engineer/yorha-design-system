@@ -126,12 +126,23 @@ export const ReducedMotion: Story = {
   args: { label: "모션", defaultValue: 50, showValue: true },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
-    const indicator = canvasElement.querySelector<HTMLElement>('[class*="transition-[width]"]');
-    await expect(indicator).not.toBeNull();
-    await expectReducedMotion(indicator!);
-    const thumb = canvasElement.querySelector<HTMLElement>('[class*="transition-[left]"]');
-    await expect(thumb).not.toBeNull();
-    await expectReducedMotion(thumb!);
+    // Direct manipulation: nothing that follows the pointer (fill, thumb) transitions in any motion mode.
+    const root = document.documentElement;
+    const prev = root.dataset.motion;
+    const parts = [
+      canvasElement.querySelector<HTMLElement>('[data-index], [class*="size-6"]'),
+      ...canvasElement.querySelectorAll<HTMLElement>("div"),
+    ].filter((el): el is HTMLElement => !!el && (el.className.includes("h-full") || el.className.includes("size-6")));
+    await expect(parts.length).toBeGreaterThan(1);
+    try {
+      for (const mode of ["full", "reduced", "off"]) {
+        root.dataset.motion = mode;
+        for (const el of parts) await expect(motionSeconds(el)).toBe(0);
+      }
+    } finally {
+      if (prev === undefined) delete root.dataset.motion;
+      else root.dataset.motion = prev;
+    }
     await expect(c.getByRole("slider", { name: "모션" })).toHaveAttribute("aria-valuenow", "50");
   },
 };
