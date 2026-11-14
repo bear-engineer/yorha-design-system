@@ -17,7 +17,7 @@ const THEMES = ["light", "dark", "high-contrast"] as const;
 
 interface DemoProps {
   multiple?: boolean;
-  defaultValue?: unknown;
+  defaultValue?: string[];
   themed?: boolean;
 }
 
@@ -59,7 +59,8 @@ export const Default: Story = {
     overview.focus();
     await userEvent.keyboard("{Enter}");
     await waitFor(() => expect(overview).toHaveAttribute("aria-expanded", "true"));
-    await expect(c.getByText("유닛 배치 현황을 요약한다.")).toBeVisible();
+    // panel fades and grows over --motion-panel; wait for the final visible state
+    await waitFor(() => expect(c.getByText("유닛 배치 현황을 요약한다.")).toBeVisible());
 
     // Space toggles closed
     await userEvent.keyboard(" ");
