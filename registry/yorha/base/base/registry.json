@@ -664,6 +664,59 @@
           "outline": "var(--yorha-ring-width) solid currentColor",
           "outline-offset": "calc(var(--yorha-ring-width) * -1)"
         },
+        "@utility yorha-row": {
+          "position": "relative",
+          "display": "flex",
+          "align-items": "center",
+          "gap": "8px",
+          "min-height": "var(--yorha-row)",
+          "padding": "4px 8px",
+          "user-select": "none",
+          "outline": "none",
+          "color": "var(--yorha-fg)",
+          "background-image": "linear-gradient(var(--yorha-ink), var(--yorha-ink))",
+          "background-size": "0% 100%",
+          "background-position": "left",
+          "background-repeat": "no-repeat",
+          "transition-property": "background-size, color",
+          "transition-duration": "0s",
+          "&[data-highlighted]:not([data-disabled])": {
+            "background-size": "100% 100%",
+            "color": "var(--yorha-on-ink)",
+            "transition-duration": "var(--motion-press)",
+            "transition-timing-function": "var(--yorha-ease-out)"
+          },
+          "&[data-disabled]": {
+            "color": "var(--yorha-disabled)",
+            "cursor": "not-allowed"
+          },
+          "@media (forced-colors: active)": {
+            "&[data-highlighted]:not([data-disabled])": {
+              "outline": "2px solid Highlight",
+              "outline-offset": "-2px"
+            }
+          }
+        },
+        "@utility yorha-surface": {
+          "background-color": "var(--yorha-panel)",
+          "color": "var(--yorha-fg)",
+          "border": "var(--yorha-border-width) solid var(--yorha-border)",
+          "border-radius": "var(--yorha-radius)",
+          "box-shadow": "4px 4px 0 0 var(--yorha-shadow)"
+        },
+        "@utility yorha-scroll": {
+          "overflow": "auto",
+          "overscroll-behavior": "contain",
+          "scrollbar-width": "thin",
+          "scrollbar-color": "var(--yorha-border) transparent"
+        },
+        "@utility yorha-scroll-cue-x": {
+          "background-image": "linear-gradient(var(--yorha-scroll-ground, var(--yorha-bg)), var(--yorha-scroll-ground, var(--yorha-bg))), linear-gradient(var(--yorha-scroll-ground, var(--yorha-bg)), var(--yorha-scroll-ground, var(--yorha-bg))), linear-gradient(var(--yorha-border), var(--yorha-border)), linear-gradient(var(--yorha-border), var(--yorha-border))",
+          "background-position": "left center, right center, left center, right center",
+          "background-size": "1px 100%, 1px 100%, 1px 100%, 1px 100%",
+          "background-repeat": "no-repeat",
+          "background-attachment": "local, local, scroll, scroll"
+        },
         "@utility yorha-tint": {
           "@media (hover: hover) and (pointer: fine)": {
             "&:hover:not(:disabled, [data-disabled], [aria-disabled=\"true\"], [data-checked], [data-pressed], [aria-pressed=\"true\"], [data-selected], [aria-selected=\"true\"], [aria-current], [data-highlighted], [data-popup-open], [data-panel-open])": {
@@ -934,6 +987,9 @@
             "forced-color-adjust": "none",
             "stroke": "Highlight"
           }
+        },
+        "[data-slot$=-content]:not(:has([role=menuitemcheckbox], [role=menuitemradio], [role=option])) [data-slot=row-indicator]": {
+          "display": "none"
         },
         "@layer base": {
           "html": {

@@ -598,7 +598,7 @@ describe("craft v3 recipes (G5-G10)", () => {
     });
 
     it("the indicator slot is hidden in popups with no check, radio or option rows (no bullet on plain action rows)", () => {
-      expect(find("@layer base")).toMatch(/\[data-slot\$=-content\]:not\(:has\(\[role=menuitemcheckbox\], \[role=menuitemradio\], \[role=option\]\)\) \[data-slot=row-indicator\] \{\n\s+display: none;/);
+      expect(css()).toMatch(/\n\[data-slot\$=-content\]:not\(:has\(\[role=menuitemcheckbox\], \[role=menuitemradio\], \[role=option\]\)\) \[data-slot=row-indicator\] \{\n\s+display: none;/);
       expect(Object.keys(baseItem().css)).toContain("@utility yorha-row");
     });
   });

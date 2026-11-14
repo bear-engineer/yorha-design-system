@@ -242,6 +242,73 @@ export const StateRecipes: Story = {
   },
 };
 
+/** Focus inset (G6), row (G8) and overlay surface / scroll (G10) recipes, asserted on computed styles and geometry. */
+function SurfaceRecipeDemo() {
+  return (
+    <div className="flex flex-wrap items-start gap-6 bg-yorha-bg p-4 font-yorha text-yorha-fg">
+      <button type="button" data-testid="inset" className="grid h-control-md w-32 place-items-center border border-yorha-border yorha-focus-inset focus-visible:outline-solid">inset</button>
+      <div data-testid="surface" data-slot="demo-content" role="menu" aria-label="행 예시" tabIndex={0} className="yorha-surface yorha-scroll w-56 py-1 shadow-none" style={{ maxHeight: 96 }}>
+        <div data-testid="row-plain" role="menuitem" className="yorha-row">
+          <span data-slot="row-indicator" data-testid="indicator" className="grid size-indicator shrink-0 place-items-center" />
+          <span className="min-w-0 flex-1 truncate">평범한 행</span>
+        </div>
+        <div data-testid="row-hot" role="menuitem" data-highlighted="" className="yorha-row">
+          <span className="min-w-0 flex-1 truncate">강조된 행</span>
+        </div>
+        <div data-testid="row-off" role="menuitem" data-disabled="" className="yorha-row">
+          <span className="min-w-0 flex-1 truncate">비활성 행</span>
+        </div>
+        <div className="yorha-row"><span>행 4</span></div>
+        <div className="yorha-row"><span>행 5</span></div>
+      </div>
+      <div data-testid="cue" role="region" aria-label="가로 스크롤" tabIndex={0} className="yorha-scroll yorha-scroll-cue-x w-40 border border-yorha-border">
+        <p className="w-96 whitespace-nowrap">가로로 긴 내용이 스크롤되는 영역입니다. 가장자리 헤어라인은 스크롤된 쪽에만 나타납니다.</p>
+      </div>
+    </div>
+  );
+}
+
+export const SurfaceRecipes: Story = {
+  render: () => <SurfaceRecipeDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const style = (id: string) => getComputedStyle(canvas.getByTestId(id));
+    const root = getComputedStyle(document.documentElement);
+    const px = (name: string) => parseFloat(root.getPropertyValue(name)) * (root.getPropertyValue(name).trim().endsWith("rem") ? rootFontSize() : 1);
+
+    // G6: inset ring sits inside the box
+    canvas.getByTestId("inset").focus();
+    await waitFor(() => expect(style("inset").outlineOffset).toBe("-2px"));
+    await expect(style("inset").outlineStyle).toBe("solid");
+    await expect(style("inset").outlineColor).toBe(style("inset").color);
+    canvas.getByTestId("inset").blur();
+
+    // G8: rows are on the row token and 4px block padding; highlight is one ink layer, disabled has none
+    const plain = canvas.getByTestId("row-plain").getBoundingClientRect();
+    await expect(plain.height).toBe(px("--yorha-row"));
+    await expect(style("row-plain").paddingTop).toBe("4px");
+    await expect(style("row-plain").backgroundSize).toBe("0% 100%");
+    await expect(style("row-plain").transitionDuration).toBe("0s");
+    await expect(style("row-hot").backgroundSize).toBe("100% 100%");
+    await expect(style("row-hot").color).toBe(getComputedStyle(canvas.getByTestId("row-hot")).color);
+    await expect(style("row-hot").color).not.toBe(style("row-plain").color);
+    await expect(style("row-off").backgroundSize).toBe("0% 100%");
+    await expect(style("row-off").cursor).toBe("not-allowed");
+    // no check/radio/option row in this popup -> no indicator slot
+    await expect(style("indicator").display).toBe("none");
+
+    // G10: surface is the panel ground with a 1px border, no radius, a hard shadow; the popup scrolls contained
+    const surface = style("surface");
+    await expect(surface.borderTopWidth).toBe("1px");
+    await expect(surface.borderRadius).toBe("0px");
+    await expect(surface.overscrollBehaviorY).toBe("contain");
+    await expect(surface.overflowY).toBe("auto");
+    await expect(canvas.getByTestId("surface").scrollHeight).toBeGreaterThan(canvas.getByTestId("surface").clientHeight);
+    await expect(style("cue").backgroundAttachment).toBe("local, local, scroll, scroll");
+    await expect(canvas.getByTestId("cue").scrollWidth).toBeGreaterThan(canvas.getByTestId("cue").clientWidth);
+  },
+};
+
 /** `[data-motion=reduced|off]` zeroes every motion duration, so transitions land on their final state at once. */
 export const Motion: Story = {
   render: () => <MotionDemo />,

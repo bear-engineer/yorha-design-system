@@ -340,6 +340,67 @@ const INVALID = {
   },
 };
 
+/* ------------------------------------------------------ rows and surfaces */
+
+// One row model for menu, context-menu, menubar, select, combobox, autocomplete, menu-list and navigation-menu.
+// Full-bleed: the popup has block padding only, so the fill meets its border. The ink layer wipes in at the press speed
+// on the highlighted row; the row being left drops at once (0s), so one wipe is on screen.
+const ROW = {
+  position: "relative",
+  display: "flex",
+  "align-items": "center",
+  gap: "8px",
+  "min-height": "var(--yorha-row)",
+  padding: "4px 8px",
+  "user-select": "none",
+  outline: "none",
+  color: "var(--yorha-fg)",
+  "background-image": "linear-gradient(var(--yorha-ink), var(--yorha-ink))",
+  "background-size": "0% 100%",
+  "background-position": "left",
+  "background-repeat": "no-repeat",
+  "transition-property": "background-size, color",
+  "transition-duration": "0s",
+  "&[data-highlighted]:not([data-disabled])": {
+    "background-size": "100% 100%",
+    color: "var(--yorha-on-ink)",
+    "transition-duration": "var(--motion-press)",
+    "transition-timing-function": "var(--yorha-ease-out)",
+  },
+  "&[data-disabled]": { color: "var(--yorha-disabled)", cursor: "not-allowed" },
+  "@media (forced-colors: active)": {
+    "&[data-highlighted]:not([data-disabled])": { outline: "2px solid Highlight", "outline-offset": "-2px" },
+  },
+};
+// Every floating popup. Tooltip is the one exception (ink chip, no shadow).
+const SURFACE = {
+  "background-color": "var(--yorha-panel)",
+  color: "var(--yorha-fg)",
+  border: "var(--yorha-border-width) solid var(--yorha-border)",
+  "border-radius": "var(--yorha-radius)",
+  "box-shadow": "4px 4px 0 0 var(--yorha-shadow)",
+};
+const SCROLL = {
+  overflow: "auto",
+  "overscroll-behavior": "contain",
+  "scrollbar-width": "thin",
+  "scrollbar-color": "var(--yorha-border) transparent",
+};
+// Edge hairlines that appear only while content is scrolled away from that edge (local covers hide the scroll-attached lines).
+// Set --yorha-scroll-ground to the host's background when it is not the page background.
+const SCROLL_CUE_X = {
+  "background-image": [
+    "linear-gradient(var(--yorha-scroll-ground, var(--yorha-bg)), var(--yorha-scroll-ground, var(--yorha-bg)))",
+    "linear-gradient(var(--yorha-scroll-ground, var(--yorha-bg)), var(--yorha-scroll-ground, var(--yorha-bg)))",
+    "linear-gradient(var(--yorha-border), var(--yorha-border))",
+    "linear-gradient(var(--yorha-border), var(--yorha-border))",
+  ].join(", "),
+  "background-position": "left center, right center, left center, right center",
+  "background-size": "1px 100%, 1px 100%, 1px 100%, 1px 100%",
+  "background-repeat": "no-repeat",
+  "background-attachment": "local, local, scroll, scroll",
+};
+
 const MOTION_UTILITIES = Object.keys(MOTION_CSS).map((key) => key.slice("@utility ".length));
 
 /* ----------------------------------------------------------------- model */
@@ -436,6 +497,10 @@ function buildModel(tokens) {
   css["@utility yorha-focus"] = focusRing;
   // Flush items inside a clipping or shared-border container: the ring sits inside the box (currentColor stays visible on ink).
   css["@utility yorha-focus-inset"] = { outline: "var(--yorha-ring-width) solid currentColor", "outline-offset": "calc(var(--yorha-ring-width) * -1)" };
+  css["@utility yorha-row"] = ROW;
+  css["@utility yorha-surface"] = SURFACE;
+  css["@utility yorha-scroll"] = SCROLL;
+  css["@utility yorha-scroll-cue-x"] = SCROLL_CUE_X;
   css["@utility yorha-tint"] = TINT;
   css["@utility yorha-disabled"] = DISABLED;
   css["@utility yorha-readonly"] = READONLY;
@@ -473,6 +538,9 @@ function buildModel(tokens) {
     ".stroke-yorha-alert-ui": { "forced-color-adjust": "none", stroke: "CanvasText" },
     ".stroke-yorha-ring": { "forced-color-adjust": "none", stroke: "Highlight" },
   };
+  // Row anatomy: the indicator slot exists only in popups that contain check, radio or option rows (no bullet on plain action rows).
+  // Unlayered on purpose: the slot is a `grid` utility, which would beat a base-layer `display: none`.
+  css["[data-slot$=-content]:not(:has([role=menuitemcheckbox], [role=menuitemradio], [role=option])) [data-slot=row-indicator]"] = { display: "none" };
   css["@layer base"] = {
     // Mobile: no iOS landscape font inflation, no grey tap flash, no double-tap zoom delay on controls (sliders keep their own touch handling).
     html: { "-webkit-text-size-adjust": "100%", "text-size-adjust": "100%" },
