@@ -107,6 +107,7 @@ export const Themes: Story = {
 
 // The authentic theme is a fidelity-first palette that is not contrast-gated.
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   args: { children: "오리지널 팔레트", defaultPressed: true },
   render: (args) => (
     <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">

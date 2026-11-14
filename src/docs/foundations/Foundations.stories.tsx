@@ -285,6 +285,7 @@ export const Themes: Story = {
 
 /** Authentic = the original low-contrast fan palette, kept as an opt-in decoration mode. */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   render: () => <ThemeSurfaces themes={["authentic"]} />,
   // The authentic palette fails WCAG AA by design (see the Contrast page), so axe violations are reported, not enforced.
   parameters: { a11y: { test: "todo" } },

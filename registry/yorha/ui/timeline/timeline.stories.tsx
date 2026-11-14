@@ -204,6 +204,7 @@ export const Themes: Story = {
 
 // authentic palette is intentionally low-contrast (decorative mode), so only this story skips a11y.
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: (args) => (
     <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
@@ -296,6 +297,7 @@ export const VerticalThemes: StoryObj<typeof Timeline> = {
 };
 
 export const VerticalAuthentic: StoryObj<typeof Timeline> = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
     <div lang="ko" data-theme="authentic" className="max-w-xl bg-yorha-panel p-4 text-yorha-fg">

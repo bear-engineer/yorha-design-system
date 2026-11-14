@@ -388,6 +388,7 @@ export const Themes: Story = {
 
 // The authentic theme fails the contrast gate by design (faithful low-contrast palette).
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   decorators: [],
   render: (args) => (

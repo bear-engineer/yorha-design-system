@@ -8,7 +8,7 @@ const meta = {
   component: YorhaDemo,
   tags: ["autodocs"],
   decorators: [withRouter],
-  parameters: { layout: "fullscreen", route: { path: "/settings" } },
+  parameters: { docs: { story: { inline: false, iframeHeight: 640 } }, layout: "fullscreen", route: { path: "/settings" } },
 } satisfies Meta<typeof YorhaDemo>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -58,6 +58,7 @@ export const HighContrastTheme: Story = {
 
 /** Authentic 테마 단독 스토리. 원본 테마 토큰은 대비 검증 대상이 아니므로 a11y 검사를 todo로 둔다. */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   name: "Authentic",
   globals: { theme: "authentic" },
   parameters: { a11y: { test: "todo" } },

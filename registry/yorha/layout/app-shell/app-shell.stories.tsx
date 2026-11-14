@@ -49,7 +49,7 @@ const meta = {
   tags: ["autodocs"],
   decorators: [withRouter],
   args: { children: null },
-  parameters: { layout: "fullscreen" },
+  parameters: { docs: { story: { inline: false, iframeHeight: 480 } }, layout: "fullscreen" },
 } satisfies Meta<typeof AppShell>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -118,6 +118,7 @@ export const HighContrastTheme: Story = {
 
 /** Authentic palette alone. a11y is "todo": the authentic palette is decorative-only (tokens.md). */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
     <div data-theme="authentic">

@@ -348,7 +348,7 @@ export const Light: Story = {
 };
 export const Dark: Story = { ...Light, globals: { theme: "dark" } };
 export const HighContrast: Story = { ...Light, globals: { theme: "high-contrast" } };
-export const Authentic: Story = { ...Light, parameters: { a11y: { test: "todo" } }, globals: { theme: "authentic" } };
+export const Authentic: Story = { ...Light, tags: ["!autodocs"], parameters: { a11y: { test: "todo" } }, globals: { theme: "authentic" } };
 
 /** State matrix: default, selected (clear button), disabled, multiple chips (remove buttons), open list. Targets >= 24px. */
 export const States: Story = {

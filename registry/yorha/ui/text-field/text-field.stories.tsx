@@ -167,6 +167,7 @@ export const Themes: Story = {
 };
 
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   // Authentic is the fan palette; it fails AA by design (dossier §9). Opt-in decorative only,
   // so this single story renders that theme alone and skips the a11y gate.
   parameters: { a11y: { test: "todo" } },

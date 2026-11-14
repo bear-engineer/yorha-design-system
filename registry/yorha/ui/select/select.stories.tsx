@@ -302,6 +302,7 @@ export const HighContrast: Story = {
 };
 
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   // authentic 테마는 원작 색감 재현이 목적이라 대비 기준을 일부러 낮춘다: a11y 는 todo.
   parameters: { a11y: { test: "todo" } },
   globals: { theme: "authentic" },

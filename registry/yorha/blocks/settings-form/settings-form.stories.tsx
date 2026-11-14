@@ -8,7 +8,7 @@ const meta = {
   component: SettingsFormRoute,
   tags: ["autodocs"],
   decorators: [withRouter],
-  parameters: { layout: "fullscreen", route: { path: "/settings" } },
+  parameters: { docs: { story: { inline: false, iframeHeight: 640 } }, layout: "fullscreen", route: { path: "/settings" } },
 } satisfies Meta<typeof SettingsFormRoute>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -41,6 +41,7 @@ export const HighContrastTheme: Story = {
 };
 /** Authentic 테마 단독 스토리. 원본 팔레트는 대비 검증 대상이 아니므로 a11y를 todo로 둔다. */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   name: "Authentic",
   globals: { theme: "authentic" },
   parameters: { a11y: { test: "todo" } },

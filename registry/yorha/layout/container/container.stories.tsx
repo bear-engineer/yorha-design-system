@@ -26,6 +26,7 @@ const meta = {
   title: "레이아웃/Container",
   component: Container,
   tags: ["autodocs"],
+  parameters: { docs: { story: { inline: false, iframeHeight: 480 } } },
   args: { size: "md" },
   render: (args) => (
     <Frame width="1200px">
@@ -104,6 +105,7 @@ export const FourThemes: Story = {
 
 /** Authentic palette alone (fidelity, decorative-only, not contrast-gated): the only story with a11y todo. */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   name: "Authentic (원작 팔레트)",
   parameters: { a11y: { test: "todo" } },
   render: () => (

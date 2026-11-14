@@ -2,8 +2,6 @@ import { Meta } from "@storybook/addon-docs/blocks";
 
 <Meta title="가이드/페이지 전환" />
 
-<main lang="ko">
-
 # 페이지 전환
 
 `@yorha/route-transition`은 React 19.3의 `ViewTransition`과 React Router 8로 페이지 전환을 만듭니다. 이동 방향(앞으로·뒤로·교체)에 따라 클래스가 바뀌고, 목록 항목과 상세 화면의 같은 요소는 공유 요소로 이어집니다. `document.startViewTransition`은 직접 호출하지 않고 지원 여부만 확인합니다. 지속 시간과 이징은 [모션 토큰](?path=/docs/파운데이션-motion--docs)에서 옵니다.
@@ -58,5 +56,3 @@ export default function Layout() {
 - Firefox·Safari의 뷰 전환 동작은 자동 검증 대상이 아닙니다. 지원하지 않는 브라우저는 `unsupported`로 즉시 이동합니다.
 
 모션 모드에 따른 동작은 [모션 사양](?path=/docs/가이드-모션-사양--docs)을 따릅니다. 동작 예제는 [RouteTransition 스토리](?path=/docs/라우터-routetransition--docs)에서 확인하세요.
-
-</main>

@@ -240,6 +240,7 @@ export const Themes: Story = {
 
 /** The authentic theme is a fidelity exercise that fails contrast on purpose, so only this story skips a11y. */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" }, route: { routes: routeFor(<div data-theme="authentic" className="bg-yorha-panel p-4"><Demo /></div>), initialEntries: ["/units"] } },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("button", { name: "유닛" })).toBeVisible();

@@ -138,6 +138,7 @@ export const Themes: Story = {
 };
 
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
     <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">

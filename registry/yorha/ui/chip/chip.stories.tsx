@@ -78,6 +78,7 @@ export const Themes: Story = {
 };
 
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   // authentic palette is intentionally low-contrast (decorative mode): only this story skips a11y.
   parameters: { a11y: { test: "todo" } },
   args: { onRemove: fn() },

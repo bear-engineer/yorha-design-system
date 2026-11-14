@@ -144,6 +144,7 @@ export const Themes: Story = {
 
 /** Authentic palette alone (fidelity, decorative-only, not contrast-gated): the only story with a11y todo. */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   name: "Authentic (원작 팔레트)",
   parameters: { a11y: { test: "todo" } },
   render: () => (

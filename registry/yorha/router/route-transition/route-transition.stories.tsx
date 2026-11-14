@@ -17,7 +17,7 @@ const meta = {
   component: RouteTransition,
   tags: ["autodocs"],
   decorators: [withRouter],
-  parameters: { layout: "padded" },
+  parameters: { docs: { story: { inline: false, iframeHeight: 480 } }, layout: "padded" },
 } satisfies Meta<typeof RouteTransition>;
 export default meta;
 type Story = StoryObj<typeof meta>;

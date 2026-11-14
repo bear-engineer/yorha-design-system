@@ -276,6 +276,7 @@ export const Light: Story = {
 export const Dark: Story = { ...Light, globals: { theme: "dark" } };
 export const HighContrast: Story = { ...Light, globals: { theme: "high-contrast" } };
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   ...Light,
   parameters: { a11y: { test: "todo" } },
   globals: { theme: "authentic" },

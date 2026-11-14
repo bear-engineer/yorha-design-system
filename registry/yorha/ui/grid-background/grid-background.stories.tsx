@@ -63,6 +63,7 @@ export const Themes: Story = {
 
 /** Authentic theme alone; a11y is "todo" because the authentic palette is decorative-only (see tokens.md). */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => <Frame theme="authentic">오리지널 팔레트</Frame>,
   play: async ({ canvasElement }) => {

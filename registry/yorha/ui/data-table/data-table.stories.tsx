@@ -138,6 +138,7 @@ export const Themes: Story = {
 
 /** Authentic theme alone; a11y is "todo" because the authentic palette is decorative-only (see tokens.md). */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
     <div data-theme="authentic" className="bg-yorha-bg p-4 text-yorha-fg">

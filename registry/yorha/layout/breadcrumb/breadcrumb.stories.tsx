@@ -18,7 +18,7 @@ const meta = {
   component: Breadcrumb,
   tags: ["autodocs"],
   decorators: [withRouter],
-  parameters: { layout: "padded", route: { path: "/units" } },
+  parameters: { docs: { story: { inline: false, iframeHeight: 480 } }, layout: "padded", route: { path: "/units" } },
   args: { items: ITEMS },
 } satisfies Meta<typeof Breadcrumb>;
 export default meta;
@@ -118,6 +118,7 @@ export const ThemeGallery: Story = {
 
 /** 권위 테마는 토큰 대비 기준을 통과하지 않으므로 이 스토리에서만 렌더링합니다. */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   // Authentic fails 11 of 24 token pairs by design (tokens.md); this story is the only one that renders it.
   parameters: { a11y: { test: "todo" }, yorha: { manageRoot: false } },
   render: () => (

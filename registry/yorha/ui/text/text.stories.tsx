@@ -117,6 +117,7 @@ export const ThemeGallery: Story = {
 };
 
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   // Authentic fails 11 of 24 token pairs by design (tokens.md); this story is the only one that renders it.
   parameters: { a11y: { test: "todo" } },
   render: () => (

@@ -53,6 +53,7 @@ export const Themes: Story = {
 
 // authentic palette is intentionally low-contrast (decorative mode), so only this story skips a11y.
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
     <div data-theme="authentic">

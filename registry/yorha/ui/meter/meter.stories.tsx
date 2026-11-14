@@ -58,6 +58,7 @@ export const Themes: Story = {
 
 // authentic palette is intentionally low-contrast (decorative mode), so only this story skips a11y.
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: (args) => (
     <div data-theme="authentic" className="bg-yorha-panel p-6 text-yorha-fg">

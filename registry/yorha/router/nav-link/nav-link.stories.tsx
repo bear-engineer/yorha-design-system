@@ -10,7 +10,7 @@ const meta = {
   component: NavLink,
   tags: ["autodocs"],
   decorators: [withRouter],
-  parameters: { layout: "padded" },
+  parameters: { docs: { story: { inline: false, iframeHeight: 480 } }, layout: "padded" },
 } satisfies Meta<typeof NavLink>;
 export default meta;
 type Story = StoryObj<typeof meta>;

@@ -129,7 +129,7 @@ export const ReducedMotion: Story = {
 export const Light: Story = { globals: { theme: "light" }, render: () => <Demo multiple defaultValue={["left", "right"]} /> };
 export const Dark: Story = { ...Light, globals: { theme: "dark" } };
 export const HighContrast: Story = { ...Light, globals: { theme: "high-contrast" } };
-export const Authentic: Story = { ...Light, parameters: { a11y: { test: "todo" } }, globals: { theme: "authentic" } };
+export const Authentic: Story = { ...Light, tags: ["!autodocs"], parameters: { a11y: { test: "todo" } }, globals: { theme: "authentic" } };
 
 export const States: Story = {
   render: () => (

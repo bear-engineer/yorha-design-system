@@ -3,8 +3,6 @@ import { INPUT_TYPES, INPUT_TYPE_TABLE } from "../../../registry/yorha/ui/input-
 
 <Meta title="가이드/일정·입력" />
 
-<main lang="ko">
-
 # 일정·입력
 
 날짜·일정·보드·입력 유형 컴포넌트의 선택 기준입니다. Base UI에는 공개 달력 컴포넌트가 없어(1.9 기준) 달력·날짜 선택·타임라인·칸반은 yorha가 직접 만듭니다. 외부 날짜·차트 라이브러리는 쓰지 않으며 칸반만 `@dnd-kit`을 씁니다.
@@ -49,5 +47,3 @@ import { INPUT_TYPES, INPUT_TYPE_TABLE } from "../../../registry/yorha/ui/input-
 - `number`는 Base UI NumberField가 `type=text`를 렌더하므로 숫자 키패드가 필요한 곳에는 `Input type="number"`를, 스테퍼가 필요한 곳에는 NumberField를 씁니다.
 - `password`: 표시 토글(`aria-pressed`, 이름 "비밀번호 표시")과 Caps Lock 안내. `search`: 지우기 버튼, Esc로 지움. `file`: 버튼과 드롭 영역, `accept`·`maxSize` 검사. `color`: 견본과 16진수 입력.
 - `hidden`은 UI도 레이블도 없는 일반 `<input type="hidden">`입니다.
-
-</main>

@@ -2,8 +2,6 @@ import { Meta } from "@storybook/addon-docs/blocks";
 
 <Meta title="가이드/가독성" />
 
-<main lang="ko">
-
 # 가독성
 
 본문 가독성 기준과 이를 지키는 도구입니다. 값은 [파운데이션/Typography](?path=/docs/파운데이션-typography--docs)의 토큰이 정본입니다.
@@ -46,5 +44,3 @@ pnpm test:text-spacing
 ```
 
 대표 스토리 20개에 이 간격을 `!important`로 주입하고, `overflow`가 hidden/clip인 요소의 내용이 상자를 넘쳐 잘리는지 검사합니다. 잘린 텍스트에 `title`이 있거나 `.sr-only` 대체 텍스트가 있으면 허용합니다. 한계: 문단 간격은 `p`, `li`, `dd`, `dt`, `blockquote`에만 적용하고 라이트 테마만 확인합니다. 새 컴포넌트에 `overflow-hidden`이나 고정 높이를 쓰면 대표 스토리에 추가하세요.
-
-</main>

@@ -40,7 +40,7 @@ const meta = {
   component: SystemMenuLayout,
   tags: ["autodocs"],
   args: { sections: SECTIONS },
-  parameters: { layout: "padded" },
+  parameters: { docs: { story: { inline: false, iframeHeight: 480 } }, layout: "padded" },
 } satisfies Meta<typeof SystemMenuLayout>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -157,6 +157,7 @@ export const HighContrastTheme = themeStory("high-contrast", "고대비 테마")
 
 /** Authentic palette alone. a11y is "todo": the authentic palette is decorative-only (tokens.md). */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: (args) => (
     <div data-theme="authentic" className="bg-yorha-bg p-4 text-yorha-fg">

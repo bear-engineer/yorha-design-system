@@ -150,6 +150,7 @@ export const Themes: Story = {
 
 // authentic theme is intentionally low-contrast (faithful palette), so a11y is todo here
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
     <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">

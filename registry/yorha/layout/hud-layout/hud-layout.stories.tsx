@@ -33,7 +33,7 @@ const meta = {
   component: HudLayout,
   tags: ["autodocs"],
   decorators: [withRouter],
-  parameters: { layout: "fullscreen" },
+  parameters: { docs: { story: { inline: false, iframeHeight: 480 } }, layout: "fullscreen" },
 } satisfies Meta<typeof HudLayout>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -111,6 +111,7 @@ export const HighContrastTheme = themeStory("high-contrast", "고대비 테마")
 
 /** Authentic palette alone. a11y is "todo": the authentic palette is decorative-only (tokens.md). */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => frame(<Hud />, "authentic"),
   play: async ({ canvasElement }) => {

@@ -217,6 +217,7 @@ export const Themes: Story = {
 
 /** Authentic theme exercises the source look, which fails contrast on purpose, so only this story skips a11y. */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
     <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">

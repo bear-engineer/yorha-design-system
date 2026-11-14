@@ -64,6 +64,7 @@ const ids = (tiles: HTMLElement[]) => tiles.map((t) => t.dataset.tile);
 
 const meta = {
   title: "레이아웃/Bento",
+  parameters: { docs: { story: { inline: false, iframeHeight: 480 } } },
   component: Bento,
   tags: ["autodocs"],
 } satisfies Meta<typeof Bento>;
@@ -280,6 +281,7 @@ export const ThreeThemes: Story = {
 
 /** Authentic palette alone (fidelity, decorative-only, not contrast-gated): the only story with a11y todo. */
 export const Authentic: Story = {
+  tags: ["!autodocs"],
   name: "Authentic (원작 팔레트)",
   parameters: { a11y: { test: "todo" } },
   render: () => (
