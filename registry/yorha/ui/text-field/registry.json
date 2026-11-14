@@ -1,4 +1,26 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "type": "registry:ui",
+      "name": "text-field",
+      "title": "TextField",
+      "description": "Single-line text input on Base UI Input, composed with Field: label click focuses the input, description and error are linked with aria-describedby, invalid state shows an alert with an icon. Placeholder uses the fg-soft token for contrast.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/field",
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "text-field.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+    }
+  ]
 }

@@ -1,4 +1,25 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "type": "registry:ui",
+      "name": "field",
+      "title": "Field",
+      "description": "Base UI Field and Fieldset wrapped in YoRHa styles: Field, FieldLabel, FieldDescription, FieldError (square icon plus alert text), FieldControl, FieldFrame (label, control, description, error wired together), Fieldset and FieldsetLegend.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "field.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Compose Field parts directly, or use FieldFrame for the standard label, control, description and error stack. Set invalid (or pass error) to mark the control aria-invalid."
+    }
+  ]
 }

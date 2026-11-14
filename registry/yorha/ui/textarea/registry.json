@@ -1,4 +1,26 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "type": "registry:ui",
+      "name": "textarea",
+      "title": "Textarea",
+      "description": "Multi-line text input composed with Field (native textarea through Field.Control render). Optional autoSize grows with content via CSS field-sizing, with no JavaScript or keydown handling, so Korean IME composition is unaffected.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/field",
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "textarea.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+    }
+  ]
 }

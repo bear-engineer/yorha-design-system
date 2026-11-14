@@ -1,52 +1,125 @@
-// RED stub: compiles, deliberately wrong (no label/description/error wiring).
+import { Field as BaseField } from "@base-ui/react/field";
+import { Fieldset as BaseFieldset } from "@base-ui/react/fieldset";
 import type { ComponentProps, ReactNode } from "react";
+import { cn, cnState } from "@/lib/utils";
+
+/** Control surface shared by TextField, Textarea and FieldControl (one definition). */
+export const fieldControlClass = cn(
+  "w-full rounded-yorha border border-yorha-border bg-yorha-bg px-3 py-2",
+  "font-yorha text-yorha-base text-yorha-fg-strong placeholder:text-yorha-fg-soft",
+  "transition-colors duration-(--motion-select) ease-yorha",
+  "focus-visible:yorha-focus disabled:cursor-not-allowed disabled:opacity-60",
+  "data-[invalid]:border-(length:--yorha-border-width-strong) data-[invalid]:border-yorha-alert-ui",
+);
+
+const ERROR_ICON = cn(
+  "mt-px grid size-5 shrink-0 place-items-center border-(length:--yorha-border-width-strong) border-yorha-alert-ui",
+  "font-yorha-bold text-yorha-xs leading-none",
+);
+
+export type FieldProps = ComponentProps<typeof BaseField.Root>;
+/** Root wrapper: owns invalid/disabled/name for every part below (Base UI Field context). */
+export function Field({ className, ...props }: FieldProps) {
+  return (
+    <BaseField.Root
+      className={cnState("flex flex-col gap-2 font-yorha text-yorha-base text-yorha-fg", className)}
+      {...props}
+    />
+  );
+}
+
+export type FieldLabelProps = ComponentProps<typeof BaseField.Label>;
+export function FieldLabel({ className, ...props }: FieldLabelProps) {
+  return (
+    <BaseField.Label
+      className={cnState(
+        cn(
+          "cursor-pointer select-none font-yorha-medium text-yorha-sm tracking-yorha-wide text-yorha-fg-strong",
+          "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-60",
+        ),
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export type FieldDescriptionProps = ComponentProps<typeof BaseField.Description>;
+export function FieldDescription({ className, ...props }: FieldDescriptionProps) {
+  return (
+    <BaseField.Description
+      className={cnState("text-yorha-sm leading-yorha-snug text-yorha-fg-soft", className)}
+      {...props}
+    />
+  );
+}
+
+export type FieldErrorProps = ComponentProps<typeof BaseField.Error>;
+/**
+ * Error message: a square icon plus alert text, so invalid is not conveyed by colour alone.
+ * `match` defaults to true: render it only when there is an error to show.
+ */
+export function FieldError({ className, children, match = true, ...props }: FieldErrorProps) {
+  return (
+    <BaseField.Error
+      match={match}
+      role="alert"
+      className={cnState(
+        "flex items-start gap-2 font-yorha-medium text-yorha-sm leading-yorha-snug text-yorha-alert",
+        className,
+      )}
+      {...props}
+    >
+      <span aria-hidden="true" className={ERROR_ICON}>
+        !
+      </span>
+      <span>{children}</span>
+    </BaseField.Error>
+  );
+}
+
+export type FieldControlProps = ComponentProps<typeof BaseField.Control>;
+/** The input (default) or any element passed via `render`. Wired to label/description/error by Field. */
+export function FieldControl({ className, ...props }: FieldControlProps) {
+  return <BaseField.Control className={cnState(fieldControlClass, className)} {...props} />;
+}
+
+export type FieldsetProps = ComponentProps<typeof BaseFieldset.Root>;
+export function Fieldset({ className, ...props }: FieldsetProps) {
+  return <BaseFieldset.Root className={cnState("m-0 flex min-w-0 flex-col gap-6 border-0 p-0", className)} {...props} />;
+}
+
+export type FieldsetLegendProps = ComponentProps<typeof BaseFieldset.Legend>;
+export function FieldsetLegend({ className, ...props }: FieldsetLegendProps) {
+  return (
+    <BaseFieldset.Legend
+      className={cnState("mb-2 font-yorha-bold text-yorha-lg uppercase tracking-yorha-heading text-yorha-fg-strong", className)}
+      {...props}
+    />
+  );
+}
 
 export interface FieldFrameProps {
   label: ReactNode;
   description?: ReactNode;
   error?: ReactNode;
+  /** Defaults to true when `error` is set. */
   invalid?: boolean;
   disabled?: boolean;
   name?: string;
   className?: string;
+  /** The control, e.g. FieldControl. */
   children?: ReactNode;
 }
 
-export function FieldFrame(props: FieldFrameProps) {
+/** Label, control, description and error in the standard order, wired by one Field root. */
+export function FieldFrame({ label, description, error, invalid, disabled, name, className, children }: FieldFrameProps) {
   return (
-    <div>
-      {props.label}
-      {props.children}
-      {props.description}
-      {props.error}
-    </div>
+    <Field invalid={invalid ?? Boolean(error)} disabled={disabled} name={name} className={className}>
+      <FieldLabel>{label}</FieldLabel>
+      {children}
+      {description ? <FieldDescription>{description}</FieldDescription> : null}
+      {error ? <FieldError>{error}</FieldError> : null}
+    </Field>
   );
-}
-
-export function Field(props: { children?: ReactNode; invalid?: boolean; disabled?: boolean; name?: string; className?: string }) {
-  return <div>{props.children}</div>;
-}
-
-export function FieldLabel(props: { children?: ReactNode; className?: string }) {
-  return <span>{props.children}</span>;
-}
-
-export function FieldDescription(props: { children?: ReactNode; className?: string }) {
-  return <p>{props.children}</p>;
-}
-
-export function FieldError(props: { children?: ReactNode; className?: string; match?: boolean }) {
-  return <p>{props.children}</p>;
-}
-
-export function FieldControl(props: ComponentProps<"input"> & { className?: string }) {
-  return <input {...props} />;
-}
-
-export function Fieldset(props: { children?: ReactNode; className?: string }) {
-  return <div>{props.children}</div>;
-}
-
-export function FieldsetLegend(props: { children?: ReactNode; className?: string }) {
-  return <span>{props.children}</span>;
 }
