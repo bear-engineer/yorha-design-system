@@ -8,6 +8,7 @@ import {
   type CSSProperties,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 import {
   DndContext,
   DragOverlay,
@@ -157,6 +158,15 @@ export interface KanbanCardProps {
   card: KanbanCardData;
   /** Accessible name of the drag handle. Defaults to "<card label> 카드 이동". */
   handleLabel?: string;
+}
+
+type OverlayScope = { theme?: string; density?: string; lang?: string };
+function readScope(el: Element | null): OverlayScope {
+  return {
+    theme: el?.closest("[data-theme]")?.getAttribute("data-theme") ?? undefined,
+    density: el?.closest("[data-density]")?.getAttribute("data-density") ?? undefined,
+    lang: el?.closest("[lang]")?.getAttribute("lang") ?? undefined,
+  };
 }
 
 /**
@@ -313,6 +323,13 @@ export function KanbanBoard({
 }: KanbanBoardProps) {
   const [draft, setDraft] = useState<KanbanColumnData[] | null>(null);
   const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+  // The overlay is `position: fixed`; any transformed ancestor (docs pages, route transitions, animated panels) would
+  // become its containing block and push it away from the pointer, so it renders in a portal on <body>. The portal keeps
+  // the board's theme, density and language, which it would otherwise lose outside the board's subtree.
+  const boardRef = useRef<HTMLDivElement>(null);
+  const [overlayHost, setOverlayHost] = useState<HTMLElement | null>(null);
+  const [overlayScope, setOverlayScope] = useState<OverlayScope>({});
+  useEffect(() => setOverlayHost(document.body), []);
   const draftRef = useRef<KanbanColumnData[] | null>(null);
   const lastColumnRef = useRef<string | null>(null);
   const pickedUpRef = useRef("");
@@ -379,6 +396,7 @@ export function KanbanBoard({
   }, [columns]);
 
   const onDragStart = ({ active }: DragStartEvent) => {
+    setOverlayScope(readScope(boardRef.current));
     setDropAnimation(readDropAnimation());
     setActiveId(active.id);
     commitDraft(columns);
@@ -460,6 +478,7 @@ export function KanbanBoard({
       onDragCancel={onDragCancel}
     >
       <div
+        ref={boardRef}
         role="region"
         aria-label={label}
         className={cn("flex snap-x snap-proximity scroll-px-1 items-start gap-4 overflow-x-auto overscroll-x-contain p-1", className)}
@@ -482,9 +501,17 @@ export function KanbanBoard({
           </KanbanColumn>
         ))}
       </div>
+      {overlayHost
+        ? createPortal(
       <DragOverlay dropAnimation={dropAnimation}>
         {activeCard ? (
-          <div data-slot="kanban-overlay" className="cursor-grabbing">
+          <div
+            data-slot="kanban-overlay"
+            data-theme={overlayScope.theme}
+            data-density={overlayScope.density}
+            lang={overlayScope.lang}
+            className="cursor-grabbing font-yorha text-yorha-fg"
+          >
             <KanbanCardView
               card={activeCard}
               className="shadow-yorha-lg"
@@ -496,7 +523,10 @@ export function KanbanBoard({
             />
           </div>
         ) : null}
-      </DragOverlay>
+      </DragOverlay>,
+            overlayHost,
+          )
+        : null}
     </DndContext>
   );
 }
