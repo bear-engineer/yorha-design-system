@@ -312,7 +312,8 @@ export const SoundCuesWhenEnabled: Story = {
 
 export const LongList: Story = {
   render: (args) => (
-    <div className="max-h-64 overflow-y-auto">
+    // p-1 (>= ring width + offset): the focus ring is drawn outside the row, so a scroll container needs this room.
+    <div className="max-h-64 overflow-y-auto p-1">
       <MenuList {...args} defaultValue="row-1">
         {Array.from({ length: 40 }, (_, i) => (
           <MenuListItem key={i} value={`row-${i + 1}`}>

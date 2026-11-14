@@ -204,7 +204,7 @@ function Seed() {
 
 export const Themes: Story = {
   render: () => (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid w-[min(72rem,calc(100vw-2rem))] grid-cols-[repeat(auto-fit,minmax(min(100%,22rem),1fr))] gap-4">
       {THEMES.map((t) => (
         <ThemedPane key={t} theme={t} />
       ))}

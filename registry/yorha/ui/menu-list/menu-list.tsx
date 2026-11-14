@@ -39,7 +39,11 @@ export interface MenuListProps extends Omit<React.ComponentProps<"ul">, "default
 
 const noop: Play = () => {};
 
-/** Picks the sound hook only when asked, so MenuList works without a provider. */
+/**
+ * The focus ring is drawn outside each row (2px + 2px offset). Inside an overflow container give it at least `p-1`,
+ * or the ring is clipped on the first/last row and at the edges.
+ * Picks the sound hook only when asked, so MenuList works without a provider.
+ */
 export function MenuList({ sound = false, ...props }: MenuListProps) {
   return sound ? <SoundedMenuList {...props} /> : <MenuListImpl {...props} play={noop} />;
 }
