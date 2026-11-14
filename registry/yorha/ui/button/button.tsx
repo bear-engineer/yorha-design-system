@@ -41,22 +41,31 @@ const VARIANT: Record<ButtonVariant, string> = {
     "bg-linear-to-r from-yorha-ink to-yorha-ink enabled:not-data-[loading]:hover:text-yorha-alert-on-ink enabled:not-data-[loading]:active:text-yorha-alert-on-ink",
 };
 
+// One type step per size, derived from the body token (--yorha-text-base: 16px, 17px at the default density) so it follows density:
+// sm = base - 2, md = base (the same size as Input and Select), lg = base + 2. The old 14/17/18 had a +3 then +1 step (md and lg read alike).
+const TYPE: Record<ButtonSize, string> = {
+  sm: "text-[length:calc(var(--yorha-text-base)-2px)] leading-none",
+  md: "text-yorha-base leading-none",
+  lg: "text-[length:calc(var(--yorha-text-base)+2px)] leading-none",
+};
+
 /**
  * One size map for every control of the family (Button, IconButton, Toggle, ToggleGroup, triggers, FormSubmit).
  * Heights come from the density-aware control scale (never from padding + line height); content is centred.
  * Migration (B8): the busy indicator is a 2px bar on the bottom inner edge (all sizes and variants), not the 8px square;
  * a loading button neither wipes nor scales. Tests that looked for the square use `[data-slot=button-busy]`.
+ * Migration (C2-304): the label size ramp is sm 15 / md 17 / lg 19px at the default density (was 14 / 17 / 18): one 2px step per size.
  */
 export const controlSize: Record<ButtonSize, string> = {
-  sm: "h-control-sm min-w-control-sm px-pad-sm text-yorha-sm",
-  md: "h-control-md min-w-control-md px-pad-md text-yorha-base",
-  lg: "h-control-lg min-w-control-lg px-pad-lg text-yorha-lg",
+  sm: `h-control-sm min-w-control-sm px-pad-sm ${TYPE.sm}`,
+  md: `h-control-md min-w-control-md px-pad-md ${TYPE.md}`,
+  lg: `h-control-lg min-w-control-lg px-pad-lg ${TYPE.lg}`,
 };
 
 export const controlSquare: Record<ButtonSize, string> = {
-  sm: "size-control-sm text-yorha-sm",
-  md: "size-control-md text-yorha-base",
-  lg: "size-control-lg text-yorha-lg",
+  sm: `size-control-sm ${TYPE.sm}`,
+  md: `size-control-md ${TYPE.md}`,
+  lg: `size-control-lg ${TYPE.lg}`,
 };
 
 /** Class string shared by Button, IconButton and anything button-shaped (Dialog/Toast actions). */
