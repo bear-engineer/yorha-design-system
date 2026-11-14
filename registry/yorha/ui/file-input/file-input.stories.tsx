@@ -1,0 +1,222 @@
+import * as React from "react";
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, fireEvent, fn, userEvent, waitFor, within } from "storybook/test";
+import { FileInput, formatFileSize } from "./file-input";
+
+const THEMES = ["light", "dark", "high-contrast"] as const;
+const THEME_LABEL: Record<(typeof THEMES)[number], string> = { light: "라이트", dark: "다크", "high-contrast": "고대비" };
+const wrapper = (Story: React.ComponentType) => (
+  <div lang="ko" className="w-[28rem] bg-yorha-panel p-6 text-yorha-fg">
+    <Story />
+  </div>
+);
+async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
+  const root = document.documentElement;
+  const prev = root.getAttribute("data-motion");
+  root.setAttribute("data-motion", mode);
+  try {
+    await run();
+  } finally {
+    if (prev === null) root.removeAttribute("data-motion");
+    else root.setAttribute("data-motion", prev);
+  }
+}
+const seconds = (el: Element) => parseFloat(getComputedStyle(el).transitionDuration) || 0;
+
+const makeFiles = (...specs: [name: string, size: number, type?: string][]) =>
+  specs.map(([name, size, type = "text/plain"]) => new File([new Uint8Array(size)], name, { type }));
+const toDataTransfer = (files: File[]) => {
+  const dt = new DataTransfer();
+  files.forEach((f) => dt.items.add(f));
+  return dt;
+};
+const nativeOf = (root: HTMLElement) => root.querySelector<HTMLInputElement>("input[type=file]")!;
+const zoneOf = (root: HTMLElement) => root.querySelector<HTMLElement>("[data-slot=file-drop-zone]")!;
+
+const meta = {
+  title: "컴포넌트/폼/FileInput",
+  component: FileInput,
+  tags: ["autodocs"],
+  args: { label: "첨부 파일" },
+  decorators: [wrapper],
+} satisfies Meta<typeof FileInput>;
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const FormatSize: Story = {
+  play: async () => {
+    await expect(formatFileSize(0, "ko-KR")).toMatch(/^0\s?(B|바이트)$/);
+    await expect(formatFileSize(1536, "en-US")).toMatch(/^1\.5\s?kB$/);
+    await expect(formatFileSize(5 * 1024 * 1024, "en-US")).toMatch(/^5\s?MB$/);
+  },
+};
+
+export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const native = nativeOf(canvasElement);
+    await expect(native).toHaveAttribute("type", "file");
+    await expect(c.getByLabelText("첨부 파일", { selector: "input" })).toBe(native);
+    await expect(c.getByRole("button", { name: /파일 선택/ })).toBeInTheDocument();
+    await expect(c.queryByRole("list")).toBeNull();
+  },
+};
+
+export const AddAndRemoveFiles: Story = {
+  args: { multiple: true, onFilesChange: fn() },
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    const native = nativeOf(canvasElement);
+    const files = makeFiles(["a.txt", 1536], ["b.txt", 2048]);
+    fireEvent.change(native, { target: { files: toDataTransfer(files).files } });
+    const list = await c.findByRole("list", { name: "선택한 파일" });
+    await expect(within(list).getAllByRole("listitem")).toHaveLength(2);
+    await expect(within(list).getByText("a.txt")).toBeInTheDocument();
+    await expect(within(list).getByText(formatFileSize(1536, "ko-KR"))).toBeInTheDocument();
+    await expect(args.onFilesChange).toHaveBeenLastCalledWith(expect.arrayContaining([files[0], files[1]]));
+    await expect(native.files).toHaveLength(2);
+    // remove one
+    await userEvent.click(c.getByRole("button", { name: "a.txt 제거" }));
+    await waitFor(() => expect(within(list).getAllByRole("listitem")).toHaveLength(1));
+    await expect(c.queryByText("a.txt")).toBeNull();
+    await expect(native.files).toHaveLength(1);
+    await expect((args.onFilesChange as ReturnType<typeof fn>).mock.lastCall![0]).toHaveLength(1);
+    await expect(c.getByRole("status")).toHaveTextContent("a.txt");
+    // remove the last: list disappears and focus moves to the select button
+    await userEvent.click(c.getByRole("button", { name: "b.txt 제거" }));
+    await waitFor(() => expect(c.queryByRole("list")).toBeNull());
+    await expect(c.getByRole("button", { name: /파일 선택/ })).toHaveFocus();
+  },
+};
+
+export const SingleReplacesFile: Story = {
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const native = nativeOf(canvasElement);
+    await expect(native).not.toHaveAttribute("multiple");
+    fireEvent.change(native, { target: { files: toDataTransfer(makeFiles(["one.txt", 10])).files } });
+    await c.findByText("one.txt");
+    fireEvent.change(native, { target: { files: toDataTransfer(makeFiles(["two.txt", 10])).files } });
+    await c.findByText("two.txt");
+    await expect(c.queryByText("one.txt")).toBeNull();
+  },
+};
+
+export const KeyboardOpensPicker: Story = {
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const native = nativeOf(canvasElement);
+    const click = fn();
+    native.addEventListener("click", (e) => {
+      e.preventDefault();
+      click();
+    });
+    const button = c.getByRole("button", { name: /파일 선택/ });
+    await userEvent.tab();
+    await expect(button).toHaveFocus();
+    await userEvent.keyboard("{Enter}");
+    await expect(click).toHaveBeenCalledTimes(1);
+    await userEvent.keyboard(" ");
+    await expect(click).toHaveBeenCalledTimes(2);
+  },
+};
+
+export const AcceptAttribute: Story = {
+  args: { accept: "image/*,.pdf", multiple: true },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const native = nativeOf(canvasElement);
+    await expect(native).toHaveAttribute("accept", "image/*,.pdf");
+    await expect(native).toHaveAttribute("multiple");
+    await expect(c.getByText(/image\/\*,\.pdf|이미지|PDF/)).toBeInTheDocument();
+  },
+};
+
+export const DropZone: Story = {
+  args: { multiple: true, accept: "text/plain", onFilesChange: fn() },
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    const zone = zoneOf(canvasElement);
+    await expect(zone).not.toHaveAttribute("data-dragging");
+    const files = makeFiles(["drop.txt", 100], ["pic.png", 100, "image/png"]);
+    const dataTransfer = toDataTransfer(files);
+    fireEvent.dragEnter(zone, { dataTransfer });
+    await waitFor(() => expect(zone).toHaveAttribute("data-dragging", "true"));
+    fireEvent.dragOver(zone, { dataTransfer });
+    fireEvent.dragLeave(zone, { dataTransfer });
+    await waitFor(() => expect(zone).not.toHaveAttribute("data-dragging"));
+    fireEvent.dragEnter(zone, { dataTransfer });
+    fireEvent.drop(zone, { dataTransfer });
+    await waitFor(() => expect(zone).not.toHaveAttribute("data-dragging"));
+    // files that do not match accept are rejected
+    await c.findByText("drop.txt");
+    await expect(c.queryByText("pic.png")).toBeNull();
+    await expect(args.onFilesChange).toHaveBeenLastCalledWith([files[0]]);
+    await expect(c.getByRole("alert")).toHaveTextContent("pic.png");
+  },
+};
+
+export const MaxSize: Story = {
+  args: { maxSize: 1000, multiple: true },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    fireEvent.change(nativeOf(canvasElement), {
+      target: { files: toDataTransfer(makeFiles(["small.txt", 500], ["big.txt", 5000])).files },
+    });
+    await c.findByText("small.txt");
+    await expect(c.queryByText("big.txt")).toBeNull();
+    await expect(c.getByRole("alert")).toHaveTextContent("big.txt");
+  },
+};
+
+export const Disabled: Story = {
+  args: { disabled: true },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("button", { name: /파일 선택/ })).toBeDisabled();
+    await expect(nativeOf(canvasElement)).toBeDisabled();
+    const zone = zoneOf(canvasElement);
+    fireEvent.drop(zone, { dataTransfer: toDataTransfer(makeFiles(["x.txt", 1])) });
+    await expect(c.queryByText("x.txt")).toBeNull();
+  },
+};
+
+export const ReducedMotion: Story = {
+  play: async ({ canvasElement }) => {
+    const zone = zoneOf(canvasElement);
+    const button = within(canvasElement).getByRole("button", { name: /파일 선택/ });
+    await inMotion("reduced", async () => {
+      await expect(seconds(zone)).toBeLessThanOrEqual(0.12);
+      await expect(seconds(button)).toBeLessThanOrEqual(0.12);
+    });
+    await inMotion("off", async () => expect(seconds(zone)).toBe(0));
+  },
+};
+
+export const Themes: Story = {
+  render: () => (
+    <div className="grid gap-4">
+      {THEMES.map((t) => (
+        <div key={t} data-theme={t} className="bg-yorha-bg p-4 text-yorha-fg">
+          <FileInput label={`첨부 파일 (${THEME_LABEL[t]})`} multiple />
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    for (const t of THEMES) await expect(c.getByLabelText(`첨부 파일 (${THEME_LABEL[t]})`, { selector: "input" })).toBeInTheDocument();
+  },
+};
+
+export const Authentic: Story = {
+  parameters: { a11y: { test: "todo" } },
+  render: () => (
+    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+      <FileInput label="오리지널 팔레트" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(nativeOf(canvasElement)).toHaveAttribute("type", "file");
+  },
+};
