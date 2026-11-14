@@ -119,7 +119,8 @@ export const Loading: Story = {
 export const SelectionWipe: Story = {
   play: async ({ canvasElement }) => {
     const btn = within(canvasElement).getByRole("button", { name: "확인" });
-    await expect(getComputedStyle(btn).transitionDuration).toContain("0.18s");
+    // yorha-wipe: idle state carries the exit duration (--motion-select-exit), the hover state the enter (--motion-select)
+    await expect(getComputedStyle(btn).transitionDuration).toContain("0.12s");
   },
 };
 

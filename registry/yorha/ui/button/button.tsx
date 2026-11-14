@@ -14,15 +14,11 @@ export interface ButtonVariantOptions {
 
 // Selection wipe: a background-size transition on an ink layer, left to right.
 // Duration comes from --motion-select, so data-motion reduced/off collapses it to 0.
-// PRESS_TRANSITION: delayed colour + fill/border/wipe at --motion-select. Pressed shows colour and the wipe only: the size never
-// changes (C2-106: yorha-press scaled the control on :active, which is not used by Button or Toggle any more).
+// yorha-wipe owns the transition (ink wipe at --motion-select, delayed colour flip). Pressed shows the wipe and colour only: the size
+// never changes (C2-106: yorha-press scaled the control on :active; Button and Toggle no longer use it).
 // A loading button is blocked, so it gets no wipe (`not-data-[loading]`).
-export const PRESS_TRANSITION =
-  "[transition-property:color,background-color,border-color,background-size] " +
-  "[transition-duration:var(--motion-press),var(--motion-select),var(--motion-select),var(--motion-select)] " +
-  "[transition-delay:calc(var(--motion-select)*0.35),0s,0s,0s] [transition-timing-function:var(--yorha-ease-out)]";
 const WIPE =
-  "bg-no-repeat bg-[position:left_center] bg-[length:0%_100%] " + PRESS_TRANSITION + " " +
+  "bg-no-repeat bg-[position:left_center] bg-[length:0%_100%] yorha-wipe " +
   "enabled:not-data-[loading]:hover:bg-[length:100%_100%] enabled:not-data-[loading]:active:bg-[length:100%_100%]";
 
 const BASE =

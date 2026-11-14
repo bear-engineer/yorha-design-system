@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Toggle as BaseToggle } from "@base-ui/react/toggle";
 import { cn, cnState } from "@/lib/utils";
-import { PRESS_TRANSITION, controlSize, type ButtonSize } from "@/components/ui/button";
+import { controlSize, type ButtonSize } from "@/components/ui/button";
 
 export interface ToggleProps extends Omit<React.ComponentProps<typeof BaseToggle>, "children"> {
   /** Visible label; the whole button is the click target. */
@@ -30,7 +30,7 @@ export function Toggle({ children, className, size = "md", ...props }: TogglePro
           controlSize[size],
           "font-yorha text-yorha-fg cursor-pointer",
           // Standalone control: hover tints the idle fill; pressed is ink (colour only, the size never changes: C2-106).
-          PRESS_TRANSITION + " enabled:not-data-[pressed]:hover:bg-yorha-hover",
+          "transition-[color,background-color,border-color] duration-(--motion-select) ease-yorha enabled:not-data-[pressed]:hover:bg-yorha-hover",
           "data-[pressed]:border-yorha-ink data-[pressed]:bg-yorha-ink data-[pressed]:text-yorha-on-ink",
           "focus-visible:yorha-focus yorha-disabled",
         ),
