@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "navigation-menu",
+      "type": "registry:ui",
+      "title": "NavigationMenu",
+      "description": "Top navigation on Base UI NavigationMenu: triggers open content panels in one shared popup that morphs between panel sizes and positions (Viewport, popup size variables). Links render NavLink through render for client-side routing and aria-current.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base",
+        "@yorha/nav-link"
+      ],
+      "files": [
+        {
+          "path": "navigation-menu.tsx",
+          "type": "registry:ui",
+          "target": "@ui/navigation-menu.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose NavigationMenu > NavigationMenuList > NavigationMenuItem > NavigationMenuTrigger + NavigationMenuContent, or an Item with a NavigationMenuLink. The shared popup (Portal, Positioner, Popup, Arrow, Viewport) is rendered by NavigationMenu; pass viewport={false} to place NavigationMenuViewport yourself. Use render={<NavLink to=... />} on NavigationMenuLink (install @yorha/nav-link). Reduced motion: no morph or slide."
+    }
+  ]
+}

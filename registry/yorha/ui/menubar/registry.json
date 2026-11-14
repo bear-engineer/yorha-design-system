@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "menubar",
+      "type": "registry:ui",
+      "title": "Menubar",
+      "description": "Desktop-app style menubar on Base UI Menubar: roving focus across triggers, hover switching while open, and the same rows as Menu (items, submenus, checkbox, radio, shortcuts).",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base",
+        "@yorha/menu"
+      ],
+      "files": [
+        {
+          "path": "menubar.tsx",
+          "type": "registry:ui",
+          "target": "@ui/menubar.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Menubar > MenubarMenu > MenubarTrigger + MenubarContent with MenubarItem, MenubarSub, MenubarCheckboxItem and friends (aliases of the Menu parts)."
+    }
+  ]
+}
