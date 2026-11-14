@@ -74,9 +74,11 @@ export interface DecipherProps extends Omit<React.ComponentProps<"span">, "child
 }
 
 /**
- * Scramble → reveal text effect. The final text lives in an sr-only span;
- * the animated glyph layer is aria-hidden. A hidden copy of the final text
- * reserves the width so layout never jumps.
+ * Scramble → reveal text effect. The final text lives in an sr-only span; the animated glyph
+ * layer is aria-hidden. Every grapheme sits in its own cell whose width comes from the FINAL
+ * glyph (an invisible ::before copy), and the shown glyph is laid over it, centred and never
+ * wrapping, so a wide scramble glyph can neither widen the box nor push a line over. Latin
+ * words stay in one nowrap group so line breaks match plain text.
  */
 export function Decipher({ text, className, ...props }: DecipherProps) {
   const graphemes = React.useMemo(() => splitGraphemes(text), [text]);
@@ -114,19 +116,50 @@ export function Decipher({ text, className, ...props }: DecipherProps) {
   const current = state.text === text ? state : initial(text, graphemes, false);
   const shown = graphemes.map((g, i) => (i < current.revealed ? g : (current.glyphs[i] ?? g)));
 
+  const nodes: React.ReactNode[] = [];
+  let word: React.ReactNode[] = [];
+  const flush = (key: number) => {
+    if (word.length === 0) return;
+    nodes.push(
+      <span key={`w${key}`} className="inline-block whitespace-nowrap">
+        {word}
+      </span>,
+    );
+    word = [];
+  };
+  graphemes.forEach((g, i) => {
+    if (/^\s+$/.test(g)) {
+      flush(i);
+      nodes.push(<span key={i}>{g}</span>);
+      return;
+    }
+    const cell = (
+      <span
+        key={i}
+        data-final={g}
+        className="relative inline-block whitespace-pre before:invisible before:content-[attr(data-final)]"
+      >
+        <span className="absolute inset-0 text-center">{shown[i]}</span>
+      </span>
+    );
+    if (poolFor(g) === "latin") word.push(cell);
+    else {
+      flush(i);
+      nodes.push(cell);
+    }
+  });
+  flush(graphemes.length);
+
   return (
     <span className={cn("relative inline-block whitespace-pre-wrap", className)} {...props}>
       <span className="sr-only">{text}</span>
-      <span aria-hidden="true" data-slot="decipher-size" className="invisible pointer-events-none">
-        {text}
-      </span>
       <span
         aria-hidden="true"
         data-slot="decipher-glyphs"
         suppressHydrationWarning
-        className="pointer-events-none absolute inset-0 whitespace-pre-wrap"
+        className="pointer-events-none block whitespace-pre-wrap"
       >
-        {shown.join("")}
+        {nodes}
       </span>
     </span>
   );

@@ -78,7 +78,28 @@ export const English: Story = {
     const layer = glyphLayer(heading);
     expect(layer.textContent).not.toBe(args.text);
     expect(layer.textContent?.length).toBe(args.text.length);
-    await waitFor(() => expect(layer.textContent).toBe(args.text), { timeout: 2000 });
+    // the scramble never wraps: glyph layer stays inside the reserved box on a single line
+    const box = layer.parentElement!;
+    const lineHeight = parseFloat(getComputedStyle(box).lineHeight);
+    const reserved = box.getBoundingClientRect();
+    let samples = 0;
+    const sample = () => {
+      samples += 1;
+      const range = document.createRange();
+      range.selectNodeContents(layer);
+      expect(range.getBoundingClientRect().height).toBeLessThanOrEqual(reserved.height + 0.5);
+      expect(box.getBoundingClientRect().height).toBeLessThanOrEqual(lineHeight + 0.5);
+      expect(box.getBoundingClientRect().width).toBeCloseTo(reserved.width, 0);
+    };
+    sample();
+    const timer = window.setInterval(sample, 40);
+    try {
+      await waitFor(() => expect(layer.textContent).toBe(args.text), { timeout: 2000 });
+    } finally {
+      window.clearInterval(timer);
+    }
+    expect(samples).toBeGreaterThan(3);
+    expect(box.getBoundingClientRect().width).toBeCloseTo(reserved.width, 0);
   },
 };
 
