@@ -46,7 +46,7 @@ export function Radio({ children, className, rowClassName, ...props }: RadioProp
         rowClassName,
       )}
     >
-      <span className="grid h-[1lh] shrink-0 place-items-center">
+      <span className="grid h-[round(up,1lh,4px)] shrink-0 place-items-center">
         <BaseRadio.Root
           className={cnState(
             "group/box grid size-6 shrink-0 place-items-center rounded-yorha border-0 bg-transparent p-0 text-current outline-none data-[disabled]:cursor-not-allowed",

@@ -24,7 +24,7 @@ export function Switch({ children, className, rowClassName, ...props }: SwitchPr
         rowClassName,
       )}
     >
-      <span className="grid h-[1lh] shrink-0 place-items-center">
+      <span className="grid h-[round(up,1lh,4px)] shrink-0 place-items-center">
         <BaseSwitch.Root
           className={cnState(
             "group/box relative grid h-6 w-10 shrink-0 place-items-center rounded-yorha border-0 bg-transparent p-0 text-yorha-fg outline-none data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-disabled",
