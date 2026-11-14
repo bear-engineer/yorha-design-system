@@ -127,7 +127,7 @@ export const Themes: Story = {
   render: (args) => (
     <div className="grid gap-4 sm:grid-cols-2">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-panel p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
           <RadioGroup {...args} aria-label={`테마 ${t}`}>
             <Options />
           </RadioGroup>
@@ -148,7 +148,7 @@ export const Authentic: Story = {
   name: "Authentic (원작 팔레트)",
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <RadioGroup aria-label="테마 authentic" defaultValue="bravo">
         <Options />
       </RadioGroup>

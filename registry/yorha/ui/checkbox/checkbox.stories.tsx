@@ -37,7 +37,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="bg-yorha-panel p-6 text-yorha-fg">
+      <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -150,7 +150,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid gap-4 sm:grid-cols-3">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-panel p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
           <Checkbox defaultChecked>{`테마 ${t}`}</Checkbox>
         </div>
       ))}
@@ -167,7 +167,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   args: { children: "오리지널 팔레트", defaultChecked: true },
   render: (args) => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <Checkbox {...args} />
     </div>
   ),

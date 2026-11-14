@@ -18,7 +18,7 @@ const meta = {
   args: { "aria-label": "유닛 코드", placeholder: "예: 2B" },
   decorators: [
     (Story) => (
-      <div className="w-72 max-w-full bg-yorha-panel p-6 text-yorha-fg">
+      <div className="w-72 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -119,7 +119,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid gap-4">
       {THEMES.map((theme) => (
-        <div key={theme} data-theme={theme} className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={theme} data-theme={theme} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <Input aria-label={`유닛 코드 (${THEME_LABEL[theme]})`} placeholder="예: 2B" />
         </div>
       ))}
@@ -138,7 +138,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <Input aria-label="오리지널 팔레트" placeholder="예: 2B" />
     </div>
   ),

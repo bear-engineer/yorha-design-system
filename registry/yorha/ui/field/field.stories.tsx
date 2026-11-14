@@ -37,7 +37,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="w-72 max-w-full bg-yorha-panel p-6 text-yorha-fg">
+      <div className="w-72 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -85,7 +85,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid gap-6">
       {THEMES.map((theme) => (
-        <div key={theme} data-theme={theme} className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={theme} data-theme={theme} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <FieldFrame
             label={`유닛 코드 (${THEME_LABEL[theme]})`}
             description={DESCRIPTION}
@@ -119,7 +119,7 @@ export const Authentic: Story = {
   // so this single story renders that theme alone and skips the a11y gate.
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-bg p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
       <FieldFrame label="유닛 코드" description={DESCRIPTION}>
         <FieldControl />
       </FieldFrame>
@@ -174,7 +174,7 @@ export const FieldsetGroup: Story = {
 
 export const ItemAndValidity: Story = {
   render: () => (
-    <form className="flex w-80 max-w-full max-w-full flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+    <form className="flex w-80 max-w-[calc(100vw-2rem)] max-w-full flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
       <Field name="code" validationMode="onBlur">
         <FieldLabel>코드</FieldLabel>
         <FieldItem>

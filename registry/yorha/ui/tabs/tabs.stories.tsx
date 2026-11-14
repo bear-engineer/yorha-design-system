@@ -165,8 +165,9 @@ export const RapidArrows: Story = {
         (p) => !p.hidden && getComputedStyle(p).display !== "none",
       );
       await expect(shown).toHaveLength(1);
-      await expect(parseFloat(getComputedStyle(shown[0]).opacity)).toBeGreaterThanOrEqual(0.5);
-      const cs = getComputedStyle(shown[0]);
+      const panel = shown[0]!;
+      await expect(parseFloat(getComputedStyle(panel).opacity)).toBeGreaterThanOrEqual(0.5);
+      const cs = getComputedStyle(panel);
       await expect(cs.position).not.toBe("absolute");
       await expect(cs.transitionProperty).toBe("opacity");
       await expect(parseFloat(cs.transitionDuration)).toBeCloseTo(0.18, 2);
