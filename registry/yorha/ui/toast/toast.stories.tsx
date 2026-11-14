@@ -190,6 +190,12 @@ async function frozen<T>(el: HTMLElement, trigger: () => Promise<unknown>, read:
 }
 
 
+/** Some sample lies strictly between the first and the last value (moved by transition, not a jump). */
+const between = (v: number[]) => {
+  const [a, b] = [v[0]!, v.at(-1)!];
+  return Math.abs(a - b) >= 1 && v.some((x) => Math.min(a, b) + 0.001 < x && x < Math.max(a, b) - 0.001);
+};
+
 export const MotionRecipe: Story = {
   args: { timeout: 0 },
   play: async ({ canvasElement }) => {
