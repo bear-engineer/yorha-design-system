@@ -5,6 +5,24 @@ import { Checkbox } from "./checkbox";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
+// --- motion helpers (reduced: <=120ms; off: 0) ---
+async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
+  const root = document.documentElement;
+  const prev = root.getAttribute("data-motion");
+  root.setAttribute("data-motion", mode);
+  try {
+    await run();
+  } finally {
+    if (prev === null) root.removeAttribute("data-motion");
+    else root.setAttribute("data-motion", prev);
+  }
+}
+function durationsMs(el: Element): number[] {
+  return getComputedStyle(el)
+    .transitionDuration.split(",")
+    .map((v) => (v.trim().endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000));
+}
+
 const meta = {
   title: "컴포넌트/폼/Checkbox",
   component: Checkbox,
@@ -147,5 +165,24 @@ export const Authentic: Story = {
   play: async ({ canvasElement }) => {
     const box = within(canvasElement).getByRole("checkbox", { name: "오리지널 팔레트" });
     await expect(box).toHaveAttribute("aria-checked", "true");
+  },
+};
+
+export const ReducedMotion: Story = {
+  args: { children: "알림 수신", defaultChecked: true },
+  play: async ({ canvasElement }) => {
+    const els = (): Element[] => {
+      const c = within(canvasElement);
+      return [c.getByRole("checkbox")];
+    };
+    await inMotion("reduced", async () => {
+      for (const el of els()) {
+        expect(getComputedStyle(el).transitionProperty).not.toBe("none");
+        expect(Math.max(...durationsMs(el))).toBeLessThanOrEqual(120);
+      }
+    });
+    await inMotion("off", async () => {
+      for (const el of els()) expect(Math.max(...durationsMs(el))).toBe(0);
+    });
   },
 };

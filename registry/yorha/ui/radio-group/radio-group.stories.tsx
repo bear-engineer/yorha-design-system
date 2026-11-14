@@ -4,6 +4,24 @@ import { Radio, RadioGroup } from "./radio-group";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
+// --- motion helpers (reduced: <=120ms; off: 0) ---
+async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
+  const root = document.documentElement;
+  const prev = root.getAttribute("data-motion");
+  root.setAttribute("data-motion", mode);
+  try {
+    await run();
+  } finally {
+    if (prev === null) root.removeAttribute("data-motion");
+    else root.setAttribute("data-motion", prev);
+  }
+}
+function durationsMs(el: Element): number[] {
+  return getComputedStyle(el)
+    .transitionDuration.split(",")
+    .map((v) => (v.trim().endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000));
+}
+
 const meta = {
   title: "컴포넌트/폼/RadioGroup",
   component: RadioGroup,
@@ -137,5 +155,29 @@ export const Authentic: Story = {
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("radiogroup")).toBeInTheDocument();
     await expect(within(canvasElement).getByRole("radio", { name: "브라보 유닛" })).toBeChecked();
+  },
+};
+
+export const ReducedMotion: Story = {
+  args: { "aria-label": "유닛 선택", defaultValue: "alpha" },
+  render: (args) => (
+    <RadioGroup {...args}>
+      <Options />
+    </RadioGroup>
+  ),
+  play: async ({ canvasElement }) => {
+    const els = (): Element[] => {
+      const c = within(canvasElement);
+      return [c.getByRole("radio", { name: "알파 유닛" }).closest("label")!];
+    };
+    await inMotion("reduced", async () => {
+      for (const el of els()) {
+        expect(getComputedStyle(el).transitionProperty).not.toBe("none");
+        expect(Math.max(...durationsMs(el))).toBeLessThanOrEqual(120);
+      }
+    });
+    await inMotion("off", async () => {
+      for (const el of els()) expect(Math.max(...durationsMs(el))).toBe(0);
+    });
   },
 };

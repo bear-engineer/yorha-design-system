@@ -172,8 +172,8 @@ export const FieldsetGroup: Story = {
 
 export const ItemAndValidity: Story = {
   render: () => (
-    <form className="flex w-80 max-w-full flex-col gap-4">
-      <Field name="code">
+    <form className="flex w-80 max-w-full flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+      <Field name="code" validationMode="onBlur">
         <FieldLabel>코드</FieldLabel>
         <FieldItem>
           <FieldDescription>3자 이상 입력하세요.</FieldDescription>
@@ -191,9 +191,14 @@ export const ItemAndValidity: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const input = c.getByRole("textbox", { name: "코드" });
-    await userEvent.type(input, "ab");
-    await userEvent.click(c.getByRole("button", { name: "제출" }));
-    await expect(await c.findByText("3자 이상 입력하세요")).toBeInTheDocument();
+    // Base UI flags valueMissing only once the field is dirty, so type, clear, then blur.
+    // (tooShort is not reachable here: browsers only report it for user-edited values.)
+    await userEvent.type(input, "a");
+    await userEvent.clear(input);
+    await userEvent.tab();
+    const message = await c.findByText("필수 입력입니다");
+    await expect(message).toBeInTheDocument();
+    await expect(message.closest('[role="alert"]')).not.toBeNull();
     await expect(input).toHaveAttribute("aria-invalid", "true");
   },
 };

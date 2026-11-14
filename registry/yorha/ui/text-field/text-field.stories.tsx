@@ -41,6 +41,24 @@ function placeholderContrast(input: HTMLInputElement): number {
   return contrast(getComputedStyle(input, "::placeholder").color, getComputedStyle(input).backgroundColor);
 }
 
+// --- motion helpers (reduced: <=120ms; off: 0) ---
+async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
+  const root = document.documentElement;
+  const prev = root.getAttribute("data-motion");
+  root.setAttribute("data-motion", mode);
+  try {
+    await run();
+  } finally {
+    if (prev === null) root.removeAttribute("data-motion");
+    else root.setAttribute("data-motion", prev);
+  }
+}
+function durationsMs(el: Element): number[] {
+  return getComputedStyle(el)
+    .transitionDuration.split(",")
+    .map((v) => (v.trim().endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000));
+}
+
 const meta = {
   title: "컴포넌트/폼/TextField",
   component: TextField,
@@ -160,5 +178,24 @@ export const Authentic: Story = {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByText("유닛 이름"));
     await expect(canvas.getByRole("textbox", { name: "유닛 이름" })).toHaveFocus();
+  },
+};
+
+export const ReducedMotion: Story = {
+  args: { label: "작전 코드" },
+  play: async ({ canvasElement }) => {
+    const els = (): Element[] => {
+      const c = within(canvasElement);
+      return [c.getByRole("textbox")];
+    };
+    await inMotion("reduced", async () => {
+      for (const el of els()) {
+        expect(getComputedStyle(el).transitionProperty).not.toBe("none");
+        expect(Math.max(...durationsMs(el))).toBeLessThanOrEqual(120);
+      }
+    });
+    await inMotion("off", async () => {
+      for (const el of els()) expect(Math.max(...durationsMs(el))).toBe(0);
+    });
   },
 };
