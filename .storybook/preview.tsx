@@ -17,7 +17,8 @@ const preview: Preview = {
   initialGlobals: { theme: "light", motion: "full", density: "comfortable" },
   parameters: {
     layout: "padded",
-    a11y: { test: "error" },
+    // WCAG 2.5.8 (T10): target-size is enforced explicitly on every story.
+    a11y: { test: "error", config: { rules: [{ id: "target-size", enabled: true }] } },
   },
 };
 export default preview;

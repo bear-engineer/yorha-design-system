@@ -68,6 +68,8 @@ export const KeyboardPath: Story = {
     await expect(c.getByRole("tab", { name: "지도" })).toHaveFocus();
     await expect(c.getByRole("tab", { name: "지도" })).toHaveAttribute("aria-selected", "true");
     await waitFor(() => expect(c.getByRole("listbox", { name: "지도 목록" })).toBeVisible());
+    // Let the tab-selection focus effect settle; a Tab pressed in the same frame is swallowed by the tab strip.
+    await new Promise((r) => setTimeout(r, 400));
     await userEvent.tab();
     await waitFor(() => expect(c.getByRole("option", { name: /폐허 도시/ })).toHaveFocus());
     await userEvent.keyboard("{ArrowDown}");
