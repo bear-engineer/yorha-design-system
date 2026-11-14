@@ -31,7 +31,7 @@ const GROUPS = [
 function Single({ defaultValue, grouped, disabled }: { defaultValue?: string; grouped?: boolean; disabled?: boolean }) {
   return (
     <div lang="ko" className="w-72 bg-yorha-panel p-6 text-yorha-fg">
-      <Combobox items={grouped ? GROUPS : UNITS} defaultValue={defaultValue ?? null} disabled={disabled}>
+      <Combobox items={(grouped ? GROUPS : UNITS) as never} defaultValue={defaultValue ?? null} disabled={disabled}>
         <ComboboxLabel className="mb-1 block">유닛</ComboboxLabel>
         <ComboboxInputGroup>
           <ComboboxInput aria-label="유닛 선택" placeholder="유닛 선택" />
@@ -169,7 +169,9 @@ export const KeyboardNavigation: Story = {
     single().focus();
     await userEvent.keyboard("{ArrowDown}");
     await listbox();
-    await userEvent.keyboard("{ArrowDown}{ArrowDown}");
+    // opening with ArrowDown highlights the first row
+    await waitFor(() => expect(highlighted()).toBe(0));
+    await userEvent.keyboard("{ArrowDown}");
     await waitFor(() => expect(highlighted()).toBe(1));
     await userEvent.keyboard("{ArrowDown}");
     await waitFor(() => expect(names()[highlighted()]).toBe("Command"));
@@ -220,7 +222,7 @@ export const ClearButton: Story = {
   play: async () => {
     await userEvent.click(body().getByRole("button", { name: "지우기" }));
     await waitFor(() => expect(single()).toHaveValue(""));
-    await expect(body().queryByRole("button", { name: "지우기" })).toBeNull();
+    await waitFor(() => expect(body().queryByRole("button", { name: "지우기" })).toBeNull());
   },
 };
 
@@ -230,7 +232,7 @@ export const Grouped: Story = {
     single().focus();
     await userEvent.keyboard("{ArrowDown}");
     await listbox();
-    const groups = body().getAllByRole("group");
+    const groups = within(await listbox()).getAllByRole("group");
     await expect(groups).toHaveLength(2);
     await expect(groups[0]).toHaveAccessibleName("지상");
   },

@@ -33,7 +33,7 @@ function Demo({ onValueChange, autoHighlight, grouped, disabled }: DemoProps) {
   return (
     <div lang="ko" className="w-72 bg-yorha-panel p-6 text-yorha-fg">
       <Autocomplete
-        items={grouped ? GROUPS : UNITS}
+        items={(grouped ? GROUPS : UNITS) as never}
         onValueChange={onValueChange}
         autoHighlight={autoHighlight}
         disabled={disabled}
@@ -128,6 +128,9 @@ export const KeyboardNavigation: Story = {
     input().focus();
     await userEvent.keyboard("{ArrowDown}");
     await listbox();
+    // first ArrowDown only opens the popup; nothing is highlighted yet
+    await expect(highlighted()).toBe(-1);
+    await userEvent.keyboard("{ArrowDown}");
     await waitFor(() => expect(highlighted()).toBe(0));
     await userEvent.keyboard("{ArrowDown}");
     await waitFor(() => expect(highlighted()).toBe(1));
@@ -185,7 +188,7 @@ export const Grouped: Story = {
     input().focus();
     await userEvent.keyboard("{ArrowDown}");
     await listbox();
-    const groups = body().getAllByRole("group");
+    const groups = within(await listbox()).getAllByRole("group");
     await expect(groups).toHaveLength(2);
     await expect(groups[0]).toHaveAccessibleName("지상");
   },
@@ -198,14 +201,18 @@ export const ImeDoesNotCommit: Story = {
     (window as unknown as { __ime?: string[] }).__ime = [];
     const el = input();
     el.focus();
+    // highlight a row first, then start composing: an unguarded Enter would choose it
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}");
+    await listbox();
+    await waitFor(() => expect(highlighted()).toBeGreaterThanOrEqual(0));
     el.dispatchEvent(new CompositionEvent("compositionstart", { bubbles: true, data: "" }));
+    el.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 229, isComposing: true, bubbles: true, cancelable: true }));
+    await expect((window as unknown as { __ime?: string[] }).__ime).toEqual([]);
+    await expect(el).toHaveValue("");
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
     setter.call(el, "ㅅ");
     el.dispatchEvent(new InputEvent("input", { bubbles: true, data: "ㅅ", inputType: "insertCompositionText", isComposing: true }));
-    await listbox();
-    // Enter fired while composing (isComposing / keyCode 229) is the IME confirm key
     el.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", keyCode: 229, isComposing: true, bubbles: true, cancelable: true }));
-    await expect(options().length).toBeGreaterThanOrEqual(0);
     await expect((window as unknown as { __ime?: string[] }).__ime).toEqual([]);
     await expect(el).toHaveValue("ㅅ");
     // composition ends with the committed syllables; the list filters on the final text

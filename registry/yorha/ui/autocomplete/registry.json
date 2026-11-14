@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "autocomplete",
+      "type": "registry:ui",
+      "title": "Autocomplete",
+      "description": "Free-text input with a suggestion popup on Base UI Autocomplete: filtering list, empty state, groups, clear and trigger; rows use the YoRHa dark wipe, arrow cursor and square bullet. IME-safe: Enter during composition never commits.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "autocomplete.tsx",
+          "type": "registry:ui",
+          "target": "@ui/autocomplete.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Compose Autocomplete > AutocompleteInputGroup (AutocompleteInput, AutocompleteClear, AutocompleteTrigger) and AutocompleteContent > AutocompleteEmpty + AutocompleteList > AutocompleteItem. Optional: AutocompleteGroup/GroupLabel/Separator, Status, Row, Collection, Backdrop, Arrow, Value, useAutocompleteFilter. The typed text is the value; `mode` and `autoHighlight` come from Base UI. Always give the input an aria-label or a label."
+    }
+  ]
+}

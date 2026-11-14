@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "combobox",
+      "type": "registry:ui",
+      "title": "Combobox",
+      "description": "Searchable select on Base UI Combobox: single value or multiple with chips (Backspace removes), clear, trigger, groups, empty state; selected rows show a filled square bullet (ItemIndicator). IME-safe.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "combobox.tsx",
+          "type": "registry:ui",
+          "target": "@ui/combobox.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Single: Combobox > ComboboxInputGroup (ComboboxInput, ComboboxClear, ComboboxTrigger) + ComboboxContent > ComboboxEmpty + ComboboxList > ComboboxItem. Multiple: add `multiple` and put ComboboxChips (ComboboxChip + ComboboxChipRemove + ComboboxInput) inside the group via ComboboxValue. Also ComboboxLabel, Group/GroupLabel/Separator, Status, Row, Collection, Backdrop, Arrow, useComboboxFilter. Give each ComboboxChip an aria-label and each ComboboxChipRemove a label naming its value."
+    }
+  ]
+}

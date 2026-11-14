@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "toggle-group",
+      "type": "registry:ui",
+      "title": "Toggle Group",
+      "description": "Row or column of toggle buttons sharing one pressed state (single or multiple, horizontal or vertical) on Base UI Toggle Group; pressed fills with ink and a solid square bullet.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "toggle-group.tsx",
+          "type": "registry:ui",
+          "target": "@ui/toggle-group.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. ToggleGroup takes `value`/`defaultValue` as string[], `multiple`, `orientation`, `loopFocus`, `disabled`; label it with aria-label. Each ToggleGroupItem needs a unique `value`."
+    }
+  ]
+}
