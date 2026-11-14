@@ -5,7 +5,7 @@ export type StackGap = 0 | 1 | 2 | 3 | 4 | 6 | 8;
 
 export interface StackOwnProps {
   direction?: "column" | "row";
-  /** Multiples of the density-scaled spacing token (--spacing). */
+  /** Multiples of the 4px spacing token (--spacing). Fixed in every density: use `gap-pad-*` yourself where a gap must follow density. */
   gap?: StackGap;
   align?: "start" | "center" | "end" | "stretch";
   children?: ReactNode;
@@ -35,7 +35,7 @@ const ALIGN: Record<NonNullable<StackOwnProps["align"]>, string> = {
   stretch: "items-stretch",
 };
 
-/** Flex column or row. Gap comes from spacing tokens, so it follows [data-density]. */
+/** Flex column or row. Gap comes from the 4px spacing token and does not follow [data-density]. */
 export function Stack<T extends ElementType = "div">({
   as,
   direction = "column",

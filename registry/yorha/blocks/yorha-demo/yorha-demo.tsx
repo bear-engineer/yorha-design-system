@@ -62,12 +62,14 @@ export function meta() {
 
 export default function YorhaDemo() {
   return (
-    <AppShell
-      header={<span className="font-yorha font-yorha-bold uppercase tracking-yorha-wide">YoRHa 설정</span>}
-      footer={<p className="text-yorha-sm text-yorha-fg-soft">비공식 팬 프로젝트</p>}
-    >
-      <PageHeader eyebrow="설정 · SETTINGS" title="시스템 설정" description="유닛 정보와 시스템 항목을 조정한다." />
-      <SystemMenuLayout sections={SECTIONS} label="설정 구획" />
-    </AppShell>
+    <div lang="ko">
+      <AppShell
+        header={<span className="font-yorha font-yorha-bold uppercase tracking-yorha-wide">YoRHa 설정</span>}
+        footer={<p className="text-yorha-sm text-yorha-fg-soft">비공식 팬 프로젝트</p>}
+      >
+        <PageHeader eyebrow="설정 · SETTINGS" title="시스템 설정" description="유닛 정보와 시스템 항목을 조정한다." className="mb-4" />
+        <SystemMenuLayout sections={SECTIONS} label="설정 구획" />
+      </AppShell>
+    </div>
   );
 }

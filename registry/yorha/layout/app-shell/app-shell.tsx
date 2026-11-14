@@ -1,4 +1,4 @@
-import { useId, useRef, useState, type MouseEvent, type ReactNode } from "react";
+import { useId, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
 import { Container } from "@/components/container";
 import { Stack } from "@/components/stack";
 import { cn } from "@/lib/utils";
@@ -45,6 +45,7 @@ export function AppShell({
   const mainId = `${baseId}-main`;
   const navId = `${baseId}-nav`;
   const mainRef = useRef<HTMLElement>(null);
+  const toggleRef = useRef<HTMLButtonElement>(null);
   const [navOpen, setNavOpen] = useState(false);
 
   // Skip link moves focus to <main> itself (tabIndex -1), not just the scroll position.
@@ -53,8 +54,16 @@ export function AppShell({
     mainRef.current?.focus();
   };
 
+  // Escape closes the open disclosure from anywhere in the shell and hands focus back to its button.
+  const closeOnEscape = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "Escape" || !navOpen || event.defaultPrevented) return;
+    event.stopPropagation();
+    setNavOpen(false);
+    toggleRef.current?.focus();
+  };
+
   return (
-    <Stack as="div" gap={0} className={cn(ROOT, className)}>
+    <Stack as="div" gap={0} className={cn(ROOT, className)} onKeyDown={closeOnEscape}>
       <a href={`#${mainId}`} onClick={skipToMain} className={SKIP}>
         본문으로 건너뛰기
       </a>
@@ -64,6 +73,7 @@ export function AppShell({
         {header}
         {nav && (
           <button
+            ref={toggleRef}
             type="button"
             aria-expanded={navOpen}
             aria-controls={navId}
@@ -80,7 +90,7 @@ export function AppShell({
             id={navId}
             data-slot="app-shell-nav"
             data-open={navOpen ? "true" : undefined}
-            className={cn("shrink-0 @lg:w-64", !navOpen && "@max-lg:hidden")}
+            className={cn("flex shrink-0 flex-col @lg:w-64 [&>*]:flex-1", !navOpen && "@max-lg:hidden")}
           >
             {nav}
           </div>

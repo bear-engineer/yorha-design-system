@@ -14,6 +14,7 @@ import {
 import { Field, FieldControl, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Form } from "@/components/ui/form";
 import { OTPFieldInput, OTPFieldRoot } from "@/components/ui/otp-field";
+import { Panel } from "@/components/ui/panel";
 import { Switch } from "@/components/ui/switch";
 import { ToastProvider, useToast } from "@/components/ui/toast";
 
@@ -82,7 +83,7 @@ function SettingsFormBody() {
   }
 
   return (
-    <Form aria-busy={submitting} noValidate onSubmit={onSubmit} className="max-w-xl px-6 pt-6">
+    <Form aria-busy={submitting} noValidate onSubmit={onSubmit}>
       {errorNames.length > 0 ? (
         <div
           ref={summaryRef}
@@ -143,9 +144,9 @@ function SettingsFormBody() {
 
       <Field name="otp" invalid={Boolean(errors.otp)} disabled={submitting}>
         <FieldLabel>인증 코드</FieldLabel>
-        <OTPFieldRoot id={ANCHOR.otp} length={OTP_LENGTH} value={otp} onValueChange={setOtp} className="flex w-full items-center gap-2">
+        <OTPFieldRoot id={ANCHOR.otp} length={OTP_LENGTH} value={otp} onValueChange={setOtp}>
           {Array.from({ length: OTP_LENGTH }, (_, i) => (
-            <OTPFieldInput key={i} aria-label={i === 0 ? undefined : `${i + 1}번째 자리 (총 ${OTP_LENGTH})`} className="h-10 w-10 min-w-0 shrink text-center" />
+            <OTPFieldInput key={i} aria-label={i === 0 ? undefined : `${i + 1}번째 자리 (총 ${OTP_LENGTH})`} />
           ))}
         </OTPFieldRoot>
         <FieldDescription>문자로 받은 6자리 숫자</FieldDescription>
@@ -175,7 +176,18 @@ export default function SettingsFormRoute() {
     <ToastProvider>
       <main aria-label="본문" lang="ko" className="min-h-dvh w-full min-w-0 bg-yorha-bg pb-8 text-yorha-fg">
         <PageHeader eyebrow="SEC-13" title="유닛 설정" description="이름, 구역, 인증 코드를 입력하고 저장합니다." />
-        <SettingsFormBody />
+        <div className="grid grid-cols-1 items-start gap-4 px-6 pt-4 lg:grid-cols-[minmax(0,40rem)_minmax(0,20rem)]">
+          <Panel data-slot="form-panel" title="기본 정보" titleLevel={2}>
+            <SettingsFormBody />
+          </Panel>
+          <Panel title="입력 안내" titleLevel={2}>
+            <ul className="m-0 flex list-none flex-col gap-3 p-0 text-yorha-sm text-yorha-fg-soft">
+              <li>이름은 2자 이상이며 유닛 목록과 기록에 표시됩니다.</li>
+              <li>구역은 저장한 뒤에도 언제든 바꿀 수 있습니다.</li>
+              <li>인증 코드는 문자로 받은 6자리 숫자입니다.</li>
+            </ul>
+          </Panel>
+        </div>
       </main>
     </ToastProvider>
   );

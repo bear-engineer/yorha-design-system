@@ -16,11 +16,11 @@ export interface PageHeaderProps {
   className?: string;
 }
 
-/** Page title block. Keeps one h1 per page; the ornament band is decorative only. */
+/** Page title block. Keeps one h1 per page; the ornament band is decorative only and its rule is the block's bottom edge. */
 export function PageHeader({ title, eyebrow, description, actions, ornament = true, className }: PageHeaderProps) {
   return (
     <div data-slot="page-header" className={cn("flex flex-col gap-3 bg-yorha-panel px-6 pt-6 text-yorha-fg", className)}>
-      <div className="flex flex-wrap items-end justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-2">
           {eyebrow && (
             <p data-slot="page-header-eyebrow" className="m-0 font-yorha-mono text-yorha-xs uppercase tracking-yorha-wide text-yorha-fg-soft">
@@ -32,7 +32,7 @@ export function PageHeader({ title, eyebrow, description, actions, ornament = tr
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>
       {description && <p className="m-0 max-w-prose text-yorha-sm leading-yorha-body text-yorha-fg-soft">{description}</p>}
-      {ornament && <Ornament variant="band" className="mt-2" />}
+      {ornament && <Ornament variant="band" className="mt-2 -mb-1.5" />}
     </div>
   );
 }

@@ -8,7 +8,7 @@ function Cell({ children }: { children: string }) {
   return <span className="border border-yorha-border bg-yorha-panel px-2 py-1 text-yorha-fg">{children}</span>;
 }
 
-/** Expected px for `multiplier` spacing units; --yorha-spacing (rem) is set per density on the scope. */
+/** Expected px for `multiplier` spacing units: --spacing is 4px in every density (B1). */
 function expectedGapPx(scope: Element, multiplier: number) {
   const rem = parseFloat(getComputedStyle(scope).getPropertyValue("--yorha-spacing"));
   return rem * 16 * multiplier;
@@ -74,8 +74,9 @@ export const RowAsList: Story = {
   },
 };
 
+/** B1: layout gaps sit on a fixed 4px grid; density scales controls, rows and body text, not stack gaps. */
 export const DensityScale: Story = {
-  name: "밀도에 따른 간격",
+  name: "밀도와 무관한 고정 간격",
   render: () => (
     <div className="flex gap-8">
       <div data-density="compact">
@@ -99,7 +100,8 @@ export const DensityScale: Story = {
     const comfortable = parseFloat(getComputedStyle(fEl).rowGap);
     expect(compact).toBeCloseTo(expectedGapPx(cEl, 4), 1);
     expect(comfortable).toBeCloseTo(expectedGapPx(fEl, 4), 1);
-    expect(compact / comfortable).toBeCloseTo(2 / 3, 2);
+    expect(compact).toBe(16);
+    expect(comfortable).toBe(16);
   },
 };
 

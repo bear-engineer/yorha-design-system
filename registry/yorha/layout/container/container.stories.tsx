@@ -17,7 +17,7 @@ function Frame({ width, children }: { width: string; children: ReactNode }) {
   );
 }
 
-/** Expected px for `multiplier` spacing units; --yorha-spacing (rem) is set per density. */
+/** Expected px for `multiplier` spacing units; --spacing is 4px in every density (B1). */
 function expectedSpacePx(scope: Element, multiplier: number) {
   return parseFloat(getComputedStyle(scope).getPropertyValue("--yorha-spacing")) * 16 * multiplier;
 }

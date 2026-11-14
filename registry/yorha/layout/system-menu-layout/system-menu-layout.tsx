@@ -88,6 +88,7 @@ function SectionBody({
 
   return (
     <Split
+      divider={false}
       list={
         <MenuList
           aria-label={`${section.label} 목록`}

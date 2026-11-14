@@ -12,11 +12,11 @@ export type NavLinkProps = Omit<RouterNavLinkProps, "className" | "style"> & {
  * State comes from react-router: it sets aria-current="page" on the active link.
  */
 const base = [
-  "relative flex w-full items-center gap-3 px-4 py-2 no-underline",
+  "relative flex min-h-row w-full items-center gap-3 px-pad-md no-underline",
   "border-y-(length:--menu-rule) border-transparent",
   "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-no-repeat bg-[length:0%_100%] bg-left",
   "text-yorha-sm font-yorha-medium uppercase tracking-yorha-wide text-yorha-fg-ink",
-  "yorha-wipe",
+  "yorha-wipe yorha-tint",
   "before:size-1.5 before:shrink-0 before:bg-current before:content-['']",
   "focus-visible:yorha-focus",
   "aria-[current=page]:bg-[length:100%_100%] aria-[current=page]:border-yorha-border aria-[current=page]:text-yorha-on-ink",

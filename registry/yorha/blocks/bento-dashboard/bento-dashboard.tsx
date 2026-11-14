@@ -39,6 +39,12 @@ const UNITS: Unit[] = [
   { id: "a2", name: "유닛 A2", role: "유격", hp: 31, online: false },
 ];
 
+const CORE_STATS = [
+  { label: "출력", value: "3.2 GW" },
+  { label: "온도", value: "41 °C" },
+  { label: "가동", value: "312일" },
+];
+
 const EVENTS: TimelineEvent[] = [
   { id: "e1", time: "2026-11-14T09:10:00+09:00", title: "동기화 완료", status: "success", body: "벙커 서버와 기록을 맞췄습니다." },
   { id: "e2", time: "2026-11-14T08:42:00+09:00", title: "유닛 A2 연결 끊김", status: "danger" },
@@ -124,7 +130,7 @@ function DashboardTiles({ state }: { state: "ready" | "loading" | "empty" }) {
     <Bento preset="dashboard">
       <Tile area="hero" title="코어">
         {empty ? <Empty>집계된 코어 데이터가 없습니다</Empty> : (
-          <div className="flex flex-1 flex-col justify-between gap-4">
+          <div className="flex flex-col gap-4">
             <p className="m-0 font-yorha-bold text-yorha-3xl leading-none yorha-tabular text-yorha-fg-strong">
               87<span className="text-yorha-lg">%</span>
               <span className="sr-only"> 코어 가동률</span>
@@ -133,6 +139,14 @@ function DashboardTiles({ state }: { state: "ready" | "loading" | "empty" }) {
               <Meter label="코어 가동률" value={87} />
               <Progress label="동기화" value={64} />
             </div>
+            <dl className="m-0 grid grid-cols-3 gap-4 border-t border-yorha-separator pt-4">
+              {CORE_STATS.map((stat) => (
+                <div key={stat.label} className="flex min-w-0 flex-col gap-1">
+                  <dt className="text-yorha-xs text-yorha-fg-soft">{stat.label}</dt>
+                  <dd className="m-0 font-yorha-bold text-yorha-lg yorha-tabular text-yorha-fg-strong">{stat.value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
         )}
       </Tile>

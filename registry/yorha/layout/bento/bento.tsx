@@ -4,7 +4,7 @@ import type { CSSProperties, ComponentPropsWithoutRef, ReactElement, ReactNode }
 
 export type BentoCols = 2 | 4 | 6 | 12;
 export type BentoGap = 2 | 3 | 4 | 6;
-/** Row height in spacing steps (scales with [data-density]). */
+/** Row height in 4px spacing steps (fixed in every density). */
 export type BentoRowHeight = "sm" | "md" | "lg";
 export type BentoPreset = "dashboard" | "feature" | "profile";
 export type BentoSize = "1x1" | "2x1" | "1x2" | "2x2" | "wide" | "tall";

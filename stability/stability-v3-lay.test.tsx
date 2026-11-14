@@ -90,9 +90,9 @@ describe("FL-06 / FL-19 / FL-20 sidebar and nav rows", () => {
 
   test("nav rows have a pressed step (FL-20)", async () => {
     const root = await mountStory("sidebar", "Default");
-    // :active cannot be driven from a vitest-browser story, so the rule is asserted on the class list.
+    // :active cannot be driven from a vitest-browser story, so the rule is asserted on the class list (yorha-tint carries the :active step).
     const inactive = qa(root, "nav a").find((a) => a.getAttribute("aria-current") !== "page")!;
-    expect(inactive.className).toMatch(/active:/);
+    expect(inactive.className).toMatch(/yorha-tint/);
   });
 });
 
