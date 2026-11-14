@@ -256,3 +256,35 @@ describe("FSEL-15 navigation-menu rows", () => {
     expect(getComputedStyle(popup.querySelector("[data-slot=navigation-menu-content]")!).maxWidth).not.toBe("none");
   });
 });
+
+describe("menu-list rows (FSEL-03/04/10/14)", () => {
+  test("rows sit on the row token, the selected row shows no ring, leaving rows drop at once", { timeout: 60_000 }, async () => {
+    await mountStory("menu-list", "Default", { stage: "top" });
+    await frames(40); // entry stagger
+    const opts = [...document.querySelectorAll<HTMLElement>("[role=option]")];
+    expect(opts.length).toBeGreaterThanOrEqual(4);
+    for (const o of opts) {
+      expect(o.getBoundingClientRect().height, o.textContent ?? "").toBe(token("--yorha-row"));
+      expectPixelSnapped(o);
+    }
+    const sel = opts.find((o) => o.hasAttribute("data-selected"))!;
+    sel.focus();
+    expect(getComputedStyle(sel).outlineStyle).toBe("none"); // FSEL-03: the fill is the indicator
+    const other = opts.find((o) => o !== sel)!;
+    // FSEL-10: the wipe on a row that stops being selected has no duration, so only one wipe is on screen
+    const dur = getComputedStyle(other).transitionDuration.split(",").map((d) => parseFloat(d) * (d.trim().endsWith("ms") ? 0.001 : 1));
+    const props = getComputedStyle(other).transitionProperty.split(",").map((p) => p.trim());
+    for (const [i, p] of props.entries()) if (p === "background-size" || p === "color") expect(dur[i]!, `${p} exit`).toBe(0);
+  });
+
+  test("description pane text starts level with the first row's label (FSEL-14)", { timeout: 60_000 }, async () => {
+    await mountStory("menu-list", "WithDescriptionPane", { stage: "top" });
+    await frames(40);
+    const label = document.querySelector<HTMLElement>("[role=option] [data-menu-label]")!.getBoundingClientRect();
+    const pane = document.querySelector<HTMLElement>("[role=status]")!;
+    const range = document.createRange();
+    range.selectNodeContents(pane);
+    const text = range.getClientRects()[0]!;
+    expect(Math.abs(text.top + text.height / 2 - (label.top + label.height / 2)), "first line centre vs first label centre").toBeLessThanOrEqual(2);
+  });
+});
