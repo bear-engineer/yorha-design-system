@@ -21,6 +21,8 @@ export interface Targets {
   control: HTMLElement;
   /** Element whose box must not change (the row/label/list that holds it). */
   row: HTMLElement;
+  /** false when the row legitimately grows with the state (an expander that pushes its siblings); the control is still checked. */
+  rowCheck?: boolean;
 }
 
 export interface Shift {
@@ -42,34 +44,77 @@ export const INTERACTIVE_SELECTOR = [
   'input[type="range"]',
 ].join(",");
 
-/** Own scale (transform matrix and the `scale` property) of an element; 1 when none. */
-function ownScale(el: Element): { sx: number; sy: number } {
+/** Every focusable control a story can hold; the generic stability suites pick from these. */
+export const GENERIC_SELECTOR = [
+  INTERACTIVE_SELECTOR,
+  "button",
+  '[role="button"]',
+  '[role="combobox"]',
+  '[role="menuitem"]',
+  '[role="option"]',
+  'input:not([type="hidden"])',
+  "textarea",
+  "select",
+  "a[href]",
+].join(",");
+
+/** Visible, enabled, top-level controls in a story (nested duplicates such as a button inside a role=button are dropped). */
+export function visibleControls(root: HTMLElement, max = 8, selector = GENERIC_SELECTOR): HTMLElement[] {
+  const all = [...root.querySelectorAll<HTMLElement>(selector)].filter((el) => {
+    if (isDisabled(el) || el.closest("[aria-hidden='true'], [inert]")) return false;
+    if ((el as HTMLInputElement).type === "range" || (el as HTMLInputElement).type === "file") return false;
+    const r = el.getBoundingClientRect();
+    return r.width > 0 && r.height > 0 && getComputedStyle(el).visibility !== "hidden";
+  });
+  const top = all.filter((el) => !all.some((o) => o !== el && o.contains(el)));
+  return top.slice(0, max);
+}
+
+/** Close whatever the last action opened (popups, menus, dialogs) and let exit transitions end. */
+export async function settle() {
+  await userEvent.keyboard("{Escape}");
+  await park();
+  for (let i = 0; i < 12; i++) await frame();
+}
+
+/** Own scale and translation (transform matrix, `scale` and `translate` properties) of an element; identity when none. */
+function ownScale(el: Element): { sx: number; sy: number; tx: number; ty: number } {
   const cs = getComputedStyle(el);
   let sx = 1;
   let sy = 1;
+  let tx = 0;
+  let ty = 0;
   if (cs.transform && cs.transform !== "none") {
     const m = new DOMMatrixReadOnly(cs.transform);
     sx *= Math.hypot(m.a, m.b) || 1;
     sy *= Math.hypot(m.c, m.d) || 1;
+    tx += m.e;
+    ty += m.f;
+  }
+  if (cs.translate && cs.translate !== "none") {
+    const [x, y = "0px"] = cs.translate.split(" ");
+    tx += parseFloat(x) || 0;
+    ty += parseFloat(y) || 0;
   }
   if (cs.scale && cs.scale !== "none") {
     const [x, y = x] = cs.scale.split(" ").map(Number);
     sx *= x || 1;
     sy *= y || 1;
   }
-  return { sx, sy };
+  return { sx, sy, tx, ty };
 }
 
 /**
- * Layout box: the border box with the element's own scale divided out around its centre, so a symmetric
- * press scale (yorha-press, scale 0.97) is allowed while any real layout change still shows up.
+ * Layout box: the border box with the element's own scale divided out around its centre and its own translation
+ * removed, so a symmetric press scale (yorha-press, scale 0.97) and a transform-only hover lift are allowed
+ * while any real layout change (size, position in flow, neighbours pushed) still shows up.
  */
 const rectOf = (el: Element): Rect => {
   const r = el.getBoundingClientRect();
-  const { sx, sy } = ownScale(el);
+  const { sx, sy, tx, ty } = ownScale(el);
   const width = r.width / sx;
   const height = r.height / sy;
-  return { x: r.x + r.width / 2 - width / 2, y: r.y + r.height / 2 - height / 2, width, height };
+  return { x: r.x + r.width / 2 - width / 2 - tx, y: r.y + r.height / 2 - height / 2 - ty, width, height };
 };
 
 /**
@@ -102,6 +147,7 @@ export async function measure(
   ms = SAMPLE_MS,
 ): Promise<Shift[]> {
   const base = { control: rectOf(targets.control), row: rectOf(targets.row) };
+  if (targets.rowCheck === false) targets = { ...targets, row: targets.control };
   const worst: Record<"control" | "row", Shift> = {
     control: { phase, which: "control", dx: 0, dy: 0, dw: 0, dh: 0 },
     row: { phase, which: "row", dx: 0, dy: 0, dw: 0, dh: 0 },
@@ -109,6 +155,7 @@ export async function measure(
   let running = true;
   const sample = () => {
     for (const which of ["control", "row"] as const) {
+      if (!targets[which].isConnected) continue;
       const r = rectOf(targets[which]);
       const b = base[which];
       const w = worst[which];
@@ -163,12 +210,14 @@ const park = async () => {
 function toggleKey(el: HTMLElement): string {
   const role = el.getAttribute("role");
   if (role === "tab" || isSliderEl(el)) return "{ArrowRight}";
+  const tag = el.tagName;
+  if (tag === "TEXTAREA" || (tag === "INPUT" && !["checkbox", "radio", "button", "submit", "reset"].includes((el as HTMLInputElement).type))) return "a";
   return " ";
 }
 
 /** Hover, pointer down, click/toggle and keyboard toggle on one control; returns every shift over the tolerance. */
-export async function checkControl(el: HTMLElement): Promise<Shift[]> {
-  const targets = resolveTargets(el);
+export async function checkControl(el: HTMLElement, options: { rowCheck?: boolean } = {}): Promise<Shift[]> {
+  const targets = { ...resolveTargets(el), ...(options.rowCheck === undefined ? {} : { rowCheck: options.rowCheck }) };
   const shifts: Shift[] = [];
   const isSlider = isSliderEl(el);
   // Base UI's range input is visually hidden: pointer events go to the thumb that wraps it.
@@ -192,6 +241,7 @@ export async function checkControl(el: HTMLElement): Promise<Shift[]> {
   }
   await park();
   await frame();
+  if (!el.isConnected) return shifts;
   el.focus();
   shifts.push(...(await measure("keyboard", targets, () => userEvent.keyboard(toggleKey(el)))));
   return shifts;

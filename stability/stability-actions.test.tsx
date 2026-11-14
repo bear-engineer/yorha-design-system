@@ -1,0 +1,25 @@
+import { stabilitySuite } from "./suite";
+
+stabilitySuite("actions, overlays and expanders: state changes never move the control", [
+  { item: "button", stories: ["States", "Default"] },
+  { item: "icon-button" },
+  { item: "chip" },
+  { item: "toolbar" },
+  { item: "dialog" },
+  { item: "alert-dialog" },
+  { item: "drawer" },
+  { item: "popover" },
+  { item: "preview-card" },
+  { item: "tooltip" },
+  { item: "toast" },
+  { item: "menu" },
+  { item: "context-menu", selector: '[aria-label="유닛 카드"]' },
+  { item: "menubar" },
+  { item: "navigation-menu" },
+  { item: "accordion", rowCheck: false, stage: "top" },
+  { item: "collapsible", rowCheck: false, stage: "top" },
+  { item: "data-table" },
+  { item: "kanban" },
+  { item: "menu-list" },
+  { item: "timeline" },
+]);
