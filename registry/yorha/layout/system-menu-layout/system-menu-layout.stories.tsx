@@ -67,6 +67,7 @@ export const KeyboardPath: Story = {
     await userEvent.keyboard("{ArrowRight}");
     await expect(c.getByRole("tab", { name: "지도" })).toHaveFocus();
     await expect(c.getByRole("tab", { name: "지도" })).toHaveAttribute("aria-selected", "true");
+    await waitFor(() => expect(c.getByRole("listbox", { name: "지도 목록" })).toBeVisible());
     await userEvent.tab();
     await waitFor(() => expect(c.getByRole("option", { name: /폐허 도시/ })).toHaveFocus());
     await userEvent.keyboard("{ArrowDown}");
@@ -129,7 +130,7 @@ export const RouteSync: Story = {
     await expect(c.getByRole("tab", { name: "아이템" })).toHaveAttribute("aria-selected", "false");
     await userEvent.click(c.getByRole("tab", { name: "시스템" }));
     await waitFor(() => expect(c.getByRole("tab", { name: "시스템" })).toHaveAttribute("aria-selected", "true"));
-    await expect(c.getByRole("listbox", { name: "시스템 목록" })).toBeVisible();
+    await waitFor(() => expect(c.getByRole("listbox", { name: "시스템 목록" })).toBeVisible());
   },
 };
 

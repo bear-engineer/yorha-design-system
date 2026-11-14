@@ -1,27 +1,140 @@
-import type { ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { MenuList, MenuListItem } from "@/components/ui/menu-list";
+import { Panel } from "@/components/ui/panel";
+import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
+import { Split } from "@/components/split";
+import { cn } from "@/lib/utils";
 
 export interface SystemMenuItem {
   id: string;
   label: string;
+  /** Secondary text in the list row. */
   description?: ReactNode;
   disabled?: boolean;
+  /** Body of the detail panel while this row is selected. */
   content: ReactNode;
 }
+
 export interface SystemMenuSection {
   id: string;
   label: string;
   items: SystemMenuItem[];
 }
+
 export interface SystemMenuLayoutProps {
   sections: SystemMenuSection[];
+  /** Controlled section id. Map it to a route (derive from the location, navigate in onValueChange). */
   value?: string;
   defaultValue?: string;
   onValueChange?: (sectionId: string) => void;
+  /** Accessible name of the tab strip. */
   label?: string;
   className?: string;
 }
 
-// STUB (red step): compiles, renders the wrong thing.
-export function SystemMenuLayout({ sections }: SystemMenuLayoutProps) {
-  return <div>{sections.length}</div>;
+const firstEnabled = (section: SystemMenuSection) => section.items.find((item) => !item.disabled)?.id ?? null;
+
+/**
+ * Pause-menu screen: tabs for the primary sections, a menu list on the left, a detail panel on the right.
+ * Router-agnostic. Keyboard path: Tab -> tab strip, Tab -> list, Enter on a row -> detail panel.
+ */
+export function SystemMenuLayout({
+  sections,
+  value,
+  defaultValue,
+  onValueChange,
+  label = "시스템 메뉴",
+  className,
+}: SystemMenuLayoutProps) {
+  const [picked, setPicked] = useState<Record<string, string | null>>({});
+  const tabsProps = {
+    ...(value !== undefined ? { value } : { defaultValue: defaultValue ?? sections[0]?.id }),
+    onValueChange: (next: unknown) => onValueChange?.(String(next)),
+  };
+
+  return (
+    <Tabs {...tabsProps} data-slot="system-menu-layout" className={cn("flex w-full min-w-0 flex-col", className)}>
+      <TabsList aria-label={label}>
+        {sections.map((section) => (
+          <TabsTab key={section.id} value={section.id}>
+            {section.label}
+          </TabsTab>
+        ))}
+      </TabsList>
+      {sections.map((section) => (
+        <TabsPanel key={section.id} value={section.id} tabIndex={-1}>
+          <SectionBody
+            section={section}
+            itemId={picked[section.id] ?? firstEnabled(section)}
+            onItemChange={(id) => setPicked((prev) => ({ ...prev, [section.id]: id }))}
+          />
+        </TabsPanel>
+      ))}
+    </Tabs>
+  );
+}
+
+function SectionBody({
+  section,
+  itemId,
+  onItemChange,
+}: {
+  section: SystemMenuSection;
+  itemId: string | null;
+  onItemChange: (id: string) => void;
+}) {
+  const item = section.items.find((candidate) => candidate.id === itemId) ?? null;
+  const detail = useRef<HTMLDivElement>(null);
+  const [phase, setPhase] = useState<"pre" | "in">("in");
+  const first = useRef(true);
+
+  // Detail fades and slides in over --motion-panel whenever the row changes (not on mount).
+  useLayoutEffect(() => {
+    if (first.current) {
+      first.current = false;
+      return;
+    }
+    setPhase("pre");
+    const id = requestAnimationFrame(() => setPhase("in"));
+    return () => cancelAnimationFrame(id);
+  }, [itemId]);
+
+  return (
+    <Split
+      list={
+        <MenuList
+          aria-label={`${section.label} 목록`}
+          value={itemId}
+          onValueChange={onItemChange}
+          onActivate={() => detail.current?.querySelector<HTMLElement>("[data-slot=system-menu-panel]")?.focus()}
+        >
+          {section.items.map((entry) => (
+            <MenuListItem key={entry.id} value={entry.id} disabled={entry.disabled} description={entry.description}>
+              {entry.label}
+            </MenuListItem>
+          ))}
+        </MenuList>
+      }
+      detail={
+        <div
+          ref={detail}
+          data-slot="system-menu-detail"
+          data-phase={phase}
+          className="transition-[opacity,translate] duration-(--motion-panel) ease-yorha-out data-[phase=pre]:translate-x-2 data-[phase=pre]:opacity-0"
+        >
+          {item && (
+            <Panel
+              data-slot="system-menu-panel"
+              title={item.label}
+              titleLevel={2}
+              tabIndex={0}
+              className="focus-visible:yorha-focus"
+            >
+              {item.content}
+            </Panel>
+          )}
+        </div>
+      }
+    />
+  );
 }
