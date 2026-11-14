@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "name": "thing",
+      "type": "registry:ui",
+      "title": "thing",
+      "description": "fixture",
+      "registryDependencies": [
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "thing.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    }
+  ]
+}

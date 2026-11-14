@@ -1,4 +1,13 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "init",
+      "type": "registry:item",
+      "title": "YoRHa init",
+      "description": "Project bootstrap for the YoRHa registry: pulls in @yorha/base and @yorha/utils and documents the app CSS cleanup a React Router template needs.",
+      "registryDependencies": ["@yorha/base", "@yorha/utils"],
+      "docs": "Unofficial fan project. After adding @yorha/init: (1) in app/app.css delete the react-router template's unlayered `html, body { ... }` background and color-scheme rules. Unlayered rules beat the kit's @layer base, so the page keeps the template's white/dark background instead of the YoRHa panel colour. (2) Select a theme with the data-theme attribute on <html> (light | dark | authentic | high-contrast); density and motion use data-density and data-motion. Example: <html lang=\"ko\" data-theme=\"light\" data-motion=\"full\">."
+    }
+  ]
 }

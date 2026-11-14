@@ -1,0 +1,7 @@
+{
+  "name": "fixture",
+  "include": [
+    "registry/ui/thing/registry.json",
+    "registry/ui/other/registry.json"
+  ]
+}

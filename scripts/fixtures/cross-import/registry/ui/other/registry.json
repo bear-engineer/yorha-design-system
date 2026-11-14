@@ -1,0 +1,24 @@
+{
+  "items": [
+    {
+      "name": "other",
+      "type": "registry:ui",
+      "title": "other",
+      "description": "fixture",
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils"
+      ],
+      "files": [
+        {
+          "path": "other.tsx",
+          "type": "registry:ui"
+        },
+        {
+          "path": "other-helper.tsx",
+          "type": "registry:ui"
+        }
+      ]
+    }
+  ]
+}
