@@ -23,6 +23,19 @@ export default defineConfig({
           browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: "chromium" }] },
         },
       },
+      {
+        extends: true,
+        test: {
+          name: "vrt",
+          include: ["vrt/**/*.vrt.test.tsx"],
+          browser: {
+            enabled: true,
+            headless: true,
+            provider: playwright({ contextOptions: { deviceScaleFactor: 1, reducedMotion: "reduce" } }),
+            instances: [{ browser: "chromium", viewport: { width: 1280, height: 800 } }],
+          },
+        },
+      },
     ],
   },
 });
