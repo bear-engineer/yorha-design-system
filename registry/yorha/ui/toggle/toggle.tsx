@@ -17,6 +17,8 @@ const INDICATOR_BASE =
 /**
  * Two-state button (aria-pressed). Pressed fills with ink and the square bullet
  * turns solid; unpressed shows a hollow square, so state is not carried by colour alone.
+ * Migration (B9): `size` (sm/md/lg) sets a fixed control height; the default height 48 is now `md`, pass `size="sm"`
+ * for the old toolbar size. Chip is `h-control-sm`, Badge 24px, Kbd 20px.
  */
 export function Toggle({ children, className, size = "md", ...props }: ToggleProps) {
   return (

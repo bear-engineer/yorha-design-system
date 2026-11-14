@@ -44,6 +44,8 @@ const VARIANT: Record<ButtonVariant, string> = {
 /**
  * One size map for every control of the family (Button, IconButton, Toggle, ToggleGroup, triggers, FormSubmit).
  * Heights come from the density-aware control scale (never from padding + line height); content is centred.
+ * Migration (B8): the busy indicator is a 2px bar on the bottom inner edge (all sizes and variants), not the 8px square;
+ * a loading button neither wipes nor scales. Tests that looked for the square use `[data-slot=button-busy]`.
  */
 export const controlSize: Record<ButtonSize, string> = {
   sm: "h-control-sm min-w-control-sm px-pad-sm text-yorha-sm",

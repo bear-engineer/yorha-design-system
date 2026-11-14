@@ -33,6 +33,8 @@ export interface RadioProps extends Omit<React.ComponentProps<typeof BaseRadio.R
  * One option. The selected row wipes to the ink fill left to right; the square
  * bullet uses currentColor so it inverts with the row.
  * The Base UI root is a 24px hit area holding the drawn 20px box (the focus ring is on that box, like Checkbox).
+ * Migration (B25): the focus ring moved from the row to the 20px box; the indicator is 20px in every density (was 24 in
+ * comfortable). No API change.
  */
 export function Radio({ children, className, rowClassName, ...props }: RadioProps) {
   return (
