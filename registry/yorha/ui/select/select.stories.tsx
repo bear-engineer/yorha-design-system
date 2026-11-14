@@ -80,7 +80,12 @@ type Story = StoryObj<typeof meta>;
 
 const body = () => within(document.body);
 const trigger = () => body().getByRole("combobox", { name: "유닛 선택" });
-const listbox = () => body().findByRole("listbox");
+const listbox = async () => {
+  const list = await body().findByRole("listbox");
+  // popup fades in; wait for the final opacity before asserting visibility / axe runs
+  await waitFor(() => expect(list).toBeVisible());
+  return list;
+};
 const highlighted = () => body().getAllByRole("option").findIndex((o) => o.hasAttribute("data-highlighted"));
 const optionNames = () => body().getAllByRole("option").map((o) => o.textContent?.trim());
 
@@ -113,13 +118,16 @@ export const KeyboardNavigation: Story = {
     await userEvent.keyboard("{ArrowDown}");
     await listbox();
     await waitFor(() => expect(highlighted()).toBeGreaterThanOrEqual(0));
-    // ArrowDown 은 비활성 항목(Command)을 건너뛴다
     await userEvent.keyboard("{Home}");
     await waitFor(() => expect(highlighted()).toBe(0));
     await userEvent.keyboard("{ArrowDown}");
     await waitFor(() => expect(highlighted()).toBe(1));
     await userEvent.keyboard("{ArrowDown}");
+    await waitFor(() => expect(highlighted()).toBe(2));
+    await userEvent.keyboard("{ArrowDown}");
     await waitFor(() => expect(optionNames()[highlighted()]).toBe("Desert"));
+    await userEvent.keyboard("{ArrowUp}");
+    await waitFor(() => expect(highlighted()).toBe(2));
     await userEvent.keyboard("{ArrowUp}");
     await waitFor(() => expect(optionNames()[highlighted()]).toBe("Bunker"));
     // 하이라이트된 행은 YoRHa 선택 행 표식(화살표 커서, 사각 불릿)을 가진다
@@ -140,6 +148,7 @@ export const SelectWithEnter: Story = {
     await userEvent.keyboard("{ArrowDown}");
     await listbox();
     await userEvent.keyboard("{Home}");
+    await waitFor(() => expect(highlighted()).toBe(0));
     await userEvent.keyboard("{ArrowDown}");
     await waitFor(() => expect(optionNames()[highlighted()]).toBe("Bunker"));
     await userEvent.keyboard("{Enter}");
@@ -180,8 +189,11 @@ export const Typeahead: Story = {
     await listbox();
     await userEvent.keyboard("d");
     await waitFor(() => expect(optionNames()[highlighted()]).toBe("Desert"));
-    await userEvent.keyboard("{Home}");
-    await waitFor(() => expect(highlighted()).toBe(0));
+    // 타입어헤드 버퍼가 비도록 닫았다 다시 연다
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body().queryByRole("listbox")).toBeNull());
+    await userEvent.keyboard("{Enter}");
+    await listbox();
     await userEvent.keyboard("f");
     await waitFor(() => expect(optionNames()[highlighted()]).toBe("Factory"));
   },
@@ -197,6 +209,12 @@ export const DisabledItems: Story = {
     await userEvent.click(command);
     await expect(body().queryByRole("listbox")).not.toBeNull();
     await expect(trigger()).toHaveTextContent("유닛을 선택");
+    // 키보드로 비활성 항목에 올라가 Enter 를 눌러도 선택되지 않는다
+    await userEvent.keyboard("{Home}");
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}");
+    await waitFor(() => expect(optionNames()[highlighted()]).toBe("Command"));
+    await userEvent.keyboard("{Enter}");
+    await expect(trigger()).toHaveTextContent("유닛을 선택");
   },
 };
 
@@ -207,7 +225,7 @@ export const Grouped: Story = {
     await listbox();
     const groups = body().getAllByRole("group");
     await expect(groups).toHaveLength(2);
-    await expect(body().getByText("지상")).toBeVisible();
+    await waitFor(() => expect(body().getByText("지상")).toBeVisible());
     await expect(body().getByText("시설")).toBeVisible();
     await expect(groups[0]).toHaveAccessibleName("지상");
   },
