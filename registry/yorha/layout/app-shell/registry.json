@@ -1,4 +1,25 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "app-shell",
+      "type": "registry:component",
+      "title": "AppShell",
+      "description": "Page frame: skip link first in tab order, dark header banner, named main landmark, optional nav and footer. Mobile: nav collapses behind a disclosure button (aria-expanded) below the lg container width. Optional grid and vignette slots sit behind the content.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils",
+        "@yorha/stack",
+        "@yorha/container"
+      ],
+      "files": [
+        {
+          "path": "app-shell.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Put <Sidebar/> in the nav slot and pass <GridBackground/> and <Vignette/> to the decorative slots if wanted."
+    }
+  ]
 }

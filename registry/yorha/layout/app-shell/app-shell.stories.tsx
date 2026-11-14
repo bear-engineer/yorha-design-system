@@ -68,24 +68,48 @@ export const Default: Story = {
   },
 };
 
-/** 라이트, 다크, 고대비 세 테마. 4테마 금지: authentic은 별도 스토리. */
-export const Themes: Story = {
+/**
+ * One theme per story: a banner, main and nav landmark each, so several shells in one
+ * document would break the landmark-unique and no-duplicate-banner checks.
+ */
+function themePlay(theme: (typeof THEMES)[number]): Story["play"] {
+  return async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(canvasElement.querySelector("[data-theme]")).toHaveAttribute("data-theme", theme);
+    await expect(c.getByRole("banner")).toBeInTheDocument();
+    await expect(c.getByRole("main", { name: "본문" })).toBeInTheDocument();
+    await expect(c.getByRole("navigation", { name: "주 메뉴" })).toBeInTheDocument();
+  };
+}
+
+export const LightTheme: Story = {
+  name: "라이트 테마",
   render: () => (
-    <div className="grid gap-4">
-      {THEMES.map((t) => (
-        <div key={t} data-theme={t}>
-          <Demo grid vignette className="min-h-0 h-96" />
-        </div>
-      ))}
+    <div data-theme="light">
+      <Demo grid vignette className="min-h-0 h-96" />
     </div>
   ),
-  play: async ({ canvasElement }) => {
-    const c = within(canvasElement);
-    await expect(c.getAllByRole("banner")).toHaveLength(3);
-    await expect(c.getAllByRole("main")).toHaveLength(3);
-    await expect(c.getAllByRole("navigation", { name: "주 메뉴" })).toHaveLength(3);
-    await expect(canvasElement.querySelectorAll("[data-theme]")).toHaveLength(3);
-  },
+  play: themePlay("light"),
+};
+
+export const DarkTheme: Story = {
+  name: "다크 테마",
+  render: () => (
+    <div data-theme="dark">
+      <Demo grid vignette className="min-h-0 h-96" />
+    </div>
+  ),
+  play: themePlay("dark"),
+};
+
+export const HighContrastTheme: Story = {
+  name: "고대비 테마",
+  render: () => (
+    <div data-theme="high-contrast">
+      <Demo grid vignette className="min-h-0 h-96" />
+    </div>
+  ),
+  play: themePlay("high-contrast"),
 };
 
 /** Authentic palette alone. a11y is "todo": the authentic palette is decorative-only (tokens.md). */

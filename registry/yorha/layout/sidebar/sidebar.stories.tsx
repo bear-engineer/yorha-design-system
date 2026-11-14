@@ -49,6 +49,7 @@ export const Default: Story = {
 
 /** 키보드: Tab으로 링크를 순서대로 이동하고 Enter로 경로를 바꾼다. */
 export const KeyboardPath: Story = {
+  parameters: { route: { routes: [{ path: "/*", element: <Sidebar sections={SECTIONS} /> }] } },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await userEvent.tab();
@@ -61,23 +62,25 @@ export const KeyboardPath: Story = {
   },
 };
 
-/** 다크, 고대비, 라이트 세 테마. 4테마 금지: authentic은 별도 스토리. */
-export const Themes: Story = {
-  render: (args) => (
-    <div className="grid gap-4">
-      {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-bg text-yorha-fg">
-          <Sidebar {...args} />
-        </div>
-      ))}
-    </div>
-  ),
-  play: async ({ canvasElement }) => {
-    const c = within(canvasElement);
-    await expect(c.getAllByRole("navigation", { name: "주 메뉴" })).toHaveLength(3);
-    await expect(canvasElement.querySelectorAll("[data-theme]")).toHaveLength(3);
-  },
-};
+/** One theme per story (see the AppShell note on landmark uniqueness). */
+function themeStory(theme: (typeof THEMES)[number], name: string): Story {
+  return {
+    name,
+    render: (args) => (
+      <div data-theme={theme} className="bg-yorha-bg text-yorha-fg">
+        <Sidebar {...args} />
+      </div>
+    ),
+    play: async ({ canvasElement }) => {
+      await expect(canvasElement.querySelector("[data-theme]")).toHaveAttribute("data-theme", theme);
+      await expect(within(canvasElement).getByRole("navigation", { name: "주 메뉴" })).toBeInTheDocument();
+    },
+  };
+}
+
+export const LightTheme = themeStory("light", "라이트 테마");
+export const DarkTheme = themeStory("dark", "다크 테마");
+export const HighContrastTheme = themeStory("high-contrast", "고대비 테마");
 
 /** Authentic palette alone. a11y is "todo": the authentic palette is decorative-only (tokens.md). */
 export const Authentic: Story = {

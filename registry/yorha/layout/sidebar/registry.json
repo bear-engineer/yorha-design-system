@@ -1,4 +1,26 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "sidebar",
+      "type": "registry:component",
+      "title": "Sidebar",
+      "description": "Navigation landmark with one labelled list per section. Section headings are Heading elements; rows are NavLink, so the active row gets aria-current=page.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils",
+        "@yorha/nav-link",
+        "@yorha/heading",
+        "@yorha/stack"
+      ],
+      "files": [
+        {
+          "path": "sidebar.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Requires a react-router data or declarative router context (NavLink)."
+    }
+  ]
 }
