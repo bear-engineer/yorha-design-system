@@ -13,11 +13,11 @@ const SIDES: Record<Side, { slide: string; swipe: "up" | "right" | "down" | "lef
     swipe: "down",
     place: "items-end justify-center",
     popup:
-      "w-full max-h-[85dvh] border-t [padding-bottom:max(0px,calc(var(--drawer-snap-point-offset,0px)+var(--drawer-swipe-movement-y,0px)))]",
+      "w-full max-h-[85dvh] border-t-(length:--yorha-border-width-strong) [padding-bottom:max(0px,calc(var(--drawer-snap-point-offset,0px)+var(--drawer-swipe-movement-y,0px)))]",
   },
-  top: { slide: "yorha-slide-down", swipe: "up", place: "items-start justify-center", popup: "w-full max-h-[85dvh] border-b" },
-  right: { slide: "yorha-slide-left", swipe: "right", place: "items-stretch justify-end", popup: "h-full w-96 max-w-[85vw] border-l" },
-  left: { slide: "yorha-slide-right", swipe: "left", place: "items-stretch justify-start", popup: "h-full w-96 max-w-[85vw] border-r" },
+  top: { slide: "yorha-slide-down", swipe: "up", place: "items-start justify-center", popup: "w-full max-h-[85dvh] border-b-(length:--yorha-border-width-strong)" },
+  right: { slide: "yorha-slide-left", swipe: "right", place: "items-stretch justify-end", popup: "h-full w-96 max-w-[85vw] border-l-(length:--yorha-border-width-strong)" },
+  left: { slide: "yorha-slide-right", swipe: "left", place: "items-stretch justify-start", popup: "h-full w-96 max-w-[85vw] border-r-(length:--yorha-border-width-strong)" },
 };
 
 /**
@@ -31,20 +31,25 @@ export const drawerStyles = {
     "opacity-[calc(1-var(--drawer-swipe-progress,0))] data-[swiping]:[transition-duration:0s]",
   viewport: "fixed inset-0 z-(--yorha-z-modal) flex touch-none",
   surface:
-    "border-yorha-border bg-yorha-panel text-yorha-fg shadow-yorha-lg font-yorha text-yorha-sm tracking-yorha-body",
+    // Edge-attached sheet: no offset shadow (it left a notch on full-bleed sheets); the inner edge is a 2px ink border (see SIDES).
+    "border-yorha-ink bg-yorha-panel text-yorha-fg shadow-none font-yorha text-yorha-sm tracking-yorha-body",
   popup:
     "group/drawer relative z-1 flex min-h-0 flex-col overflow-visible outline-none focus-visible:yorha-focus touch-none data-[swiping]:select-none",
+  // ink strip at control height; the whole sheet is the drag handle, so the strip shows the grab cursor
   title:
-    "flex items-center gap-3 bg-yorha-ink px-4 py-2 font-yorha font-yorha-bold text-yorha-sm uppercase " +
+    "flex h-control-sm shrink-0 cursor-grab items-center gap-3 bg-yorha-ink px-4 font-yorha font-yorha-bold text-yorha-sm uppercase active:cursor-grabbing sm:px-6 " +
     "tracking-yorha-heading text-yorha-on-ink " +
     "before:size-2 before:shrink-0 before:bg-current before:content-[''] " +
     "after:h-px after:flex-1 after:bg-yorha-on-ink-soft after:content-['']",
-  body: "min-h-0 flex-1 touch-auto overflow-y-auto overscroll-contain px-6 py-5",
+  body: "min-h-0 flex-1 touch-auto overflow-y-auto overscroll-contain px-4 py-5 sm:px-6",
   description: "text-yorha-base leading-yorha-body text-yorha-fg-strong",
   footer:
-    "flex shrink-0 flex-wrap justify-end gap-3 border-t border-dotted border-yorha-separator px-6 py-4 " +
+    "flex shrink-0 flex-wrap justify-end gap-3 border-t border-dotted border-yorha-separator px-4 py-4 sm:px-6 " +
     "pb-[calc(1rem+env(safe-area-inset-bottom,0px)+var(--drawer-keyboard-inset,0px))]",
-  grip: "mx-auto mt-3 h-1 w-12 shrink-0 bg-yorha-separator",
+  // Drag grip of a bottom sheet: a 16px ink band that continues into the title strip, the 40 x 4 bar centred in it.
+  grip:
+    "flex h-4 shrink-0 cursor-grab items-center justify-center bg-yorha-ink active:cursor-grabbing " +
+    "before:h-1 before:w-10 before:bg-yorha-on-ink-soft before:content-['']",
 };
 
 const SideContext = createContext<Side>("right");
@@ -180,7 +185,7 @@ function DrawerFooter({ className, ...props }: ComponentProps<"div">) {
   return <div data-slot="drawer-footer" className={cn(drawerStyles.footer, className)} {...props} />;
 }
 
-/** Decorative drag grip for side="bottom". */
+/** Drag grip for side="bottom": place it before DrawerTitle. The whole popup is the handle; the grip only says so. */
 function DrawerGrip({ className, ...props }: ComponentProps<"div">) {
   return <div data-slot="drawer-grip" aria-hidden="true" className={cn(drawerStyles.grip, className)} {...props} />;
 }

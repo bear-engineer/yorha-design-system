@@ -388,7 +388,8 @@ describe("drawer (FOVL-06, 07, 08, 09)", () => {
     await until(() => !!q('[role="dialog"]'));
     await frames(30);
     const cs = getComputedStyle(q('[role="dialog"]')!);
-    expect(cs.boxShadow).toBe("none");
+    // `shadow-none` computes to transparent zero-size layers; nothing visible may remain
+    expect(cs.boxShadow.replace(/rgba\(0, 0, 0, 0\) 0px 0px 0px 0px( inset)?(, )?/g, "").trim() || "none").toBe("none");
     expect(px(cs.borderTopWidth)).toBe(2);
     const probe = document.createElement("div");
     probe.className = "bg-yorha-ink";
