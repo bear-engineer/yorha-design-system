@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import type { CSSProperties, ReactNode } from "react";
 import { Bento, BentoTile } from "./bento";
 
@@ -288,5 +289,20 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     expect(canvasElement.querySelectorAll('[data-theme="authentic"] [data-slot="bento-tile"]').length).toBe(4);
+  },
+};
+
+/** 링크 타일: 기본과 키보드 포커스 상태, 360px 폭에서 타깃을 측정한다. 호버 리프트는 CSS 전용이라 재생하지 않는다. */
+export const States: Story = {
+  render: () => (
+    <Frame width={360}>
+      <PresetBento preset="dashboard" id="states" />
+    </Frame>
+  ),
+  play: async ({ canvasElement }) => {
+    const first = canvasElement.querySelector<HTMLAnchorElement>("a")!;
+    await userEvent.tab();
+    await expect(first).toHaveFocus();
+    await expectTargetSize(canvasElement);
   },
 };

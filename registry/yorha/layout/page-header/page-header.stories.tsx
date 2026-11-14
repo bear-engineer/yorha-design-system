@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { withRouter } from "../../../../.storybook/decorators";
 import { PageHeader } from "./page-header";
 import { Button } from "@/components/ui/button";
@@ -115,5 +116,31 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("heading", { level: 1, name: "권위 테마" })).toBeInTheDocument();
+  },
+};
+
+/** 기본 버튼, 비활성 버튼, 키보드 포커스 상태의 타깃을 측정한다. */
+export const States: Story = {
+  args: {
+    actions: (
+      <>
+        <Button variant="ghost">내보내기</Button>
+        <Button variant="primary">점검 시작</Button>
+        <Button disabled>잠금</Button>
+      </>
+    ),
+  },
+  render: (args) => (
+    <main className="bg-yorha-panel text-yorha-fg">
+      <PageHeader {...args} />
+    </main>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("button", { name: "잠금" })).toBeDisabled();
+    await userEvent.tab();
+    await userEvent.tab();
+    await expect(c.getByRole("button", { name: "점검 시작" })).toHaveFocus();
+    await expectTargetSize(canvasElement);
   },
 };

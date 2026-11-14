@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, userEvent, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { withRouter } from "../../../../.storybook/decorators";
 import { HudLayout, HudRegion } from "@/components/hud-layout";
 
@@ -114,5 +115,16 @@ export const Authentic: Story = {
   render: () => frame(<Hud />, "authentic"),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("region", { name: "상태" })).toBeInTheDocument();
+  },
+};
+
+/** 표시 상태: 영역 안의 버튼 포커스와 타깃 측정. 숨김 상태는 Hidden 스토리에서 확인한다. */
+export const States: Story = {
+  render: () => frame(<Hud />),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.tab();
+    await expect(c.getByRole("button", { name: "메시지 닫기" })).toHaveFocus();
+    await expectTargetSize(canvasElement);
   },
 };
