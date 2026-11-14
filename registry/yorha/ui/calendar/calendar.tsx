@@ -143,14 +143,20 @@ function useControllable<T>(value: T | undefined, defaultValue: T, onChange?: (v
 
 const EMPTY_RANGE: DateRange = { from: null, to: null };
 
-/** Week-row width: 7 cells of the compact control step (40 / 32 / 24 px by density). */
+/** Week-row width: 7 cells of the container-derived cell edge. */
 const GRID_WIDTH = "w-[calc(var(--yorha-cal-cell)*7)]";
 
 /**
- * Cell edge: the compact control step, shrunk in whole pixels when the viewport is narrow so the 7-column frame
- * (7 cells + 16px padding + 2px border) still fits 320px with room for page margins. Never below the 24px target.
+ * Cell edge, from the calendar's own container (not the viewport): the wrapper is an inline-size container, the cell is
+ * the compact control step (40 / 32 / 24 px by density) shrunk in whole pixels until the months, their 25px dividers and
+ * the 18px frame (16 padding + 2 border) fit the container. Never below the 24px target. `--n` is the number of months
+ * laid out side by side (1 when stacked on a narrow viewport). Custom properties resolve `cqi` where they are used,
+ * i.e. on the cells inside the wrapper. The 0.01px absorbs float error so an exact fit does not lose a pixel.
  */
-const CELL_VAR = "[--yorha-cal-cell:clamp(1.5rem,round(down,calc((100vw_-_4.5rem_-_18px)_/_7),1px),var(--yorha-control-sm))]";
+const CELL_VAR =
+  "[--yorha-cal-cell:clamp(1.5rem,round(down,calc((100cqi_-_18px_-_(var(--n)_-_1)_*_25px_+_0.01px)_/_(7_*_var(--n))),1px),var(--yorha-control-sm))]";
+/** The wrapper keeps the natural width and yields to its container. */
+const WRAP_WIDTH = "w-[calc(var(--n)_*_7_*_var(--yorha-control-sm)_+_(var(--n)_-_1)_*_25px_+_18px)] max-w-full";
 
 /** One numeral box for in-month and outside days, so the digits never move between kinds. */
 const NUMBER = "grid size-full place-items-center pb-1 text-yorha-sm yorha-tabular";
@@ -621,18 +627,23 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
 
   return (
     <div
+      data-slot="calendar-container"
+      style={{ "--n": count } as React.CSSProperties}
+      className={cn("inline-block align-top [container-type:inline-size] max-sm:[--n:1]", WRAP_WIDTH, CELL_VAR)}
+    >
+    <div
       ref={setRefs}
       data-slot="calendar"
       data-mode={isRange ? "range" : "single"}
       lang={locale}
       aria-label={props["aria-label"]}
-      className={cn("inline-block bg-yorha-panel p-2 font-yorha text-yorha-fg", CELL_VAR, bordered && "border border-yorha-border", className)}
+      className={cn("block bg-yorha-panel p-2 font-yorha text-yorha-fg", bordered && "border border-yorha-border", className)}
     >
       <MonthSlide monthKey={firstIdx} animate={dir !== 0} travel={travel}>
         {Array.from({ length: count }, (_, i) => renderMonth(i))}
       </MonthSlide>
       {showToday ? (
-        <div data-slot="calendar-footer" className="flex h-[calc(var(--yorha-control-sm)+1px)] items-center justify-between border-t border-yorha-separator">
+        <div data-slot="calendar-footer" className="sticky bottom-0 z-20 flex h-[calc(var(--yorha-control-sm)+1px)] items-center justify-between border-t border-yorha-separator bg-yorha-panel">
           <button type="button" onClick={goToday} className={buttonVariants({ variant: "ghost", size: "sm" })}>
             {labels.today}
           </button>
@@ -641,6 +652,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
           </span>
         </div>
       ) : null}
+    </div>
     </div>
   );
 });
