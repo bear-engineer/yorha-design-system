@@ -15,7 +15,8 @@
       "files": [
         {
           "path": "icon-button.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "@ui/icon-button.tsx"
         }
       ],
       "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."

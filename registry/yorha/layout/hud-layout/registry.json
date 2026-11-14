@@ -7,9 +7,16 @@
       "title": "HUD Layout",
       "description": "Overlay HUD with four corner regions for status, meters and messages. The overlay ignores pointer events except on interactive children; each region is a labelled landmark; the whole HUD can be hidden.",
       "dependencies": [],
-      "registryDependencies": ["@yorha/base", "@yorha/utils"],
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils"
+      ],
       "files": [
-        { "path": "hud-layout.tsx", "type": "registry:component" }
+        {
+          "path": "hud-layout.tsx",
+          "type": "registry:component",
+          "target": "@components/hud-layout.tsx"
+        }
       ],
       "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Put interactive controls inside regions; they receive pointer events, everything else passes through. Provide your own control to toggle the hidden prop."
     }

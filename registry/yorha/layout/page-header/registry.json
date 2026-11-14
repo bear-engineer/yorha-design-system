@@ -16,7 +16,8 @@
       "files": [
         {
           "path": "page-header.tsx",
-          "type": "registry:component"
+          "type": "registry:component",
+          "target": "@components/page-header.tsx"
         }
       ],
       "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."

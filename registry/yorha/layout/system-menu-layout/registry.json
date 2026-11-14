@@ -16,7 +16,11 @@
         "@yorha/split"
       ],
       "files": [
-        { "path": "system-menu-layout.tsx", "type": "registry:component" }
+        {
+          "path": "system-menu-layout.tsx",
+          "type": "registry:component",
+          "target": "@components/system-menu-layout.tsx"
+        }
       ],
       "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Router-agnostic: pass value + onValueChange (e.g. derived from useLocation / navigate) to make each tab a route. Panel transitions follow --motion-panel."
     }

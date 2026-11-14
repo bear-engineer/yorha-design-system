@@ -40,11 +40,9 @@ writeFileSync(
 
 mkdirSync(join(dir, "app/routes"), { recursive: true });
 rmSync(join(dir, "app/routes/home.tsx"), { force: true }); // template route, replaced by routes.ts below
-// shadcn nests ui files as components/ui/<name>/<name>.tsx; resolve each import to wherever the item landed.
-const resolveUi = (name) => (existsSync(join(dir, `app/components/ui/${name}.tsx`)) ? name : `${name}/${name}`);
 writeFileSync(
   join(dir, "app/routes/gallery.tsx"),
-  readFileSync(gallery, "utf8").replace(/~\/components\/ui\/([\w-]+)"/g, (_, n) => `~/components/ui/${resolveUi(n)}"`),
+  readFileSync(gallery, "utf8"),
 );
 const demo = "routes/yorha-demo.tsx";
 if (!existsSync(join(dir, "app", demo))) throw new Error("yorha-demo route file not found");

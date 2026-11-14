@@ -16,7 +16,8 @@
       "files": [
         {
           "path": "breadcrumb.tsx",
-          "type": "registry:component"
+          "type": "registry:component",
+          "target": "@components/breadcrumb.tsx"
         }
       ],
       "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Use inside a react-router data or declarative router."

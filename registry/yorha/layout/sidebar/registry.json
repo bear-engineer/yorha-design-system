@@ -17,7 +17,8 @@
       "files": [
         {
           "path": "sidebar.tsx",
-          "type": "registry:component"
+          "type": "registry:component",
+          "target": "@components/sidebar.tsx"
         }
       ],
       "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Requires a react-router data or declarative router context (NavLink)."

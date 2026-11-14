@@ -17,7 +17,8 @@
       "files": [
         {
           "path": "menu-list.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "@ui/menu-list.tsx"
         }
       ],
       "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Ornaments are drawn with CSS only. Sound cues (cursor-move, select) are opt-in: pass `sound` and enable them in <YorhaProvider sound={{ enabled: true }}>. Thin rules follow the --menu-rule token (0 hides them)."

@@ -6,9 +6,20 @@
       "type": "registry:ui",
       "title": "Popover",
       "description": "Non-modal popover on Base UI Popover: panel in a portal, positioned by Base UI, Escape and outside press dismiss, focus returns to the trigger. Title and description are linked to the dialog.",
-      "dependencies": ["@base-ui/react@^1.9.0"],
-      "registryDependencies": ["@yorha/utils", "@yorha/base"],
-      "files": [{ "path": "popover.tsx", "type": "registry:ui" }],
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "popover.tsx",
+          "type": "registry:ui",
+          "target": "@ui/popover.tsx"
+        }
+      ],
       "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Popover, PopoverTrigger, PopoverContent, PopoverTitle, PopoverDescription, PopoverClose. Pass `modal={false}` for a non-trapping popover. Positioning uses Base UI's Positioner (side, align, sideOffset), not CSS anchor positioning."
     }
   ]

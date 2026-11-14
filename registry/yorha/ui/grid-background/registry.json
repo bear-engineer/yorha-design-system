@@ -7,8 +7,17 @@
       "title": "GridBackground",
       "description": "Decorative faint 0.3rem grid drawn with CSS gradients from the grid token. aria-hidden, pointer-events none.",
       "dependencies": [],
-      "registryDependencies": ["@yorha/utils", "@yorha/base"],
-      "files": [{ "path": "grid-background.tsx", "type": "registry:ui" }],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "grid-background.tsx",
+          "type": "registry:ui",
+          "target": "@ui/grid-background.tsx"
+        }
+      ],
       "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Place <GridBackground /> as the first child of a relative container; it is decorative and hidden from assistive technology."
     }
   ]

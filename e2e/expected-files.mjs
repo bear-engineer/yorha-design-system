@@ -14,10 +14,7 @@ const dir = { "registry:ui": "app/components/ui", "registry:lib": "app/lib", "re
 for (const name of items) {
   const item = JSON.parse(readFileSync(join(rDir, `${name}.json`), "utf8"));
   for (const f of item.files ?? []) {
-    if (f.target) {
-      console.log(`${name}\t${f.target}`);
-      continue;
-    }
+    if (f.type === "registry:page") { console.log(`${name}\tapp/routes/${basename(f.path)}`); continue; }
     if (!dir[f.type]) { console.error(`cannot place ${name}: ${f.path} (${f.type})`); process.exit(2); }
     console.log(`${name}\t${join(dir[f.type], basename(f.path))}`);
   }

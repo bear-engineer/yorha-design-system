@@ -17,7 +17,8 @@
       "files": [
         {
           "path": "text-field.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "@ui/text-field.tsx"
         }
       ],
       "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."

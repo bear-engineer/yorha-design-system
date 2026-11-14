@@ -7,8 +7,17 @@
       "title": "Vignette",
       "description": "Decorative curved-monitor edge darkening (inset shadow and radial falloff) with an optional static scanline. aria-hidden, pointer-events none.",
       "dependencies": [],
-      "registryDependencies": ["@yorha/utils", "@yorha/base"],
-      "files": [{ "path": "vignette.tsx", "type": "registry:ui" }],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "vignette.tsx",
+          "type": "registry:ui",
+          "target": "@ui/vignette.tsx"
+        }
+      ],
       "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Place <Vignette /> as the last child of a relative container. Pass scanline for the static stripe pattern; it has no animation, so reduced motion needs no extra handling."
     }
   ]

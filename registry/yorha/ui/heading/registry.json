@@ -14,7 +14,8 @@
       "files": [
         {
           "path": "heading.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "@ui/heading.tsx"
         }
       ],
       "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."

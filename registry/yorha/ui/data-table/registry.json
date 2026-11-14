@@ -7,8 +7,17 @@
       "title": "DataTable",
       "description": "Semantic table with a required caption, scoped column headers, optional sortable headers (button + aria-sort), zebra rows drawn with a hatch rule, and dense/comfortable density.",
       "dependencies": [],
-      "registryDependencies": ["@yorha/utils", "@yorha/base"],
-      "files": [{ "path": "data-table.tsx", "type": "registry:ui" }],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "data-table.tsx",
+          "type": "registry:ui",
+          "target": "@ui/data-table.tsx"
+        }
+      ],
       "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose DataTable (caption required), DataTableHeader, DataTableBody, DataTableRow, DataTableHeadCell (sortable, sortDirection, onSortChange) and DataTableCell (numeric). Density is set with density=\"dense\" | \"comfortable\"; zebra is on by default (zebra={false} to turn off)."
     }
   ]

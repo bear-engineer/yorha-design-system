@@ -16,7 +16,8 @@
       "files": [
         {
           "path": "nav-link.tsx",
-          "type": "registry:component"
+          "type": "registry:component",
+          "target": "@components/nav-link.tsx"
         }
       ],
       "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Use inside a react-router data or declarative router. Pass render={<NavLink to=... />} to a Base UI row to reuse the selected-row look."

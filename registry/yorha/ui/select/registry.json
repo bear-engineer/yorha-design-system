@@ -6,9 +6,20 @@
       "type": "registry:ui",
       "title": "Select",
       "description": "Dropdown select on Base UI Select: square trigger, portal popup, rows with a dark left-to-right fill wipe, arrow cursor, square bullet and thin rules; groups, separators and disabled items.",
-      "dependencies": ["@base-ui/react@^1.9.0"],
-      "registryDependencies": ["@yorha/utils", "@yorha/base"],
-      "files": [{ "path": "select.tsx", "type": "registry:ui" }],
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "select.tsx",
+          "type": "registry:ui",
+          "target": "@ui/select.tsx"
+        }
+      ],
       "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Select, SelectTrigger, SelectValue, SelectContent, SelectItem (plus SelectGroup, SelectGroupLabel, SelectSeparator). Pass `items` to Select so the closed trigger can show the selected label. Disabled items stay keyboard-highlightable (Base UI behaviour) but cannot be chosen."
     }
   ]

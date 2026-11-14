@@ -16,7 +16,8 @@
       "files": [
         {
           "path": "number-field.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "@ui/number-field.tsx"
         }
       ],
       "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only."

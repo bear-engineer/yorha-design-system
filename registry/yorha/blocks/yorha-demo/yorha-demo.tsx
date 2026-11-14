@@ -56,6 +56,10 @@ const SECTIONS: SystemMenuSection[] = [
 ];
 
 /** 설정 화면 블록. 라우트 모듈(app/routes/yorha-demo.tsx)로 복사해 쓴다. */
+export function meta() {
+  return [{ title: "설정 | YoRHa 데모" }];
+}
+
 export default function YorhaDemo() {
   return (
     <AppShell

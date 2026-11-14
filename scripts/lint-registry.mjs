@@ -1,6 +1,7 @@
 // Registry lint. Pure `lintRegistry(rootDir)` returns error strings; the CLI prints them and sets the exit code.
 // Rules: @yorha/ registryDependencies only; files exist; every item with files has <name>.stories.tsx
 // (registry:lib items are exempt, they are specified by unit tests); ui/component items list @yorha/base + @yorha/utils;
+// every ui/lib/hook/component file has target @ui|@lib|@hooks|@components/<basename> (flat install);
 // registry:ui items import only other items' primary files; no hex colors in .tsx; no outline removal without
 // focus-visible in the same file; no audio/font binaries under registry/.
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
@@ -10,6 +11,7 @@ import { fileURLToPath } from "node:url";
 const BINARY_EXT = new Set([".mp3", ".wav", ".ogg", ".flac", ".m4a", ".aac", ".opus", ".woff", ".woff2", ".ttf", ".otf", ".eot"]);
 const HEX = /#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/g;
 const OUTLINE_OFF = /outline\s*:\s*(?:none|0)\b|(?<![\w-])outline-none\b|outline-0\b/;
+const TARGET_ALIAS = { "registry:ui": "@ui", "registry:lib": "@lib", "registry:hook": "@hooks", "registry:component": "@components" };
 const IMPORT = /(?:from|import)\s*\(?\s*["']([^"']+)["']/g;
 
 function walk(dir) {
@@ -64,6 +66,14 @@ export function lintRegistry(rootDir = process.cwd()) {
     if (item.type === "registry:ui" || item.type === "registry:component") {
       for (const need of ["@yorha/base", "@yorha/utils"]) {
         if (!deps.includes(need)) errors.push(`${item.name}: ${item.type} must list ${need} in registryDependencies`);
+      }
+    }
+    for (const f of files) {
+      // shadcn 4.23.0 nests files whose path has a segment named like the type folder (ui/button/button.tsx ->
+      // components/ui/button/button.tsx); an explicit alias target pins the documented flat location.
+      const alias = TARGET_ALIAS[f.type];
+      if (alias && f.target !== `${alias}/${basename(f.path)}`) {
+        errors.push(`${item.name}: ${f.path} (${f.type}) needs target "${alias}/${basename(f.path)}" for a flat consumer install`);
       }
     }
     for (const f of files) {

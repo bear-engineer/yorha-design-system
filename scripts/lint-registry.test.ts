@@ -17,6 +17,7 @@ describe("lintRegistry", () => {
     ["outline-none", /removes outline without focus-visible/],
     ["cross-import", /imports non-primary file "@\/components\/ui\/other-helper" of other/],
     ["font-binary", /binary audio\/font not allowed.*face\.woff2/],
+    ["missing-target", /needs target \"@ui\/thing.tsx\" for a flat consumer install/],
     ["missing-core-deps", /must list @yorha\/utils/],
   ])("rejects fixture %s", (name, message) => {
     const { errors } = lintRegistry(fixture(name));

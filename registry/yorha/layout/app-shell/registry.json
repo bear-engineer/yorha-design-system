@@ -16,7 +16,8 @@
       "files": [
         {
           "path": "app-shell.tsx",
-          "type": "registry:component"
+          "type": "registry:component",
+          "target": "@components/app-shell.tsx"
         }
       ],
       "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Put <Sidebar/> in the nav slot and pass <GridBackground/> and <Vignette/> to the decorative slots if wanted."

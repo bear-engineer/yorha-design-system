@@ -16,7 +16,8 @@
       "files": [
         {
           "path": "route-transition.tsx",
-          "type": "registry:component"
+          "type": "registry:component",
+          "target": "@components/route-transition.tsx"
         }
       ],
       "css": {

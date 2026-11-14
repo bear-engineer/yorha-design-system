@@ -7,8 +7,17 @@
       "title": "YorhaProvider",
       "description": "Provider and hooks for theme, motion, density and sound preference. Writes data-theme, data-motion and data-density on <html>.",
       "dependencies": [],
-      "registryDependencies": ["@yorha/base", "@yorha/utils"],
-      "files": [{ "path": "yorha-provider.tsx", "type": "registry:component" }],
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils"
+      ],
+      "files": [
+        {
+          "path": "yorha-provider.tsx",
+          "type": "registry:component",
+          "target": "@components/yorha-provider.tsx"
+        }
+      ],
       "docs": "Unofficial fan project. Wrap your app in <YorhaProvider>; useMotion persists the choice in localStorage key yorha:motion."
     }
   ]

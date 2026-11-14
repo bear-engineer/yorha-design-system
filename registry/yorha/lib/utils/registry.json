@@ -9,7 +9,8 @@
       "files": [
         {
           "path": "utils.ts",
-          "type": "registry:lib"
+          "type": "registry:lib",
+          "target": "@lib/utils.ts"
         }
       ]
     }

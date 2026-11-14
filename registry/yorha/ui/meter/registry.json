@@ -6,9 +6,20 @@
       "type": "registry:ui",
       "title": "Meter",
       "description": "HP-style value bar on Base UI Meter: visible label and value/max text, announced as a meter with aria-valuenow and aria-valuetext. Static, no animation.",
-      "dependencies": ["@base-ui/react@^1.9.0"],
-      "registryDependencies": ["@yorha/utils", "@yorha/base"],
-      "files": [{ "path": "meter.tsx", "type": "registry:ui" }],
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "meter.tsx",
+          "type": "registry:ui",
+          "target": "@ui/meter.tsx"
+        }
+      ],
       "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. No original assets are used."
     }
   ]

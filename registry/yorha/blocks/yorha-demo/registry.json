@@ -19,7 +19,7 @@
         {
           "path": "yorha-demo.tsx",
           "type": "registry:page",
-          "target": "app/routes/yorha-demo.tsx"
+          "target": "~/app/routes/yorha-demo.tsx"
         }
       ],
       "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."

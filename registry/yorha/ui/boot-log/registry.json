@@ -7,8 +7,19 @@
       "title": "BootLog",
       "description": "Boot-sequence log: lines typed one after another with timestamps and status tags, in a role=log live region (polite). Runs longer than 5 s get pause/resume and skip controls. Reduced or off motion prints every line at once.",
       "dependencies": [],
-      "registryDependencies": ["@yorha/utils", "@yorha/base", "@yorha/typer", "@yorha/sound"],
-      "files": [{ "path": "boot-log.tsx", "type": "registry:ui" }],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base",
+        "@yorha/typer",
+        "@yorha/sound"
+      ],
+      "files": [
+        {
+          "path": "boot-log.tsx",
+          "type": "registry:ui",
+          "target": "@ui/boot-log.tsx"
+        }
+      ],
       "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The boot sequence is illustrative text generated from the props; no original assets are used."
     }
   ]

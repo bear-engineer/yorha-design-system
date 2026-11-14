@@ -6,9 +6,20 @@
       "type": "registry:ui",
       "title": "Accordion",
       "description": "Header rows on Base UI Accordion: square bullet that fills when open, thin rules, dark left-to-right wipe on the open row, height-animated panels.",
-      "dependencies": ["@base-ui/react@^1.9.0"],
-      "registryDependencies": ["@yorha/utils", "@yorha/base"],
-      "files": [{ "path": "accordion.tsx", "type": "registry:ui" }],
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "accordion.tsx",
+          "type": "registry:ui",
+          "target": "@ui/accordion.tsx"
+        }
+      ],
       "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Compose Accordion, AccordionItem, AccordionHeader, AccordionTrigger, AccordionPanel."
     }
   ]

@@ -14,7 +14,8 @@
       "files": [
         {
           "path": "stack.tsx",
-          "type": "registry:component"
+          "type": "registry:component",
+          "target": "@components/stack.tsx"
         }
       ],
       "docs": "Unofficial fan project. Layout primitive for YoRHa-styled screens; spacing follows the density token ([data-density])."

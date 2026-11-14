@@ -6,9 +6,20 @@
       "type": "registry:ui",
       "title": "Progress",
       "description": "Segmented YoRHa gauge bar on Base UI Progress. Determinate shows the percentage in aria-valuenow and aria-valuetext; indeterminate omits aria-valuenow and sweeps a block across the track for three passes, then rests.",
-      "dependencies": ["@base-ui/react@^1.9.0"],
-      "registryDependencies": ["@yorha/utils", "@yorha/base"],
-      "files": [{ "path": "progress.tsx", "type": "registry:ui" }],
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "progress.tsx",
+          "type": "registry:ui",
+          "target": "@ui/progress.tsx"
+        }
+      ],
       "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The gauge seams are a CSS gradient; no original assets are used."
     }
   ]

@@ -12,7 +12,8 @@
       "files": [
         {
           "path": "thing.tsx",
-          "type": "registry:ui"
+          "type": "registry:ui",
+          "target": "@ui/thing.tsx"
         }
       ]
     }

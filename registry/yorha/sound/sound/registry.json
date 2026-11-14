@@ -13,7 +13,8 @@
       "files": [
         {
           "path": "sound.ts",
-          "type": "registry:lib"
+          "type": "registry:lib",
+          "target": "@lib/sound.ts"
         }
       ],
       "docs": "Unofficial fan project. All sounds are synthesized at runtime with WebAudio oscillators and noise; no audio files are shipped. Enable with <YorhaProvider sound={{ enabled: true }}>. Import with: import { useSound } from \"@/lib/sound\"."
