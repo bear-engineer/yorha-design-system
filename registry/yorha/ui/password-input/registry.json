@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "password-input",
+      "type": "registry:ui",
+      "title": "Password input",
+      "description": "Password field with a reveal toggle (button with aria-pressed and a stable accessible name) and a Caps Lock hint from getModifierState, inside a Field.",
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils",
+        "@yorha/field",
+        "@yorha/button"
+      ],
+      "files": [
+        {
+          "path": "password-input.tsx",
+          "type": "registry:ui",
+          "target": "@ui/password-input.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Default autoComplete is current-password; use new-password when choosing a password. The Caps Lock hint is announced through a persistent status region."
+    }
+  ]
+}
