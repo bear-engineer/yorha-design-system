@@ -1,0 +1,23 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "calendar",
+      "type": "registry:ui",
+      "title": "Calendar",
+      "description": "Month grid on the WAI-ARIA date grid pattern with no dependencies (Date + Intl): single and range selection, controlled or uncontrolled, min/max and disabled days, multiple months, keyboard navigation, renderDay slot and a directional month slide.",
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "calendar.tsx",
+          "type": "registry:ui",
+          "target": "@ui/calendar.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. No dependencies: Date + Intl only, following the WAI-ARIA date grid pattern. Locale defaults to ko-KR; week start comes from Intl.Locale weekInfo (Monday fallback), override with weekStartsOn. Set lang on the wrapper for CJK leading. mode=\"range\" selects start then end (a click before the start swaps them). Keys: arrows day/week, PageUp/PageDown month, Shift+PageUp/PageDown year, Home/End week start/end, Enter/Space select; disabled days are skipped. Use minDate, maxDate, isDateDisabled, numberOfMonths and renderDay (slot for event dots). The month slides with yorha motion tokens (reduced = opacity-only fade, off = instant) and the selected day wipes in dark."
+    }
+  ]
+}
