@@ -5,13 +5,16 @@
       "name": "utils",
       "type": "registry:lib",
       "title": "utils",
-      "description": "cn() and cnState() class helpers (Base UI function className aware).",
+      "description": "cn() (tailwind-merge aware) and cnState() class helpers (Base UI function className aware).",
       "files": [
         {
           "path": "utils.ts",
           "type": "registry:lib",
           "target": "@lib/utils.ts"
         }
+      ],
+      "dependencies": [
+        "tailwind-merge@3.7.0"
       ]
     }
   ]
