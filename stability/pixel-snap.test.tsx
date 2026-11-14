@@ -215,7 +215,8 @@ describe("pixel snap and control heights (comfortable density)", () => {
             snap.push(`${label(el)}: ${(e as Error).message}`);
           }
           if (!SIZE_EXEMPT_ITEMS[item] && !el.hasAttribute("data-size-exempt") && heightControls(el)) {
-            const h = el.getBoundingClientRect().height;
+            // Parts of an InputGroup fill the frame's inner height; the frame is the control that sits on the scale.
+            const h = (el.closest("[data-slot=input-group]") ?? el).getBoundingClientRect().height;
             if (![...allowed].some((a) => Math.abs(a - h) < 0.01)) heights.push(`${label(el)}: height ${h}`);
           }
         }

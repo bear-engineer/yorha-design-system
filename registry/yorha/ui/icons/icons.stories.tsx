@@ -55,15 +55,15 @@ export const Gallery: Story = {
     const svgs = [...canvasElement.querySelectorAll("svg")];
     await expect(svgs).toHaveLength(GALLERY.length);
     for (const [i, svg] of svgs.entries()) {
-      const size = GALLERY[i].size;
+      const { size, name } = GALLERY[i]!;
       const r = svg.getBoundingClientRect();
       await expect(svg.getAttribute("viewBox")).toBe(`0 0 ${size} ${size}`);
-      await expect([r.width, r.height], GALLERY[i].name).toEqual([size, size]);
+      await expect([r.width, r.height], name).toEqual([size, size]);
       await expect(svg.getAttribute("aria-hidden")).toBe("true");
       // Centred in a 40px box with an even remainder: whole-pixel position, no blur.
       const box = svg.parentElement!.getBoundingClientRect();
-      await expect(Math.abs(r.left - box.left - (box.width - r.width) / 2), GALLERY[i].name).toBeLessThan(0.5);
-      await expect(Math.abs(r.top - box.top - (box.height - r.height) / 2), GALLERY[i].name).toBeLessThan(0.5);
+      await expect(Math.abs(r.left - box.left - (box.width - r.width) / 2), name).toBeLessThan(0.5);
+      await expect(Math.abs(r.top - box.top - (box.height - r.height) / 2), name).toBeLessThan(0.5);
     }
   },
 };

@@ -89,7 +89,7 @@ export const States: Story = {
   play: async ({ canvasElement }) => {
     const groups = [...canvasElement.querySelectorAll<HTMLElement>("[data-case] [data-slot=input-group]")];
     await expect(groups).toHaveLength(6);
-    const [normal, invalid, disabled, readonly, , withText] = groups;
+    const [normal, invalid, disabled, readonly, , withText] = groups as [HTMLElement, HTMLElement, HTMLElement, HTMLElement, HTMLElement, HTMLElement];
     const md = px("var(--yorha-control-md)");
     for (const g of [normal, invalid, disabled, readonly, withText]) {
       await expect(g.getBoundingClientRect().height).toBe(md);
@@ -122,9 +122,10 @@ export const Sizes: Story = {
   play: async ({ canvasElement }) => {
     const groups = [...canvasElement.querySelectorAll<HTMLElement>("[data-slot=input-group]")];
     for (const [i, s] of (["sm", "md", "lg"] as const).entries()) {
-      await expect(groups[i].getBoundingClientRect().height).toBe(px(`var(--yorha-control-${s})`));
-      expectSameHeight(groups[i].querySelector("input")!, groups[i].querySelector("button")!);
-      expectPixelSnapped(groups[i], { axes: "xy" });
+      const g = groups[i]!;
+      await expect(g.getBoundingClientRect().height).toBe(px(`var(--yorha-control-${s})`));
+      expectSameHeight(g.querySelector("input")!, g.querySelector("button")!);
+      expectPixelSnapped(g, { axes: "xy" });
     }
   },
 };

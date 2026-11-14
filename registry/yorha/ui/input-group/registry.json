@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "input-group",
+      "type": "registry:ui",
+      "title": "InputGroup",
+      "description": "One frame for a text control with adornments: InputGroup (size sm/md/lg, variant wrap), InputGroupInput, InputGroupAddon, InputGroupButton, InputGroupText. Children sit on the control scale (equal heights, whole pixels); the frame owns hover, the single focus ring, invalid, disabled and read-only.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "input-group.tsx",
+          "type": "registry:ui",
+          "target": "@ui/input-group.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Put icons in InputGroupAddon (decorative) or InputGroupButton (aria-label required). Set invalid, disabled or readOnly on the group (or aria-invalid / disabled / readOnly on the input). A button that can disappear stays mounted and toggles `invisible` so the group never changes size."
+    }
+  ]
+}

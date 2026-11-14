@@ -1,4 +1,4 @@
-import { createElement } from "react";
+import { createElement, type ComponentType } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import * as icons from "./icons";
@@ -29,9 +29,9 @@ for (const [name, Cmp] of Object.entries(icons)) {
     for (const size of [12, 16]) for (const dir of ["up", "down", "left", "right"]) variants.push({ name, props: { size, dir }, size });
   } else if (name === "TriangleIcon") {
     for (const dir of ["up", "down", "left", "right"]) variants.push({ name, props: { dir }, size: 12 });
-  } else variants.push({ name, props: {}, size: SIZE_OF[name] });
+  } else variants.push({ name, props: {}, size: SIZE_OF[name]! });
 }
-const html = (v: Variant) => renderToStaticMarkup(createElement((icons as unknown as Record<string, React.ComponentType<Record<string, unknown>>>)[v.name], v.props));
+const html = (v: Variant) => renderToStaticMarkup(createElement((icons as unknown as Record<string, ComponentType<Record<string, unknown>>>)[v.name]!, v.props));
 const attr = (s: string, a: string) => new RegExp(`\\s${a}="([^"]*)"`).exec(s)?.[1];
 
 describe("icons (G3)", () => {
@@ -44,7 +44,7 @@ describe("icons (G3)", () => {
     const label = `${v.name} ${JSON.stringify(v.props)}`;
     describe(label, () => {
       const markup = html(v);
-      const svg = /<svg[^>]*>/.exec(markup)![0];
+      const svg = /<svg[^>]*>/.exec(markup)![0]!;
       it("uses a size from {12, 16, 20}; viewBox equals the render size", () => {
         expect([12, 16, 20]).toContain(v.size);
         expect(attr(svg, "width")).toBe(String(v.size));
@@ -71,8 +71,8 @@ describe("icons (G3)", () => {
       it("has integer coordinates only", () => {
         const body = markup.replace(/<svg[^>]*>/, "");
         const values: string[] = [];
-        for (const m of body.matchAll(/\s(d|points)="([^"]*)"/g)) values.push(...(m[2].match(/-?\d*\.?\d+/g) ?? []));
-        for (const m of body.matchAll(/\s(x|y|cx|cy|r|width|height)="([^"]*)"/g)) values.push(m[2]);
+        for (const m of body.matchAll(/\s(d|points)="([^"]*)"/g)) values.push(...(m[2]!.match(/-?\d*\.?\d+/g) ?? []));
+        for (const m of body.matchAll(/\s(x|y|cx|cy|r|width|height)="([^"]*)"/g)) values.push(m[2]!);
         expect(values.length).toBeGreaterThan(0);
         for (const n of values) expect(Number.isInteger(Number(n)), `${label}: ${n}`).toBe(true);
         expect(body).not.toMatch(/\sstroke-width=/); // the width lives on the root only
@@ -80,7 +80,7 @@ describe("icons (G3)", () => {
       it("stays inside its box", () => {
         const body = markup.replace(/<svg[^>]*>/, "");
         const nums: number[] = [];
-        for (const m of body.matchAll(/\s(d|points)="([^"]*)"/g)) nums.push(...(m[2].match(/-?\d+/g) ?? []).map(Number));
+        for (const m of body.matchAll(/\s(d|points)="([^"]*)"/g)) nums.push(...(m[2]!.match(/-?\d+/g) ?? []).map(Number));
         for (const n of nums) expect(n >= 0 && n <= v.size).toBe(true);
       });
     });

@@ -20,14 +20,16 @@ const near = (a: number, b: number, tol = TOL) => Math.abs(a - b) <= tol;
 /** Distinct values after clustering within `tol`, ascending. */
 function cluster(values: number[], tol = TOL): number[] {
   const out: number[] = [];
-  for (const v of [...values].sort((a, b) => a - b)) if (!out.length || v - out[out.length - 1] > tol) out.push(v);
+  for (const v of [...values].sort((a, b) => a - b)) if (out.length === 0 || v - out[out.length - 1]! > tol) out.push(v);
   return out;
 }
 
 /** Cells form `rows` rows (each sharing one y) of `columns` cells (distinct x with an equal pitch), all of one width and height. */
 export function expectGrid(cells: Element[], { columns, rows }: { columns: number; rows?: number }): void {
-  if (!cells.length) fail("expectGrid: no cells");
+  const first = cells[0];
+  if (!first) fail("expectGrid: no cells");
   const rects = cells.map(rect);
+  const firstRect = rect(first);
   const ys = cluster(rects.map((r) => r.top));
   const xs = cluster(rects.map((r) => r.left));
   if (xs.length !== columns) fail(`expectGrid: ${xs.length} distinct x positions, expected ${columns} columns (${xs.map(fmt).join(", ")})`);
@@ -37,22 +39,22 @@ export function expectGrid(cells: Element[], { columns, rows }: { columns: numbe
     const inRow = rects.filter((r) => near(r.top, y));
     if (inRow.length !== columns) fail(`expectGrid: row at y=${fmt(y)} has ${inRow.length} cells, expected ${columns}`);
   }
-  const pitches = xs.slice(1).map((x, i) => x - xs[i]);
-  for (const p of pitches) if (!near(p, pitches[0])) fail(`expectGrid: unequal column pitch ${pitches.map(fmt).join(", ")}`);
+  const pitches = xs.slice(1).map((x, i) => x - xs[i]!);
+  for (const p of pitches) if (!near(p, pitches[0]!)) fail(`expectGrid: unequal column pitch ${pitches.map(fmt).join(", ")}`);
   for (const [i, r] of rects.entries()) {
-    if (!near(r.width, rects[0].width) || !near(r.height, rects[0].height)) {
-      fail(`expectGrid: cell ${i} ${name(cells[i])} is ${fmt(r.width)}x${fmt(r.height)}, first cell is ${fmt(rects[0].width)}x${fmt(rects[0].height)}`);
+    if (!near(r.width, firstRect.width) || !near(r.height, firstRect.height)) {
+      fail(`expectGrid: cell ${i} ${name(cells[i]!)} is ${fmt(r.width)}x${fmt(r.height)}, first cell is ${fmt(firstRect.width)}x${fmt(firstRect.height)}`);
     }
   }
 }
 
 export function expectSameHeight(...els: Element[]): void {
-  const first = rect(els[0]).height;
+  const first = rect(els[0]!).height;
   for (const el of els) if (!near(rect(el).height, first)) fail(`expectSameHeight: ${els.map((e) => `${name(e)} ${fmt(rect(e).height)}`).join(", ")}`);
 }
 
 export function expectSameLeft(...els: Element[]): void {
-  const first = rect(els[0]).left;
+  const first = rect(els[0]!).left;
   for (const el of els) if (!near(rect(el).left, first)) fail(`expectSameLeft: ${els.map((e) => `${name(e)} ${fmt(rect(e).left)}`).join(", ")}`);
 }
 
