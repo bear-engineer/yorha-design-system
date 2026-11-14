@@ -1,4 +1,25 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "nav-link",
+      "type": "registry:component",
+      "title": "NavLink",
+      "description": "react-router NavLink with the YoRHa selected-row look. aria-current=page marks the active row. Forwards props and ref so it works as a MenuList row through a render prop.",
+      "dependencies": [
+        "react-router@^8.5.1"
+      ],
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils"
+      ],
+      "files": [
+        {
+          "path": "nav-link.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Use inside a react-router data or declarative router. Pass render={<NavLink to=... />} to a Base UI row to reuse the selected-row look."
+    }
+  ]
 }

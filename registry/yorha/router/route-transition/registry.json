@@ -1,4 +1,31 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "route-transition",
+      "type": "registry:component",
+      "title": "RouteTransition",
+      "description": "Renders <Outlet/> inside React <ViewTransition> so route changes animate as YoRHa panel motion. Disabled when data-motion is reduced or off.",
+      "dependencies": [
+        "react-router@^8.5.1"
+      ],
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils"
+      ],
+      "files": [
+        {
+          "path": "route-transition.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "css": {
+        "::view-transition-group(.yorha-route)": {
+          "animation-duration": "var(--motion-panel)",
+          "animation-timing-function": "var(--yorha-ease)"
+        }
+      },
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Needs React 19.3+ (stable ViewTransition) and navigation inside a transition (RouterProvider does this). Replaces react-router's deprecated viewTransition APIs; never calls document.startViewTransition."
+    }
+  ]
 }
