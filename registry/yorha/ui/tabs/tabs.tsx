@@ -29,7 +29,11 @@ function TabsList({ className, children, activateOnFocus = true, ...props }: Com
   );
 }
 
-/** Uppercase, widely tracked tab label; selected tab inverts (data-active), inactive tabs tint on hover. */
+/**
+ * Uppercase, widely tracked tab label; selected tab inverts (data-active), inactive tabs tint on hover.
+ * Migration (C2-301): keyboard focus uses the kit ring (2px at +2px offset, ring colour, drawn outside the tab and above its
+ * neighbours) instead of a -2px inset outline; the strip's ancestors must not clip it (give a clipping parent padding).
+ */
 function TabsTab({ className, ...props }: ComponentProps<typeof TabsPrimitive.Tab>) {
   return (
     <TabsPrimitive.Tab
@@ -41,7 +45,7 @@ function TabsTab({ className, ...props }: ComponentProps<typeof TabsPrimitive.Ta
           // label colour travels with the indicator (same duration and easing), so the label never flips ahead of the bar
           "yorha-tint transition-[color] duration-(--motion-tab-indicator) ease-yorha-emphasized",
           "data-[active]:text-yorha-on-ink",
-          "focus-visible:yorha-focus-inset",
+          "focus-visible:z-20 focus-visible:yorha-focus",
           "yorha-disabled",
         ],
         className,
