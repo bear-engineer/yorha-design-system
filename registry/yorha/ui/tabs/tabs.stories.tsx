@@ -39,8 +39,10 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const selectedLabel = (c: ReturnType<typeof within>) =>
-  c.getAllByRole("tab").find((t) => t.getAttribute("aria-selected") === "true")?.textContent?.trim();
+const visiblePanel = () => document.querySelector<HTMLElement>('[role="tabpanel"]:not([hidden])')!;
+
+const selectedLabel = (c: { getAllByRole: (role: string) => HTMLElement[] }) =>
+  c.getAllByRole("tab").find((t: HTMLElement) => t.getAttribute("aria-selected") === "true")?.textContent?.trim();
 
 export const Default: Story = {
   render: () => <Demo />,
@@ -54,7 +56,7 @@ export const Default: Story = {
     await expect(status).toHaveAttribute("aria-selected", "true");
 
     // selected panel is labelled by its tab
-    const panel = c.getByRole("tabpanel");
+    const panel = visiblePanel();
     await expect(panel).toHaveTextContent("시스템 상태 요약");
     await expect(panel.getAttribute("aria-labelledby")).toBe(status.id);
 
@@ -64,8 +66,9 @@ export const Default: Story = {
     await waitFor(() => expect(units).toHaveAttribute("aria-selected", "true"));
     await expect(status).toHaveAttribute("aria-selected", "false");
     await expect(units).toHaveFocus();
-    await expect(c.getByRole("tabpanel")).toHaveTextContent("배치된 유닛 목록");
-    await expect(c.getByRole("tabpanel").getAttribute("aria-labelledby")).toBe(units.id);
+    // panel swap runs through the exit/enter transition; wait for the new panel
+    await waitFor(() => expect(visiblePanel()).toHaveTextContent("배치된 유닛 목록"));
+    await expect(visiblePanel().getAttribute("aria-labelledby")).toBe(units.id);
 
     await userEvent.keyboard("{ArrowRight}");
     await waitFor(() => expect(logs).toHaveAttribute("aria-selected", "true"));
@@ -75,7 +78,7 @@ export const Default: Story = {
     // Home / End jump to the first / last tab
     await userEvent.keyboard("{End}");
     await waitFor(() => expect(logs).toHaveAttribute("aria-selected", "true"));
-    await expect(c.getByRole("tabpanel")).toHaveTextContent("최근 기록 로그");
+    await waitFor(() => expect(visiblePanel()).toHaveTextContent("최근 기록 로그"));
     await userEvent.keyboard("{Home}");
     await waitFor(() => expect(status).toHaveAttribute("aria-selected", "true"));
     await expect(selectedLabel(c)).toBe("상태");
