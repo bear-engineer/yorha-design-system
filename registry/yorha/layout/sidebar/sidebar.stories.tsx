@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { withRouter } from "../../../../.storybook/decorators";
 import { Sidebar, type SidebarSection } from "@/components/sidebar";
 
@@ -92,5 +93,17 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("navigation", { name: "주 메뉴" })).toBeInTheDocument();
+  },
+};
+
+/** 기본, 현재 경로(aria-current=page), 키보드 포커스 상태의 링크 타깃을 측정한다. */
+export const States: Story = {
+  parameters: { route: { routes: [{ path: "/*", element: <Sidebar sections={SECTIONS} /> }], initialEntries: ["/units"] } },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("link", { name: "유닛" })).toHaveAttribute("aria-current", "page");
+    await userEvent.tab();
+    await expect(c.getByRole("link", { name: "홈" })).toHaveFocus();
+    await expectTargetSize(canvasElement);
   },
 };

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { Link, useLocation, useNavigate } from "react-router";
 import { withRouter } from "../../../../.storybook/decorators";
 import { SystemMenuLayout, type SystemMenuSection } from "@/components/system-menu-layout";
@@ -164,5 +165,20 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("tablist", { name: "시스템 메뉴" })).toBeInTheDocument();
+  },
+};
+
+/** 기본 선택 탭, 탭 포커스, 목록(listbox) 포커스 상태의 타깃을 측정한다. */
+export const States: Story = {
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const tab = c.getByRole("tab", { name: "아이템" });
+    await expect(tab).toHaveAttribute("aria-selected", "true");
+    await userEvent.tab();
+    await expect(tab).toHaveFocus();
+    await userEvent.tab();
+    const list = c.getByRole("listbox", { name: "아이템 목록" });
+    await expect(list.contains(document.activeElement)).toBe(true);
+    await expectTargetSize(canvasElement);
   },
 };

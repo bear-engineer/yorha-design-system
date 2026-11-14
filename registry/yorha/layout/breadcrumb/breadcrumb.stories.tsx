@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within, waitFor } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { Outlet, useLocation } from "react-router";
 import { withRouter } from "../../../../.storybook/decorators";
 import { Breadcrumb, type BreadcrumbItem } from "./breadcrumb";
@@ -126,5 +127,19 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("navigation", { name: "경로" })).toBeInTheDocument();
+  },
+};
+
+/** 기본, 현재 위치(aria-current), 키보드 포커스 상태의 링크 타깃을 측정한다. */
+export const States: Story = {
+  parameters: {
+    route: { routes: routedElements(ITEMS), initialEntries: ["/units"] },
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.tab();
+    await expect(c.getByRole("link", { name: "홈" })).toHaveFocus();
+    await expect(c.getByText("A-2 기체")).toHaveAttribute("aria-current", "page");
+    await expectTargetSize(canvasElement);
   },
 };

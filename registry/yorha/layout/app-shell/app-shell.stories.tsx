@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { withRouter } from "../../../../.storybook/decorators";
 import { AppShell } from "@/components/app-shell";
 import { Sidebar, type SidebarSection } from "@/components/sidebar";
@@ -156,5 +157,25 @@ export const MobileDisclosure: Story = {
     await userEvent.keyboard("{Enter}");
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await expect(region).not.toBeVisible();
+  },
+};
+
+/** 360px: 접힌 상태, 메뉴 버튼 포커스, 펼친 상태의 타깃을 측정한다. */
+export const States: Story = {
+  render: () => (
+    <div data-frame style={{ width: "360px" }}>
+      <Demo className="min-h-0 h-[32rem]" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const toggle = c.getByRole("button", { name: "메뉴" });
+    await userEvent.tab();
+    await userEvent.tab();
+    await expect(toggle).toHaveFocus();
+    await expectTargetSize(canvasElement);
+    await userEvent.keyboard("{Enter}");
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expectTargetSize(canvasElement);
   },
 };
