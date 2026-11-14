@@ -66,6 +66,8 @@ export const Default: Story = {
     await expect(c.getByRole("link", { name: "본문으로 건너뛰기" })).toHaveFocus();
     await userEvent.keyboard("{Enter}");
     await expect(c.getByRole("main", { name: "본문" })).toHaveFocus();
+    // The skip target shows a visible focus ring, not just programmatic focus.
+    await expect(getComputedStyle(c.getByRole("main", { name: "본문" })).outlineStyle).toBe("solid");
   },
 };
 
