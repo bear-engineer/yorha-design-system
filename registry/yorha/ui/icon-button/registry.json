@@ -1,4 +1,24 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "icon-button",
+      "type": "registry:ui",
+      "title": "IconButton",
+      "description": "Square icon-only button; aria-label is required by its type. Same variants and sizes as Button.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base",
+        "@yorha/button"
+      ],
+      "files": [
+        {
+          "path": "icon-button.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+    }
+  ]
 }
