@@ -51,7 +51,9 @@ type ContentProps = ComponentProps<typeof PreviewCardPrimitive.Popup> &
     container?: ComponentProps<typeof PreviewCardPrimitive.Portal>["container"];
   };
 
-/** Card in a portal, positioned by Base UI (Positioner + floating-ui). */
+/** Card in a portal, positioned by Base UI (Positioner + floating-ui).  *
+ * Migration (v3): trigger gets `-mx-1 px-1 box-decoration-clone` (layout unchanged, fill no longer hugs the glyphs); `arrowPadding` 8 and alignment shift wins over arrow centring; max width is `min(20rem, 100vw - 1rem)`.
+ */
 function PreviewCardContent({
   className,
   children,

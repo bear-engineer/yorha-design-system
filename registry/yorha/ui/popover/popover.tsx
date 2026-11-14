@@ -34,6 +34,8 @@ type ContentProps = ComponentProps<typeof PopoverPrimitive.Popup> &
 /**
  * Popup in a portal. Positioning is Base UI's (Positioner + floating-ui), not CSS anchor positioning.
  * Escape and outside press dismiss; focus returns to the trigger.
+  *
+ * Migration (v3): new `anchor` prop (element, ref or getter) forwarded to the Positioner. Pointer-opened popovers focus the popup (focus ring only for keyboard focus); keyboard-opened ones focus the first control. PopoverTrigger and PopoverClose are Buttons now (trigger = `buttonVariants()`, close = ghost sm).
  */
 function PopoverContent({
   className,

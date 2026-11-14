@@ -53,7 +53,11 @@ export function AlertDialogCancel({ variant = "ghost", className, render, ...pro
   );
 }
 
-/** Confirms the action and closes. A primary Button unless `render` is given; `variant="danger"` for destructive actions. */
+/**
+ * Confirms the action and closes. A primary Button unless `render` is given; `variant="danger"` for destructive actions.
+ *
+ * Migration (v3): AlertDialogAction/AlertDialogCancel accept `variant` (Button variants; Action defaults to primary, Cancel to ghost). Destructive confirms: `variant="danger"`. Same flex-column/scroll and inset rules as Dialog.
+ */
 export function AlertDialogAction({ variant = "primary", className, render, ...props }: ActionProps) {
   return (
     <BaseAlertDialog.Close

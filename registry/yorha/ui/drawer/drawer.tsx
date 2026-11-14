@@ -132,6 +132,8 @@ type ContentProps = ComponentProps<typeof DrawerPrimitive.Popup> & {
 /**
  * Backdrop + viewport + popup in a portal. Dragging toward the edge dismisses; Escape closes; focus is trapped and returns to the trigger.
  * Nested drawers: a drawer under another one gets `data-nested-drawer-open` and `--nested-drawers`; its content hides until the front one closes.
+  *
+ * Migration (v3): grip lives inside the ink strip (the strip is the drag handle: cursor-grab), backdrop never drops below 0.5 while open, exit uses the faster drawer-exit timing for sheet and scrim, full-bleed sheets have no offset shadow, title text-shadow removed.
  */
 function DrawerContent({ className, children, keyboardAware = false, container, ...props }: ContentProps) {
   const side = useContext(SideContext);

@@ -118,7 +118,11 @@ const TYPE_BORDER: Record<ToastType, string> = {
   alert: "border-yorha-alert-ui shadow-[inset_4px_0_0_var(--yorha-alert-ui),4px_4px_0_0_var(--yorha-shadow)]",
 };
 
-/** Renders every queued toast. Included by ToastProvider; mount it yourself only with `viewport={false}`. */
+/**
+ * Renders every queued toast. Included by ToastProvider; mount it yourself only with `viewport={false}`.
+ *
+ * Migration (v3): type shape sits in a fixed 20px box (titles align across types), the alert edge is an inset shadow (all types have a 1px border), close is a 24px ghost icon Button on the title row, and the stack is collapsed by default (rear toasts peek 8px, expand on hover/focus). Anything that read toast x-offsets or the `×` text must be updated.
+ */
 function ToastList() {
   const { toasts } = ToastPrimitive.useToastManager();
   return toasts.map((toast) => {

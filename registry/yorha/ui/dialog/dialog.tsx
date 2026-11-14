@@ -101,6 +101,11 @@ export interface DialogContentProps extends ComponentProps<typeof BaseDialog.Pop
   closeButton?: boolean;
 }
 
+/**
+ * Migration (v3): `closeButton` now defaults to true (a 닫기 button in the title strip, `DialogCloseButton` semantics); pass `closeButton={false}` to keep the old chrome.
+ * The popup is a flex column: only `DialogBody` scrolls, title and footer stay put. Content placed directly in the popup no longer scrolls; wrap it in `DialogBody`.
+ * Title, body and footer share one inline inset (`px-6`, `px-4` under 640px); the title text-shadow is gone; the popup is top-anchored (pt-4, pt-24 on tall viewports).
+ */
 export function DialogContent({ className, children, closeButton = true, ...props }: DialogContentProps) {
   return (
     <BaseDialog.Portal>
