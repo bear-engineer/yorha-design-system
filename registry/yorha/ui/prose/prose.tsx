@@ -10,10 +10,14 @@ const ROOT =
   // headings: Latin uppercase tracked, Korean keeps case and normal tracking (matches Heading)
   "[&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:font-yorha-bold [&_h2]:text-yorha-xl [&_h2]:uppercase [&_h2]:tracking-yorha-heading " +
   "[&:lang(ko)_h2]:normal-case [&:lang(ko)_h2]:tracking-yorha-body " +
-  "[&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:font-yorha-bold [&_h3]:text-yorha-lg " +
-  "[&_h4]:mt-4 [&_h4]:mb-1 [&_h4]:font-yorha-bold [&_h4]:text-yorha-base " +
-  // lists
+  // h3/h4 use the same case and tracking pair as Heading (FTXT-03)
+  "[&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:font-yorha-bold [&_h3]:text-yorha-lg [&_h3]:uppercase [&_h3]:tracking-yorha-heading " +
+  "[&:lang(ko)_h3]:normal-case [&:lang(ko)_h3]:tracking-yorha-body " +
+  "[&_h4]:mt-4 [&_h4]:mb-1 [&_h4]:font-yorha-bold [&_h4]:text-yorha-base [&_h4]:uppercase [&_h4]:tracking-yorha-heading " +
+  "[&:lang(ko)_h4]:normal-case [&:lang(ko)_h4]:tracking-yorha-body " +
+  // lists: nested lists get a 4px rhythm, only the outer list takes the 16px block margin (FTXT-10)
   "[&_ul]:my-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_li+li]:mt-1 " +
+  "[&_li_ul]:my-1 [&_li_ol]:my-1 " +
   // blockquote
   "[&_blockquote]:my-4 [&_blockquote]:border-l-4 [&_blockquote]:border-yorha-border [&_blockquote]:pl-4 [&_blockquote]:text-yorha-fg-muted " +
   // inline code and preformatted blocks: wrap instead of scrolling, so no unfocusable scroll region
@@ -43,7 +47,7 @@ export interface ProseTableProps extends ComponentProps<"table"> {
  */
 export function ProseTable({ label, caption, className, children, ...rest }: ProseTableProps) {
   return (
-    <div role="region" aria-label={label} tabIndex={0} className="my-4 w-full overflow-x-auto rounded-yorha">
+    <div role="region" aria-label={label} tabIndex={0} className="yorha-scroll-cue-x my-4 w-full overflow-x-auto rounded-yorha">
       <table
         className={cn(
           "yorha-tabular w-full border-collapse text-left text-yorha-sm",

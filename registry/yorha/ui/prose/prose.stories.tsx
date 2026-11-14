@@ -165,7 +165,9 @@ export const HeadingParity: Story = {
     const h = getComputedStyle(headingH3!);
     await expect(p.textTransform).toBe("uppercase");
     await expect(p.textTransform).toBe(h.textTransform);
-    await expect(p.letterSpacing).toBe(h.letterSpacing);
+    // tracking is an em value, so compare it per font size (prose h3 is 18px, Heading 3 is 22px)
+    const em = (cs: CSSStyleDeclaration) => parseFloat(cs.letterSpacing) / parseFloat(cs.fontSize);
+    await expect(em(p).toFixed(3)).toBe(em(h).toFixed(3));
   },
 };
 
