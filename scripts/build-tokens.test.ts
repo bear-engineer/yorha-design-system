@@ -265,6 +265,7 @@ describe("token generator", () => {
       expect(collapse).toMatch(/transition-property: height, opacity;/);
       expect(collapse).toContain("var(--motion-collapse)");
       expect(collapse).toMatch(/&\[data-starting-style\], &\[data-ending-style\] \{\n\s+height: 0;\n\s+opacity: 0;/);
+      expect(collapse).toMatch(/&\[data-ending-style\] \{\n\s+transition-duration: var\(--motion-select\), max\(var\(--motion-select\), var\(--motion-reduced-fade\)\);/);
     });
 
     it("yorha-press scales on :active with the press token; yorha-stagger delays by --motion-stagger times an index", () => {

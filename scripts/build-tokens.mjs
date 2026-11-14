@@ -227,6 +227,8 @@ const MOTION_CSS = {
     // Accordion.Panel carries data-index: it reads its own variable, not one inherited from a Collapsible around it.
     "&[data-index]": { height: "var(--accordion-panel-height, auto)" },
     [HIDDEN]: { height: "0", opacity: "0" },
+    // Exit is shorter than enter: Base UI 1.9 restarts height from a stale value when a panel re-opens mid-close, so the shorter the close, the smaller that window.
+    [EXIT]: { "transition-duration": `var(--motion-select), ${fade("select")}` },
   },
   // Owns the control's whole transition: scale at the press speed, the selection wipe properties at the select speed.
   "@utility yorha-press": {

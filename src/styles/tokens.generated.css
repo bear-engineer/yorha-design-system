@@ -668,6 +668,9 @@
     height: 0;
     opacity: 0;
   }
+  &[data-ending-style] {
+    transition-duration: var(--motion-select), max(var(--motion-select), var(--motion-reduced-fade));
+  }
 }
 
 @utility yorha-press {
