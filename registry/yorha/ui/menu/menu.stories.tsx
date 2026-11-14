@@ -147,11 +147,14 @@ export const Submenu: Story = {
     await waitFor(() => expect(pdf).toHaveFocus());
     await userEvent.keyboard("{ArrowLeft}");
     await waitFor(() => expect(body(canvasElement).queryByRole("menuitem", { name: "PDF" })).toBeNull());
+    await waitFor(() => expect(sub).toHaveFocus());
     await userEvent.keyboard("{ArrowRight}");
     const again = await body(canvasElement).findByRole("menuitem", { name: "PDF" });
     await waitFor(() => expect(again).toHaveFocus());
     await userEvent.keyboard("{Enter}");
     await expect(args.onSelect).toHaveBeenCalledWith("PDF");
+    // Wait out the close transition so the a11y scan never sees Base UI's transient focus guards.
+    await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull());
   },
 };
 

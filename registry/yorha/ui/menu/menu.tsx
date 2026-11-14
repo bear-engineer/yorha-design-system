@@ -15,7 +15,7 @@ const MenuRadioGroup = MenuPrimitive.RadioGroup;
 // Selected row: dark fill wipes in left to right (--motion-select), text inverts,
 // thin rules above and below (--menu-rule, 0 turns them off), arrow cursor at the left edge.
 const ROW =
-  "group/row relative flex min-h-8 cursor-default select-none items-center gap-3 py-1.5 pr-3 pl-9 outline-none " +
+  "group/row relative flex min-h-8 cursor-default select-none items-center gap-3 py-1.5 pr-3 pl-9 outline-none focus-visible:yorha-focus " +
   "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg " +
   "bg-linear-to-r from-yorha-ink to-yorha-ink bg-no-repeat bg-[position:left_center] bg-[length:0%_100%] " +
   "transition-[background-size,color] duration-(--motion-select) ease-yorha-out " +
