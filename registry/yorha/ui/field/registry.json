@@ -5,13 +5,14 @@
       "type": "registry:ui",
       "name": "field",
       "title": "Field",
-      "description": "Base UI Field and Fieldset wrapped in YoRHa styles: Field, FieldLabel, FieldDescription, FieldError (square icon plus alert text), FieldControl, FieldFrame (label, control, description, error wired together), Fieldset and FieldsetLegend.",
+      "description": "Base UI Field and Fieldset wrapped in YoRHa styles: Field, FieldLabel, FieldDescription, FieldError (square icon plus alert text), FieldControl, FieldFrame (label, control, description, error wired together), Fieldset and FieldsetLegend (re-exported from the fieldset item).",
       "dependencies": [
         "@base-ui/react@^1.9.0"
       ],
       "registryDependencies": [
         "@yorha/utils",
-        "@yorha/base"
+        "@yorha/base",
+        "@yorha/fieldset"
       ],
       "files": [
         {

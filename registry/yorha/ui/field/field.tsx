@@ -1,5 +1,4 @@
 import { Field as BaseField } from "@base-ui/react/field";
-import { Fieldset as BaseFieldset } from "@base-ui/react/fieldset";
 import type { ComponentProps, ReactNode } from "react";
 import { cn, cnState } from "@/lib/utils";
 
@@ -110,20 +109,9 @@ export function FieldValidity({ children, ...props }: FieldValidityProps) {
   );
 }
 
-export type FieldsetProps = ComponentProps<typeof BaseFieldset.Root>;
-export function Fieldset({ className, ...props }: FieldsetProps) {
-  return <BaseFieldset.Root className={cnState("m-0 flex min-w-0 flex-col gap-6 border-0 p-0", className)} {...props} />;
-}
-
-export type FieldsetLegendProps = ComponentProps<typeof BaseFieldset.Legend>;
-export function FieldsetLegend({ className, ...props }: FieldsetLegendProps) {
-  return (
-    <BaseFieldset.Legend
-      className={cnState("mb-2 font-yorha-bold text-yorha-lg uppercase tracking-yorha-heading text-yorha-fg-strong", className)}
-      {...props}
-    />
-  );
-}
+// Fieldset and FieldsetLegend are owned by the fieldset item (single definition); re-exported for existing imports.
+export { Fieldset, FieldsetLegend } from "@/components/ui/fieldset";
+export type { FieldsetProps, FieldsetLegendProps } from "@/components/ui/fieldset";
 
 export interface FieldFrameProps {
   label: ReactNode;
