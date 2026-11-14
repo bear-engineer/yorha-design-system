@@ -14,7 +14,8 @@ async function heights(panel: HTMLElement, trigger: HTMLElement, action: () => P
     while (run) {
       hs.push(panel.getBoundingClientRect().height);
       ys.push(trigger.getBoundingClientRect().y);
-      await frame();
+      // headless rAF can stretch to 100ms+ on a loaded machine: also sample on a timer so a 120ms collapse is never seen in one step
+      await Promise.race([frame(), wait(8)]);
     }
   })();
   await action();

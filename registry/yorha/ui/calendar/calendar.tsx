@@ -144,7 +144,13 @@ function useControllable<T>(value: T | undefined, defaultValue: T, onChange?: (v
 const EMPTY_RANGE: DateRange = { from: null, to: null };
 
 /** Week-row width: 7 cells of the compact control step (40 / 32 / 24 px by density). */
-const GRID_WIDTH = "w-[calc(var(--yorha-control-sm)*7)]";
+const GRID_WIDTH = "w-[calc(var(--yorha-cal-cell)*7)]";
+
+/**
+ * Cell edge: the compact control step, shrunk in whole pixels when the viewport is narrow so the 7-column frame
+ * (7 cells + 16px padding + 2px border) still fits 320px with room for page margins. Never below the 24px target.
+ */
+const CELL_VAR = "[--yorha-cal-cell:clamp(1.5rem,round(down,calc((100vw_-_4.5rem_-_18px)_/_7),1px),var(--yorha-control-sm))]";
 
 /** One numeral box for in-month and outside days, so the digits never move between kinds. */
 const NUMBER = "grid size-full place-items-center pb-1 text-yorha-sm yorha-tabular";
@@ -154,7 +160,7 @@ const NUMBER = "grid size-full place-items-center pb-1 text-yorha-sm yorha-tabul
  * selection is an ink wipe on ::before, today is a 12 x 2 bar, the ring lifts above neighbours with z-10.
  */
 const DAY_BUTTON = cn(
-  "yorha-tint yorha-tabular relative isolate block size-control-sm cursor-pointer select-none rounded-none p-0 font-yorha text-yorha-fg",
+  "yorha-tint yorha-tabular relative isolate block size-[var(--yorha-cal-cell)] cursor-pointer select-none rounded-none p-0 font-yorha text-yorha-fg",
   // dark wipe: a pseudo element that scales in from the left (opacity-only when motion is reduced)
   "before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:origin-left before:bg-yorha-ink before:opacity-0",
   "before:scale-x-[calc(1-var(--motion-spatial))]",
@@ -173,7 +179,7 @@ const DAY_BUTTON = cn(
 
 /** Band cell: range fill and the dashed preview lines never touch the cell box. */
 const BAND_CELL = cn(
-  "size-control-sm p-0",
+  "size-[var(--yorha-cal-cell)] p-0",
   "data-[in-range]:bg-yorha-range",
   "data-[preview]:[background-image:repeating-linear-gradient(90deg,var(--yorha-border)_0_4px,transparent_4px_8px),repeating-linear-gradient(90deg,var(--yorha-border)_0_4px,transparent_4px_8px)]",
   "data-[preview]:[background-position:0_0,0_100%] data-[preview]:[background-size:100%_1px,100%_1px] data-[preview]:bg-no-repeat",
@@ -527,9 +533,9 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
                 {week.map((date, di) => {
                   const inMonth = date.getMonth() === first.getMonth();
                   if (!inMonth) {
-                    if (!showOutside) return <td key={di} role="presentation" className="size-control-sm p-0" />;
+                    if (!showOutside) return <td key={di} role="presentation" className="size-[var(--yorha-cal-cell)] p-0" />;
                     return (
-                      <td key={di} role="gridcell" aria-disabled="true" data-outside="" className="size-control-sm cursor-default p-0">
+                      <td key={di} role="gridcell" aria-disabled="true" data-outside="" className="size-[var(--yorha-cal-cell)] cursor-default p-0">
                         <span data-slot="calendar-day-number" className={cn(NUMBER, "font-yorha text-yorha-disabled")}>
                           {date.getDate()}
                         </span>
@@ -620,7 +626,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
       data-mode={isRange ? "range" : "single"}
       lang={locale}
       aria-label={props["aria-label"]}
-      className={cn("inline-block bg-yorha-panel p-2 font-yorha text-yorha-fg", bordered && "border border-yorha-border", className)}
+      className={cn("inline-block bg-yorha-panel p-2 font-yorha text-yorha-fg", CELL_VAR, bordered && "border border-yorha-border", className)}
     >
       <MonthSlide monthKey={firstIdx} animate={dir !== 0} travel={travel}>
         {Array.from({ length: count }, (_, i) => renderMonth(i))}

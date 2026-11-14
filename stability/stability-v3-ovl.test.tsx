@@ -41,6 +41,13 @@ async function render(node: ReactNode): Promise<HTMLElement> {
   return container;
 }
 const q = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel);
+/** Open animations are motion, not layout: wait for finite animations to finish before measuring the resting box. */
+const settled = async () => {
+  await frames(2);
+  await Promise.allSettled(document.getAnimations().filter((a) => Number.isFinite(a.effect?.getComputedTiming().endTime ?? Infinity)).map((a) => a.finished));
+  await frames(2);
+};
+
 const until = async (fn: () => boolean, ms = 3000) => {
   const end = performance.now() + ms;
   while (performance.now() < end) {
@@ -135,6 +142,7 @@ describe("popover and tooltip triggers, close, anchor (FOVL-10, FOVL-11)", () =>
     await userEvent.click(q('[data-slot="popover-trigger"]')!);
     await until(() => !!q('[data-slot="popover-close"]'));
     await frames(4);
+    await settled();
     const close = q('[data-slot="popover-close"]')!;
     expectSameHeight(q("[data-ref]")!, close);
     expect(document.activeElement).not.toBe(close);

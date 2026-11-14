@@ -157,7 +157,7 @@ function ToastList() {
             // Base UI sets aria-hidden on Close while the stack is collapsed, but the button stays tabbable
             // and visible, which axe flags (aria-hidden-focus). Keep it exposed.
             aria-hidden={false}
-            render={<Button variant="ghost" size="sm" square aria-label="닫기" className="size-6 shrink-0" />}
+            render={<Button variant="ghost" size="sm" square aria-label="닫기" className="size-6 shrink-0 focus-visible:outline-offset-[calc(var(--yorha-ring-width)*-1)]" />}
           >
             <CrossIcon />
           </ToastPrimitive.Close>

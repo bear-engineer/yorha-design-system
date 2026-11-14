@@ -266,6 +266,13 @@ describe("calendar header (FCAL-09, 13)", () => {
   });
 });
 
+/** Open animations are motion, not layout: wait for finite animations to finish before measuring the resting box. */
+const settled = async () => {
+  await frames(2);
+  await Promise.allSettled(document.getAnimations().filter((a) => Number.isFinite(a.effect?.getComputedTiming().endTime ?? Infinity)).map((a) => a.finished));
+  await frames(2);
+};
+
 const until = async (fn: () => boolean, ms = 3000) => {
   const end = performance.now() + ms;
   while (performance.now() < end) {
@@ -318,6 +325,7 @@ describe("date picker field and popup (FCAL-04, 05, 06, 07, 19, 20)", () => {
     await userEvent.click(q("[data-slot=input-group-button]", c)!);
     await until(() => !!q("[data-slot=popover-content] [data-slot=calendar]"));
     await frames(8);
+    await settled();
     const popup = q("[data-slot=popover-content]")!;
     const frame = q(FRAME, c)!;
     expectAnchoredBelow(popup, frame, { gap: 8, align: "start" });
@@ -388,6 +396,7 @@ describe("date input (FCAL-19, 25, 26)", () => {
     await userEvent.click(q("[data-slot=input-group-button]", c)!);
     await until(() => !!q("[data-slot=popover-content] [data-slot=calendar]"));
     await frames(8);
+    await settled();
     expectAnchoredBelow(q("[data-slot=popover-content]")!, q(FRAME, c)!, { gap: 8, align: "start" });
   });
 });

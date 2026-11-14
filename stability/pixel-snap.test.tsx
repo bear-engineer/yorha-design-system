@@ -152,6 +152,11 @@ describe("pixel snap and control heights (comfortable density)", () => {
       test(`${item} / ${name}`, { timeout: 60_000 }, async () => {
         const host = await mountStory(item, name, { stage: "top" }); // top stage: the centring stage would add its own half pixels
         await frames(3);
+        // Entry staggers (timeline items, lists) are motion, not layout: measure the resting position.
+        await Promise.allSettled(
+          document.getAnimations().filter((a) => Number.isFinite(a.effect?.getComputedTiming().endTime ?? Infinity)).map((a) => a.finished),
+        );
+        await frames(1);
         const allowed = allowedHeights();
         const snap: string[] = [];
         const heights: string[] = [];
