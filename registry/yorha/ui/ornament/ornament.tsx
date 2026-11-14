@@ -15,16 +15,18 @@ export interface SeparatorProps extends HTMLAttributes<HTMLDivElement> {
 const LINE = "var(--yorha-line-deco)";
 
 const STYLE: Record<OrnamentVariant, CSSProperties> = {
+  // Box is 12px tall (fixed px, not rem). The rule sits on pixel row 6 (6px..7px) and the dot is drawn
+  // in a 12px tile centred on the same row, so neither straddles two pixels at 1x.
   band: {
-    backgroundImage: `linear-gradient(${LINE}, ${LINE}), radial-gradient(circle, ${LINE} 2px, transparent 2.5px)`,
-    backgroundSize: "100% 1px, 1rem 1rem",
-    backgroundPosition: "center, center",
+    backgroundImage: `linear-gradient(${LINE}, ${LINE}), radial-gradient(circle at 6px 6.5px, ${LINE} 2px, transparent 2.5px)`,
+    backgroundSize: "100% 1px, 12px 12px",
+    backgroundPosition: "0 6px, center 0",
     backgroundRepeat: "no-repeat",
   },
   separator: {
     backgroundImage: `repeating-linear-gradient(to right, ${LINE} 0 0.5rem, transparent 0.5rem 0.75rem)`,
     backgroundSize: "100% 1px",
-    backgroundPosition: "center",
+    backgroundPosition: "0 6px",
     backgroundRepeat: "no-repeat",
   },
 };
@@ -36,7 +38,7 @@ export function Ornament({ variant = "band", className, style, ...rest }: Orname
       {...rest}
       data-slot="ornament"
       aria-hidden="true"
-      className={cn("pointer-events-none block h-3 w-full", className)}
+      className={cn("pointer-events-none block h-[12px] w-full", className)}
       style={{ ...STYLE[variant], ...style }}
     />
   );
