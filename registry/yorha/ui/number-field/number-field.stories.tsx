@@ -1,6 +1,24 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent, within } from "storybook/test";
+import { expect, userEvent, waitFor, within } from "storybook/test";
 import { NumberField } from "./number-field";
+
+/** Reduced motion: transitions collapse to <=120ms (opacity-only in practice); full keeps a real duration. */
+function motionSeconds(el: Element): number {
+  return Math.max(0, ...getComputedStyle(el).transitionDuration.split(",").map((s) => parseFloat(s)));
+}
+async function expectReducedMotion(el: Element) {
+  const root = document.documentElement;
+  const prev = root.dataset.motion;
+  try {
+    root.dataset.motion = "full";
+    await waitFor(() => expect(motionSeconds(el)).toBeGreaterThan(0));
+    root.dataset.motion = "reduced";
+    await waitFor(() => expect(motionSeconds(el)).toBeLessThanOrEqual(0.12));
+  } finally {
+    if (prev === undefined) delete root.dataset.motion;
+    else root.dataset.motion = prev;
+  }
+}
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -101,5 +119,16 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("textbox", { name: "테마 authentic" })).toHaveValue("3");
+  },
+};
+
+export const ScrubArea: Story = {
+  args: { label: "스크럽", defaultValue: 5 },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const scrub = c.getByText("스크럽").closest("span");
+    await expect(scrub).not.toBeNull();
+    await expect(getComputedStyle(scrub!).cursor).toBe("ew-resize");
+    await expectReducedMotion(c.getByRole("button", { name: "증가" }));
   },
 };

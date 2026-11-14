@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent, within } from "storybook/test";
+import { expect, userEvent, waitFor, within } from "storybook/test";
 import {
   Field,
   FieldControl,
   FieldDescription,
   FieldError,
   FieldFrame,
+  FieldItem,
+  FieldValidity,
   FieldLabel,
   Fieldset,
   FieldsetLegend,
@@ -165,5 +167,33 @@ export const FieldsetGroup: Story = {
     await expect(within(group).getAllByRole("textbox")).toHaveLength(2);
     await userEvent.click(canvas.getByText("작전 구역"));
     await expect(canvas.getByRole("textbox", { name: "작전 구역" })).toHaveFocus();
+  },
+};
+
+export const ItemAndValidity: Story = {
+  render: () => (
+    <form className="flex w-80 max-w-full flex-col gap-4">
+      <Field name="code">
+        <FieldItem>
+          <FieldLabel>코드</FieldLabel>
+          <FieldDescription>3자 이상 입력하세요.</FieldDescription>
+        </FieldItem>
+        <FieldControl minLength={3} required />
+        <FieldValidity>
+          {(state) =>
+            state.validity.valueMissing ? "필수 입력입니다" : state.validity.tooShort ? "3자 이상 입력하세요" : null
+          }
+        </FieldValidity>
+      </Field>
+      <button type="submit">제출</button>
+    </form>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const input = c.getByRole("textbox", { name: "코드" });
+    await userEvent.type(input, "ab");
+    await userEvent.click(c.getByRole("button", { name: "제출" }));
+    await expect(await c.findByText("3자 이상 입력하세요")).toBeInTheDocument();
+    await expect(input).toHaveAttribute("aria-invalid", "true");
   },
 };

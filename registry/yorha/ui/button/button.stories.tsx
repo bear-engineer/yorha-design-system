@@ -2,6 +2,24 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "./button";
 
+/** Reduced motion: transitions collapse to <=120ms (opacity-only in practice); full keeps a real duration. */
+function motionSeconds(el: Element): number {
+  return Math.max(0, ...getComputedStyle(el).transitionDuration.split(",").map((s) => parseFloat(s)));
+}
+async function expectReducedMotion(el: Element) {
+  const root = document.documentElement;
+  const prev = root.dataset.motion;
+  try {
+    root.dataset.motion = "full";
+    await waitFor(() => expect(motionSeconds(el)).toBeGreaterThan(0));
+    root.dataset.motion = "reduced";
+    await waitFor(() => expect(motionSeconds(el)).toBeLessThanOrEqual(0.12));
+  } finally {
+    if (prev === undefined) delete root.dataset.motion;
+    else root.dataset.motion = prev;
+  }
+}
+
 const VARIANTS = ["default", "primary", "ghost", "danger"] as const;
 const SIZES = ["sm", "md", "lg"] as const;
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -174,5 +192,13 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getAllByRole("button")).toHaveLength(VARIANTS.length);
+  },
+};
+
+export const PressFeedback: Story = {
+  play: async ({ canvasElement }) => {
+    const btn = within(canvasElement).getByRole("button", { name: "확인" });
+    await expect(getComputedStyle(btn).transitionProperty).toContain("scale");
+    await expectReducedMotion(btn);
   },
 };

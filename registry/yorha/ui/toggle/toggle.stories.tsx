@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent, within } from "storybook/test";
+import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Toggle } from "./toggle";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -115,5 +115,32 @@ export const Authentic: Story = {
   play: async ({ canvasElement }) => {
     const btn = within(canvasElement).getByRole("button", { name: "오리지널 팔레트" });
     await expect(btn).toHaveAttribute("aria-pressed", "true");
+  },
+};
+
+/** Reduced motion: transitions collapse to <=120ms (opacity-only in practice); full keeps a real duration. */
+function motionSeconds(el: Element): number {
+  return Math.max(0, ...getComputedStyle(el).transitionDuration.split(",").map((s) => parseFloat(s)));
+}
+async function expectReducedMotion(el: Element) {
+  const root = document.documentElement;
+  const prev = root.dataset.motion;
+  try {
+    root.dataset.motion = "full";
+    await waitFor(() => expect(motionSeconds(el)).toBeGreaterThan(0));
+    root.dataset.motion = "reduced";
+    await waitFor(() => expect(motionSeconds(el)).toBeLessThanOrEqual(0.12));
+  } finally {
+    if (prev === undefined) delete root.dataset.motion;
+    else root.dataset.motion = prev;
+  }
+}
+
+export const PressFeedback: Story = {
+  args: { children: "토글" },
+  play: async ({ canvasElement }) => {
+    const t = within(canvasElement).getByRole("button", { name: "토글" });
+    await expect(getComputedStyle(t).transitionProperty).toContain("scale");
+    await expectReducedMotion(t);
   },
 };
