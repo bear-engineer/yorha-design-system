@@ -1,0 +1,4 @@
+import * as React from "react";
+export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(function Input() {
+  return null;
+});
