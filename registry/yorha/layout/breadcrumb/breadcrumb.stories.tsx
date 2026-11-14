@@ -102,14 +102,16 @@ export const ThemeGallery: Story = {
     <div className="flex flex-col gap-4">
       {THEMES.map((t) => (
         <div key={t} data-theme={t} className="bg-yorha-bg p-4 text-yorha-fg">
-          <Breadcrumb items={ITEMS} />
+          <Breadcrumb items={ITEMS} label={`경로 ${t}`} />
         </div>
       ))}
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const navs = within(canvasElement).getAllByRole("navigation", { name: "경로" });
-    await expect(navs).toHaveLength(THEMES.length);
+    const c = within(canvasElement);
+    for (const t of THEMES) {
+      await expect(c.getByRole("navigation", { name: `경로 ${t}` })).toBeInTheDocument();
+    }
   },
 };
 
