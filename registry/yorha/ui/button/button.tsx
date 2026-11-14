@@ -14,47 +14,52 @@ export interface ButtonVariantOptions {
 
 // Selection wipe: a background-size transition on an ink layer, left to right.
 // Duration comes from --motion-select, so data-motion reduced/off collapses it to 0.
-// yorha-press owns the transition list (press scale + wipe/colour at --motion-select).
+// yorha-press owns the transition list (press scale + delayed colour + wipe at --motion-select).
+// A loading button is blocked, so it gets neither the wipe nor the press scale (`not-data-[loading]`).
 const WIPE =
   "bg-no-repeat bg-[position:left_center] bg-[length:0%_100%] yorha-press " +
-  "enabled:hover:bg-[length:100%_100%] enabled:active:bg-[length:100%_100%]";
+  "enabled:not-data-[loading]:hover:bg-[length:100%_100%] enabled:not-data-[loading]:active:bg-[length:100%_100%]";
 
 const BASE =
   "relative inline-flex shrink-0 select-none items-center justify-center gap-2 border " +
   "rounded-yorha font-yorha font-yorha-medium tracking-yorha-wide whitespace-nowrap cursor-pointer " +
-  "focus-visible:yorha-focus disabled:cursor-not-allowed disabled:opacity-60 " +
+  "focus-visible:yorha-focus yorha-disabled " +
   "data-[loading]:cursor-progress " + WIPE;
 
 const VARIANT: Record<ButtonVariant, string> = {
   default:
     "border-yorha-border bg-yorha-control text-yorha-on-control " +
-    "bg-linear-to-r from-yorha-ink to-yorha-ink enabled:hover:text-yorha-on-ink enabled:active:text-yorha-on-ink",
+    "bg-linear-to-r from-yorha-ink to-yorha-ink enabled:not-data-[loading]:hover:text-yorha-on-ink enabled:not-data-[loading]:active:text-yorha-on-ink",
   primary:
     "border-yorha-ink bg-yorha-ink text-yorha-on-ink " +
-    "bg-linear-to-r from-yorha-control to-yorha-control enabled:hover:text-yorha-on-control enabled:active:text-yorha-on-control",
+    "bg-linear-to-r from-yorha-control to-yorha-control enabled:not-data-[loading]:hover:text-yorha-on-control enabled:not-data-[loading]:active:text-yorha-on-control",
   ghost:
     "border-transparent bg-transparent text-yorha-fg " +
-    "bg-linear-to-r from-yorha-ink to-yorha-ink enabled:hover:text-yorha-on-ink enabled:active:text-yorha-on-ink",
+    "bg-linear-to-r from-yorha-ink to-yorha-ink enabled:not-data-[loading]:hover:text-yorha-on-ink enabled:not-data-[loading]:active:text-yorha-on-ink",
   danger:
     "border-yorha-alert-ui bg-yorha-panel text-yorha-alert " +
-    "bg-linear-to-r from-yorha-ink to-yorha-ink enabled:hover:text-yorha-alert-on-ink enabled:active:text-yorha-alert-on-ink",
+    "bg-linear-to-r from-yorha-ink to-yorha-ink enabled:not-data-[loading]:hover:text-yorha-alert-on-ink enabled:not-data-[loading]:active:text-yorha-alert-on-ink",
 };
 
-const SIZE: Record<ButtonSize, string> = {
-  sm: "h-8 px-3 text-yorha-sm",
-  md: "h-10 px-4 text-yorha-base",
-  lg: "h-12 px-6 text-yorha-lg",
+/**
+ * One size map for every control of the family (Button, IconButton, Toggle, ToggleGroup, triggers, FormSubmit).
+ * Heights come from the density-aware control scale (never from padding + line height); content is centred.
+ */
+export const controlSize: Record<ButtonSize, string> = {
+  sm: "h-control-sm min-w-control-sm px-pad-sm text-yorha-sm",
+  md: "h-control-md min-w-control-md px-pad-md text-yorha-base",
+  lg: "h-control-lg min-w-control-lg px-pad-lg text-yorha-lg",
 };
 
-const SQUARE: Record<ButtonSize, string> = {
-  sm: "size-8 text-yorha-sm",
-  md: "size-10 text-yorha-base",
-  lg: "size-12 text-yorha-lg",
+export const controlSquare: Record<ButtonSize, string> = {
+  sm: "size-control-sm text-yorha-sm",
+  md: "size-control-md text-yorha-base",
+  lg: "size-control-lg text-yorha-lg",
 };
 
 /** Class string shared by Button, IconButton and anything button-shaped (Dialog/Toast actions). */
 export function buttonVariants({ variant = "default", size = "md", square = false }: ButtonVariantOptions = {}): string {
-  return cn(BASE, VARIANT[variant], square ? cn(SQUARE[size], "p-0") : SIZE[size]);
+  return cn(BASE, VARIANT[variant], square ? cn(controlSquare[size], "p-0") : controlSize[size]);
 }
 
 const LOOP_FALLBACK_MS = 1200; // used when the --motion-loop token is absent
@@ -94,7 +99,7 @@ function usePulse(ref: RefObject<HTMLSpanElement | null>, active: boolean) {
 }
 
 export interface ButtonProps extends ComponentProps<typeof BaseButton>, Omit<ButtonVariantOptions, "square"> {
-  /** Shows a pulsing busy indicator overlaid on the button (its size never changes), keeps the label, blocks activation. */
+  /** Shows a pulsing 2px busy bar on the bottom inner edge (the size never changes), keeps the label, blocks activation, no wipe or press scale. */
   loading?: boolean;
   /** @internal used by IconButton */
   square?: boolean;
@@ -123,15 +128,12 @@ export function Button({
       {...props}
     >
       {loading ? (
-        // Overlaid in the padding (or the corner of a square button) so toggling loading never resizes the control.
+        // A 2px bar on the bottom inner edge, the same for every size and variant: it never resizes the control.
         <span
           ref={indicatorRef}
           aria-hidden="true"
-          data-yorha-busy=""
-          className={cn(
-            "pointer-events-none absolute size-2 bg-current",
-            square ? "top-1 right-1" : "top-1/2 left-0.5 -translate-y-1/2",
-          )}
+          data-slot="button-busy"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 bg-current"
         />
       ) : null}
       {children}

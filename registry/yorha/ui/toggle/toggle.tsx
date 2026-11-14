@@ -1,10 +1,13 @@
 import * as React from "react";
 import { Toggle as BaseToggle } from "@base-ui/react/toggle";
 import { cn, cnState } from "@/lib/utils";
+import { controlSize, type ButtonSize } from "@/components/ui/button";
 
 export interface ToggleProps extends Omit<React.ComponentProps<typeof BaseToggle>, "children"> {
   /** Visible label; the whole button is the click target. */
   children: React.ReactNode;
+  /** Control scale step; matches a Button of the same size in a row. Default md. */
+  size?: ButtonSize;
 }
 
 // Indicator: always mounted in a fixed cell; fades (and scales unless reduced/off) in place. Reduced keeps a short opacity fade.
@@ -15,17 +18,18 @@ const INDICATOR_BASE =
  * Two-state button (aria-pressed). Pressed fills with ink and the square bullet
  * turns solid; unpressed shows a hollow square, so state is not carried by colour alone.
  */
-export function Toggle({ children, className, ...props }: ToggleProps) {
+export function Toggle({ children, className, size = "md", ...props }: ToggleProps) {
   return (
     <BaseToggle
       className={cnState(
         cn(
-          "group inline-flex items-center gap-3 align-middle rounded-yorha border border-yorha-border bg-transparent px-3 py-2",
-          "font-yorha text-yorha-base text-yorha-fg cursor-pointer",
-          "yorha-press",
-          "data-[pressed]:bg-yorha-ink data-[pressed]:text-yorha-on-ink",
-          "focus-visible:yorha-focus",
-          "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
+          "group inline-flex items-center justify-center gap-2 align-middle whitespace-nowrap rounded-yorha border border-yorha-border bg-transparent",
+          controlSize[size],
+          "font-yorha text-yorha-fg cursor-pointer",
+          // Standalone control: press scales (yorha-press), hover tints the idle fill; pressed is ink.
+          "yorha-press enabled:not-data-[pressed]:hover:bg-yorha-hover",
+          "data-[pressed]:border-yorha-ink data-[pressed]:bg-yorha-ink data-[pressed]:text-yorha-on-ink",
+          "focus-visible:yorha-focus yorha-disabled",
         ),
         className,
       )}

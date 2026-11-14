@@ -14,9 +14,9 @@ function Toolbar({ className, ...props }: ComponentProps<typeof ToolbarPrimitive
       data-slot="toolbar"
       className={cnState(
         [
-          "inline-flex items-center gap-1 border border-yorha-border bg-yorha-panel p-1 text-yorha-fg",
+          "inline-flex max-w-full flex-wrap items-center gap-1 border border-yorha-border bg-yorha-panel p-1 text-yorha-fg",
           "font-yorha text-yorha-sm tracking-yorha-body rounded-yorha",
-          "data-[orientation=vertical]:flex-col data-[orientation=vertical]:items-stretch",
+          "data-[orientation=vertical]:flex-col data-[orientation=vertical]:flex-nowrap data-[orientation=vertical]:items-stretch",
         ],
         className,
       )}
@@ -45,7 +45,7 @@ function ToolbarToggle({ className, ...props }: ComponentProps<typeof TogglePrim
       className={cnState(
         [
           buttonVariants({ variant: "ghost", size: "sm" }),
-          "data-[pressed]:bg-[length:100%_100%] data-[pressed]:text-yorha-on-ink data-[pressed]:underline data-[pressed]:underline-offset-4",
+          "data-[pressed]:bg-[length:100%_100%] data-[pressed]:text-yorha-on-ink",
         ],
         className as ComponentProps<typeof ToolbarPrimitive.Button>["className"],
       )}
@@ -60,7 +60,7 @@ function ToolbarLink({ className, ...props }: ComponentProps<typeof ToolbarPrimi
     <ToolbarPrimitive.Link
       data-slot="toolbar-link"
       className={cnState(
-        "inline-flex h-8 items-center px-3 text-yorha-sm text-yorha-fg underline underline-offset-4 hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus",
+        "inline-flex h-control-sm items-center px-pad-sm whitespace-nowrap text-yorha-sm text-yorha-fg underline underline-offset-4 hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus",
         className,
       )}
       {...props}
@@ -74,7 +74,7 @@ function ToolbarSeparator({ className, ...props }: ComponentProps<typeof Toolbar
     <ToolbarPrimitive.Separator
       data-slot="toolbar-separator"
       className={cnState(
-        "bg-yorha-separator data-[orientation=vertical]:mx-1 data-[orientation=vertical]:h-5 data-[orientation=vertical]:w-px data-[orientation=horizontal]:my-1 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full",
+        "bg-yorha-separator data-[orientation=vertical]:mx-1 data-[orientation=vertical]:h-6 data-[orientation=vertical]:w-px data-[orientation=horizontal]:my-1 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full",
         className,
       )}
       {...props}
@@ -100,8 +100,8 @@ function ToolbarInput({ className, ...props }: ComponentProps<typeof ToolbarPrim
       data-slot="toolbar-input"
       className={cnState(
         cn(
-          "h-8 min-w-32 rounded-yorha border border-yorha-border bg-yorha-panel px-2 text-yorha-sm text-yorha-fg",
-          "placeholder:text-yorha-fg-soft focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:opacity-60",
+          "h-control-sm min-w-0 flex-1 basis-32 in-data-[orientation=vertical]:flex-none in-data-[orientation=vertical]:basis-auto rounded-yorha border border-yorha-border bg-yorha-panel px-2 text-yorha-sm text-yorha-fg",
+          "placeholder:text-yorha-fg-soft focus-visible:yorha-focus yorha-disabled",
         ),
         className,
       )}

@@ -87,7 +87,8 @@ export const FocusVisible: Story = {
     const sw = within(canvasElement).getByRole("switch", { name: "포커스 대상" });
     await userEvent.tab();
     await expect(sw).toHaveFocus();
-    const style = getComputedStyle(sw);
+    // The ring is on the drawn track inside the 24px hit area.
+    const style = getComputedStyle(sw.querySelector('[data-slot="switch-track"]')!);
     await expect(style.outlineStyle).toBe("solid");
     await expect(parseFloat(style.outlineWidth)).toBeGreaterThan(0);
   },

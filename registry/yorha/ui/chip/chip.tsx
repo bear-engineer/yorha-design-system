@@ -1,6 +1,7 @@
 import { Toggle } from "@base-ui/react/toggle";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { CrossIcon } from "@/components/ui/icons";
 
 export interface ChipProps {
   label: string;
@@ -23,13 +24,13 @@ export interface ChipProps {
 }
 
 const CHIP_BASE =
-  "inline-flex items-stretch gap-0 rounded-yorha border border-yorha-border bg-yorha-bg font-yorha text-yorha-sm text-yorha-fg";
+  "inline-flex h-control-sm max-w-full items-stretch gap-0 rounded-yorha border border-yorha-border bg-yorha-bg font-yorha text-yorha-sm text-yorha-fg";
 
 function Bar({ capacity, segments, decorative }: { capacity: number; segments: number; decorative: boolean }) {
   const ratio = Math.min(1, Math.max(0, capacity));
   const filled = Math.round(ratio * segments);
   const bar = (
-    <span className="flex h-full min-h-4 w-16 items-stretch border-x border-yorha-border" data-slot="bar">
+    <span className="flex h-full w-16 shrink-0 items-stretch border-l border-yorha-border" data-slot="bar">
       {Array.from({ length: segments }, (_, i) => (
         <span
           key={i}
@@ -39,9 +40,9 @@ function Bar({ capacity, segments, decorative }: { capacity: number; segments: n
       ))}
     </span>
   );
-  if (decorative) return <span aria-hidden="true" className="flex">{bar}</span>;
+  if (decorative) return <span aria-hidden="true" className="flex shrink-0">{bar}</span>;
   return (
-    <span role="img" aria-label={`용량 ${Math.round(ratio * 100)}%`} className="flex">
+    <span role="img" aria-label={`용량 ${Math.round(ratio * 100)}%`} className="flex shrink-0">
       {bar}
     </span>
   );
@@ -50,11 +51,9 @@ function Bar({ capacity, segments, decorative }: { capacity: number; segments: n
 function Body({ label, sizeLabel, bar }: { label: string; sizeLabel?: string; bar: ReactNode }) {
   return (
     <>
-      <span className="flex items-center px-2 py-1 font-yorha-medium">
-        <span>{label}</span>
-        {sizeLabel ? (
-          <span className="ml-2 text-yorha-fg-soft">{sizeLabel}</span>
-        ) : null}
+      <span className="flex min-w-0 items-center gap-2 px-2 font-yorha-medium">
+        <span data-slot="chip-label" title={label} className="min-w-0 truncate whitespace-nowrap">{label}</span>
+        {sizeLabel ? <span className="shrink-0 whitespace-nowrap text-yorha-fg-soft">{sizeLabel}</span> : null}
       </span>
       {bar}
     </>
@@ -85,9 +84,11 @@ export function Chip({
         pressed={pressed}
         defaultPressed={defaultPressed}
         onPressedChange={(next) => onPressedChange?.(next)}
+        data-slot="chip"
         className={cn(
           CHIP_BASE,
-          "cursor-pointer focus-visible:yorha-focus data-[pressed]:bg-yorha-ink data-[pressed]:text-yorha-on-ink",
+          "cursor-pointer transition-[color,background-color] duration-(--motion-select) ease-yorha yorha-tint focus-visible:yorha-focus",
+          "data-[pressed]:border-yorha-ink data-[pressed]:bg-yorha-ink data-[pressed]:text-yorha-on-ink",
           className,
         )}
       >
@@ -108,9 +109,9 @@ export function Chip({
           type="button"
           aria-label={`${label} ${removeLabel}`}
           onClick={onRemove}
-          className="inline-flex w-8 min-h-[24px] min-w-[24px] shrink-0 items-center justify-center border-l border-yorha-border text-yorha-fg focus-visible:yorha-focus"
+          className="-my-px grid w-8 shrink-0 place-items-center border-l border-yorha-border text-yorha-fg yorha-tint focus-visible:yorha-focus-inset"
         >
-          <span aria-hidden="true">×</span>
+          <CrossIcon />
         </button>
       ) : null}
     </span>

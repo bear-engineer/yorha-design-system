@@ -20,7 +20,7 @@ export function Badge({ variant = "neutral", children, className }: BadgeProps) 
       data-variant={variant}
       data-shape={variant === "alert" ? "diamond" : undefined}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-yorha border bg-yorha-bg px-1.5 py-0.5 font-yorha font-yorha-medium text-yorha-xs uppercase tracking-yorha-wide",
+        "inline-flex h-6 items-center gap-2 whitespace-nowrap rounded-yorha border bg-yorha-bg px-2 font-yorha font-yorha-medium text-yorha-xs uppercase tracking-yorha-wide",
         VARIANT[variant],
         className,
       )}

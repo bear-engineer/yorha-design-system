@@ -16,7 +16,7 @@ export function RadioGroup({ className, orientation = "vertical", ...props }: Ra
   return (
     <BaseRadioGroup
       aria-orientation={orientation}
-      className={cnState(["flex gap-1 font-yorha text-yorha-base", orientation === "horizontal" ? "flex-row" : "flex-col"], className)}
+      className={cnState(["flex gap-2 font-yorha text-yorha-base", orientation === "horizontal" ? "flex-row" : "flex-col"], className)}
       {...props}
     />
   );
@@ -32,32 +32,45 @@ export interface RadioProps extends Omit<React.ComponentProps<typeof BaseRadio.R
 /**
  * One option. The selected row wipes to the ink fill left to right; the square
  * bullet uses currentColor so it inverts with the row.
+ * The Base UI root is a 24px hit area holding the drawn 20px box (the focus ring is on that box, like Checkbox).
  */
 export function Radio({ children, className, rowClassName, ...props }: RadioProps) {
   return (
     <label
       className={cn(
-        "group/row relative flex cursor-pointer items-center gap-3 px-3 py-2 text-yorha-fg",
+        "group/row relative flex cursor-pointer items-start gap-2 px-3 py-1 text-yorha-fg",
         "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-no-repeat [background-size:0%_100%]",
         "yorha-wipe",
         "has-[[data-checked]]:text-yorha-on-ink has-[[data-checked]]:[background-size:100%_100%]",
-        "has-[:focus-visible]:yorha-focus has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:opacity-50",
+        "has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:text-yorha-disabled has-[[data-disabled]]:has-[[data-checked]]:bg-[linear-gradient(var(--yorha-disabled),var(--yorha-disabled))] has-[[data-disabled]]:has-[[data-checked]]:text-yorha-bg",
         rowClassName,
       )}
     >
-      <BaseRadio.Root
-        className={cnState(
-          cn(
-          "grid size-5 min-h-[24px] min-w-[24px] shrink-0 place-items-center rounded-yorha border border-current bg-transparent",
-          // M22: pointer-down tints the box at once (colour only, no size change).
-          "transition-[background-color] duration-(--motion-select) ease-yorha group-active/row:bg-[color-mix(in_srgb,var(--yorha-ink)_25%,transparent)] data-[checked]:group-active/row:bg-[color-mix(in_srgb,var(--yorha-bg)_70%,var(--yorha-on-ink))] active:duration-(--motion-press)",
-          ),
-          className,
-        )}
-        {...props}
-      >
-        <BaseRadio.Indicator keepMounted className={DOT} />
-      </BaseRadio.Root>
+      <span className="grid h-[1lh] shrink-0 place-items-center">
+        <BaseRadio.Root
+          className={cnState(
+            "group/box grid size-6 shrink-0 place-items-center rounded-yorha border-0 bg-transparent p-0 text-current outline-none data-[disabled]:cursor-not-allowed",
+            className,
+          )}
+          {...props}
+        >
+          <span
+            data-slot="radio-box"
+            className={cn(
+              "grid size-indicator place-items-center rounded-yorha border border-current bg-transparent",
+              "transition-[background-color] duration-(--motion-select) ease-yorha",
+              "group-focus-visible/box:yorha-focus",
+              // Hover tint on an unselected row's box (the selected row is already ink); pointer-down tints at once.
+              "not-group-data-[checked]/box:not-group-data-[disabled]/box:group-hover/row:bg-yorha-hover",
+              "not-group-data-[checked]/box:not-group-data-[disabled]/box:group-active/row:bg-yorha-pressed group-active/row:duration-0",
+              "group-data-[checked]/box:group-active/row:bg-[color-mix(in_srgb,var(--yorha-bg)_70%,var(--yorha-on-ink))]",
+              "group-data-[disabled]/box:border-yorha-disabled",
+            )}
+          >
+            <BaseRadio.Indicator keepMounted className={DOT} />
+          </span>
+        </BaseRadio.Root>
+      </span>
       <span>{children}</span>
     </label>
   );

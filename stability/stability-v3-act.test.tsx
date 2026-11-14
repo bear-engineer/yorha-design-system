@@ -75,11 +75,12 @@ describe("FACT-01 checked box keeps its painted size", () => {
       ),
     );
     await settle();
-    const cb = [...host.querySelectorAll<HTMLElement>('[role="checkbox"]')];
-    const sw = [...host.querySelectorAll<HTMLElement>('[role="switch"]')];
-    const rd = [...host.querySelectorAll<HTMLElement>('[role="radio"]')];
+    const cb = [...host.querySelectorAll<HTMLElement>('[data-slot="checkbox-box"]')];
+    const sw = [...host.querySelectorAll<HTMLElement>('[data-slot="switch-track"]')];
+    const rd = [...host.querySelectorAll<HTMLElement>('[data-slot="radio-box"]')];
     for (const [off, on] of [cb, sw, rd] as const) {
       expect(box(on), "checked size equals unchecked").toEqual(box(off));
+      expect(box(off).h).toBe(20);
     }
     const ink = (() => {
       const p = document.createElement("div");
@@ -89,7 +90,8 @@ describe("FACT-01 checked box keeps its painted size", () => {
       p.remove();
       return c;
     })();
-    for (const el of [cb[1], sw[1], rd[1]]) expect(css(el).borderTopColor).toBe(ink);
+    // the radio box sits on the ink row, so its border stays currentColor (on-ink)
+    for (const el of [cb[1], sw[1]]) expect(css(el).borderTopColor).toBe(ink);
   });
 });
 
@@ -131,7 +133,7 @@ describe("FACT-03/18/17 chip", () => {
         createElement(Chip, { label: "선택형 모듈 B 아주 긴 이름의 항목", sizeLabel: "128 KB", capacity: 0.3, selectable: true })),
       { width: 360 },
     );
-    for (const chip of host.querySelectorAll<HTMLElement>('[data-slot="chip"], button[aria-pressed]')) {
+    for (const chip of host.querySelectorAll<HTMLElement>('[data-slot="chip"]')) {
       expect(chip.getBoundingClientRect().right).toBeLessThanOrEqual(host.getBoundingClientRect().right);
       expect(chip.scrollWidth).toBeLessThanOrEqual(chip.clientWidth);
       expect(chip.getBoundingClientRect().height).toBe(token("--yorha-control-sm"));
@@ -179,15 +181,17 @@ describe("FACT-06 hover affordance on stateful controls", () => {
   const cases: [string, ReactElement, string, "self" | "label"][] = [
     ["toggle", createElement(Toggle, null, "굵게"), "button[aria-pressed]", "self"],
     ["toggle-group", createElement(ToggleGroup, { "aria-label": "g" }, createElement(ToggleGroupItem, { value: "a" }, "하나"), createElement(ToggleGroupItem, { value: "b" }, "둘")), "[data-slot=toggle-group-item]", "self"],
-    ["checkbox", createElement(Checkbox, null, "알림"), '[role="checkbox"]', "label"],
-    ["switch", createElement(Switch, null, "알림"), '[role="switch"]', "label"],
-    ["radio", createElement(RadioGroup, { "aria-label": "r" }, createElement(Radio, { value: "a" }, "하나")), '[role="radio"]', "label"],
-    ["chip", createElement(Chip, { label: "선택형", selectable: true }), "button[aria-pressed]", "self"],
+    ["checkbox", createElement(Checkbox, null, "알림"), '[data-slot="checkbox-box"]', "label"],
+    ["switch", createElement(Switch, null, "알림"), '[data-slot="switch-track"]', "label"],
+    ["radio", createElement(RadioGroup, { "aria-label": "r" }, createElement(Radio, { value: "a" }, "하나")), '[data-slot="radio-box"]', "label"],
+    ["chip", createElement(Chip, { label: "선택형", selectable: true }), '[data-slot="chip"]', "self"],
   ];
   for (const [name, ui, sel, target] of cases) {
     it(`${name}: hover paints --yorha-hover`, async () => {
       const host = await render(ui);
       const el = q(host, sel);
+      await userEvent.unhover(el);
+      await settle();
       const idle = css(el).backgroundColor;
       await userEvent.hover(target === "label" ? (el.closest("label") as HTMLElement) : el);
       await settle();
@@ -219,7 +223,7 @@ describe("FACT-07 disabled recipe (no container opacity)", () => {
       p.remove();
       return c;
     })();
-    const parts = host.querySelectorAll<HTMLElement>(":disabled, [data-disabled], [aria-disabled=true], label");
+    const parts = host.querySelectorAll<HTMLElement>("button, [role=checkbox], [role=switch], [role=radio], [role=slider], label, input");
     expect(parts.length).toBeGreaterThan(8);
     for (const el of parts) {
       expect(css(el).opacity, `opacity ${el.outerHTML.slice(0, 60)}`).toBe("1");
@@ -253,7 +257,7 @@ describe("FACT-08/17 one height scale", () => {
         createElement(Chip, { label: "칩", selectable: true })),
     );
     expect(q(host, '[data-slot="toggle-group"]').getBoundingClientRect().height).toBe(token("--yorha-control-sm"));
-    expect(q(host, "button[aria-pressed]:not([data-slot])").getBoundingClientRect().height).toBe(token("--yorha-control-sm"));
+    expect(q(host, '[data-slot="chip"]').getBoundingClientRect().height).toBe(token("--yorha-control-sm"));
   });
   it("Badge 24px, Kbd 20px", async () => {
     const host = await render(createElement("div", { style: { display: "flex", gap: 8, alignItems: "flex-start" } }, createElement(Badge, null, "신규"), createElement(Kbd, null, "K")));
@@ -269,26 +273,28 @@ describe("FACT-09 box and label centring", () => {
       createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12, alignItems: "flex-start" } },
         createElement(Checkbox, { defaultChecked: true }, "알림 수신"),
         createElement(Switch, { defaultChecked: true }, "알림 수신"),
+        createElement(Switch, { defaultChecked: false }, "알림 수신"),
         createElement(RadioGroup, { "aria-label": "r", defaultValue: "a" }, createElement(Radio, { value: "a" }, "알림 수신"))),
     );
     await settle();
-    for (const el of host.querySelectorAll<HTMLElement>('[role="checkbox"], [role="switch"], [role="radio"]')) {
+    for (const el of host.querySelectorAll<HTMLElement>('[data-slot="checkbox-box"], [data-slot="switch-track"], [data-slot="radio-box"]')) {
       expectPixelSnapped(el, { axes: "xy" });
       const label = el.closest("label") as HTMLElement;
-      const text = label.querySelector("span:last-child") as HTMLElement;
+      const text = label.querySelector(":scope > span:last-child") as HTMLElement;
       const lh = px(css(text).lineHeight);
       const first = text.getBoundingClientRect().top + lh / 2;
       const r = el.getBoundingClientRect();
-      expect(Math.abs(r.top + r.height / 2 - first), `centre of ${el.getAttribute("role")}`).toBeLessThanOrEqual(0.5);
+      expect(Math.abs(r.top + r.height / 2 - first), `centre of ${el.dataset.slot}`).toBeLessThanOrEqual(0.5);
     }
-    const track = q(host, '[role="switch"]');
-    const thumb = q(track, "span");
-    const t = track.getBoundingClientRect();
-    const h = thumb.getBoundingClientRect();
-    const left = h.left - t.left;
-    const right = t.right - h.right;
-    expect(Math.abs(left - right)).toBeLessThanOrEqual(0.1);
-    expect(Math.abs(h.top - t.top - (t.bottom - h.bottom))).toBeLessThanOrEqual(0.1);
+    const [on, off] = [...host.querySelectorAll<HTMLElement>('[data-slot="switch-track"]')];
+    const inset = (track: HTMLElement) => {
+      const t = track.getBoundingClientRect();
+      const h = q(track, '[data-slot="switch-thumb"]').getBoundingClientRect();
+      return { left: h.left - t.left, right: t.right - h.right, top: h.top - t.top, bottom: t.bottom - h.bottom };
+    };
+    expect(inset(off).left, "unchecked left inset").toBe(3);
+    expect(inset(on).right, "checked right inset equals the left one").toBe(inset(off).left);
+    expect(inset(on).top).toBe(inset(on).bottom);
   });
 });
 
@@ -299,12 +305,10 @@ describe("FACT-10/11/12 slider", () => {
     const track = q(host, '[data-slot="slider-track"]');
     expect(fill.getBoundingClientRect().width % 8).toBe(0);
     expect(track.getBoundingClientRect().width % 8).toBe(0);
-    const thumb = q(host, '[role="slider"]').closest("[data-index], div") as HTMLElement;
     const control = q(host, '[data-slot="slider-control"]');
     expect(css(control).cursor).toBe("pointer");
     const thumbEl = q(host, '[data-slot="slider-thumb"]');
     expect(css(thumbEl).cursor).toBe("grab");
-    expect(thumb).toBeTruthy();
     await userEvent.tab();
     expect(css(thumbEl).outlineStyle, "no ring on the 24px hit box").toBe("none");
     expect(css(thumbEl, "::before").outlineStyle, "ring on the drawn 16px thumb").not.toBe("none");
@@ -315,8 +319,11 @@ describe("FACT-13 radio ring on the box, group gap 8", () => {
   it("keyboard focus rings the 20px box, not the row", async () => {
     const host = await render(createElement(RadioGroup, { "aria-label": "r", defaultValue: "a" }, createElement(Radio, { value: "a" }, "하나"), createElement(Radio, { value: "b" }, "둘")));
     await userEvent.tab();
-    const radio = q(host, '[role="radio"][tabindex="0"], [role="radio"][data-checked]');
-    expect(css(radio).outlineStyle).not.toBe("none");
+    const radio = q(host, '[role="radio"][data-checked]');
+    const drawn = q(radio, '[data-slot="radio-box"]');
+    expect(css(drawn).outlineStyle, "ring on the 20px box").not.toBe("none");
+    expect(drawn.getBoundingClientRect().width).toBe(20);
+    expect(css(radio).outlineStyle).toBe("none");
     expect(css(radio.closest("label") as HTMLElement).outlineStyle).toBe("none");
     expect(css(q(host, '[role="radiogroup"]')).rowGap).toBe("8px");
   });

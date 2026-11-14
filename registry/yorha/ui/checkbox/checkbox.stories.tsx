@@ -118,7 +118,8 @@ export const FocusVisible: Story = {
     const box = within(canvasElement).getByRole("checkbox", { name: "포커스 대상" });
     await userEvent.tab();
     await expect(box).toHaveFocus();
-    const style = getComputedStyle(box);
+    // The ring is on the drawn box inside the 24px hit area (one geometry for every label + box control).
+    const style = getComputedStyle(box.querySelector('[data-slot="checkbox-box"]')!);
     await expect(style.outlineStyle).toBe("solid");
     await expect(parseFloat(style.outlineWidth)).toBeGreaterThan(0);
   },

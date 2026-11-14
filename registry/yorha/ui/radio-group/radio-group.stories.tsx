@@ -27,6 +27,8 @@ const meta = {
   title: "컴포넌트/폼/RadioGroup",
   component: RadioGroup,
   tags: ["autodocs"],
+  // A selected row is a full-width ink bar by design; stories cap the container, the component does not.
+  decorators: [(Story) => <div className="max-w-sm"><Story /></div>],
 } satisfies Meta<typeof RadioGroup>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -127,7 +129,7 @@ export const Themes: Story = {
   render: (args) => (
     <div className="grid gap-4 sm:grid-cols-2">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[min(24rem,calc(100vw-2rem))] bg-yorha-panel p-4 text-yorha-fg">
           <RadioGroup {...args} aria-label={`테마 ${t}`}>
             <Options />
           </RadioGroup>
@@ -148,7 +150,7 @@ export const Authentic: Story = {
   name: "Authentic (원작 팔레트)",
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[min(24rem,calc(100vw-2rem))] bg-yorha-panel p-4 text-yorha-fg">
       <RadioGroup aria-label="테마 authentic" defaultValue="bravo">
         <Options />
       </RadioGroup>
@@ -187,7 +189,7 @@ export const ReducedMotion: Story = {
 export const States: Story = {
   args: { "aria-label": "상태", defaultValue: "alpha" },
   render: () => (
-    <div className="flex flex-col gap-4">
+    <div className="flex max-w-sm flex-col gap-4">
       <RadioGroup aria-label="일부 비활성" defaultValue="alpha">
         <Options disabledBravo />
       </RadioGroup>
