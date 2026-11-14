@@ -96,6 +96,9 @@ jobs:
       - name: Storybook tests (a11y = error, play functions)
         run: pnpm test:storybook
 
+      - name: Text spacing (WCAG 1.4.12, no clipped text)
+        run: pnpm test:text-spacing
+
       - name: e2e registry install, static path
         # GitHub sets GITHUB_REF for every step; clear it so e2e/install.sh uses the local server.
         env:

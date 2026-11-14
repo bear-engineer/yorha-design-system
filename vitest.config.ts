@@ -38,6 +38,15 @@ export default defineConfig({
           },
         },
       },
+      {
+        // WCAG 1.4.12 text spacing: representative stories must not clip text. Inherits react + tailwind from root.
+        extends: true,
+        test: {
+          name: "text-spacing",
+          include: ["text-spacing/**/*.test.tsx"],
+          browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: "chromium", viewport: { width: 1280, height: 800 } }] },
+        },
+      },
     ],
   },
 });
