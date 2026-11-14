@@ -1,0 +1,36 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="가이드/Sound" />
+
+
+<main lang="ko">
+
+# 사운드
+
+사운드는 기본적으로 꺼져 있습니다. 원작 효과음이나 오디오 파일을 사용하지 않고 Web Audio의 파형과 노이즈로 효과음을 생성합니다. 처음 활성화된 재생에서 공유 `AudioContext`를 만들며 브라우저의 사용자 제스처 제한을 따릅니다. 창이 포커스를 잃으면 음소거하고 포커스를 되찾으면 볼륨을 복원합니다.
+
+`@yorha/sound`와 `@yorha/yorha-provider`를 설치하고, 사용자가 명시적으로 켜고 끌 수 있는 설정을 제공하세요.
+
+```tsx
+import { YorhaProvider, useSoundPreference } from "@/components/yorha-provider";
+import { useSound } from "@/lib/sound";
+
+function SoundSettings() {
+  const { enabled, setEnabled } = useSoundPreference();
+  const { play } = useSound();
+  return (
+    <div>
+      <label><input type="checkbox" checked={enabled} onChange={(event) => setEnabled(event.target.checked)} /> 사운드 사용</label>
+      <button type="button" onClick={() => play("select")}>소리 확인</button>
+    </div>
+  );
+}
+
+export function App() {
+  return <YorhaProvider><SoundSettings /></YorhaProvider>;
+}
+```
+
+`useSound()`의 `play`는 설정이 꺼져 있으면 아무 동작도 하지 않습니다. `useSoundPreference()`의 `setVolume`은 0부터 1까지의 볼륨을 설정합니다. 사운드 설정은 메모리 상태이며 자동 저장되지 않습니다. 일부 컴포넌트는 별도 `sound` prop도 켜야 합니다. `playCue`를 직접 호출하면 사용자 설정을 검사하지 않으므로 직접 호출하는 쪽에서 설정을 확인해야 합니다.
+
+</main>

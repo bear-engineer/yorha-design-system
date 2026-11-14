@@ -1,0 +1,40 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="가이드/Contributing" />
+
+
+<main lang="ko">
+
+# 기여 규칙
+
+## 항목 구조
+
+레지스트리 항목 하나는 `registry/yorha/<group>/<name>/` 디렉터리 하나에 둡니다.
+
+```text
+registry/yorha/<group>/<name>/
+  registry.json
+  <name>.tsx
+  <name>.stories.tsx
+```
+
+주 파일 확장자는 항목에 따라 `.ts`일 수 있습니다. 보조 파일은 같은 디렉터리에 두고 `registry.json`의 files에도 등록합니다. 다른 항목은 주 파일을 소비자 별칭으로만 import합니다. `registryDependencies`는 `@yorha/<name>` 형식으로 씁니다. UI와 component 항목은 `@yorha/base`와 `@yorha/utils`를 포함합니다.
+
+## 테스트와 검사
+
+1. 실패하는 스토리 play 테스트 또는 단위 테스트를 먼저 작성하고, import 오류가 아닌 기대 동작의 실패를 확인해 커밋합니다.
+2. 구현 후 같은 테스트를 통과시키고 별도 커밋합니다. 인터랙티브 컴포넌트는 키보드 경로와 포커스를 검사합니다.
+3. 전체 검사와 레지스트리 검사를 실행합니다.
+
+```sh
+pnpm typecheck
+pnpm test
+pnpm test:storybook
+pnpm registry:lint
+pnpm registry:validate
+pnpm lint:secrets
+```
+
+스토리에서는 접근성 검사를 `error`로 유지합니다. 대비를 보장하지 않는 `authentic` 테마만 단독 스토리에서 사유를 적고 `todo`로 표시합니다. 토큰 생성물은 직접 편집하지 않고 `tokens/*.tokens.json`을 바꾼 뒤 `pnpm tokens:build`로 생성합니다. 원작 리소스와 오디오 파일은 추가하지 않습니다.
+
+</main>

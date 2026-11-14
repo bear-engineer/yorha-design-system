@@ -1,0 +1,52 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="가이드/Installation" />
+
+
+<main lang="ko">
+
+# 설치
+
+React Router와 Tailwind CSS v4 앱을 기준으로 설명합니다. 아래 명령은 `shadcn` 버전을 4.23.0으로 고정합니다. 앱과 레지스트리의 경로가 다르면 `components.json`의 `tailwind.css`와 `aliases`를 앱에 맞게 바꾸세요.
+
+## 설정과 설치
+
+1. 이 저장소의 `templates/components.json`을 앱 루트에 `components.json`으로 복사합니다. 다음 명령은 현재 디렉터리가 이 저장소의 루트일 때의 예시입니다. `<앱 경로>`는 실제 앱 경로로 바꾸세요.
+
+```sh
+cp templates/components.json <앱 경로>/components.json
+cd <앱 경로>
+```
+
+2. `style: "yorha"`는 CLI가 요구하는 필수 자리표시자이므로 유지합니다. `registries.@yorha`는 배포된 레지스트리 주소를 가리켜야 합니다. 배포 전에는 해당 주소로 설치할 수 없습니다.
+3. `@yorha/init`의 안내대로 `app/app.css`에서 템플릿이 만든 **레이어 밖의 `html, body` 배경 및 color-scheme 규칙**을 삭제합니다. 이 규칙은 키트의 `@layer base`보다 우선합니다. 나머지 필요한 CSS는 유지하세요.
+4. 항목을 설치합니다.
+
+```sh
+npx shadcn@4.23.0 add @yorha/base @yorha/init @yorha/button
+```
+
+`button`처럼 이름만 쓰면 shadcn 기본 레지스트리를 가리킵니다. 다른 항목도 `@yorha/<item>`으로 지정하세요.
+
+## GitHub 소스 형식
+
+공개된 브랜치, 태그 또는 커밋을 지정할 수 있습니다. 아래 `<item>`과 `<ref>`를 실제 값으로 바꾸세요. `#<ref>`를 생략하면 기본 브랜치를 사용합니다.
+
+```sh
+npx shadcn@4.23.0 add bear-engineer/yorha-design-system/<item>#<ref>
+```
+
+GitHub 소스 항목 내부의 `@yorha/...` 의존성도 해석되어야 하므로 `templates/components.json`의 `registries` 설정을 유지하세요. GitHub 경로는 공개된 ref와 레지스트리 배포가 있어야 사용할 수 있습니다.
+
+## 변경 사항 확인과 덮어쓰기
+
+별도의 `update` 명령은 없습니다. `add`의 diff로 확인하고, 변경을 적용하려면 덮어쓰기 옵션을 명시하세요. 먼저 앱의 변경 사항을 커밋하거나 백업하세요.
+
+```sh
+npx shadcn@4.23.0 add @yorha/button --diff app/components/ui/button.tsx
+npx shadcn@4.23.0 add @yorha/button --overwrite
+```
+
+경로는 앱에 실제로 설치된 파일 경로로 바꾸세요. `--dry-run`의 CSS 미리보기는 실제 Tailwind v4 쓰기 결과와 다를 수 있으므로 믿지 마세요. 실제 `add` 후 버전 관리 diff로 CSS와 파일 변경을 확인하세요.
+
+</main>

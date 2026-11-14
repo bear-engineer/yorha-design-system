@@ -1,0 +1,38 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="가이드/Preferences" />
+
+
+<main lang="ko">
+
+# 테마·모션·밀도
+
+`@yorha/yorha-provider`를 설치한 뒤 앱을 `YorhaProvider`로 감쌉니다. 앱의 별칭 설정에 맞춰 import 경로를 조정하세요.
+
+```tsx
+import { YorhaProvider } from "@/components/yorha-provider";
+
+export function App() {
+  return <YorhaProvider theme="light" density="comfortable"><main>내용</main></YorhaProvider>;
+}
+```
+
+프로바이더는 `<html>`에 속성을 적용하고 언마운트할 때 이전 값을 복원합니다. CSS 속성은 하위 영역에도 직접 설정할 수 있습니다.
+
+| 속성 | 값 | 역할 |
+| --- | --- | --- |
+| `data-theme` | `light`, `dark`, `high-contrast`, `authentic` | 색상 테마 |
+| `data-motion` | `full`, `reduced`, `off` | 동작 지속 시간 |
+| `data-density` | `default`, `compact`, `comfortable` | 간격 밀도 |
+
+`useTheme`, `useMotion`, `useDensity`는 각각 현재 값과 setter를 제공합니다. 훅은 프로바이더 안에서 호출하세요. 테마 기본값은 `light`, 밀도 기본값은 `default`입니다.
+
+## 동작 줄이기
+
+`motion` prop이 있으면 우선 적용됩니다. 없으면 저장된 `yorha:motion`, 운영체제의 동작 줄이기 설정, `full` 순으로 결정합니다. `setMotion`은 선택을 로컬 저장소에 저장하며, 저장된 선택이 없으면 운영체제 설정 변경을 따릅니다. 서버 초기 렌더의 값은 `full`이며 클라이언트 effect에서 설정을 반영합니다.
+
+`reduced`와 `off`에서는 지속 시간 토큰이 0이 되어 최종 상태가 바로 나타납니다. 명시적으로 `full`을 선택하지 않았다면 프로바이더가 없어도 CSS가 운영체제의 동작 줄이기를 따릅니다. 깜빡임은 초당 3회 이하로 제한하고, 5초를 넘는 자동 동작에는 일시정지 수단을 제공하세요.
+
+`authentic`은 대비가 부족하므로 장식용으로만 사용하세요. 실제 텍스트와 조작에는 접근 가능한 다른 테마를 사용합니다.
+
+</main>
