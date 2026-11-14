@@ -1,0 +1,119 @@
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, userEvent, within } from "storybook/test";
+import { Switch } from "./switch";
+
+const THEMES = ["light", "dark", "high-contrast"] as const;
+
+const meta = {
+  title: "컴포넌트/폼/Switch",
+  component: Switch,
+  tags: ["autodocs"],
+  decorators: [
+    (Story) => (
+      <div className="bg-yorha-panel p-6 text-yorha-fg">
+        <Story />
+      </div>
+    ),
+  ],
+} satisfies Meta<typeof Switch>;
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: { children: "전원", defaultChecked: false },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const sw = c.getByRole("switch", { name: "전원" });
+    await expect(sw).toHaveAttribute("aria-checked", "false");
+    sw.focus();
+    await userEvent.keyboard(" ");
+    await expect(sw).toHaveAttribute("aria-checked", "true");
+    await userEvent.keyboard(" ");
+    await expect(sw).toHaveAttribute("aria-checked", "false");
+  },
+};
+
+export const LabelClick: Story = {
+  args: { children: "야간 모드", defaultChecked: false },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByText("야간 모드"));
+    await expect(c.getByRole("switch", { name: "야간 모드" })).toHaveAttribute("aria-checked", "true");
+  },
+};
+
+export const Disabled: Story = {
+  args: { children: "잠긴 스위치", defaultChecked: false, disabled: true },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const sw = c.getByRole("switch", { name: "잠긴 스위치" });
+    await expect(sw).toBeDisabled();
+    sw.focus();
+    await userEvent.keyboard(" ");
+    await userEvent.click(c.getByText("잠긴 스위치"));
+    await expect(sw).toHaveAttribute("aria-checked", "false");
+  },
+};
+
+export const FocusVisible: Story = {
+  args: { children: "포커스 대상", defaultChecked: false },
+  play: async ({ canvasElement }) => {
+    const sw = within(canvasElement).getByRole("switch", { name: "포커스 대상" });
+    await userEvent.tab();
+    await expect(sw).toHaveFocus();
+    const style = getComputedStyle(sw);
+    await expect(style.outlineStyle).toBe("solid");
+    await expect(parseFloat(style.outlineWidth)).toBeGreaterThan(0);
+  },
+};
+
+export const States: Story = {
+  args: { children: "" },
+  render: () => (
+    <div className="flex flex-col items-start gap-3">
+      <Switch defaultChecked={false}>꺼짐</Switch>
+      <Switch defaultChecked>켜짐</Switch>
+      <Switch disabled>꺼짐 비활성</Switch>
+      <Switch defaultChecked disabled>켜짐 비활성</Switch>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("switch", { name: "꺼짐" })).toHaveAttribute("aria-checked", "false");
+    await expect(c.getByRole("switch", { name: "켜짐" })).toHaveAttribute("aria-checked", "true");
+    await expect(c.getByRole("switch", { name: "꺼짐 비활성" })).toBeDisabled();
+    await expect(c.getByRole("switch", { name: "켜짐 비활성" })).toBeDisabled();
+  },
+};
+
+export const Themes: Story = {
+  args: { children: "" },
+  render: () => (
+    <div className="grid gap-4 sm:grid-cols-3">
+      {THEMES.map((t) => (
+        <div key={t} data-theme={t} className="bg-yorha-panel p-4 text-yorha-fg">
+          <Switch defaultChecked>{`테마 ${t}`}</Switch>
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getAllByRole("switch")).toHaveLength(3);
+  },
+};
+
+// The authentic theme is a fidelity-first palette that is not contrast-gated.
+export const Authentic: Story = {
+  args: { children: "오리지널 팔레트", defaultChecked: true },
+  render: (args) => (
+    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+      <Switch {...args} />
+    </div>
+  ),
+  parameters: { a11y: { test: "todo" } },
+  play: async ({ canvasElement }) => {
+    const sw = within(canvasElement).getByRole("switch", { name: "오리지널 팔레트" });
+    await expect(sw).toHaveAttribute("aria-checked", "true");
+  },
+};

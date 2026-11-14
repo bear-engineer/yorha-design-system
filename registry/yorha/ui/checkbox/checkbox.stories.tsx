@@ -1,0 +1,131 @@
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, userEvent, within } from "storybook/test";
+import { Checkbox } from "./checkbox";
+
+const THEMES = ["light", "dark", "high-contrast"] as const;
+
+const meta = {
+  title: "컴포넌트/폼/Checkbox",
+  component: Checkbox,
+  tags: ["autodocs"],
+  decorators: [
+    (Story) => (
+      <div className="bg-yorha-panel p-6 text-yorha-fg">
+        <Story />
+      </div>
+    ),
+  ],
+} satisfies Meta<typeof Checkbox>;
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: { children: "알림 수신", defaultChecked: false },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const box = c.getByRole("checkbox", { name: "알림 수신" });
+    await expect(box).toHaveAttribute("aria-checked", "false");
+    box.focus();
+    await userEvent.keyboard(" ");
+    await expect(box).toHaveAttribute("aria-checked", "true");
+    await userEvent.keyboard(" ");
+    await expect(box).toHaveAttribute("aria-checked", "false");
+  },
+};
+
+export const LabelClick: Story = {
+  args: { children: "자동 저장", defaultChecked: false },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByText("자동 저장"));
+    await expect(c.getByRole("checkbox", { name: "자동 저장" })).toHaveAttribute("aria-checked", "true");
+  },
+};
+
+export const Indeterminate: Story = {
+  args: { children: "일부 선택", indeterminate: true },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const box = c.getByRole("checkbox", { name: "일부 선택" });
+    await expect(box).toHaveAttribute("aria-checked", "mixed");
+    await userEvent.click(c.getByText("일부 선택"));
+    await expect(box).toHaveAttribute("aria-checked", "true");
+  },
+};
+
+export const Disabled: Story = {
+  args: { children: "잠긴 옵션", defaultChecked: false, disabled: true },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const box = c.getByRole("checkbox", { name: "잠긴 옵션" });
+    await expect(box).toBeDisabled();
+    box.focus();
+    await userEvent.keyboard(" ");
+    await userEvent.click(c.getByText("잠긴 옵션"));
+    await expect(box).toHaveAttribute("aria-checked", "false");
+  },
+};
+
+export const FocusVisible: Story = {
+  args: { children: "포커스 대상", defaultChecked: false },
+  play: async ({ canvasElement }) => {
+    const box = within(canvasElement).getByRole("checkbox", { name: "포커스 대상" });
+    await userEvent.tab();
+    await expect(box).toHaveFocus();
+    const style = getComputedStyle(box);
+    await expect(style.outlineStyle).toBe("solid");
+    await expect(parseFloat(style.outlineWidth)).toBeGreaterThan(0);
+  },
+};
+
+export const States: Story = {
+  args: { children: "" },
+  render: () => (
+    <div className="flex flex-col items-start gap-3">
+      <Checkbox defaultChecked={false}>꺼짐</Checkbox>
+      <Checkbox defaultChecked>켜짐</Checkbox>
+      <Checkbox indeterminate>일부</Checkbox>
+      <Checkbox disabled>꺼짐 비활성</Checkbox>
+      <Checkbox defaultChecked disabled>켜짐 비활성</Checkbox>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("checkbox", { name: "꺼짐" })).toHaveAttribute("aria-checked", "false");
+    await expect(c.getByRole("checkbox", { name: "켜짐" })).toHaveAttribute("aria-checked", "true");
+    await expect(c.getByRole("checkbox", { name: "일부" })).toHaveAttribute("aria-checked", "mixed");
+    await expect(c.getByRole("checkbox", { name: "꺼짐 비활성" })).toBeDisabled();
+  },
+};
+
+export const Themes: Story = {
+  args: { children: "" },
+  render: () => (
+    <div className="grid gap-4 sm:grid-cols-3">
+      {THEMES.map((t) => (
+        <div key={t} data-theme={t} className="bg-yorha-panel p-4 text-yorha-fg">
+          <Checkbox defaultChecked>{`테마 ${t}`}</Checkbox>
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getAllByRole("checkbox")).toHaveLength(3);
+  },
+};
+
+// The authentic theme is a fidelity-first palette that is not contrast-gated.
+export const Authentic: Story = {
+  args: { children: "오리지널 팔레트", defaultChecked: true },
+  render: (args) => (
+    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+      <Checkbox {...args} />
+    </div>
+  ),
+  parameters: { a11y: { test: "todo" } },
+  play: async ({ canvasElement }) => {
+    const box = within(canvasElement).getByRole("checkbox", { name: "오리지널 팔레트" });
+    await expect(box).toHaveAttribute("aria-checked", "true");
+  },
+};
