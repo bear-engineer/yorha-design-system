@@ -13,6 +13,8 @@ export interface ItemConfig {
   stage?: "center" | "top";
   /** Selector override for items whose control is not a button/input (e.g. a context-menu trigger area). */
   selector?: string;
+  /** Controls matching this selector are skipped; state the reason in the config line comment. */
+  exclude?: string;
   /** Max controls per story (default 6): each costs ~2s of real-time sampling. */
   max?: number;
 }
@@ -29,7 +31,7 @@ export function stabilitySuite(title: string, items: ItemConfig[]) {
         if (!storyModule(cfg.item)?.[name]) continue;
         test(`${cfg.item} / ${name}`, { timeout: 120_000 }, async () => {
           const wrapper = await mountStory(cfg.item, name, { stage: cfg.stage });
-          const controls = visibleControls(wrapper, cfg.max ?? 6, cfg.selector);
+          const controls = visibleControls(wrapper, cfg.max ?? 6, cfg.selector).filter((el) => !cfg.exclude || !el.matches(cfg.exclude));
           expect(controls.length, "no interactive control found (vacuous pass)").toBeGreaterThan(0);
           const failures: string[] = [];
           const block = (e: Event) => e.preventDefault();

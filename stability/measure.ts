@@ -111,7 +111,18 @@ function ownScale(el: Element): { sx: number; sy: number; tx: number; ty: number
  */
 const rectOf = (el: Element): Rect => {
   const r = el.getBoundingClientRect();
-  const { sx, sy, tx, ty } = ownScale(el);
+  const own = ownScale(el);
+  // Translation of ancestors (a card's hover lift moves its link) is a transform-only move, not a layout shift.
+  let ax = 0;
+  let ay = 0;
+  for (let p = el.parentElement; p && p !== document.documentElement; p = p.parentElement) {
+    const a = ownScale(p);
+    ax += a.tx;
+    ay += a.ty;
+  }
+  const { sx, sy } = own;
+  const tx = own.tx + ax;
+  const ty = own.ty + ay;
   const width = r.width / sx;
   const height = r.height / sy;
   return { x: r.x + r.width / 2 - width / 2 - tx, y: r.y + r.height / 2 - height / 2 - ty, width, height };

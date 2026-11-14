@@ -285,9 +285,10 @@ export const ReducedMotion: Story = {
       const c = within(canvasElement);
       await userEvent.click(c.getByRole("button", { name: "다음 달" }));
       await waitFor(() => expect(c.getByRole("grid", { name: "2026년 12월" })).toBeInTheDocument());
-      const body = canvasElement.querySelector("[data-slot=calendar-month-body]")!;
+      const slider = canvasElement.querySelector("[data-slot=calendar-month-body]")!;
+      const body = c.getByRole("grid", { name: "2026년 12월" });
       // the slide starts from data-entering (no transition) and then eases to rest
-      await waitFor(() => expect(body).not.toHaveAttribute("data-entering"));
+      await waitFor(() => expect(slider).not.toHaveAttribute("data-entering"));
       const max = Math.max(...durationsMs(body));
       await expect(max).toBeGreaterThan(0);
       await expect(max).toBeLessThanOrEqual(120);
@@ -306,7 +307,7 @@ export const ReducedMotion: Story = {
 export const MotionOff: Story = {
   play: async ({ canvasElement }) => {
     await inMotion("off", async () => {
-      const body = canvasElement.querySelector("[data-slot=calendar-month-body]")!;
+      const body = canvasElement.querySelector("table")!;
       await expect(Math.max(...durationsMs(body))).toBe(0);
     });
   },

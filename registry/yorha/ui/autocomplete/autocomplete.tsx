@@ -91,14 +91,15 @@ function AutocompleteIcon({ className, ...props }: ComponentProps<typeof Autocom
   );
 }
 
-/** Clear button; Base UI keeps it unmounted until the field has a value. */
+/** Clear button; always mounted so its slot is reserved (the input never resizes), fades in once the field has a value. */
 function AutocompleteClear({ className, children, ...props }: ComponentProps<typeof AutocompletePrimitive.Clear>) {
   return (
     <AutocompletePrimitive.Clear
       data-slot="autocomplete-clear"
       aria-label="지우기"
+      keepMounted
       className={cnState(
-        "grid min-w-[24px] place-items-center px-2 text-yorha-fg focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
+        "invisible grid min-w-[24px] place-items-center px-2 text-yorha-fg opacity-0 transition-[opacity,visibility] duration-(--motion-select) ease-yorha focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted data-[visible]:visible data-[visible]:opacity-100",
         className,
       )}
       {...props}

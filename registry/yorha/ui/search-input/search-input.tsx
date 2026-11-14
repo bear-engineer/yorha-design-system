@@ -64,21 +64,15 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
           className="pr-11! [&::-webkit-search-cancel-button]:appearance-none"
           {...props}
         />
-        {text ? (
-          <Button
-            variant="ghost"
-            size="sm"
-            square
-            aria-label={clearLabel}
-            disabled={disabled}
-            onClick={clear}
-            className="absolute right-1"
-          >
+        <span
+          className={`absolute right-1 inline-flex transition-[opacity,visibility] duration-(--motion-select) ease-yorha ${text ? "visible opacity-100" : "invisible opacity-0"}`}
+        >
+          <Button variant="ghost" size="sm" square aria-label={clearLabel} disabled={disabled} onClick={clear} tabIndex={text ? undefined : -1}>
             <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square">
               <path d="M5 5l14 14M19 5L5 19" />
             </svg>
           </Button>
-        ) : null}
+        </span>
       </div>
       {description ? <FieldDescription>{description}</FieldDescription> : null}
       {error ? <FieldError>{error}</FieldError> : null}

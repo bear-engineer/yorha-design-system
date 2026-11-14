@@ -159,7 +159,13 @@ function Chevron({ dir }: { dir: "left" | "right" }) {
   );
 }
 
-/** Slides the month body in from the travel direction; reduced = opacity fade, off = instant. */
+/** Slide of the month title and grid (SLIDE_ITEM) from the travel direction; reduced = opacity fade, off = instant. The prev/next buttons never move. */
+const SLIDE_ITEM = cn(
+  "transition-[translate,opacity] duration-[max(var(--motion-route),var(--motion-reduced-fade))] ease-yorha-decelerate",
+  "group-data-[entering]/slide:translate-x-[calc(var(--yorha-cal-dir)*var(--motion-spatial)*var(--motion-shift)*3)] group-data-[entering]/slide:opacity-0 group-data-[entering]/slide:transition-none",
+);
+
+/** Carries the travel direction and the entering flag for the SLIDE_ITEM descendants. */
 function MonthSlide({ monthKey, dir, children }: { monthKey: number; dir: number; children: React.ReactNode }) {
   const [entering, setEntering] = React.useState(false);
   const prev = React.useRef(monthKey);
@@ -182,11 +188,7 @@ function MonthSlide({ monthKey, dir, children }: { monthKey: number; dir: number
       data-slot="calendar-month-body"
       data-entering={entering ? "" : undefined}
       style={{ "--yorha-cal-dir": dir } as React.CSSProperties}
-      className={cn(
-        "flex flex-wrap gap-6",
-        "transition-[translate,opacity] duration-[max(var(--motion-route),var(--motion-reduced-fade))] ease-yorha-decelerate",
-        "data-[entering]:translate-x-[calc(var(--yorha-cal-dir)*var(--motion-spatial)*var(--motion-shift)*3)] data-[entering]:opacity-0 data-[entering]:transition-none",
-      )}
+      className="group/slide flex flex-wrap gap-6"
     >
       {children}
     </div>
@@ -416,7 +418,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
           <div
             id={titleId}
             aria-live="polite"
-            className="font-yorha-bold text-yorha-sm tracking-yorha-heading text-yorha-fg-strong uppercase"
+            className={cn("font-yorha-bold text-yorha-sm tracking-yorha-heading text-yorha-fg-strong uppercase", SLIDE_ITEM)}
           >
             {monthNames.format(first)}
           </div>
@@ -435,7 +437,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
             <span className="size-8" aria-hidden="true" />
           )}
         </div>
-        <table role="grid" aria-labelledby={titleId} onKeyDown={onGridKeyDown} className="border-separate border-spacing-0">
+        <table role="grid" aria-labelledby={titleId} onKeyDown={onGridKeyDown} className={cn("border-separate border-spacing-0", SLIDE_ITEM)}>
           <thead>
             <tr>
               {weekdays.map((w) => (
