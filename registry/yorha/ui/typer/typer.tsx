@@ -103,7 +103,7 @@ function Typer({ text, speed = DEFAULT_SPEED, paused = false, revealAll = false,
       <span aria-hidden="true" data-yorha-typed="">
         {chars.slice(0, shown).join("")}
       </span>
-      {!done && <span aria-hidden="true" data-yorha-caret="" className="ml-px inline-block h-[1em] w-[0.5em] align-[-0.1em] bg-yorha-fg-strong" />}
+      {!done && <span aria-hidden="true" data-yorha-caret="" className="ml-px inline-block h-[1em] w-2 align-[-2px] bg-yorha-fg-strong" />}
       {sound && <TypingTick count={tickCount(chars, shown)} enabled={!instant && !paused} />}
     </span>
   );
