@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "fieldset",
+      "type": "registry:ui",
+      "title": "Fieldset",
+      "description": "Standalone Fieldset Root and Legend on Base UI Fieldset: groups Fields under one legend and disables them together.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils"
+      ],
+      "files": [
+        {
+          "path": "fieldset.tsx",
+          "type": "registry:ui",
+          "target": "@ui/fieldset.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only."
+    }
+  ]
+}

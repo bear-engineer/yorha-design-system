@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "input",
+      "type": "registry:ui",
+      "title": "Input",
+      "description": "Bare single-line input on Base UI Input: all native input props pass through, ref forwarded, Field wiring when inside Field.Root. Base for the type-specific inputs.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils"
+      ],
+      "files": [
+        {
+          "path": "input.tsx",
+          "type": "registry:ui",
+          "target": "@ui/input.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only."
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "otp-field",
+      "type": "registry:ui",
+      "title": "OTP Field",
+      "description": "One-time code entry on Base UI OTPField: Root, Input and Separator parts. Typing advances, Backspace steps back, paste fills all slots; numeric or alphanumeric validation.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils"
+      ],
+      "files": [
+        {
+          "path": "otp-field.tsx",
+          "type": "registry:ui",
+          "target": "@ui/otp-field.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only."
+    }
+  ]
+}

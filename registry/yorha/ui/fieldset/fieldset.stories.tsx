@@ -52,7 +52,8 @@ export const LegendNamesGroup: Story = {
   render: () => <Billing label="배송지" />,
   play: async ({ canvasElement }) => {
     const group = within(canvasElement).getByRole("group", { name: "배송지" });
-    await expect(group.querySelector("legend")).toHaveTextContent("배송지");
+    await expect(group).toHaveAccessibleName("배송지");
+    await expect(within(group).getByText("배송지")).toBeInTheDocument();
   },
 };
 

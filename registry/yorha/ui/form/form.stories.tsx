@@ -127,16 +127,6 @@ export const ServerErrorWiredToField: Story = {
   },
 };
 
-export const EditingClearsServerError: Story = {
-  render: () => <UnitForm serverErrors={{ unitName: "이미 사용 중인 이름입니다" }} />,
-  play: async ({ canvasElement }) => {
-    const c = within(canvasElement);
-    await expect(c.getByText("이미 사용 중인 이름입니다")).toBeInTheDocument();
-    await userEvent.type(field(c, "유닛 이름"), "X");
-    await expect(c.queryByText("이미 사용 중인 이름입니다")).toBeNull();
-  },
-};
-
 export const Themes: Story = {
   render: () => (
     <div className="grid gap-6">

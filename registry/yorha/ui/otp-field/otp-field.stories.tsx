@@ -11,7 +11,7 @@ const THEME_LABEL: Record<(typeof THEMES)[number], string> = {
 };
 const LENGTH = 6;
 
-type DemoProps = React.ComponentProps<typeof OTPFieldRoot> & { label?: string; separatorAt?: number };
+type DemoProps = Omit<React.ComponentProps<typeof OTPFieldRoot>, "length"> & { label?: string; separatorAt?: number };
 
 /** Label + six slots. Slot 1 carries the label; the rest get "Character n of 6". */
 const Demo = ({ label = "인증 코드", separatorAt, id = "otp-demo", ...rootProps }: DemoProps) => {
@@ -43,7 +43,7 @@ const meta = {
   title: "컴포넌트/폼/OTPField",
   component: OTPFieldRoot,
   tags: ["autodocs"],
-  args: { onValueChange: fn(), onValueComplete: fn() },
+  args: { length: LENGTH, onValueChange: fn(), onValueComplete: fn() },
   decorators: [
     (Story) => (
       <div className="bg-yorha-panel p-6 text-yorha-fg">
@@ -194,7 +194,7 @@ export const Themes: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     for (const theme of THEMES) {
-      await expect(c.getByLabelText(`인증 코드 (${THEME_LABEL[theme]})`)).toBeInTheDocument();
+      await expect(c.getByRole("group", { name: `인증 코드 (${THEME_LABEL[theme]})` })).toBeInTheDocument();
     }
   },
 };
