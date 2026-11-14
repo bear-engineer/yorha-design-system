@@ -76,6 +76,7 @@
     "registry/yorha/ui/avatar/registry.json",
     "registry/yorha/ui/collapsible/registry.json",
     "registry/yorha/ui/scroll-area/registry.json",
-    "registry/yorha/ui/separator/registry.json"
+    "registry/yorha/ui/separator/registry.json",
+    "registry/yorha/ui/timeline/registry.json"
   ]
 }
