@@ -66,11 +66,13 @@ export const Default: Story = {
     await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
     for (let i = 0; i < 5; i++) {
       await userEvent.tab();
-      await expect(dialog.contains(document.activeElement)).toBe(true);
+      // focus guards hand focus back to the popup asynchronously
+      await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
     }
     for (let i = 0; i < 3; i++) {
       await userEvent.tab({ shift: true });
-      await expect(dialog.contains(document.activeElement)).toBe(true);
+      // focus guards hand focus back to the popup asynchronously
+      await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
     }
 
     // Escape cancels, focus returns to trigger

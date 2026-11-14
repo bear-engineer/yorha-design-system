@@ -1,4 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "alert-dialog",
+      "type": "registry:ui",
+      "title": "Alert Dialog",
+      "description": "Confirmation dialog on Base UI AlertDialog (role alertdialog): outside press does not dismiss, so an explicit Cancel or Action is needed. Shares the YoRHa panel look with Dialog; alert-coloured border.",
+      "dependencies": ["@base-ui/react@^1.9.0"],
+      "registryDependencies": ["@yorha/utils", "@yorha/base", "@yorha/button", "@yorha/sound", "@yorha/dialog"],
+      "files": [{ "path": "alert-dialog.tsx", "type": "registry:ui" }],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction. Put AlertDialogCancel first so it takes initial focus. Escape still cancels (WAI-ARIA); outside press does not. Pass `sound` for open/close cues (requires YorhaProvider)."
+    }
+  ]
 }

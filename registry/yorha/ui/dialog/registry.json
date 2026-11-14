@@ -1,4 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "dialog",
+      "type": "registry:ui",
+      "title": "Dialog",
+      "description": "Modal dialog on Base UI Dialog: dark uppercase header strip over a light panel, rule-and-dot ornaments, scrim backdrop, panel enter/exit motion, focus trap and focus return. Optional open/close sound cues.",
+      "dependencies": ["@base-ui/react@^1.9.0"],
+      "registryDependencies": ["@yorha/utils", "@yorha/base", "@yorha/button", "@yorha/sound"],
+      "files": [{ "path": "dialog.tsx", "type": "registry:ui" }],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogClose; use Button for actions via render={<Button />}. Pass `sound` to Dialog to play open/close cues (silent unless the sound preference is enabled; requires YorhaProvider). Enter uses --motion-panel, exit --motion-panel-exit; both are instant under data-motion reduced/off."
+    }
+  ]
 }
