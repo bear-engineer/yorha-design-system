@@ -84,6 +84,9 @@ jobs:
       - name: Registry lint
         run: pnpm registry:lint
 
+      - name: Base UI coverage (parts + components)
+        run: pnpm coverage:base-ui
+
       - name: Registry build
         run: pnpm registry:build
 

@@ -20,6 +20,7 @@
     "scaffold:paths": "node scripts/sync-paths.mjs",
     "registry:validate": "shadcn registry validate",
     "registry:lint": "node scripts/lint-registry.mjs",
+    "coverage:base-ui": "node scripts/base-ui-coverage.mjs",
     "registry:build": "shadcn build -o public/r",
     "e2e:registry": "bash e2e/install.sh",
     "lint:secrets": "gitleaks detect --no-banner --redact"
