@@ -1,4 +1,23 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "badge",
+      "type": "registry:ui",
+      "title": "Badge",
+      "description": "Status label with neutral and alert variants. Alert adds a diamond marker, so state is not conveyed by colour alone.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "badge.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+    }
+  ]
 }

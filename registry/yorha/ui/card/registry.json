@@ -1,4 +1,23 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "card",
+      "type": "registry:ui",
+      "title": "Card",
+      "description": "Content card with optional media slot, title, meta and actions. With href, the whole card is one link; actions stay outside the link.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "card.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+    }
+  ]
 }

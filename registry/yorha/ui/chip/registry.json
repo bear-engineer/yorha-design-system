@@ -1,4 +1,25 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "chip",
+      "type": "registry:ui",
+      "title": "Chip",
+      "description": "YoRHa plugin chip: label, size text and a striped segment bar showing capacity. Optional remove button with aria-label; selectable variant is a Base UI toggle with aria-pressed.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "chip.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+    }
+  ]
 }

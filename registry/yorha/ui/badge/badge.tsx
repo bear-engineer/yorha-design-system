@@ -1,12 +1,32 @@
 import type { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 export interface BadgeProps {
+  /** neutral: plain square label. alert: drab red-orange accent with a diamond marker (shape cue, not colour alone). */
   variant?: "neutral" | "alert";
   children: ReactNode;
   className?: string;
 }
 
-// RED stub: compiles, renders the wrong thing (no variant cue).
-export function Badge({ children }: BadgeProps) {
-  return <span>{children}</span>;
+const VARIANT = {
+  neutral: "border-yorha-border text-yorha-fg-soft",
+  alert: "border-yorha-alert-ui text-yorha-alert",
+} as const;
+
+/** Status label. Static, so it is a span with no interactive role. */
+export function Badge({ variant = "neutral", children, className }: BadgeProps) {
+  return (
+    <span
+      data-variant={variant}
+      data-shape={variant === "alert" ? "diamond" : undefined}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-yorha border bg-yorha-bg px-1.5 py-0.5 font-yorha font-yorha-medium text-yorha-xs uppercase tracking-yorha-wide",
+        VARIANT[variant],
+        className,
+      )}
+    >
+      {variant === "alert" ? <span aria-hidden="true" className="inline-block size-1.5 rotate-45 bg-current" /> : null}
+      {children}
+    </span>
+  );
 }

@@ -48,7 +48,7 @@ export const SelectableToggle: Story = {
   args: { selectable: true, label: "모듈 B", defaultPressed: false, onPressedChange: fn() },
   play: async ({ canvasElement, args }) => {
     const c = within(canvasElement);
-    const chip = c.getByRole("button", { name: "모듈 B" });
+    const chip = c.getByRole("button", { name: /^모듈 B/ });
     await expect(chip).toHaveAttribute("aria-pressed", "false");
     await userEvent.tab();
     await expect(chip).toHaveFocus();
@@ -69,7 +69,7 @@ export const Themes: Story = {
         <div key={t} data-theme={t} className="flex flex-col gap-2 bg-yorha-panel p-4 text-yorha-fg">
           <span className="text-yorha-sm">{t}</span>
           <Chip {...args} />
-          <Chip {...args} selectable label={`선택 ${t}`} />
+          <Chip {...args} selectable label={`선택 ${t}`} sizeLabel={undefined} />
         </div>
       ))}
     </div>
