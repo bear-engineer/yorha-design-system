@@ -16,13 +16,13 @@
   File names carry the platform suffix (`-chromium-darwin.png`).
 - CI does not use these files. CI regenerates in the pinned Playwright container, so
   Linux baselines are produced there, not committed from macOS.
-- Add or update a baseline: `pnpm test:vrt -- --update` (review the PNG diff before committing).
+- Add or update a baseline: `pnpm exec vitest run --project vrt --update=all` (review the PNG diff before committing).
 
 ## CI (pinned container)
 
 ```sh
 docker run --rm -v "$PWD":/work -w /work mcr.microsoft.com/playwright:v1.65.1-noble \
-  sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm test:vrt -- --update"
+  sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm exec vitest run --project vrt --update=all"
 ```
 
 The image tag must match the `playwright` version pinned in `package.json` (1.65.1).
@@ -30,5 +30,5 @@ The image tag must match the `playwright` version pinned in `package.json` (1.65
 ## Scope
 
 - Not covered: other stories per item, the authentic theme, overlays in dark/high-contrast.
-- Update baselines: `pnpm vitest run --project vrt --update`.
+- Update baselines: `pnpm exec vitest run --project vrt --update=all`.
 - Rebaseline with `--update=all` (vitest 5: plain `--update` does not rewrite PNGs; `pnpm test:vrt -- --update=all` also drops the flag, so call vitest directly).
