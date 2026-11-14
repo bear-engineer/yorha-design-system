@@ -413,6 +413,9 @@ describe("toast (FOVL-01, 02, 16)", () => {
 
   it("FOVL-01: titles start at the same x for every toast type", async () => {
     await toasts(["alert", "success", "info"]);
+    // expanded, so no toast is scaled (a scaled rear toast shifts every x inside it)
+    await userEvent.hover(all()[0]!);
+    await frames(40);
     const offsets = all().map((t) => t.querySelector('[data-slot="toast-title"], [id]')!.getBoundingClientRect().left - t.getBoundingClientRect().left);
     expect(offsets).toHaveLength(3);
     for (const o of offsets) expect(Math.abs(o - offsets[0]!)).toBeLessThanOrEqual(0.5);

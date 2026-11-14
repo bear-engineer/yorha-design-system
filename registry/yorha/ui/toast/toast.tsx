@@ -1,6 +1,7 @@
 import type { ComponentProps } from "react";
 import { Toast as ToastPrimitive } from "@base-ui/react/toast";
 import { Button } from "@/components/ui/button";
+import { CrossIcon } from "@/components/ui/icons";
 import { cn, cnState } from "@/lib/utils";
 
 export type ToastType = "info" | "success" | "alert";
@@ -12,42 +13,53 @@ const createToastManager = ToastPrimitive.createToastManager;
 
 const TYPE_LABEL: Record<ToastType, string> = { info: "정보", success: "성공", alert: "경고" };
 
-// Shape cue per type so the variant never relies on colour alone:
-// info = diamond, success = square with inner square, alert = triangle (the only red-orange).
+// Shape cue per type so the variant never relies on colour alone: info = diamond, success = square with inner square,
+// alert = triangle (the only red-orange). Every shape is drawn inside one fixed 20px box, so the title starts at the same
+// x for all three types and the shape's own size never moves the text.
 function TypeShape({ type }: { type: ToastType }) {
-  if (type === "alert") {
-    return <span aria-hidden="true" className="mt-0.5 size-3.5 shrink-0 bg-yorha-alert-ui [clip-path:polygon(50%_0,100%_100%,0_100%)]" />;
-  }
-  if (type === "success") {
-    return <span aria-hidden="true" className="mt-0.5 size-3.5 shrink-0 border-2 border-current bg-current bg-clip-content p-0.5" />;
-  }
-  return <span aria-hidden="true" className="mt-1 size-2.5 shrink-0 rotate-45 bg-current" />;
+  return (
+    <span aria-hidden="true" className="mt-0.5 grid size-icon-lg shrink-0 place-items-center">
+      {type === "alert" ? (
+        <span className="size-4 bg-yorha-alert-ui [clip-path:polygon(50%_0,100%_100%,0_100%)]" />
+      ) : type === "success" ? (
+        <span className="size-4 border-2 border-current bg-current bg-clip-content p-0.5" />
+      ) : (
+        <span className="size-3 rotate-45 bg-current" />
+      )}
+    </span>
+  );
 }
 
 function toToastType(type: string | undefined): ToastType {
   return type === "success" || type === "alert" ? type : "info";
 }
 
-// Stacked from the bottom edge: every toast sits at bottom-0 and is lifted by Base UI's `--toast-offset-y` (height of
-// the toasts in front) plus a gap per index, so removing one moves the others with a transform transition instead of
-// a layout jump. While dragging, Base UI writes an inline `transform` that freezes the drag; on release the class
-// transform (same value, from --toast-swipe-movement-*) takes over and `translate` carries the toast on outward in
-// the swipe direction. Enter/exit use opacity + `translate`; every movement is scaled by --motion-spatial, so reduced
-// motion is opacity only and off is instant.
+// Stack. Every toast sits at bottom-0. Collapsed (rest): the toasts behind the front one peek 8px per index above it,
+// and are clipped to the front toast's height (`--toast-frontmost-height`); their content is hidden (`data-behind`).
+// No scale: a fractional scale blurs the peeking edge and takes the hidden close buttons under the 24px target size. Expanded (`data-expanded`: pointer over the stack or focus inside): each toast
+// takes its own height and rises by Base UI's `--toast-offset-y` (heights of the toasts in front) plus an 8px gap per index.
+// Only transform/opacity transition (the height change at expand is instant and the content fades in), so removing a
+// toast moves the others with a transform transition instead of a layout jump. While dragging, Base UI writes an inline
+// `transform` that freezes the drag; on release the class transform (same value, from --toast-swipe-movement-*) takes
+// over and `translate` carries the toast on outward in the swipe direction. Every movement is scaled by
+// --motion-spatial, so reduced motion is opacity only and off is instant.
 const ROOT =
-  "absolute right-0 bottom-0 flex w-full items-start gap-3 border bg-yorha-panel p-3 pr-2 rounded-yorha shadow-yorha-md " +
+  "group/toast absolute right-0 bottom-0 z-[calc(100-var(--toast-index))] w-full border bg-yorha-panel p-3 pr-2 rounded-yorha shadow-yorha-md " +
   "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg " +
-  "[transform:translate(var(--toast-swipe-movement-x),calc(var(--toast-swipe-movement-y)-(var(--toast-offset-y)+var(--toast-index)*0.5rem)))] " +
+  "h-[var(--toast-frontmost-height,auto)] " +
+  "[transform:translate(var(--toast-swipe-movement-x),calc(var(--toast-swipe-movement-y)-var(--toast-index)*8px))] " +
+  "data-[expanded]:h-[var(--toast-height,auto)] " +
+  "data-[expanded]:[transform:translate(var(--toast-swipe-movement-x),calc(var(--toast-swipe-movement-y)-(var(--toast-offset-y)+var(--toast-index)*8px)))] " +
   // The pointer-safe strip below keeps the viewport hovered (timers paused) while the cursor crosses the gap.
   "after:absolute after:top-full after:left-0 after:h-2 after:w-full after:content-[''] " +
   "[transition-property:opacity,transform,translate] " +
-  "[transition-duration:max(var(--motion-panel),var(--motion-reduced-fade)),calc(var(--motion-panel)*var(--motion-spatial)),calc(var(--motion-panel)*var(--motion-spatial))] " +
+  "[transition-duration:max(var(--motion-select),var(--motion-reduced-fade)),calc(var(--motion-select)*var(--motion-spatial)),calc(var(--motion-select)*var(--motion-spatial))] " +
   "[transition-timing-function:var(--yorha-ease-out)] " +
   "data-[starting-style]:opacity-0 data-[starting-style]:[translate:calc(var(--toast-exit-x,1rem)*var(--motion-spatial))_calc(var(--toast-exit-y,0px)*var(--motion-spatial))]" +
   " " +
   "data-[ending-style]:opacity-0 data-[ending-style]:[translate:calc(var(--toast-exit-x,1rem)*var(--motion-spatial))_calc(var(--toast-exit-y,0px)*var(--motion-spatial))]" +
   " " +
-  "data-[ending-style]:[transition-duration:max(var(--motion-panel-exit),var(--motion-reduced-fade)),calc(var(--motion-panel-exit)*var(--motion-spatial)),calc(var(--motion-panel-exit)*var(--motion-spatial))] " +
+  "data-[ending-style]:[transition-duration:max(var(--motion-select-exit),var(--motion-reduced-fade)),calc(var(--motion-select-exit)*var(--motion-spatial)),calc(var(--motion-select-exit)*var(--motion-spatial))] " +
   "data-[ending-style]:[transition-timing-function:var(--yorha-ease-in)] " +
   // A swipe release keeps going the way it was thrown, decelerating from the release point.
   "data-[swipe-direction]:data-[ending-style]:[transition-timing-function:var(--yorha-ease-out)] " +
@@ -58,7 +70,7 @@ const ROOT =
 
 // Anchored toasts (added with `positionerProps`) pop from their anchor instead of sliding in.
 const ANCHORED_ROOT =
-  "relative flex w-max max-w-80 items-start gap-3 border bg-yorha-panel px-3 py-2 rounded-yorha shadow-yorha-md " +
+  "relative w-max max-w-80 border bg-yorha-panel px-3 py-2 rounded-yorha shadow-yorha-md " +
   "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg yorha-pop";
 
 const ARROW =
@@ -98,10 +110,12 @@ function ToastPositioner({ className, ...props }: ComponentProps<typeof ToastPri
   );
 }
 
+// One 1px border for every type, so the content x never depends on the type. The alert's thick left edge is an inset
+// shadow (4px, inside the 12px padding) next to the usual offset shadow.
 const TYPE_BORDER: Record<ToastType, string> = {
   info: "border-yorha-border",
   success: "border-yorha-ink",
-  alert: "border-yorha-alert-ui border-l-4",
+  alert: "border-yorha-alert-ui shadow-[inset_4px_0_0_var(--yorha-alert-ui),4px_4px_0_0_var(--yorha-shadow)]",
 };
 
 /** Renders every queued toast. Included by ToastProvider; mount it yourself only with `viewport={false}`. */
@@ -119,21 +133,31 @@ function ToastList() {
         className={cnState([anchored ? ANCHORED_ROOT : ROOT, TYPE_BORDER[type]], undefined)}
       >
         {anchored ? <ToastArrow /> : null}
-        <TypeShape type={type} />
-        <ToastPrimitive.Content className="min-w-0 flex-1">
-          <span className="sr-only">{TYPE_LABEL[type]}: </span>
-          <ToastPrimitive.Title className="font-yorha-bold text-yorha-sm tracking-yorha-heading uppercase" />
-          <ToastPrimitive.Description className="mt-1 text-yorha-fg-soft" />
-          {toast.actionProps ? <ToastAction /> : null}
-        </ToastPrimitive.Content>
-        <ToastPrimitive.Close
-          // Base UI sets aria-hidden on Close while the stack is collapsed, but the button stays tabbable
-          // and visible, which axe flags (aria-hidden-focus). Keep it exposed.
-          aria-hidden={false}
-          render={<Button variant="ghost" size="sm" square aria-label="닫기" />}
+        <ToastPrimitive.Content
+          className={cn(
+            "flex h-full items-start gap-2 overflow-hidden transition-opacity duration-(--motion-select) data-[behind]:opacity-0 group-data-[expanded]/toast:opacity-100",
+            anchored && "overflow-visible",
+          )}
         >
-          <span aria-hidden="true">×</span>
-        </ToastPrimitive.Close>
+          <TypeShape type={type} />
+          <div className="min-w-0 flex-1">
+            <span className="sr-only">{TYPE_LABEL[type]}: </span>
+            <ToastPrimitive.Title
+              data-slot="toast-title"
+              className="flex min-h-6 items-center font-yorha-bold text-yorha-sm tracking-yorha-heading uppercase"
+            />
+            <ToastPrimitive.Description className="mt-1 text-yorha-fg-soft" />
+            {toast.actionProps ? <ToastAction /> : null}
+          </div>
+          <ToastPrimitive.Close
+            // Base UI sets aria-hidden on Close while the stack is collapsed, but the button stays tabbable
+            // and visible, which axe flags (aria-hidden-focus). Keep it exposed.
+            aria-hidden={false}
+            render={<Button variant="ghost" size="sm" square aria-label="닫기" className="size-6 shrink-0" />}
+          >
+            <CrossIcon />
+          </ToastPrimitive.Close>
+        </ToastPrimitive.Content>
       </ToastPrimitive.Root>
     );
     return anchored ? (
