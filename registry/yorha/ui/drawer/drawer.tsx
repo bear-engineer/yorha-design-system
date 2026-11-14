@@ -27,7 +27,7 @@ const SIDES: Record<Side, { slide: string; swipe: "up" | "right" | "down" | "lef
  */
 export const drawerStyles = {
   backdrop:
-    "yorha-fade fixed inset-0 z-(--yorha-z-overlay) bg-yorha-scrim " +
+    "yorha-fade [--motion-panel-exit:var(--motion-drawer-exit)] fixed inset-0 z-(--yorha-z-overlay) bg-yorha-scrim " +
     "opacity-[calc(1-var(--drawer-swipe-progress,0))] data-[swiping]:[transition-duration:0s]",
   viewport: "fixed inset-0 z-(--yorha-z-modal) flex touch-none",
   surface:
@@ -36,7 +36,7 @@ export const drawerStyles = {
     "group/drawer relative z-1 flex min-h-0 flex-col overflow-visible outline-none focus-visible:yorha-focus touch-none data-[swiping]:select-none",
   title:
     "flex items-center gap-3 bg-yorha-ink px-4 py-2 font-yorha font-yorha-bold text-yorha-sm uppercase " +
-    "tracking-yorha-heading text-yorha-on-ink text-shadow-yorha " +
+    "tracking-yorha-heading text-yorha-on-ink " +
     "before:size-2 before:shrink-0 before:bg-current before:content-[''] " +
     "after:h-px after:flex-1 after:bg-yorha-on-ink-soft after:content-['']",
   body: "min-h-0 flex-1 touch-auto overflow-y-auto overscroll-contain px-6 py-5",

@@ -48,7 +48,7 @@ export type FieldDescriptionProps = ComponentProps<typeof BaseField.Description>
 export function FieldDescription({ className, ...props }: FieldDescriptionProps) {
   return (
     <BaseField.Description
-      className={cnState("text-yorha-sm leading-yorha-snug text-yorha-fg-soft", className)}
+      className={cnState("text-yorha-sm text-yorha-fg-soft", className)}
       {...props}
     />
   );
@@ -65,7 +65,7 @@ export function FieldError({ className, children, match = true, ...props }: Fiel
       match={match}
       role="alert"
       className={cnState(
-        "flex items-start gap-2 font-yorha-medium text-yorha-sm leading-yorha-snug text-yorha-alert",
+        "flex items-start gap-2 font-yorha-medium text-yorha-sm text-yorha-alert",
         className,
       )}
       {...props}
@@ -98,7 +98,7 @@ export function FieldValidity({ children, ...props }: FieldValidityProps) {
       {(state) => {
         const content = typeof children === "function" ? children(state) : children;
         return content ? (
-          <span role="alert" className="flex items-start gap-2 font-yorha-medium text-yorha-sm leading-yorha-snug text-yorha-alert">
+          <span role="alert" className="flex items-start gap-2 font-yorha-medium text-yorha-sm text-yorha-alert">
             <span aria-hidden="true" className={ERROR_ICON}>
               !
             </span>

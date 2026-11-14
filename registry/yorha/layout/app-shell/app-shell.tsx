@@ -22,9 +22,9 @@ export interface AppShellProps {
 
 // Collapse is driven by the shell's own container width (@container), not the viewport,
 // so a narrow frame collapses the nav the same way a narrow window does.
-const ROOT = "@container relative flex min-h-dvh w-full min-w-0 flex-col bg-yorha-bg text-yorha-fg";
+const ROOT = "@container relative isolate flex min-h-dvh w-full min-w-0 flex-col bg-yorha-bg text-yorha-fg";
 const SKIP =
-  "sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:left-2 focus-visible:top-2 focus-visible:z-(--yorha-z-decor) " +
+  "sr-only focus-visible:not-sr-only focus-visible:absolute focus-visible:left-2 focus-visible:top-2 focus-visible:z-(--yorha-z-raised) " +
   "focus-visible:bg-yorha-ink focus-visible:px-3 focus-visible:py-2 focus-visible:text-yorha-on-ink focus-visible:yorha-focus";
 const HEADER = "flex items-center gap-3 bg-yorha-ink px-4 py-2 text-yorha-on-ink";
 const TOGGLE =

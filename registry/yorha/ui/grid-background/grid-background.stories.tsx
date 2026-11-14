@@ -5,7 +5,7 @@ import { GridBackground } from "@/components/ui/grid-background";
 
 function Frame({ theme, children }: { theme?: "light" | "dark" | "high-contrast" | "authentic"; children?: ReactNode }) {
   return (
-    <div data-theme={theme} className="relative min-h-40 overflow-hidden bg-yorha-panel p-6 text-yorha-fg">
+    <div data-theme={theme} className="relative isolate min-h-40 overflow-hidden bg-yorha-panel p-6 text-yorha-fg">
       <GridBackground />
       <p className="relative font-yorha text-yorha-base text-yorha-fg">{children ?? "격자 위의 본문 텍스트"}</p>
     </div>
@@ -38,7 +38,7 @@ export const Default: Story = {
     const el = layer(canvasElement);
     await expectDecorative(el);
     await expect(getComputedStyle(el!).backgroundImage).toContain("linear-gradient");
-    await expect(getComputedStyle(el!).backgroundSize).toContain("4.8px");
+    await expect(getComputedStyle(el!).backgroundSize).toContain("8px");
     await expect(within(canvasElement).getByText("격자 위의 본문 텍스트")).toBeVisible();
   },
 };

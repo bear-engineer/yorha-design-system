@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 /**
  * Decorative curved-monitor edge darkening (inset shadow + radial falloff, colour --yorha-scrim).
  * `scanline` adds a static stripe pattern (no animation, so it is the same under reduced motion).
- * Hidden from AT, click-through, not focusable. Place inside a `relative` parent.
+ * Hidden from AT, click-through, not focusable. Paints behind content (`z-(--yorha-z-decor)` = -1): the host must be `relative isolate`.
  */
 export function Vignette({
   scanline = false,

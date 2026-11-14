@@ -5,7 +5,7 @@ import { Vignette } from "@/components/ui/vignette";
 
 function Frame({ theme, scanline, children }: { theme?: "light" | "dark" | "high-contrast" | "authentic"; scanline?: boolean; children?: ReactNode }) {
   return (
-    <div data-theme={theme} className="relative min-h-56 overflow-hidden bg-yorha-panel p-6 text-yorha-fg">
+    <div data-theme={theme} className="relative isolate min-h-56 overflow-hidden bg-yorha-panel p-6 text-yorha-fg">
       <h2 className="relative font-yorha text-yorha-xl font-yorha-bold tracking-yorha-heading text-yorha-fg-strong uppercase">
         {children ?? "모니터 가장자리"}
       </h2>
@@ -58,6 +58,12 @@ export const Scanline: Story = {
     await expect(el!.dataset.scanline).toBe("true");
     await expect(getComputedStyle(el!).animationName).toBe("none");
     await expect(getComputedStyle(el!).backgroundImage).toContain("repeating-linear-gradient");
+    // G13: the layer sits behind the text (z -1 in an isolated host); the text is what a point at its centre hits.
+    await expect(getComputedStyle(el!).zIndex).toBe("-1");
+    for (const text of [within(canvasElement).getByRole("heading"), within(canvasElement).getByText(/본문은/)]) {
+      const box = text.getBoundingClientRect();
+      await expect(document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2)).toBe(text);
+    }
   },
 };
 

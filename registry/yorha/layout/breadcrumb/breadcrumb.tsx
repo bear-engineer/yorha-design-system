@@ -25,7 +25,7 @@ const TEXT = "font-yorha-medium uppercase tracking-yorha-wide text-yorha-fg-soft
 /** Location trail in a nav landmark. The last item is the current page: `aria-current="page"`, never a link. */
 export function Breadcrumb({ items, label = "경로", className }: BreadcrumbProps) {
   return (
-    <nav aria-label={label} className={cn("min-w-0 text-yorha-xs leading-yorha-snug", className)}>
+    <nav aria-label={label} className={cn("min-w-0 text-yorha-xs", className)}>
       <ol className="m-0 flex flex-wrap items-center gap-y-1 p-0 list-none">
         {items.map((item, i) => {
           const isCurrent = i === items.length - 1;

@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Decorative faint grid (cell size = --yorha-grid-size, line colour = --yorha-grid).
- * Hidden from AT, click-through, not focusable. Place inside a `relative` parent.
+ * Hidden from AT, click-through, not focusable. Paints behind content (`z-(--yorha-z-decor)` = -1): the host must be `relative isolate`.
  */
 export function GridBackground({ className, style, ...props }: ComponentPropsWithoutRef<"div">) {
   return (

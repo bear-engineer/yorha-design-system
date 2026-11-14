@@ -9,8 +9,8 @@ const ROOT =
   "[&:lang(ja)]:[line-break:strict] " +
   // headings: Latin uppercase tracked, Korean keeps case and normal tracking (matches Heading)
   "[&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:font-yorha-bold [&_h2]:text-yorha-xl [&_h2]:uppercase [&_h2]:tracking-yorha-heading " +
-  "[&_h2]:leading-yorha-snug [&:lang(ko)_h2]:normal-case [&:lang(ko)_h2]:tracking-yorha-body " +
-  "[&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:font-yorha-bold [&_h3]:text-yorha-lg [&_h3]:leading-yorha-snug " +
+  "[&:lang(ko)_h2]:normal-case [&:lang(ko)_h2]:tracking-yorha-body " +
+  "[&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:font-yorha-bold [&_h3]:text-yorha-lg " +
   "[&_h4]:mt-4 [&_h4]:mb-1 [&_h4]:font-yorha-bold [&_h4]:text-yorha-base " +
   // lists
   "[&_ul]:my-4 [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:my-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_li+li]:mt-1 " +
@@ -19,7 +19,7 @@ const ROOT =
   // inline code and preformatted blocks: wrap instead of scrolling, so no unfocusable scroll region
   "[&_code]:rounded-yorha [&_code]:bg-yorha-control [&_code]:px-1 [&_code]:font-yorha-mono [&_code]:text-yorha-sm [&_code]:text-yorha-on-control " +
   "[&_pre]:my-4 [&_pre]:border [&_pre]:border-yorha-border [&_pre]:p-3 [&_pre]:font-yorha-mono [&_pre]:text-yorha-sm " +
-  "[&_pre]:leading-yorha-snug [&_pre]:whitespace-pre-wrap [&_pre]:[overflow-wrap:anywhere] " +
+  "[&_pre]:whitespace-pre-wrap [&_pre]:[overflow-wrap:anywhere] " +
   "[&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-current " +
   // links: always underlined, so colour is not the only cue
   "[&_a]:text-yorha-fg-strong [&_a]:underline [&_a]:decoration-2 [&_a]:underline-offset-4";

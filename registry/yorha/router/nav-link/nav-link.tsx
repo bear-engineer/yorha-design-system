@@ -15,7 +15,7 @@ const base = [
   "relative flex w-full items-center gap-3 px-4 py-2 no-underline",
   "border-y-(length:--menu-rule) border-transparent",
   "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-no-repeat bg-[length:0%_100%] bg-left",
-  "text-yorha-sm font-yorha-medium uppercase tracking-yorha-wide leading-yorha-snug text-yorha-fg-ink",
+  "text-yorha-sm font-yorha-medium uppercase tracking-yorha-wide text-yorha-fg-ink",
   "yorha-wipe",
   "before:size-1.5 before:shrink-0 before:bg-current before:content-['']",
   "focus-visible:yorha-focus",

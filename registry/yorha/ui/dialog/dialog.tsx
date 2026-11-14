@@ -6,19 +6,20 @@ import { useSound } from "@/lib/sound";
 /**
  * Class strings shared by Dialog, AlertDialog and static previews (one definition).
  * Motion: backdrop = `yorha-fade`, popup = `yorha-panel` (T3 utilities; enter/exit tokens, opacity-only
- * and <=120ms under data-motion reduced, 0 under off).
+ * and <=120ms under data-motion reduced, 0 under off). Both set `--motion-panel*` to the modal tokens
+ * (280ms in, 200ms out) so a dialog and an alert dialog are slower than a small panel.
  */
 export const dialogStyles = {
   backdrop:
-    "yorha-fade fixed inset-0 z-(--yorha-z-overlay) bg-yorha-scrim data-[ending-style]:pointer-events-none",
+    "yorha-fade [--motion-panel:var(--motion-modal)] [--motion-panel-exit:var(--motion-modal-exit)] fixed inset-0 z-(--yorha-z-overlay) bg-yorha-scrim data-[ending-style]:pointer-events-none",
   viewport: "pointer-events-none fixed inset-0 z-(--yorha-z-modal) grid place-items-center p-4",
   popup:
-    "yorha-panel pointer-events-auto data-[ending-style]:pointer-events-none relative flex max-h-full w-full max-w-md flex-col overflow-auto " +
+    "yorha-panel [--motion-panel:var(--motion-modal)] [--motion-panel-exit:var(--motion-modal-exit)] pointer-events-auto data-[ending-style]:pointer-events-none relative flex max-h-full w-full max-w-md flex-col overflow-auto " +
     "rounded-yorha border border-yorha-border bg-yorha-panel text-yorha-fg shadow-yorha-lg",
   // dark header strip; the dot and trailing rule are decorative pseudo elements
   title:
     "flex items-center gap-3 bg-yorha-ink px-4 py-2 font-yorha font-yorha-bold text-yorha-sm uppercase " +
-    "tracking-yorha-heading text-yorha-on-ink text-shadow-yorha " +
+    "tracking-yorha-heading text-yorha-on-ink " +
     "before:size-2 before:shrink-0 before:bg-current before:content-[''] " +
     "after:h-px after:flex-1 after:bg-yorha-on-ink-soft after:content-['']",
   body: "px-6 py-5",

@@ -103,6 +103,10 @@ export const Default: Story = {
     // focus moves inside
     await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
 
+    // G11: the modal reads the slower modal tokens, not the small-panel ones; the title strip has no text-shadow (B4)
+    await expect(getComputedStyle(dialog).getPropertyValue("--motion-panel").trim()).toBe(getComputedStyle(document.documentElement).getPropertyValue("--motion-modal").trim());
+    await expect(getComputedStyle(document.getElementById(titleId!)!).textShadow).toBe("none");
+
     // Tab is trapped (both directions)
     for (let i = 0; i < 6; i++) {
       await userEvent.tab();

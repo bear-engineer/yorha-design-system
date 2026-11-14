@@ -70,11 +70,20 @@ export const KoreanNotUppercased: Story = {
   },
 };
 
+/** B4: the offset shadow belongs to the Latin page title (level 1) only; lower levels and Korean/Japanese have none. */
 export const HardOffsetShadow: Story = {
-  args: { children: "Shadowed" },
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <Heading level={1}>Shadowed</Heading>
+      <Heading level={1} lang="ko">그림자 없음</Heading>
+      <Heading level={2}>Plain h2</Heading>
+    </div>
+  ),
   play: async ({ canvasElement }) => {
-    const h = within(canvasElement).getByRole("heading", { name: "Shadowed" });
-    await expect(getComputedStyle(h).textShadow).not.toBe("none");
+    const c = within(canvasElement);
+    await expect(getComputedStyle(c.getByRole("heading", { name: "Shadowed" })).textShadow).not.toBe("none");
+    await expect(getComputedStyle(c.getByRole("heading", { name: "그림자 없음" })).textShadow).toBe("none");
+    await expect(getComputedStyle(c.getByRole("heading", { name: "Plain h2" })).textShadow).toBe("none");
   },
 };
 
