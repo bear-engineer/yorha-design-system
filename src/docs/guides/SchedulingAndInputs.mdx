@@ -47,3 +47,12 @@ import { INPUT_TYPES, INPUT_TYPE_TABLE } from "../../../registry/yorha/ui/input-
 - `number`는 Base UI NumberField가 `type=text`를 렌더하므로 숫자 키패드가 필요한 곳에는 `Input type="number"`를, 스테퍼가 필요한 곳에는 NumberField를 씁니다.
 - `password`: 표시 토글(`aria-pressed`, 이름 "비밀번호 표시")과 Caps Lock 안내. `search`: 지우기 버튼, Esc로 지움. `file`: 버튼과 드롭 영역, `accept`·`maxSize` 검사. `color`: 견본과 16진수 입력.
 - `hidden`은 UI도 레이블도 없는 일반 `<input type="hidden">`입니다.
+
+## v3 입력 마이그레이션 노트
+
+- **높이는 명시적 스케일**: 텍스트 입력·비밀번호·검색·숫자·색상은 모두 `h-control-md`(기본 48px)이고 `fieldControlClass`를 공유합니다. 스토리나 소비 코드의 `h-9`·`h-10` 같은 임의 높이 덮어쓰기는 지우세요(`Fieldset` 안의 `FieldControl`도 마찬가지). 크기를 바꾸려면 `h-control-sm`/`h-control-lg`만 씁니다.
+- **FormSubmit**: 이제 공유 `Button`(`variant="primary"`, `type="submit"`)입니다. 받는 props는 `ButtonProps`에서 `variant`·`type`을 뺀 것(`size`, `loading`/busy, `disabled` 등)이며, 독자 스타일 클래스에 의존하던 코드는 `className`으로만 조정하세요.
+- **Textarea `resize`**: 기본은 `resize-none`입니다. 브라우저 세로 그립이 필요하면 `resize` prop을 켜세요. 높이는 `rows`를 따르고 `max-h-64`에서 스크롤합니다.
+- **NumberField**: `description`과 `error` prop이 생겼습니다. `error`를 주면 필드가 invalid가 되고 메시지가 `FieldError`로 연결됩니다. 내부는 `Field` + `InputGroup`이라 포커스 링은 프레임 하나입니다. 별도 `Field`로 감싸 메시지를 달던 코드는 prop으로 옮기세요.
+- **OTPField**: 슬롯은 정사각형(`w-control-md`)이며 줄어들 때 `aspect-square`로 따라갑니다. 6칸이 소수 픽셀에 걸리지 않으려면 컨테이너를 336px 이상으로 두세요.
+- **FileInput**: 드래그 중 안내와 거부 사유(`FieldError`)가 드롭존 아래에 표시됩니다. 파일 행은 이름(말줄임, `title`) · 크기 · 제거 순입니다.

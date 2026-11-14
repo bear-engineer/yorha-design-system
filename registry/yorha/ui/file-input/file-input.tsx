@@ -230,9 +230,9 @@ export function FileInput({
           {files.map((file, i) => (
             <li
               key={`${file.name}-${file.size}-${file.lastModified}-${i}`}
-              className="flex min-h-row items-baseline justify-between gap-3 border border-yorha-border px-pad-sm py-1"
+              className="flex min-h-row items-center gap-3 border border-yorha-border px-pad-sm py-1"
             >
-              <span className="min-w-0 truncate">{file.name}</span>
+              <span className="min-w-0 flex-1 truncate" title={file.name}>{file.name}</span>
               <span className="shrink-0 text-yorha-sm tabular-nums text-yorha-fg-soft">{formatFileSize(file.size, locale)}</span>
               <Button
                 ref={(node) => {
