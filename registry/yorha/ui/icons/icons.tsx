@@ -1,5 +1,5 @@
 import type { SVGProps } from "react";
-import { cn } from "../../lib/utils/utils";
+import { cn } from "@/lib/utils";
 
 /**
  * YoRHa icon set (G3). Drawing rules, enforced by icons.test.ts:

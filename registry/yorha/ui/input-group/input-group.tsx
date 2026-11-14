@@ -1,5 +1,5 @@
 import * as React from "react";
-import { cn } from "../../lib/utils/utils";
+import { cn } from "@/lib/utils";
 
 /**
  * One frame for a text control with adornments (G9). Children sit on the control scale: the frame is
