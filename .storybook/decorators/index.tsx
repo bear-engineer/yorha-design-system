@@ -44,7 +44,10 @@ export const withGlobals: Decorator = (Story, context) => {
 function RouterHost({ Story, route }: { Story: ComponentType; route: StoryRouteParameter }) {
   const [router] = useState(() => {
     const path = route.path ?? "/";
-    const routes = route.routes ?? [{ path, element: <Story /> }];
+    // A catch-all keeps in-story navigation (clicking demo nav links) inside the story instead of
+    // React Router's 404 boundary; NavLink active state follows the clicked URL.
+    const base = route.routes ?? [{ path, element: <Story /> }];
+    const routes = base.some((r) => r.path === "*") ? base : [...base, { path: "*", element: <Story /> }];
     return createMemoryRouter(routes, { initialEntries: route.initialEntries ?? [path] });
   });
   useEffect(() => () => router.dispose(), [router]);
