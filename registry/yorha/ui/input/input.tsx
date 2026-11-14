@@ -21,8 +21,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Inp
         "font-yorha text-yorha-base text-yorha-fg-strong placeholder:text-yorha-fg-soft",
         "transition-colors duration-(--motion-press) ease-yorha",
         "focus-visible:yorha-focus disabled:cursor-not-allowed disabled:opacity-60",
-        "aria-invalid:border-(length:--yorha-border-width-strong) aria-invalid:border-yorha-alert-ui",
-        "data-[invalid]:border-(length:--yorha-border-width-strong) data-[invalid]:border-yorha-alert-ui",
+        // The strong invalid edge is an inset ring, not a wider border, so invalid never resizes the input.
+        "aria-invalid:border-yorha-alert-ui aria-invalid:shadow-[inset_0_0_0_calc(var(--yorha-border-width-strong)-1px)_var(--yorha-alert-ui)]",
+        "data-[invalid]:border-yorha-alert-ui data-[invalid]:shadow-[inset_0_0_0_calc(var(--yorha-border-width-strong)-1px)_var(--yorha-alert-ui)]",
         className,
       )}
       {...props}

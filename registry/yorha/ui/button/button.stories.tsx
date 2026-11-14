@@ -104,6 +104,15 @@ export const Loading: Story = {
     await expect(btn).toHaveTextContent("확인");
     await userEvent.click(btn);
     await expect(args.onClick).not.toHaveBeenCalled();
+    // The indicator is overlaid: it pulses (opacity) and takes no room in the button.
+    const dot = btn.querySelector<HTMLElement>("[data-yorha-busy]")!;
+    await expect(getComputedStyle(dot).position).toBe("absolute");
+    await waitFor(() => expect(dot.getAnimations().length).toBeGreaterThan(0));
+    await expect(dot.getAnimations().every((a) => (a.effect as KeyframeEffect).getKeyframes().every((k) => !("transform" in k)))).toBe(true);
+    const w = btn.offsetWidth;
+    dot.style.display = "none";
+    await expect(btn.offsetWidth).toBe(w);
+    dot.style.display = "";
   },
 };
 

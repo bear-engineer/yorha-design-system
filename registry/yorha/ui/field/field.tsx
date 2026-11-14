@@ -8,7 +8,8 @@ export const fieldControlClass = cn(
   "font-yorha text-yorha-base text-yorha-fg-strong placeholder:text-yorha-fg-soft",
   "transition-colors duration-(--motion-select) ease-yorha",
   "focus-visible:yorha-focus disabled:cursor-not-allowed disabled:opacity-60",
-  "data-[invalid]:border-(length:--yorha-border-width-strong) data-[invalid]:border-yorha-alert-ui",
+  // Strong invalid edge = inset ring, not a wider border: invalid never resizes the control.
+  "data-[invalid]:border-yorha-alert-ui data-[invalid]:shadow-[inset_0_0_0_calc(var(--yorha-border-width-strong)-1px)_var(--yorha-alert-ui)]",
 );
 
 const ERROR_ICON = cn(

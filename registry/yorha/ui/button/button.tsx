@@ -1,5 +1,5 @@
 import { Button as BaseButton } from "@base-ui/react/button";
-import type { ComponentProps } from "react";
+import { useEffect, useRef, type ComponentProps, type RefObject } from "react";
 import { cn, cnState } from "@/lib/utils";
 
 export type ButtonVariant = "default" | "primary" | "ghost" | "danger";
@@ -57,8 +57,44 @@ export function buttonVariants({ variant = "default", size = "md", square = fals
   return cn(BASE, VARIANT[variant], square ? cn(SQUARE[size], "p-0") : SIZE[size]);
 }
 
+const LOOP_FALLBACK_MS = 1200; // used when the --motion-loop token is absent
+
+/**
+ * Busy indicator pulse (opacity only, so the indicator never changes the button's box). full = LOOP,
+ * reduced (data-motion or prefers-reduced-motion) = twice as slow, off = static and fully opaque.
+ */
+function usePulse(ref: RefObject<HTMLSpanElement | null>, active: boolean) {
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !active) return;
+    const html = document.documentElement;
+    const motionOf = () =>
+      html.dataset.motion ?? (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "reduced" : "full");
+    let anim: Animation | undefined;
+    const sync = () => {
+      anim?.cancel();
+      anim = undefined;
+      const mode = motionOf();
+      if (mode === "off" || typeof el.animate !== "function") return;
+      const loop = parseFloat(getComputedStyle(html).getPropertyValue("--motion-loop")) || LOOP_FALLBACK_MS;
+      anim = el.animate([{ opacity: 0.15 }, { opacity: 1 }, { opacity: 0.15 }], {
+        duration: mode === "reduced" ? loop * 2 : loop,
+        iterations: Infinity,
+        easing: "linear",
+      });
+    };
+    const observer = new MutationObserver(sync);
+    observer.observe(html, { attributes: true, attributeFilter: ["data-motion"] });
+    sync();
+    return () => {
+      observer.disconnect();
+      anim?.cancel();
+    };
+  }, [ref, active]);
+}
+
 export interface ButtonProps extends ComponentProps<typeof BaseButton>, Omit<ButtonVariantOptions, "square"> {
-  /** Shows a busy indicator, keeps the label, blocks activation. */
+  /** Shows a pulsing busy indicator overlaid on the button (its size never changes), keeps the label, blocks activation. */
   loading?: boolean;
   /** @internal used by IconButton */
   square?: boolean;
@@ -75,6 +111,8 @@ export function Button({
   type = "button",
   ...props
 }: ButtonProps) {
+  const indicatorRef = useRef<HTMLSpanElement>(null);
+  usePulse(indicatorRef, loading);
   return (
     <BaseButton
       type={type}
@@ -85,7 +123,16 @@ export function Button({
       {...props}
     >
       {loading ? (
-        <span aria-hidden="true" className="inline-block size-2 shrink-0 bg-current" />
+        // Overlaid in the padding (or the corner of a square button) so toggling loading never resizes the control.
+        <span
+          ref={indicatorRef}
+          aria-hidden="true"
+          data-yorha-busy=""
+          className={cn(
+            "pointer-events-none absolute size-2 bg-current",
+            square ? "top-1 right-1" : "top-1/2 left-0.5 -translate-y-1/2",
+          )}
+        />
       ) : null}
       {children}
     </BaseButton>
