@@ -124,9 +124,12 @@ export const ReducedMotion: Story = {
   args: { label: "모션", defaultValue: 50, showValue: true },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
-    const indicator = canvasElement.querySelector<HTMLElement>("[data-orientation], .h-full");
+    const indicator = canvasElement.querySelector<HTMLElement>('[class*="transition-[width]"]');
     await expect(indicator).not.toBeNull();
     await expectReducedMotion(indicator!);
-    await expectReducedMotion(c.getByRole("slider", { name: "모션" }));
+    const thumb = canvasElement.querySelector<HTMLElement>('[class*="transition-[left]"]');
+    await expect(thumb).not.toBeNull();
+    await expectReducedMotion(thumb!);
+    await expect(c.getByRole("slider", { name: "모션" })).toHaveAttribute("aria-valuenow", "50");
   },
 };

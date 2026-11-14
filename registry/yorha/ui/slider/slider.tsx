@@ -21,17 +21,13 @@ const PITCH = "8px";
 export function Slider({ label, showValue = false, className, ...props }: SliderProps) {
   const initial = props.value ?? props.defaultValue;
   const thumbs = Array.isArray(initial) ? initial.length : 1;
-  const labelId = React.useId();
   return (
     <BaseSlider.Root
-      aria-labelledby={labelId}
       className={cnState("flex w-full flex-col gap-2 font-yorha text-yorha-base text-yorha-fg", className)}
       {...props}
     >
       <div className="flex items-baseline justify-between gap-4">
-        <span id={labelId} className="font-yorha-medium tracking-yorha-wide uppercase">
-          {label}
-        </span>
+        <BaseSlider.Label className="font-yorha-medium tracking-yorha-wide uppercase">{label}</BaseSlider.Label>
         {showValue ? <BaseSlider.Value className="tabular-nums" /> : null}
       </div>
       <BaseSlider.Control className="flex h-6 w-full touch-none items-center select-none data-[disabled]:opacity-50">
@@ -42,7 +38,7 @@ export function Slider({ label, showValue = false, className, ...props }: Slider
           )}
         >
           <BaseSlider.Indicator
-            className="h-full"
+            className="h-full transition-[width] duration-(--motion-select) ease-yorha"
             style={{
               backgroundImage: `repeating-linear-gradient(90deg, var(--yorha-ink) 0 ${SEGMENT}, transparent ${SEGMENT} ${PITCH})`,
             }}
@@ -54,6 +50,7 @@ export function Slider({ label, showValue = false, className, ...props }: Slider
               aria-label={thumbs > 1 ? `${label} ${i + 1}` : label}
               className={cn(
                 "size-4 rounded-yorha border-2 border-yorha-bg bg-yorha-ink outline outline-1 outline-yorha-ink",
+                "transition-[left] duration-(--motion-select) ease-yorha data-[dragging]:transition-none",
                 "has-[:focus-visible]:yorha-focus data-[disabled]:cursor-not-allowed",
               )}
             />

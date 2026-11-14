@@ -34,9 +34,19 @@ export function NumberField({
       {...props}
       id={id}
     >
-      <label htmlFor={id} className="font-yorha-medium tracking-yorha-wide uppercase">
-        {label}
-      </label>
+      <BaseNumberField.ScrubArea direction="horizontal" className="cursor-ew-resize select-none self-start">
+        <label htmlFor={id} className="font-yorha-medium tracking-yorha-wide uppercase">
+          {label}
+        </label>
+        <BaseNumberField.ScrubAreaCursor
+          className={cn(
+            "pointer-events-none grid size-6 place-items-center border border-yorha-ink bg-yorha-bg text-yorha-fg-strong",
+            "opacity-0 transition-opacity duration-(--motion-select) ease-yorha data-[scrubbing]:opacity-100",
+          )}
+        >
+          <span aria-hidden="true" className="size-1.5 bg-yorha-ink" />
+        </BaseNumberField.ScrubAreaCursor>
+      </BaseNumberField.ScrubArea>
       <BaseNumberField.Group className="flex w-fit">
         <BaseNumberField.Decrement aria-label={decrementLabel} className={STEP_BUTTON}>
           <span aria-hidden="true">−</span>

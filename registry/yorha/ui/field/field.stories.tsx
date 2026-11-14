@@ -174,8 +174,8 @@ export const ItemAndValidity: Story = {
   render: () => (
     <form className="flex w-80 max-w-full flex-col gap-4">
       <Field name="code">
+        <FieldLabel>코드</FieldLabel>
         <FieldItem>
-          <FieldLabel>코드</FieldLabel>
           <FieldDescription>3자 이상 입력하세요.</FieldDescription>
         </FieldItem>
         <FieldControl minLength={3} required />

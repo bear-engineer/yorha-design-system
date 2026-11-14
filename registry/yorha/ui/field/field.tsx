@@ -84,6 +84,32 @@ export function FieldControl({ className, ...props }: FieldControlProps) {
   return <BaseField.Control className={cnState(fieldControlClass, className)} {...props} />;
 }
 
+export type FieldItemProps = ComponentProps<typeof BaseField.Item>;
+/** One option inside a checkbox or radio group, grouped with its own label and description. */
+export function FieldItem({ className, ...props }: FieldItemProps) {
+  return <BaseField.Item className={cnState("flex flex-col gap-1", className)} {...props} />;
+}
+
+export type FieldValidityProps = ComponentProps<typeof BaseField.Validity>;
+/** Custom validation message. `children` receives the validity state and returns the text (or null to hide). */
+export function FieldValidity({ children, ...props }: FieldValidityProps) {
+  return (
+    <BaseField.Validity {...props}>
+      {(state) => {
+        const content = typeof children === "function" ? children(state) : children;
+        return content ? (
+          <span role="alert" className="flex items-start gap-2 font-yorha-medium text-yorha-sm leading-yorha-snug text-yorha-alert">
+            <span aria-hidden="true" className={ERROR_ICON}>
+              !
+            </span>
+            <span>{content}</span>
+          </span>
+        ) : null;
+      }}
+    </BaseField.Validity>
+  );
+}
+
 export type FieldsetProps = ComponentProps<typeof BaseFieldset.Root>;
 export function Fieldset({ className, ...props }: FieldsetProps) {
   return <BaseFieldset.Root className={cnState("m-0 flex min-w-0 flex-col gap-6 border-0 p-0", className)} {...props} />;

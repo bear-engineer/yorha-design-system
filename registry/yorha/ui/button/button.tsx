@@ -14,9 +14,9 @@ export interface ButtonVariantOptions {
 
 // Selection wipe: a background-size transition on an ink layer, left to right.
 // Duration comes from --motion-select, so data-motion reduced/off collapses it to 0.
+// yorha-press owns the transition list (press scale + wipe/colour at --motion-select).
 const WIPE =
-  "bg-no-repeat bg-[position:left_center] bg-[length:0%_100%] " +
-  "transition-[background-size,color,border-color] duration-(--motion-select) ease-yorha-out " +
+  "bg-no-repeat bg-[position:left_center] bg-[length:0%_100%] yorha-press " +
   "enabled:hover:bg-[length:100%_100%] enabled:active:bg-[length:100%_100%]";
 
 const BASE =

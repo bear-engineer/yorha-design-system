@@ -18,7 +18,7 @@ export function Toggle({ children, className, ...props }: ToggleProps) {
         cn(
           "group inline-flex items-center gap-3 rounded-yorha border border-yorha-border bg-transparent px-3 py-2",
           "font-yorha text-yorha-base text-yorha-fg cursor-pointer",
-          "transition-colors duration-(--motion-select) ease-yorha",
+          "yorha-press",
           "data-[pressed]:bg-yorha-ink data-[pressed]:text-yorha-on-ink",
           "focus-visible:yorha-focus",
           "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
