@@ -100,10 +100,9 @@ export const ThemeSwitch: Story = {
 
 export const InitialProps: Story = {
   name: "초기값 props",
-  args: { theme: "authentic", density: "compact", motion: "off" },
-  parameters: { a11y: { test: "todo" } }, // authentic theme fails contrast pairs by design
+  args: { theme: "dark", density: "compact", motion: "off" },
   play: async () => {
-    await waitFor(() => expect(root().dataset.theme).toBe("authentic"));
+    await waitFor(() => expect(root().dataset.theme).toBe("dark"));
     expect(root().dataset.density).toBe("compact");
     expect(root().dataset.motion).toBe("off");
   },
