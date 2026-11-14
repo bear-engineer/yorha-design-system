@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "prose",
+      "type": "registry:ui",
+      "title": "Prose",
+      "description": "Long-form text container: measure-limited width, paragraph gap, heading scale, lists, blockquote, code, tables (keyboard-focusable scroll region) and underlined links. Korean and Japanese get their own line-breaking rules via :lang.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "prose.tsx",
+          "type": "registry:ui",
+          "target": "@ui/prose.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+    }
+  ]
+}

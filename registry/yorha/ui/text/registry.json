@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "text",
+      "type": "registry:ui",
+      "title": "Text",
+      "description": "Body text with size, weight and tone props, tabular numerals, and single-line truncate or multi-line lineClamp. Clipped text stays fully in the DOM and exposed through title.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "text.tsx",
+          "type": "registry:ui",
+          "target": "@ui/text.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+    }
+  ]
+}
