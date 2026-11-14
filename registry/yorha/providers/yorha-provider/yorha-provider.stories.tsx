@@ -172,7 +172,7 @@ export const DirectionRtl: Story = {
 
 const NONCE = "yorha-test-nonce";
 
-/** CSPProvider: Base UI ScrollArea emits its inline <style> with the nonce. */
+/** CSPProvider: Base UI ScrollArea emits its inline `<style>` with the nonce. */
 export const CspNonce: Story = {
   name: "CSP nonce",
   args: { nonce: NONCE },

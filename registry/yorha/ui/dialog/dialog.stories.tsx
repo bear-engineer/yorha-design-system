@@ -210,7 +210,7 @@ export const ReducedMotion: Story = {
 
 const detached = createDialogHandle();
 
-/** Trigger outside <Dialog>, linked by a handle. DialogContent renders Backdrop and Viewport. */
+/** Trigger outside `<Dialog>`, linked by a handle. DialogContent renders Backdrop and Viewport. */
 export const DetachedTrigger: Story = {
   render: () => (
     <div>

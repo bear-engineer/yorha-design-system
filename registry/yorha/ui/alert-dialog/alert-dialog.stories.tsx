@@ -159,7 +159,7 @@ export const ReducedMotion: Story = {
 
 const detached = createAlertDialogHandle();
 
-/** Trigger outside <AlertDialog>, linked by a handle. AlertDialogContent renders Backdrop and Viewport. */
+/** Trigger outside `<AlertDialog>`, linked by a handle. AlertDialogContent renders Backdrop and Viewport. */
 export const DetachedTrigger: Story = {
   render: () => (
     <div>

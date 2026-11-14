@@ -13,7 +13,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Shared checks: one banner, one named main, one h1, the requested theme on <html>. */
+/** Shared checks: one banner, one named main, one h1, the requested theme on `<html>`. */
 async function expectPage(canvasElement: HTMLElement, theme: string) {
   const c = within(canvasElement);
   await expect(document.documentElement).toHaveAttribute("data-theme", theme);
