@@ -56,4 +56,51 @@ describe("token generator", () => {
     const css = read("src/styles/tokens.generated.css");
     for (const name of FONT_PACKAGES) expect(css).toContain(`@import "${name}/`);
   });
+
+  describe("readability tokens (C8)", () => {
+    const css = () => read("src/styles/tokens.generated.css");
+    const rootVar = (name: string) => new RegExp(`\\n  --${name}: ([^;]+);`).exec(css())?.[1];
+    const block = (selector: string) => {
+      const start = css().indexOf(`\n${selector} {\n`);
+      expect(start, selector).toBeGreaterThanOrEqual(0);
+      return css().slice(start, css().indexOf("\n}\n", start));
+    };
+
+    it("CJK body leading is at least 1.7 and Latin stays 1.6", () => {
+      expect(Number(rootVar("yorha-leading-body-cjk"))).toBeGreaterThanOrEqual(1.7);
+      expect(Number(rootVar("yorha-leading-body"))).toBe(1.6);
+      expect(block(":lang(ko), :lang(ja)")).toContain("--yorha-leading-body: var(--yorha-leading-body-cjk);");
+      expect(block(":lang(en)")).toContain("--yorha-leading-body: 1.6;");
+    });
+
+    it("has a measure token of about 40em and a paragraph spacing token", () => {
+      expect(rootVar("yorha-measure")).toBe("40em");
+      expect(rootVar("yorha-paragraph-gap")).toBe("1em");
+    });
+
+    it("density=comfortable raises body text to 17px; default stays 16px", () => {
+      expect(rootVar("yorha-text-base")).toBe("1rem");
+      expect(block("[data-density=comfortable]")).toContain("--yorha-text-base: 1.0625rem;");
+      expect(block("[data-density=compact]")).toContain("--yorha-text-base: 1rem;");
+      expect(block("[data-density]")).toContain("font-size: var(--yorha-text-base);");
+    });
+
+    it("ships tabular and break utilities", () => {
+      expect(block("@utility yorha-tabular")).toContain("font-variant-numeric: tabular-nums;");
+      expect(block("@utility yorha-break")).toContain("overflow-wrap: anywhere;");
+    });
+
+    it("long-string safety net keeps keep-all for ko and breaks links, code and cells", () => {
+      const layer = block("@layer base");
+      expect(layer).toContain("word-break: keep-all;");
+      expect(layer).toMatch(/a, code, td, th \{\n\s+overflow-wrap: anywhere;/);
+      expect(layer).toContain("max-width: var(--yorha-measure)");
+    });
+
+    it("registry base item carries the same rules", () => {
+      const item = baseItem();
+      expect(Object.keys(item.css)).toEqual(expect.arrayContaining(["@utility yorha-tabular", "@utility yorha-break", ":lang(ko), :lang(ja)", ":lang(en)"]));
+      expect(item.cssVars.light["yorha-measure"]).toBe("40em");
+    });
+  });
 });
