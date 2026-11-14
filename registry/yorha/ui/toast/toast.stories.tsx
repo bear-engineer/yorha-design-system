@@ -159,15 +159,13 @@ export const MotionRecipe: Story = {
   args: { timeout: 0 },
   play: async ({ canvasElement }) => {
     const toasts = () => [...canvasElement.ownerDocument.querySelectorAll<HTMLElement>("[data-slot=toast]")];
+    const at = (i: number) => toasts()[i] as HTMLElement;
     const add = within(canvasElement).getByRole("button", { name: LABEL.info });
 
     // Enter: starts transparent and fades in.
     await userEvent.click(add);
-    const first = await waitFor(() => {
-      const [t] = toasts();
-      expect(t).toBeDefined();
-      return t;
-    });
+    await waitFor(() => expect(toasts()).toHaveLength(1));
+    const first = at(0);
     const enter = await sample(() => +getComputedStyle(first).opacity, 700, (v) => v.at(-1) === 1);
     await expect(enter[0]).toBeLessThan(1);
 
@@ -178,7 +176,7 @@ export const MotionRecipe: Story = {
     await expect(new Set(lift.map((y) => Math.round(y))).size).toBeGreaterThan(2);
 
     // Exit: opacity falls gradually; the node is not held at 1 and then removed.
-    const [newest] = toasts();
+    const newest = at(0);
     const exit = (async () => sample(() => +getComputedStyle(newest).opacity, 700, () => !newest.isConnected))();
     await userEvent.click(within(newest).getByRole("button", { name: "닫기" }));
     const fade = await exit;
@@ -187,7 +185,7 @@ export const MotionRecipe: Story = {
 
     // The remaining toast settles back down over more than one frame.
     await waitFor(() => expect(toasts()).toHaveLength(1));
-    const [rest] = toasts();
+    const rest = at(0);
     const drop = await sample(() => rest.getBoundingClientRect().y, 700, (v) => v.length > 3 && v.at(-1) === v.at(-2));
     await expect(new Set(drop.map((y) => Math.round(y))).size).toBeGreaterThan(1);
   },
@@ -221,7 +219,7 @@ export const SwipeContinues: Story = {
     const xs = await run;
     await expect(release).toBeGreaterThan(box.x);
     await expect(xs.length).toBeGreaterThan(2);
-    for (let i = 1; i < xs.length; i++) await expect(xs[i]).toBeGreaterThanOrEqual(xs[i - 1] - 0.5);
+    for (let i = 1; i < xs.length; i++) await expect(xs[i] as number).toBeGreaterThanOrEqual((xs[i - 1] as number) - 0.5);
     await expect(Math.max(...xs)).toBeGreaterThan(release + 20);
   },
 };
