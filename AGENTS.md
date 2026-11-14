@@ -4,7 +4,7 @@
 
 ## 정본(SOT)
 - 디자인 정본은 Storybook이다. 토큰·컴포넌트·레이아웃·설치 가이드는 스토리/MDX에서 나온다.
-- 토큰 정본은 `tokens/*.tokens.json`(DTCG 2025.10) 하나다. `src/styles/tokens.generated.css`, `registry/yorha/base/registry.json`의 cssVars, `src/docs/foundations/*.generated.*`는 `pnpm tokens:build`로만 만든다. 생성물을 손으로 고치지 않는다.
+- 토큰 정본은 `tokens/*.tokens.json`(DTCG 2025.10) 하나다. `src/styles/tokens.generated.css`, `registry/yorha/base/base/registry.json`의 cssVars, `src/docs/foundations/*.generated.*`는 `pnpm tokens:build`로만 만든다. 생성물을 손으로 고치지 않는다.
 - 계획: `~/.hermes/research/yorha-design-system/plan.md`(수락본). 리서치: 같은 폴더의 `briefing.ko.md`, `dossier.md`.
 
 ## 구조

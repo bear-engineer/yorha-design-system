@@ -2,8 +2,12 @@ import { defineConfig } from "vitest/config";
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import { playwright } from "@vitest/browser-playwright";
 import { fileURLToPath } from "node:url";
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
 
 export default defineConfig({
+  // @storybook/addon-vitest ignores builder.viteConfigPath: Tailwind must be loaded here too.
+  plugins: [react(), tailwindcss()],
   resolve: { tsconfigPaths: true },
   test: {
     projects: [
