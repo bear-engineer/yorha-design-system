@@ -304,7 +304,7 @@ function PickerImpl(props: PickerImplProps) {
               {/* plain inputs: Field would name the start by the group label and drop 시작일 */}
               <InputGroupInput
                 id={fieldId}
-                data-slot="date-input"
+                data-date-input=""
                 data-size-exempt=""
                 aria-label="시작일"
                 aria-invalid={invalidSide === "from" || (!typedError && Boolean(error)) ? true : undefined}
@@ -322,7 +322,7 @@ function PickerImpl(props: PickerImplProps) {
               />
               <InputGroupText aria-hidden className="hidden h-[calc(var(--yorha-control-md)-2px)] @[24rem]:grid">–</InputGroupText>
               <InputGroupInput
-                data-slot="date-input"
+                data-date-input=""
                 data-size-exempt=""
                 aria-label="종료일"
                 aria-invalid={invalidSide === "to" ? true : undefined}
@@ -343,7 +343,7 @@ function PickerImpl(props: PickerImplProps) {
             <>
               <FieldGroupControl
                 id={fieldId}
-                data-slot="date-input"
+                data-date-input=""
                 autoComplete="off"
                 inputMode="numeric"
                 required={required}

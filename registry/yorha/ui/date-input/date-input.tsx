@@ -94,7 +94,7 @@ export function DateInput({
     <InputGroup ref={frameRef} invalid={Boolean(error)} disabled={disabled}>
       <FieldGroupControl
         ref={inputRef}
-        data-slot="date-input"
+        data-date-input=""
         type={type}
         name={name}
         lang={locale}

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it } from "vitest";
-import { userEvent } from "vitest/browser";
+import { page, userEvent } from "vitest/browser";
 import "./mount"; // storybook project annotations + css
 import { frames } from "./mount";
 import { Calendar, type DateRange } from "../registry/yorha/ui/calendar/calendar";
@@ -295,7 +295,7 @@ describe("date picker field and popup (FCAL-04, 05, 06, 07, 19, 20)", () => {
   it("FCAL-04/20/19: one frame of control-md height; input and trigger are equal, the trigger sits inside the frame, icon is CalendarIcon", async () => {
     const c = await render(<DatePicker label="출발일" today={TODAY} />);
     const frame = q(FRAME, c)!;
-    const input = q("input[data-slot=date-input]", c)!;
+    const input = q("input[data-date-input]", c)!;
     const trigger = q("[data-slot=input-group-button]", c)!;
     expect(rect(frame).height).toBe(controlMd());
     expectSameHeight(input, trigger);
@@ -398,5 +398,62 @@ describe("date input (FCAL-19, 25, 26)", () => {
     await frames(8);
     await settled();
     expectAnchoredBelow(q("[data-slot=popover-content]")!, q(FRAME, c)!, { gap: 8, align: "start" });
+  });
+});
+
+describe("calendar c2 fixes (C2-101, C2-102, C2-104)", () => {
+  it("C2-101: Tab into the DateInput / DatePicker text field draws the 2px kit ring on the frame", async () => {
+    for (const node of [<DateInput key="i" label="출발일" today={TODAY} />, <DatePicker key="p" label="출발일" today={TODAY} />]) {
+      const c = await render(node);
+      await userEvent.click(document.body);
+      await userEvent.tab();
+      await frames(2);
+      const input = q("input", c)!;
+      expect(document.activeElement).toBe(input);
+      const cs = getComputedStyle(q(FRAME, c)!);
+      expect(cs.outlineStyle).not.toBe("none");
+      expect(parseFloat(cs.outlineWidth)).toBeGreaterThanOrEqual(2);
+      (document.activeElement as HTMLElement).blur();
+      mounted.splice(0).forEach((m) => {
+        m.root.unmount();
+        m.container.remove();
+      });
+    }
+  });
+
+  it("C2-102: the calendar sizes from its container, not the viewport: 200px and 280px wrappers fit, integer cells >= 24px", async () => {
+    for (const w of [200, 280]) {
+      // render() pads 16px per side inside a border-box width: ask for the width of the wrapper's content box
+      const c = await render(<Calendar today={TODAY} />, w + 32);
+      const cal = q("[data-slot=calendar]", c)!;
+      expect(cal.scrollWidth, `scrollWidth @${w}`).toBeLessThanOrEqual(cal.clientWidth);
+      expect(rect(cal).width, `width @${w}`).toBeLessThanOrEqual(w);
+      const cells = qa("tbody td", c);
+      expect(cells).toHaveLength(42);
+      const cw = rect(cells[0]!).width;
+      expect(cw).toBeGreaterThanOrEqual(24);
+      expect(Number.isInteger(cw)).toBe(true);
+      expectGrid(cells, { columns: 7, rows: 6 });
+    }
+  });
+
+  it("C2-104: on a 1280x360 viewport the popup stays inside it and 오늘 stays reachable", async () => {
+    await page.viewport(1280, 360);
+    try {
+      const c = await render(<DatePicker label="출발일" today={TODAY} />);
+      await userEvent.click(q("[data-slot=input-group-button]", c)!);
+      await until(() => !!q("[data-slot=popover-content] [data-slot=calendar]"));
+      await frames(8);
+      await settled();
+      const popup = q("[data-slot=popover-content]")!;
+      expectWithinViewport(popup, 8);
+      const today = q("[data-slot=calendar-footer] button", popup)!;
+      const pr = rect(popup);
+      const tr = rect(today);
+      expect(tr.top).toBeGreaterThanOrEqual(pr.top);
+      expect(tr.bottom).toBeLessThanOrEqual(pr.bottom + 0.5);
+    } finally {
+      await page.viewport(1280, 800);
+    }
   });
 });
