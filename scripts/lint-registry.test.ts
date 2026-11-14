@@ -77,7 +77,7 @@ describe("lintRegistry motion rule", () => {
 
   it("names the transform/opacity alternative", () => {
     const { errors } = lintRegistry(fixture("motion/layout-transition"), { motionStrict: true });
-    expect(errors.join("\\n")).toMatch(/animate transform, opacity or colour/);
+    expect(errors.join("\n")).toMatch(/animate transform, opacity or colour/);
   });
 
   it("YORHA_MOTION_STRICT=1 turns the rule into errors", () => {

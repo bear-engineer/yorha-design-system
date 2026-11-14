@@ -5,7 +5,9 @@
 // registry:ui items import only other items' primary files; no hex colors in .tsx; no outline removal without
 // focus-visible in the same file; no audio/font binaries under registry/.
 // Rule `motion` (warning; error with env YORHA_MOTION_STRICT=1 or options.motionStrict): no raw `NNNms`, no raw
-// cubic-bezier(), no `transition-all` in registry .tsx. Use --motion-* tokens, ease-yorha-* and the yorha-* motion utilities.
+// cubic-bezier(), no `transition-all` in registry .tsx; no transition on layout properties (width/height/top/left/margin/padding/
+// border-width/font-weight/inset...) and no `hidden` + `group-data-[..]:block` display switches for state indicators; a
+// `lint-allow layout-transition: <reason>` comment on the line or the line above allows an unavoidable layout transition. Use --motion-* tokens, ease-yorha-* and the yorha-* motion utilities.
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, basename, extname, resolve, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -22,6 +24,15 @@ const MOTION_RULES = [
   [/(?<![\w-])transition-all\b/g, () => "transition-all"],
 ];
 
+// Layout properties: animating them re-runs layout every frame and moves neighbours. Animate transform, opacity or colour instead.
+const LAYOUT_PROP = /^(?:width|height|top|left|right|bottom|inset(?:-[a-z]+)*|margin(?:-[a-z]+)*|padding(?:-[a-z]+)*|border(?:-[a-z]+)?-width|font-weight|(?:min|max)-(?:width|height)|gap|flex-basis|grid-template-(?:rows|columns))$/;
+const TRANSITION_LIST = /(?<![\w-])(?:transition-\[([^\]]+)\]|\[transition-property:([^\]]+)\])/g;
+// A state indicator toggled by display: `hidden` in the base classes plus `group-data-[...]:block|flex|grid|inline*`.
+const HIDDEN = /(?<![\w:-])hidden(?![\w-])/;
+const DISPLAY_SWITCH = /(?<![\w-])((?:peer-|group-)?(?:data|aria)-\[[^\]]+\](?:\/[\w-]+)?:(?:block|flex|grid|inline-block|inline-flex|inline-grid|inline))(?![\w-])/;
+const LAYOUT_ALLOW = /lint-allow layout-transition:\s*\S/;
+const LAYOUT_HINT = "animate transform, opacity or colour; allow only with a `lint-allow layout-transition: <reason>` comment";
+
 function walk(dir) {
   if (!existsSync(dir)) return [];
   return readdirSync(dir).flatMap((n) => {
@@ -33,12 +44,25 @@ function walk(dir) {
 // Block comments keep their line breaks so findings can name the source line.
 const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, "")).replace(/(^|[^:])\/\/.*$/gm, "$1");
 
-/** `motion` rule findings for one file's comment-free source, as "<line> motion: <what>" strings. */
-function motionFindings(code) {
+/** `motion` rule findings for one file's comment-free source, as "<line> motion: <what>" strings. `raw` keeps comments for allow-list lookup. */
+function motionFindings(code, raw = code) {
+  const rawLines = raw.split("\n");
   const findings = [];
   code.split("\n").forEach((line, index) => {
     for (const [pattern, describe] of MOTION_RULES) {
       for (const match of line.matchAll(pattern)) findings.push(`${index + 1} motion: ${describe(match[0])} (${MOTION_HINT})`);
+    }
+    const allowed = LAYOUT_ALLOW.test(rawLines[index] ?? "") || LAYOUT_ALLOW.test(rawLines[index - 1] ?? "");
+    if (!allowed) {
+      for (const list of line.matchAll(TRANSITION_LIST)) {
+        for (const prop of (list[1] ?? list[2]).split(/[,_\s]+/).filter(Boolean)) {
+          if (LAYOUT_PROP.test(prop)) findings.push(`${index + 1} motion: transition on layout property "${prop}" (${LAYOUT_HINT})`);
+        }
+      }
+      if (HIDDEN.test(line)) {
+        const sw = line.match(DISPLAY_SWITCH);
+        if (sw) findings.push(`${index + 1} motion: state indicator toggled by display (\`hidden\` + \`${sw[1]}\`); keep it mounted and animate opacity/scale in a fixed box`);
+      }
     }
   });
   return findings;
@@ -106,7 +130,7 @@ export function lintRegistry(rootDir = process.cwd(), { motionStrict = process.e
       const hex = code.match(HEX);
       if (hex) errors.push(`${item.name}: ${f.path} hard-codes hex color ${[...new Set(hex)].join(", ")} (use tokens)`);
       if (OUTLINE_OFF.test(code) && !/focus-visible/.test(code)) errors.push(`${item.name}: ${f.path} removes outline without focus-visible replacement`);
-      for (const finding of motionFindings(code)) motion.push(`${item.name}: ${f.path}:${finding}`);
+      for (const finding of motionFindings(code, src)) motion.push(`${item.name}: ${f.path}:${finding}`);
       if (item.type === "registry:ui") {
         for (const m of src.matchAll(IMPORT)) {
           const spec = m[1];

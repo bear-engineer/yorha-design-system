@@ -1,7 +1,11 @@
 import type { ComponentProps } from "react";
 import { Toggle as TogglePrimitive } from "@base-ui/react/toggle";
 import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group";
-import { cnState } from "@/lib/utils";
+import { cn, cnState } from "@/lib/utils";
+
+// Indicator: always mounted in the fixed bullet cell; fades (and scales unless reduced/off) in place.
+const INDICATOR_BASE =
+  "opacity-0 [scale:calc(1_-_(1_-_var(--motion-scale-pop))_*_var(--motion-spatial))] transition-[opacity,scale] [transition-duration:max(var(--motion-select),var(--motion-reduced-fade)),var(--motion-select)] ease-yorha";
 
 type GroupProps = ComponentProps<typeof ToggleGroupPrimitive>;
 
@@ -53,7 +57,7 @@ function ToggleGroupItem({ className, children, ...props }: ItemProps) {
         data-yorha-bullet=""
         className="grid size-2.5 shrink-0 place-items-center border border-current"
       >
-        <span className="hidden size-1 bg-current group-data-[pressed]/item:block" />
+        <span className={cn(INDICATOR_BASE, "size-1 bg-current group-data-[pressed]/item:scale-100 group-data-[pressed]/item:opacity-100")} />
       </span>
       {children}
     </TogglePrimitive>
