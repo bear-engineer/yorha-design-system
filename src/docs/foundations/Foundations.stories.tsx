@@ -333,3 +333,15 @@ export const PointerOpenAnimates: Story = {
     await waitFor(() => expect(parseFloat(getComputedStyle(menu).transitionDuration)).toBeGreaterThan(0));
   },
 };
+
+/** The toolbar default is `system`: no data-motion on <html>, so the OS reduced-motion preference decides. */
+export const SystemMotion: Story = {
+  globals: { motion: "system" },
+  render: () => <p>system</p>,
+  play: async () => {
+    const html = document.documentElement;
+    await waitFor(() => expect(html).not.toHaveAttribute("data-motion"));
+    const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    await expect(getComputedStyle(html).getPropertyValue("--motion-spatial").trim()).toBe(reduce ? "0" : "1");
+  },
+};

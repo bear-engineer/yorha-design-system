@@ -238,7 +238,7 @@ describe("token generator", () => {
       expect(rows.map((row) => row[1])).toEqual(MOTION_UTILITIES);
       const DURATION = /--motion-(popover-exit|popover|panel-exit|panel|drawer|collapse|select-exit|select|press|stagger-enter|stagger)(?![a-z-])/g;
       for (const [, name, cells] of rows) {
-        const tokenCell = cells.split("</td>")[1] ?? "";
+        const tokenCell = (cells ?? "").split("</td>")[1] ?? "";
         const documented = new Set([...tokenCell.matchAll(DURATION)].map((match) => match[1]));
         const used = new Set([...utilityBlock(name!).matchAll(DURATION)].map((match) => match[1]));
         expect([...documented].sort(), name).toEqual([...used].sort());

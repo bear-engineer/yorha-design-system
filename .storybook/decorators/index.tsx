@@ -4,7 +4,8 @@ import { createMemoryRouter, RouterProvider, type RouteObject } from "react-rout
 
 /** Toolbar values; keep in sync with tokens/yorha.resolver.json modifiers. */
 export const THEMES = ["light", "dark", "authentic", "high-contrast"] as const;
-export const MOTIONS = ["full", "reduced", "off"] as const;
+/** `system` sets no data-motion: the OS reduced-motion preference decides. */
+export const MOTIONS = ["system", "full", "reduced", "off"] as const;
 export const DENSITIES = ["comfortable", "compact"] as const;
 
 /**
@@ -24,7 +25,8 @@ function RootAttributes({ theme, motion, density, children }: { theme: string; m
   useEffect(() => {
     const el = document.documentElement;
     el.setAttribute("data-theme", theme);
-    el.setAttribute("data-motion", motion);
+    if (motion === "system") el.removeAttribute("data-motion");
+    else el.setAttribute("data-motion", motion);
     el.setAttribute("data-density", density);
   }, [theme, motion, density]);
   return children;
@@ -33,7 +35,7 @@ function RootAttributes({ theme, motion, density, children }: { theme: string; m
 export const withGlobals: Decorator = (Story, context) => {
   const manage = (context.parameters.yorha as { manageRoot?: boolean } | undefined)?.manageRoot !== false;
   if (!manage) return <Story />;
-  const { theme = "light", motion = "full", density = "comfortable" } = context.globals as Record<string, string>;
+  const { theme = "light", motion = "system", density = "comfortable" } = context.globals as Record<string, string>;
   return (
     <RootAttributes theme={theme} motion={motion} density={density}>
       <Story />

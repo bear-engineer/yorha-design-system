@@ -73,7 +73,7 @@ const preview: Preview = {
     motion: toolbar("Motion", "play", MOTIONS),
     density: toolbar("Density", "grow", DENSITIES),
   },
-  initialGlobals: { theme: "light", motion: "full", density: "comfortable" },
+  initialGlobals: { theme: "light", motion: "system", density: "comfortable" },
   parameters: {
     layout: "padded",
     // WCAG 2.5.8 (T10): target-size is enforced explicitly on every story.
