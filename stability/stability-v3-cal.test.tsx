@@ -105,10 +105,10 @@ describe("calendar month grid (FCAL-01, 02, 03, 09)", () => {
     expect(heights[0]).toBe(16 + C + 24 + 6 * C);
   });
 
-  it("FCAL-18: showToday adds exactly one control row", async () => {
+  it("FCAL-18: showToday adds one control row and its 1px rule", async () => {
     const C = controlSm();
     const c = await render(<Calendar today={TODAY} bordered={false} showToday />);
-    expect(rect(q("[data-slot=calendar]", c)!).height).toBe(16 + C + 24 + 6 * C + C);
+    expect(rect(q("[data-slot=calendar]", c)!).height).toBe(16 + C + 24 + 6 * C + C + 1);
   });
 
   it("FCAL-03: in-month cells hold one button, outside cells none and carry data-outside + a numeral", async () => {
