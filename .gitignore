@@ -11,3 +11,4 @@ vrt/__screenshots__/**/*-diff.png
 coverage/
 test-results/
 playwright-report/
+.vitest/
