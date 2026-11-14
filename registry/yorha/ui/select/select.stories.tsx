@@ -1,3 +1,4 @@
+import { expectTargetSize } from "../../../../.storybook/preview";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import {
@@ -368,5 +369,47 @@ export const ReducedMotion: Story = {
         await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull(), { timeout: 600 });
       });
     }
+  },
+};
+
+/** State matrix: default, disabled, open (rows incl. a disabled one). Targets stay >= 24px in both densities. */
+export const States: Story = {
+  render: () => (
+    <div className="flex w-72 flex-col gap-3 bg-yorha-panel p-6 text-yorha-fg">
+      <Select items={UNITS}>
+        <SelectTrigger aria-label="기본">
+          <SelectValue placeholder="기본" />
+        </SelectTrigger>
+        <SelectContent>
+          {UNITS.map((u) => (
+            <SelectItem key={u.value} value={u.value} disabled={u.value === "command"}>
+              {u.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select items={UNITS} disabled>
+        <SelectTrigger aria-label="비활성">
+          <SelectValue placeholder="비활성" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="archive">Archive</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("combobox", { name: "비활성" })).toBeDisabled();
+    const t = c.getByRole("combobox", { name: "기본" });
+    await expectTargetSize(canvasElement);
+    t.focus();
+    await userEvent.keyboard("{Enter}");
+    const list = await listbox();
+    await expect(t).toHaveAttribute("aria-expanded", "true");
+    await expect(body().getByRole("option", { name: "Command" })).toHaveAttribute("aria-disabled", "true");
+    await expectTargetSize(list.closest<HTMLElement>("[data-yorha-select-popup]") ?? (list as HTMLElement));
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(t).toHaveFocus());
   },
 };

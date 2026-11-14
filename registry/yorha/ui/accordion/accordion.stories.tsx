@@ -1,3 +1,4 @@
+import { expectTargetSize } from "../../../../.storybook/preview";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import {
@@ -154,5 +155,43 @@ export const MotionTokens: Story = {
     });
     await userEvent.keyboard("{Enter}");
     await waitFor(() => expect(overview).toHaveAttribute("aria-expanded", "false"));
+  },
+};
+
+/** State matrix: collapsed, expanded, disabled item, keyboard focus. Targets >= 24px in both densities. */
+export const States: Story = {
+  render: () => (
+    <div className="w-96 bg-yorha-panel p-4 text-yorha-fg">
+      <Accordion defaultValue={["overview"]}>
+        <AccordionItem value="overview">
+          <AccordionHeader>
+            <AccordionTrigger>열림</AccordionTrigger>
+          </AccordionHeader>
+          <AccordionPanel>유닛 배치 현황을 요약한다.</AccordionPanel>
+        </AccordionItem>
+        <AccordionItem value="orders">
+          <AccordionHeader>
+            <AccordionTrigger>닫힘</AccordionTrigger>
+          </AccordionHeader>
+          <AccordionPanel>다음 임무 지시를 확인한다.</AccordionPanel>
+        </AccordionItem>
+        <AccordionItem value="archive" disabled>
+          <AccordionHeader>
+            <AccordionTrigger>비활성</AccordionTrigger>
+          </AccordionHeader>
+          <AccordionPanel>과거 기록을 열람한다.</AccordionPanel>
+        </AccordionItem>
+      </Accordion>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("button", { name: "열림" })).toHaveAttribute("aria-expanded", "true");
+    await expect(c.getByRole("button", { name: "닫힘" })).toHaveAttribute("aria-expanded", "false");
+    await expect(c.getByRole("button", { name: "비활성" })).toBeDisabled();
+    c.getByRole("button", { name: "열림" }).focus();
+    await userEvent.keyboard("{Tab}");
+    await waitFor(() => expect(c.getByRole("button", { name: "닫힘" })).toHaveFocus());
+    await expectTargetSize(canvasElement);
   },
 };

@@ -1,3 +1,4 @@
+import { expectTargetSize } from "../../../../.storybook/preview";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import {
@@ -280,3 +281,24 @@ export const Authentic: Story = {
   globals: { theme: "authentic" },
 };
 
+
+/** State matrix: default, disabled, open list. Targets >= 24px in both densities. */
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-col gap-3">
+      <Demo />
+      <Demo disabled />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const inputs = body().getAllByRole("combobox") as HTMLInputElement[];
+    await expect(inputs[1]).toBeDisabled();
+    await expectTargetSize(canvasElement);
+    inputs[0]!.focus();
+    await userEvent.keyboard("{ArrowDown}");
+    const list = await listbox();
+    await expectTargetSize(list as HTMLElement);
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body().queryByRole("listbox")).toBeNull());
+  },
+};

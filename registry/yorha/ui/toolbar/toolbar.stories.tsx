@@ -1,3 +1,4 @@
+import { expectTargetSize } from "../../../../.storybook/preview";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Outlet, useLocation } from "react-router";
@@ -222,5 +223,18 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("toolbar")).toBeVisible();
+  },
+};
+
+/** State matrix: default, toggle pressed, focusable-disabled, input, link. Targets >= 24px in both densities. */
+export const States: Story = {
+  render: () => <EditorToolbar />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const bold = c.getByRole("button", { name: "굵게" });
+    await userEvent.click(bold);
+    await expect(bold).toHaveAttribute("aria-pressed", "true");
+    await expect(c.getByRole("button", { name: "삭제" })).toHaveAttribute("aria-disabled", "true");
+    await expectTargetSize(canvasElement);
   },
 };

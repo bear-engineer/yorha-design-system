@@ -64,7 +64,7 @@ function ComboboxTrigger({ className, children, ...props }: ComponentProps<typeo
       aria-label="목록 열기"
       className={cnState(
         [
-          "group/trigger grid min-w-6 place-items-center border-l border-yorha-border px-2 text-yorha-fg",
+          "group/trigger grid min-w-[24px] place-items-center border-l border-yorha-border px-2 text-yorha-fg",
           "focus-visible:yorha-focus data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
           "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
         ],
@@ -98,7 +98,7 @@ function ComboboxClear({ className, children, ...props }: ComponentProps<typeof 
       data-slot="combobox-clear"
       aria-label="지우기"
       className={cnState(
-        "grid min-w-6 place-items-center px-2 text-yorha-fg focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
+        "grid min-w-[24px] place-items-center px-2 text-yorha-fg focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
         className,
       )}
       {...props}
@@ -328,7 +328,7 @@ function ComboboxChipRemove({ className, children, ...props }: ComponentProps<ty
       data-slot="combobox-chip-remove"
       aria-label="제거"
       className={cnState(
-        "grid size-6 shrink-0 place-items-center border-l border-yorha-border text-current focus-visible:yorha-focus",
+        "grid size-6 min-h-[24px] min-w-[24px] shrink-0 place-items-center border-l border-yorha-border text-current focus-visible:yorha-focus",
         className,
       )}
       {...props}

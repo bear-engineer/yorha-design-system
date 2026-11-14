@@ -1,3 +1,4 @@
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
@@ -306,5 +307,24 @@ export const ReducedMotion: Story = {
         await waitFor(() => expect(region.querySelectorAll("[data-slot=toast]")).toHaveLength(0), { timeout: 800 });
       });
     }
+  },
+};
+
+/** State matrix: info/success/alert toasts with close buttons, focus stays on the trigger when a toast is added. Targets >= 24px. */
+export const States: Story = {
+  args: { timeout: 0 },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    for (const type of ["info", "success", "alert"] as const) {
+      const trigger = c.getByRole("button", { name: LABEL[type] });
+      trigger.focus();
+      await userEvent.click(trigger);
+      // adding a toast must not steal focus from the control
+      await expect(trigger).toHaveFocus();
+    }
+    const region = await body(canvasElement).findByRole("region", { name: "알림" });
+    await waitFor(() => expect(region.querySelectorAll("[data-slot=toast]")).toHaveLength(3));
+    await waitFor(() => expect(within(region).getAllByRole("button").length).toBeGreaterThan(0));
+    await expectTargetSize(canvasElement.ownerDocument.body);
   },
 };

@@ -1,3 +1,4 @@
+import { expectTargetSize } from "../../../../.storybook/preview";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
@@ -142,5 +143,32 @@ export const MotionTokens: Story = {
     });
     await userEvent.keyboard("{ArrowLeft}");
     await waitFor(() => expect(status).toHaveAttribute("aria-selected", "true"));
+  },
+};
+
+/** State matrix: selected, unselected, disabled tab, keyboard focus. Targets >= 24px in both densities. */
+export const States: Story = {
+  render: () => (
+    <div className="w-[28rem] bg-yorha-panel p-4 text-yorha-fg">
+      <Tabs defaultValue="status">
+        <TabsList aria-label="상태 메뉴">
+          <TabsTab value="status">상태</TabsTab>
+          <TabsTab value="units">유닛</TabsTab>
+          <TabsTab value="logs" disabled>기록</TabsTab>
+        </TabsList>
+        <TabsPanel value="status">시스템 상태 요약</TabsPanel>
+        <TabsPanel value="units">배치된 유닛 목록</TabsPanel>
+        <TabsPanel value="logs">최근 기록 로그</TabsPanel>
+      </Tabs>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("tab", { name: "상태" })).toHaveAttribute("aria-selected", "true");
+    await expect(c.getByRole("tab", { name: "기록" })).toHaveAttribute("aria-disabled", "true");
+    c.getByRole("tab", { name: "상태" }).focus();
+    await userEvent.keyboard("{ArrowRight}");
+    await waitFor(() => expect(c.getByRole("tab", { name: "유닛" })).toHaveFocus());
+    await expectTargetSize(canvasElement);
   },
 };

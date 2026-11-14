@@ -1,3 +1,4 @@
+import { expectTargetSize } from "../../../../.storybook/preview";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, userEvent, within } from "storybook/test";
@@ -145,5 +146,23 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector("table")).not.toBeNull();
+  },
+};
+
+/** State matrix: sortable header (none/ascending), dense and comfortable rows. Targets >= 24px in both densities. */
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <Demo />
+      <Demo density="dense" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const [first] = c.getAllByRole("button", { name: "레벨" });
+    await userEvent.click(first!);
+    await expect(first!.closest("th")).toHaveAttribute("aria-sort", "ascending");
+    await expect(first).toHaveFocus();
+    await expectTargetSize(canvasElement);
   },
 };

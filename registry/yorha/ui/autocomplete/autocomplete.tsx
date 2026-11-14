@@ -64,7 +64,7 @@ function AutocompleteTrigger({ className, children, ...props }: ComponentProps<t
       aria-label="목록 열기"
       className={cnState(
         [
-          "group/trigger grid min-w-6 place-items-center border-l border-yorha-border px-2 text-yorha-fg",
+          "group/trigger grid min-w-[24px] place-items-center border-l border-yorha-border px-2 text-yorha-fg",
           "focus-visible:yorha-focus data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
           "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
         ],
@@ -98,7 +98,7 @@ function AutocompleteClear({ className, children, ...props }: ComponentProps<typ
       data-slot="autocomplete-clear"
       aria-label="지우기"
       className={cnState(
-        "grid min-w-6 place-items-center px-2 text-yorha-fg focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
+        "grid min-w-[24px] place-items-center px-2 text-yorha-fg focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
         className,
       )}
       {...props}

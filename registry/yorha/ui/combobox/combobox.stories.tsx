@@ -1,3 +1,4 @@
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
@@ -348,3 +349,31 @@ export const Light: Story = {
 export const Dark: Story = { ...Light, globals: { theme: "dark" } };
 export const HighContrast: Story = { ...Light, globals: { theme: "high-contrast" } };
 export const Authentic: Story = { ...Light, parameters: { a11y: { test: "todo" } }, globals: { theme: "authentic" } };
+
+/** State matrix: default, selected (clear button), disabled, multiple chips (remove buttons), open list. Targets >= 24px. */
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-col gap-3">
+      <Single />
+      <Single defaultValue="Bunker" />
+      <Multiple />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(body().getByRole("button", { name: "Archive 제거" })).toBeVisible();
+    await expect(body().getAllByRole("button", { name: "지우기" })[0]).toBeVisible();
+    await expectTargetSize(canvasElement);
+    await userEvent.click(multi());
+    const list = await listbox();
+    await expectTargetSize((list.closest("[data-yorha-combobox-popup],[role=presentation]") as HTMLElement | null) ?? (list as HTMLElement));
+    await userEvent.keyboard("{Escape}");
+  },
+};
+
+export const DisabledState: Story = {
+  render: () => <Single disabled defaultValue="Bunker" />,
+  play: async ({ canvasElement }) => {
+    await expect(single()).toBeDisabled();
+    await expectTargetSize(canvasElement);
+  },
+};

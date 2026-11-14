@@ -1,3 +1,4 @@
+import { expectTargetSize } from "../../../../.storybook/preview";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
 import { Chip } from "./chip";
@@ -85,4 +86,23 @@ export const Authentic: Story = {
       <Chip {...args} />
     </div>
   ),
+};
+
+/** State matrix: static, removable, selectable (unpressed/pressed). Targets >= 24px in both densities. */
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-col items-start gap-3">
+      <Chip label="정적" capacity={0.4} sizeLabel="8 KB" />
+      <Chip label="삭제형" capacity={0.6} sizeLabel="64 KB" onRemove={() => {}} />
+      <Chip label="선택형" capacity={0.2} selectable />
+      <Chip label="선택됨" capacity={0.8} selectable defaultPressed />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("button", { name: "삭제형 제거" })).toBeVisible();
+    await expect(c.getByRole("button", { name: /선택형/ })).toHaveAttribute("aria-pressed", "false");
+    await expect(c.getByRole("button", { name: /선택됨/ })).toHaveAttribute("aria-pressed", "true");
+    await expectTargetSize(canvasElement);
+  },
 };

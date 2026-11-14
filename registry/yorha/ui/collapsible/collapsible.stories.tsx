@@ -1,3 +1,4 @@
+import { expectTargetSize } from "../../../../.storybook/preview";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "./collapsible";
@@ -108,5 +109,32 @@ export const MotionTokens: Story = {
     });
     await userEvent.keyboard("{Enter}");
     await waitFor(() => expect(trigger).toHaveAttribute("aria-expanded", "false"));
+  },
+};
+
+/** State matrix: closed, open, disabled. Targets >= 24px in both densities. */
+export const States: Story = {
+  render: () => (
+    <div className="flex w-96 flex-col gap-3 bg-yorha-panel p-4 text-yorha-fg">
+      <Collapsible>
+        <CollapsibleTrigger>닫힘</CollapsibleTrigger>
+        <CollapsiblePanel>상세 A</CollapsiblePanel>
+      </Collapsible>
+      <Collapsible defaultOpen>
+        <CollapsibleTrigger>열림</CollapsibleTrigger>
+        <CollapsiblePanel>상세 B</CollapsiblePanel>
+      </Collapsible>
+      <Collapsible disabled>
+        <CollapsibleTrigger>비활성</CollapsibleTrigger>
+        <CollapsiblePanel>상세 C</CollapsiblePanel>
+      </Collapsible>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("button", { name: "닫힘" })).toHaveAttribute("aria-expanded", "false");
+    await expect(c.getByRole("button", { name: "열림" })).toHaveAttribute("aria-expanded", "true");
+    await expect(c.getByRole("button", { name: "비활성" })).toBeDisabled();
+    await expectTargetSize(canvasElement);
   },
 };
