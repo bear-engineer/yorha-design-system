@@ -24,7 +24,7 @@ interface DemoProps {
 
 function Demo({ multiple, defaultValue }: DemoProps) {
   return (
-    <div className="w-96 bg-yorha-panel p-4 text-yorha-fg">
+    <div className="w-96 max-w-full bg-yorha-panel p-4 text-yorha-fg">
       <Accordion multiple={multiple} defaultValue={defaultValue}>
         {ROWS.map((r) => (
           <AccordionItem key={r.value} value={r.value}>
@@ -162,7 +162,7 @@ export const MotionTokens: Story = {
 /** State matrix: collapsed, expanded, disabled item, keyboard focus. Targets >= 24px in both densities. */
 export const States: Story = {
   render: () => (
-    <div className="w-96 bg-yorha-panel p-4 text-yorha-fg">
+    <div className="w-96 max-w-full bg-yorha-panel p-4 text-yorha-fg">
       <Accordion defaultValue={["overview"]}>
         <AccordionItem value="overview">
           <AccordionHeader>

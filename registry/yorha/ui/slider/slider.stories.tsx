@@ -27,7 +27,7 @@ const meta = {
   title: "컴포넌트/폼/Slider",
   component: Slider,
   tags: ["autodocs"],
-  decorators: [(Story) => <div className="w-80 max-w-full"><Story /></div>],
+  decorators: [(Story) => <div className="w-80 max-w-full max-w-full"><Story /></div>],
 } satisfies Meta<typeof Slider>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -150,7 +150,7 @@ export const ReducedMotion: Story = {
 export const States: Story = {
   args: { label: "기본", defaultValue: 40 },
   render: () => (
-    <div className="flex w-72 flex-col gap-4">
+    <div className="flex w-72 max-w-full flex-col gap-4">
       <Slider label="기본" defaultValue={40} />
       <Slider label="범위" defaultValue={[20, 70]} />
       <Slider label="잠금" defaultValue={40} disabled />

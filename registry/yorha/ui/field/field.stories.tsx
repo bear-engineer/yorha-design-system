@@ -37,7 +37,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="w-72 bg-yorha-panel p-6 text-yorha-fg">
+      <div className="w-72 max-w-full bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -174,7 +174,7 @@ export const FieldsetGroup: Story = {
 
 export const ItemAndValidity: Story = {
   render: () => (
-    <form className="flex w-80 max-w-full flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
+    <form className="flex w-80 max-w-full max-w-full flex-col gap-4" onSubmit={(e) => e.preventDefault()}>
       <Field name="code" validationMode="onBlur">
         <FieldLabel>코드</FieldLabel>
         <FieldItem>

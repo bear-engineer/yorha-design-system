@@ -7,7 +7,7 @@ import { DateInput } from "./date-input";
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const THEME_LABEL: Record<(typeof THEMES)[number], string> = { light: "라이트", dark: "다크", "high-contrast": "고대비" };
 const wrapper = (Story: React.ComponentType) => (
-  <div lang="ko" className="w-96 bg-yorha-panel p-6 text-yorha-fg">
+  <div lang="ko" className="w-96 max-w-full bg-yorha-panel p-6 text-yorha-fg">
     <Story />
   </div>
 );
@@ -188,7 +188,7 @@ export const Authentic: Story = {
 
 export const States: Story = {
   render: () => (
-    <div className="flex w-96 flex-col gap-4">
+    <div className="flex w-96 max-w-full flex-col gap-4">
       <DateInput label="기본" today={TODAY} />
       <DateInput label="달력 포함" picker today={TODAY} />
       <DateInput label="오류" error="날짜를 선택하세요" />

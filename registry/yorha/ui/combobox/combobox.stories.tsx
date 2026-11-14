@@ -31,7 +31,7 @@ const GROUPS = [
 
 function Single({ defaultValue, grouped, disabled }: { defaultValue?: string; grouped?: boolean; disabled?: boolean }) {
   return (
-    <div lang="ko" className="w-72 bg-yorha-panel p-6 text-yorha-fg">
+    <div lang="ko" className="w-72 max-w-full bg-yorha-panel p-6 text-yorha-fg">
       <Combobox items={(grouped ? GROUPS : UNITS) as never} defaultValue={defaultValue ?? null} disabled={disabled}>
         <ComboboxLabel className="mb-1 block">유닛</ComboboxLabel>
         <ComboboxInputGroup>
@@ -70,7 +70,7 @@ function Single({ defaultValue, grouped, disabled }: { defaultValue?: string; gr
 function Multiple({ onChange }: { onChange?: (v: string[]) => void }) {
   const [value, setValue] = useState<string[]>(["Archive", "Bunker"]);
   return (
-    <div lang="ko" className="w-80 bg-yorha-panel p-6 text-yorha-fg">
+    <div lang="ko" className="w-80 max-w-full bg-yorha-panel p-6 text-yorha-fg">
       <Combobox
         items={UNITS}
         multiple

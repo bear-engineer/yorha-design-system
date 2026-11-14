@@ -18,7 +18,7 @@ const shimmerOf = (el: HTMLElement) => el.querySelector<HTMLElement>("[data-yorh
 
 export const Default: Story = {
   render: (args) => (
-    <div className="w-80 bg-yorha-panel p-6 text-yorha-fg">
+    <div className="w-80 max-w-full bg-yorha-panel p-6 text-yorha-fg">
       <Skeleton {...args} />
     </div>
   ),
@@ -35,7 +35,7 @@ export const Default: Story = {
 
 export const ReducedMotion: Story = {
   render: (args) => (
-    <div className="w-80 bg-yorha-panel p-6 text-yorha-fg">
+    <div className="w-80 max-w-full bg-yorha-panel p-6 text-yorha-fg">
       <Skeleton {...args} />
     </div>
   ),
@@ -78,7 +78,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: (args) => (
-    <div data-theme="authentic" className="w-80 bg-yorha-panel p-6 text-yorha-fg">
+    <div data-theme="authentic" className="w-80 max-w-full bg-yorha-panel p-6 text-yorha-fg">
       <Skeleton {...args} />
     </div>
   ),

@@ -26,7 +26,7 @@ const UnitForm = ({
   onFormSubmit?: React.ComponentProps<typeof Form>["onFormSubmit"];
   id?: string;
 }) => (
-  <Form id={id} errors={serverErrors} onFormSubmit={onFormSubmit} className="flex w-72 flex-col gap-4">
+  <Form id={id} errors={serverErrors} onFormSubmit={onFormSubmit} className="flex w-72 max-w-full flex-col gap-4">
     <Field name="unitName" className="flex flex-col gap-1">
       <FieldLabel>유닛 이름</FieldLabel>
       <FieldControl required placeholder="예: 2B" className={controlClass} />

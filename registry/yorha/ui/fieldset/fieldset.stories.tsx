@@ -28,7 +28,7 @@ const meta = {
   tags: ["autodocs"],
   decorators: [
     (Story) => (
-      <div className="w-80 bg-yorha-panel p-6 text-yorha-fg">
+      <div className="w-80 max-w-full bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),

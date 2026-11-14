@@ -37,7 +37,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: (args) => (
-    <div className="w-[36rem] bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
+    <div className="w-[36rem] max-w-full bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
       <BootLog {...args} />
     </div>
   ),
@@ -54,7 +54,7 @@ export const Default: Story = {
 
 export const PauseResume: Story = {
   render: (args) => (
-    <div className="w-[36rem] bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
+    <div className="w-[36rem] max-w-full bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
       <BootLog {...args} />
     </div>
   ),
@@ -73,7 +73,7 @@ export const PauseResume: Story = {
 
 export const Skip: Story = {
   render: (args) => (
-    <div className="w-[36rem] bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
+    <div className="w-[36rem] max-w-full bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
       <BootLog {...args} />
     </div>
   ),
@@ -87,7 +87,7 @@ export const Skip: Story = {
 
 export const ReducedMotion: Story = {
   render: (args) => (
-    <div className="w-[36rem] bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
+    <div className="w-[36rem] max-w-full bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
       <BootLog {...args} />
     </div>
   ),
@@ -123,7 +123,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="w-[36rem] bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
+    <div data-theme="authentic" className="w-[36rem] max-w-full bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
       <BootLog lines={SHORT} speed={1} gap={1} />
     </div>
   ),

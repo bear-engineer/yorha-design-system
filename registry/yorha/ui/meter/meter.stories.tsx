@@ -12,7 +12,7 @@ const meta = {
   args: { label: "HP", value: 120, min: 0, max: 150 },
   decorators: [
     (Story) => (
-      <div className="w-96 bg-yorha-panel p-6 text-yorha-fg">
+      <div className="w-96 max-w-full bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),

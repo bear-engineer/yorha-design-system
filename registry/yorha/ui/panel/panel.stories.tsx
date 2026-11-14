@@ -16,7 +16,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="w-[28rem] bg-yorha-bg p-6 text-yorha-fg">
+      <div className="w-[28rem] max-w-full bg-yorha-bg p-6 text-yorha-fg">
         <Story />
       </div>
     ),

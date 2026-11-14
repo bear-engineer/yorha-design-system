@@ -7,7 +7,7 @@ const THEMES = ["light", "dark", "high-contrast"] as const;
 
 function Demo({ defaultOpen }: { defaultOpen?: boolean }) {
   return (
-    <div className="w-96 bg-yorha-panel p-4 text-yorha-fg">
+    <div className="w-96 max-w-full bg-yorha-panel p-4 text-yorha-fg">
       <Collapsible defaultOpen={defaultOpen}>
         <CollapsibleTrigger>상세 보기</CollapsibleTrigger>
         <CollapsiblePanel>유닛 상세 사양을 표시한다.</CollapsiblePanel>
@@ -116,7 +116,7 @@ export const MotionTokens: Story = {
 /** State matrix: closed, open, disabled. Targets >= 24px in both densities. */
 export const States: Story = {
   render: () => (
-    <div className="flex w-96 flex-col gap-3 bg-yorha-panel p-4 text-yorha-fg">
+    <div className="flex w-96 max-w-full flex-col gap-3 bg-yorha-panel p-4 text-yorha-fg">
       <Collapsible>
         <CollapsibleTrigger>닫힘</CollapsibleTrigger>
         <CollapsiblePanel>상세 A</CollapsiblePanel>

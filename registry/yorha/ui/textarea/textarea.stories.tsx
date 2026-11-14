@@ -71,7 +71,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="w-80 bg-yorha-panel p-6 text-yorha-fg">
+      <div className="w-80 max-w-full bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -202,7 +202,7 @@ export const ReducedMotion: Story = {
 
 export const States: Story = {
   render: () => (
-    <div className="flex w-72 flex-col gap-4">
+    <div className="flex w-72 max-w-full flex-col gap-4">
       <Textarea label="기본" />
       <Textarea label="읽기 전용" readOnly defaultValue="고정 값" />
       <Textarea label="잠김" disabled defaultValue="locked" />

@@ -22,7 +22,7 @@ function CurrentPath() {
 
 function Nav() {
   return (
-    <div className="flex w-64 flex-col bg-yorha-panel p-2">
+    <div className="flex w-64 max-w-full flex-col bg-yorha-panel p-2">
       <nav aria-label="주 메뉴" className="flex flex-col">
         <NavLink to="/" end>홈</NavLink>
         <NavLink to="/units">유닛</NavLink>
@@ -91,7 +91,7 @@ function MenuRow({ to, children }: { to: string; children: string }) {
 
 function MenuListDemo() {
   return (
-    <div className="w-64 bg-yorha-panel p-2">
+    <div className="w-64 max-w-full bg-yorha-panel p-2">
       <ul role="list" className="m-0 flex list-none flex-col p-0">
         <li><MenuRow to="/">홈</MenuRow></li>
         <li><MenuRow to="/units">유닛</MenuRow></li>

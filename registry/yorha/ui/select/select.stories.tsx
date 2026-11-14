@@ -60,7 +60,7 @@ interface DemoProps {
 
 function Demo({ disabled, defaultValue, onValueChange }: DemoProps) {
   return (
-    <div className="w-72 bg-yorha-panel p-6 text-yorha-fg">
+    <div className="w-72 max-w-full bg-yorha-panel p-6 text-yorha-fg">
       <Select items={UNITS} disabled={disabled} defaultValue={defaultValue} onValueChange={onValueChange}>
         <SelectTrigger aria-label="유닛 선택">
           <SelectValue placeholder="유닛을 선택" />
@@ -79,7 +79,7 @@ function Demo({ disabled, defaultValue, onValueChange }: DemoProps) {
 
 function GroupedDemo() {
   return (
-    <div className="w-72 bg-yorha-panel p-6 text-yorha-fg">
+    <div className="w-72 max-w-full bg-yorha-panel p-6 text-yorha-fg">
       <Select items={UNITS}>
         <SelectTrigger aria-label="유닛 선택">
           <SelectValue placeholder="유닛을 선택" />
@@ -318,7 +318,7 @@ const MANY = Array.from({ length: 40 }, (_, i) => ({ value: `u${i + 1}`, label: 
 /** Label, Arrow, Backdrop, scroll arrows (40 rows) and the item indicator of the selected row. */
 function PartsDemo() {
   return (
-    <div className="w-72 bg-yorha-panel p-6 text-yorha-fg">
+    <div className="w-72 max-w-full bg-yorha-panel p-6 text-yorha-fg">
       <Select items={MANY} defaultValue="u3">
         <SelectLabel className="mb-1 block">유닛 목록</SelectLabel>
         <SelectTrigger>
@@ -376,7 +376,7 @@ export const ReducedMotion: Story = {
 /** State matrix: default, disabled, open (rows incl. a disabled one). Targets stay >= 24px in both densities. */
 export const States: Story = {
   render: () => (
-    <div className="flex w-72 flex-col gap-3 bg-yorha-panel p-6 text-yorha-fg">
+    <div className="flex w-72 max-w-full flex-col gap-3 bg-yorha-panel p-6 text-yorha-fg">
       <Select items={UNITS}>
         <SelectTrigger aria-label="기본">
           <SelectValue placeholder="기본" />

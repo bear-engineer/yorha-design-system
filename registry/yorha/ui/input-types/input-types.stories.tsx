@@ -19,7 +19,7 @@ import { INPUT_TYPES, INPUT_TYPE_TABLE, inputPresets } from "./input-types";
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const THEME_LABEL: Record<(typeof THEMES)[number], string> = { light: "라이트", dark: "다크", "high-contrast": "고대비" };
 const wrapper = (Story: React.ComponentType) => (
-  <div lang="ko" className="w-[56rem] bg-yorha-panel p-6 text-yorha-fg">
+  <div lang="ko" className="w-[56rem] max-w-full bg-yorha-panel p-6 text-yorha-fg">
     <Story />
   </div>
 );

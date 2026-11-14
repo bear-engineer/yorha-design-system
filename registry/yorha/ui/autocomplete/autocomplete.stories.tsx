@@ -32,7 +32,7 @@ interface DemoProps {
 
 function Demo({ onValueChange, autoHighlight, grouped, disabled }: DemoProps) {
   return (
-    <div lang="ko" className="w-72 bg-yorha-panel p-6 text-yorha-fg">
+    <div lang="ko" className="w-72 max-w-full bg-yorha-panel p-6 text-yorha-fg">
       <Autocomplete
         items={(grouped ? GROUPS : UNITS) as never}
         onValueChange={onValueChange}

@@ -18,7 +18,7 @@ const meta = {
   args: { "aria-label": "유닛 코드", placeholder: "예: 2B" },
   decorators: [
     (Story) => (
-      <div className="w-72 bg-yorha-panel p-6 text-yorha-fg">
+      <div className="w-72 max-w-full bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),

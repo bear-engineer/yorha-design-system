@@ -12,7 +12,7 @@ const THEMES = ["light", "dark", "high-contrast"] as const;
 
 function Demo() {
   return (
-    <div className="w-[28rem] bg-yorha-panel p-4 text-yorha-fg">
+    <div className="w-[28rem] max-w-full bg-yorha-panel p-4 text-yorha-fg">
       <Tabs defaultValue="status">
         <TabsList aria-label="시스템 메뉴">
           {TABS.map((t) => (
@@ -150,7 +150,7 @@ export const MotionTokens: Story = {
 /** State matrix: selected, unselected, disabled tab, keyboard focus. Targets >= 24px in both densities. */
 export const States: Story = {
   render: () => (
-    <div className="w-[28rem] bg-yorha-panel p-4 text-yorha-fg">
+    <div className="w-[28rem] max-w-full bg-yorha-panel p-4 text-yorha-fg">
       <Tabs defaultValue="status">
         <TabsList aria-label="상태 메뉴">
           <TabsTab value="status">상태</TabsTab>

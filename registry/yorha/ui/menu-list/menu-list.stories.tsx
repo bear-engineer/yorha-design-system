@@ -16,7 +16,7 @@ const meta = {
   argTypes: { variant: { control: "inline-radio", options: ["listbox", "navigation"] } },
   decorators: [
     (Story) => (
-      <div className="w-80 bg-yorha-panel p-6 text-yorha-fg">
+      <div className="w-80 max-w-full bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -341,7 +341,7 @@ const DETAILS: Record<string, string> = {
 export const WithDescriptionPane: Story = {
   decorators: [
     (Story) => (
-      <div className="w-[34rem] bg-yorha-panel p-6 text-yorha-fg">
+      <div className="w-[34rem] max-w-full bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -373,7 +373,7 @@ export const Themes: Story = {
   render: (args) => (
     <div className="flex flex-wrap gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="w-64 bg-yorha-panel p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="w-64 max-w-full bg-yorha-panel p-4 text-yorha-fg">
           <MenuList {...args} aria-label={`시스템 메뉴 (${t})`}>
             <Rows disabled="weapons" />
           </MenuList>
@@ -392,7 +392,7 @@ export const Authentic: Story = {
   parameters: { a11y: { test: "todo" } },
   decorators: [],
   render: (args) => (
-    <div data-theme="authentic" className="w-64 bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="w-64 max-w-full bg-yorha-panel p-4 text-yorha-fg">
       <MenuList {...args}>
         <Rows />
       </MenuList>

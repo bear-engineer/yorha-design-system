@@ -25,7 +25,7 @@ function Demo({ density = "comfortable", zebra = true }: { density?: "dense" | "
     return sort === "ascending" ? a.level - b.level : b.level - a.level;
   });
   return (
-    <div className="w-[32rem] bg-yorha-panel p-4 text-yorha-fg">
+    <div className="w-[32rem] max-w-full bg-yorha-panel p-4 text-yorha-fg">
       <DataTable caption="유닛 목록" density={density} zebra={zebra}>
         <DataTableHeader>
           <DataTableRow>

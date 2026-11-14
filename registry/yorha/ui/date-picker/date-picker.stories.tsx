@@ -37,7 +37,7 @@ const meta = {
   args: { label: "출발일", today: TODAY },
   decorators: [
     (Story) => (
-      <div lang="ko" className="min-h-[28rem] w-96 bg-yorha-panel p-6 text-yorha-fg">
+      <div lang="ko" className="min-h-[28rem] w-96 max-w-full bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
