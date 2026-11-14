@@ -43,6 +43,9 @@ describe("lintRegistry motion rule", () => {
     ["motion/raw-ms", [/thing\.tsx:3 motion: raw duration "250ms"/, /thing\.tsx:3 motion: raw duration "40ms"/]],
     ["motion/cubic-bezier", [/thing\.tsx:2 motion: raw cubic-bezier\(\)/]],
     ["motion/transition-all", [/thing\.tsx:2 motion: transition-all/]],
+    ["motion/layout-transition", [/thing\.tsx:2 motion: transition on layout property \"width\"/]],
+    ["motion/layout-transition-inset", [/thing\.tsx:2 motion: transition on layout property \"inset\"/, /thing\.tsx:2 motion: transition on layout property \"margin-left\"/]],
+    ["motion/display-switch", [/thing\.tsx:2 motion: state indicator toggled by display \(`hidden` \+ `group-data-\[pressed\]\/item:block`\)/]],
   ] as const;
 
   it("accepts tokens, utilities, identifiers and comments", () => {
@@ -64,6 +67,17 @@ describe("lintRegistry motion rule", () => {
     for (const message of messages) expect(result.errors.join("\n")).toMatch(message);
     expect(result.errors).toHaveLength(messages.length);
     expect(result.warnings).toEqual([]);
+  });
+
+  it("allows a layout-property transition that carries a lint-allow comment with a reason", () => {
+    const result = lintRegistry(fixture("motion/layout-allowed"), { motionStrict: true });
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it("names the transform/opacity alternative", () => {
+    const { errors } = lintRegistry(fixture("motion/layout-transition"), { motionStrict: true });
+    expect(errors.join("\\n")).toMatch(/animate transform, opacity or colour/);
   });
 
   it("YORHA_MOTION_STRICT=1 turns the rule into errors", () => {
