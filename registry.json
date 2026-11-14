@@ -72,6 +72,10 @@
     "registry/yorha/ui/fieldset/registry.json",
     "registry/yorha/ui/autocomplete/registry.json",
     "registry/yorha/ui/combobox/registry.json",
-    "registry/yorha/ui/toggle-group/registry.json"
+    "registry/yorha/ui/toggle-group/registry.json",
+    "registry/yorha/ui/avatar/registry.json",
+    "registry/yorha/ui/collapsible/registry.json",
+    "registry/yorha/ui/scroll-area/registry.json",
+    "registry/yorha/ui/separator/registry.json"
   ]
 }
