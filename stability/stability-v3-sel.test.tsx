@@ -140,17 +140,14 @@ describe("FSEL-05 menubar popup clears the bar", () => {
 
 describe("FSEL-02 item indicators carry no text (no emoji check)", () => {
   test("select", { timeout: 60_000 }, async () => {
-    await mountStory("select", "Default", { stage: "top" });
+    await mountStory("select", "AllParts", { stage: "top" }); // has a selected value
     const t = q<HTMLElement>("[data-slot=select-trigger]")!;
-    await userEvent.click(t);
+    t.focus();
+    await userEvent.keyboard("{Enter}");
     await until(() => !!q("[role=listbox]"), "listbox");
     await settled(q<HTMLElement>("[data-slot=select-content]")!);
-    await userEvent.keyboard("{ArrowDown}{Enter}");
-    await until(() => !q("[role=listbox]"), "closed", 8000);
-    await userEvent.click(t);
-    await until(() => !!q("[role=listbox]"), "listbox again");
     const ind = [...document.querySelectorAll("[data-slot=select-item-indicator]")];
-    expect(ind.length).toBeGreaterThan(0);
+    expect(ind.length, "the selected row mounts its indicator").toBeGreaterThan(0);
     for (const i of ind) expect(i.textContent).toBe("");
   });
   test("combobox", { timeout: 60_000 }, async () => {
@@ -234,7 +231,11 @@ describe("FSEL-08 combobox chips", () => {
     expect(hs[0]).toBe(24);
     for (const c of chips) expectPixelSnapped(c);
     const group = q<HTMLElement>("[data-slot=combobox-input-group]")!;
-    expect(group.getBoundingClientRect().height % 4, "group on the 4px grid").toBe(0);
+    expectPixelSnapped(group);
+    // chip rows: equal gaps (rows are 24px tall, so equal tops spacing = equal gaps)
+    const tops = [...new Set(chips.map((c) => c.getBoundingClientRect().top))].sort((a, b) => a - b);
+    const gaps = tops.slice(1).map((t, i) => t - tops[i]!);
+    expect(new Set(gaps).size, `row pitch ${gaps.join(",")}`).toBeLessThanOrEqual(1);
   });
 });
 

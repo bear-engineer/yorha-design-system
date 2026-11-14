@@ -106,7 +106,8 @@ export const Default: Story = {
     await expect(body().getAllByRole("option")).toHaveLength(UNITS.length);
     const row = options()[0]!;
     await expect(row.querySelector("[data-yorha-cursor]")).not.toBeNull();
-    await expect(row.querySelector("[data-yorha-bullet]")).not.toBeNull();
+    // no selected state, so no indicator slot (G8): the row is cursor gutter + label
+    await expect(row.querySelector("[data-yorha-bullet]")).toBeNull();
   },
 };
 

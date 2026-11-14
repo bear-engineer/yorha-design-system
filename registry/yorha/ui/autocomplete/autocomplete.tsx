@@ -1,5 +1,6 @@
 import type { ComponentProps } from "react";
 import { Autocomplete as AutocompletePrimitive } from "@base-ui/react/autocomplete";
+import { ChevronIcon, CrossIcon, TriangleIcon } from "@/components/ui/icons";
 import { cnState } from "@/lib/utils";
 
 /** Root: re-export of the Base UI Autocomplete root (items, mode, value, onValueChange, autoHighlight, ...). */
@@ -15,11 +16,11 @@ function AutocompleteInputGroup({ className, ...props }: ComponentProps<typeof A
       data-slot="autocomplete-input-group"
       className={cnState(
         [
-          "flex min-h-8 w-full min-w-40 items-stretch rounded-yorha border border-yorha-border bg-yorha-panel font-yorha text-yorha-sm text-yorha-fg",
+          "flex min-h-control-md w-full min-w-40 items-stretch rounded-yorha border border-yorha-border bg-yorha-panel font-yorha text-yorha-sm text-yorha-fg",
+          // One ring on the frame; an open popup adds no second darkened border (G6 b).
           "focus-within:yorha-focus",
-          "data-[popup-open]:border-yorha-ink",
           "data-[invalid]:border-(length:--yorha-border-width-strong) data-[invalid]:border-yorha-alert-ui",
-          "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
+          "yorha-disabled data-[disabled]:border-yorha-disabled",
         ],
         className,
       )}
@@ -38,7 +39,7 @@ function AutocompleteInput({ className, onKeyDown, ...props }: ComponentProps<ty
       data-slot="autocomplete-input"
       className={cnState(
         [
-          "min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 py-1.5 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
+          "min-w-0 flex-1 self-stretch rounded-none border-0 bg-transparent px-pad-md py-0 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
           "placeholder:text-yorha-fg-soft focus-visible:outline-none disabled:cursor-not-allowed",
         ],
         className,
@@ -64,9 +65,9 @@ function AutocompleteTrigger({ className, children, ...props }: ComponentProps<t
       aria-label="목록 열기"
       className={cnState(
         [
-          "group/trigger grid min-w-[24px] place-items-center border-l border-yorha-border px-2 text-yorha-fg",
-          "focus-visible:yorha-focus data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
-          "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
+          "group/trigger grid aspect-square h-[calc(var(--yorha-control-md)-2px)] shrink-0 self-start place-items-center border-l border-yorha-border text-yorha-fg",
+          "focus-visible:yorha-focus-inset data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
+          "yorha-disabled data-[disabled]:border-yorha-disabled",
         ],
         className,
       )}
@@ -77,27 +78,18 @@ function AutocompleteTrigger({ className, children, ...props }: ComponentProps<t
   );
 }
 
-/** Fixed-size chevron (down). Square caps, currentColor; the trigger rotates it 180deg while open. */
-function ChevronGlyph({ up = false }: { up?: boolean }) {
-  return (
-    <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true" focusable="false" className="block shrink-0">
-      <path d={up ? "M2 8 L6 4 L10 8" : "M2 4 L6 8 L10 4"} />
-    </svg>
-  );
-}
-
 function AutocompleteIcon({ className, ...props }: ComponentProps<typeof AutocompletePrimitive.Icon>) {
   return (
     <AutocompletePrimitive.Icon
       data-slot="autocomplete-icon"
       aria-hidden="true"
       className={cnState(
-        "inline-flex size-3 shrink-0 items-center justify-center transition-transform duration-(--motion-select) ease-yorha group-data-[popup-open]/trigger:rotate-180",
+        "grid size-icon-sm shrink-0 place-items-center transition-transform duration-(--motion-select) ease-yorha group-data-[popup-open]/trigger:rotate-180",
         className,
       )}
       {...props}
     >
-      <ChevronGlyph />
+      <ChevronIcon dir="down" />
     </AutocompletePrimitive.Icon>
   );
 }
@@ -110,12 +102,12 @@ function AutocompleteClear({ className, children, ...props }: ComponentProps<typ
       aria-label="지우기"
       keepMounted
       className={cnState(
-        "invisible grid min-w-[24px] place-items-center px-2 text-yorha-fg opacity-0 transition-[opacity,visibility] duration-(--motion-select) ease-yorha focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted data-[visible]:visible data-[visible]:opacity-100",
+        "invisible grid aspect-square h-[calc(var(--yorha-control-md)-2px)] shrink-0 self-start place-items-center text-yorha-fg opacity-0 transition-[opacity,visibility] duration-(--motion-select) ease-yorha focus-visible:yorha-focus-inset yorha-disabled data-[visible]:visible data-[visible]:opacity-100",
         className,
       )}
       {...props}
     >
-      {children ?? <span aria-hidden="true">×</span>}
+      {children ?? <CrossIcon />}
     </AutocompletePrimitive.Clear>
   );
 }
@@ -172,7 +164,7 @@ function AutocompleteContent({
   children,
   side = "bottom",
   align = "start",
-  sideOffset = 4,
+  sideOffset = 8,
   alignOffset,
   container,
   ...props
@@ -191,8 +183,10 @@ function AutocompleteContent({
           data-yorha-autocomplete-popup=""
           className={cnState(
             [
-              "yorha-pop max-h-(--available-height) min-w-(--anchor-width) overflow-y-auto rounded-yorha border border-yorha-border bg-yorha-panel py-1 shadow-yorha-md",
+              "yorha-pop yorha-scroll max-h-(--available-height) min-w-(--anchor-width) rounded-yorha border border-yorha-border bg-yorha-panel py-1 shadow-yorha-md",
               "font-yorha text-yorha-sm text-yorha-fg",
+              // A popup with no results shows the message only: no rule under it.
+              "[&:has([data-empty])_[data-slot=autocomplete-separator]]:hidden",
             ],
             className,
           )}
@@ -220,7 +214,7 @@ function AutocompleteEmpty({ className, ...props }: ComponentProps<typeof Autoco
   return (
     <AutocompletePrimitive.Empty
       data-slot="autocomplete-empty"
-      className={cnState("mx-1 px-3 py-2 text-yorha-fg-soft empty:p-0", className)}
+      className={cnState("px-3 py-3 text-center text-pretty text-yorha-fg-soft empty:p-0", className)}
       {...props}
     />
   );
@@ -231,7 +225,7 @@ function AutocompleteStatus({ className, ...props }: ComponentProps<typeof Autoc
   return (
     <AutocompletePrimitive.Status
       data-slot="autocomplete-status"
-      className={cnState("mx-1 px-3 py-1 text-yorha-xs text-yorha-fg-soft empty:p-0", className)}
+      className={cnState("px-3 py-1 text-yorha-xs text-yorha-fg-soft empty:p-0", className)}
       {...props}
     />
   );
@@ -247,36 +241,18 @@ function AutocompleteRow({ className, ...props }: ComponentProps<typeof Autocomp
 }
 
 /**
- * Row. Highlight (keyboard or pointer) wipes a dark fill left→right, flips text to on-ink,
- * shows the arrow cursor and the thin rules above/below, like Select and Menu.
- * The square bullet stays hollow: Autocomplete has no selected state, the typed text is the value.
+ * Row (`yorha-row`, G8): full-bleed ink fill wipes in on highlight and drops at once, no ring. Autocomplete has no
+ * selected state (the typed text is the value), so the row has a cursor gutter and a label, no indicator slot.
  */
 function AutocompleteItem({ className, children, ...props }: ComponentProps<typeof AutocompletePrimitive.Item>) {
   return (
     <AutocompletePrimitive.Item
       data-slot="autocomplete-item"
-      className={cnState(
-        [
-          "group/item relative mx-1 flex cursor-default items-center gap-3 py-2 pr-3 pl-7 select-none",
-          "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-left bg-no-repeat [background-size:0%_calc(100%_-_4px)]",
-          "yorha-wipe",
-          "data-[highlighted]:text-yorha-on-ink data-[highlighted]:[background-size:100%_calc(100%_-_4px)]",
-          "before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-(--menu-rule) before:bg-yorha-ink before:opacity-0 before:content-['']",
-          "after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-(--menu-rule) after:bg-yorha-ink after:opacity-0 after:content-['']",
-          "data-[highlighted]:before:opacity-100 data-[highlighted]:after:opacity-100",
-          "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
-        ],
-        className,
-      )}
+      className={cnState(["group/item yorha-row cursor-default text-yorha-sm tracking-yorha-body"], className)}
       {...props}
     >
-      <span
-        aria-hidden="true"
-        data-yorha-cursor=""
-        className="pointer-events-none absolute top-1/2 left-1 size-0 -translate-y-1/2 border-y-[0.3125rem] border-l-[0.4375rem] border-y-transparent border-l-current opacity-0 group-data-[highlighted]/item:opacity-100"
-      />
-      <span aria-hidden="true" data-yorha-bullet="" className="inline-block size-2 shrink-0 border border-current" />
-      <span className="flex-1 truncate">{children}</span>
+      <TriangleIcon data-yorha-cursor="" className="size-icon-sm opacity-0 group-data-[highlighted]/item:opacity-100" />
+      <span className="min-w-0 flex-1 truncate">{children}</span>
     </AutocompletePrimitive.Item>
   );
 }
@@ -290,7 +266,7 @@ function AutocompleteGroupLabel({ className, ...props }: ComponentProps<typeof A
     <AutocompletePrimitive.GroupLabel
       data-slot="autocomplete-group-label"
       className={cnState(
-        "mx-1 border-b border-yorha-separator px-3 py-1.5 text-yorha-xs font-yorha-bold tracking-yorha-heading text-yorha-fg-soft uppercase",
+        "px-2 py-1.5 text-yorha-xs font-yorha-bold tracking-yorha-heading text-yorha-fg-soft uppercase",
         className,
       )}
       {...props}
@@ -302,7 +278,7 @@ function AutocompleteSeparator({ className, ...props }: ComponentProps<typeof Au
   return (
     <AutocompletePrimitive.Separator
       data-slot="autocomplete-separator"
-      className={cnState("mx-1 my-1 h-px bg-yorha-separator", className)}
+      className={cnState("my-1 h-px bg-yorha-separator", className)}
       {...props}
     />
   );

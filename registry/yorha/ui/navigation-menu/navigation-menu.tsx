@@ -1,5 +1,6 @@
 import type { ComponentProps } from "react";
 import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/navigation-menu";
+import { ChevronIcon } from "@/components/ui/icons";
 import { cn, cnState } from "@/lib/utils";
 
 type RootProps = ComponentProps<typeof NavigationMenuPrimitive.Root>;
@@ -59,11 +60,11 @@ function NavigationMenuTrigger({ className, children, ...props }: ComponentProps
       data-slot="navigation-menu-trigger"
       className={cnState(
         [
-          "inline-flex h-8 cursor-default select-none items-center gap-2 px-3 text-yorha-sm tracking-yorha-wide text-yorha-fg",
+          "inline-flex h-control-sm cursor-default select-none items-center gap-2 px-pad-sm text-yorha-sm tracking-yorha-wide text-yorha-fg",
           "bg-linear-to-r from-yorha-ink to-yorha-ink bg-no-repeat bg-[position:left_center] bg-[length:0%_100%]",
           "yorha-wipe",
           "hover:bg-[length:100%_100%] hover:text-yorha-on-ink data-[popup-open]:bg-[length:100%_100%] data-[popup-open]:text-yorha-on-ink",
-          "focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:opacity-60",
+          "focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-disabled",
         ],
         className,
       )}
@@ -82,12 +83,12 @@ function NavigationMenuIcon({ className, ...props }: ComponentProps<typeof Navig
       data-slot="navigation-menu-icon"
       aria-hidden="true"
       className={cnState(
-        "flex size-3 items-center justify-center transition-transform duration-(--motion-popover) ease-yorha-out data-[popup-open]:rotate-180",
+        "grid size-icon-sm place-items-center transition-transform duration-(--motion-popover) ease-yorha-out data-[popup-open]:rotate-180",
         className,
       )}
       {...props}
     >
-      <span className="border-x-[5px] border-t-[6px] border-x-transparent border-t-current" />
+      <ChevronIcon dir="down" />
     </NavigationMenuPrimitive.Icon>
   );
 }
@@ -102,7 +103,7 @@ function NavigationMenuContent({ className, ...props }: ComponentProps<typeof Na
       data-slot="navigation-menu-content"
       className={cnState(
         [
-          "h-full w-[calc(100dvw-40px)] p-2 min-[500px]:w-max min-[500px]:max-w-[400px]",
+          "h-full w-[calc(100dvw-40px)] max-w-[calc(100dvw-2rem)] py-1 min-[500px]:w-max min-[500px]:max-w-[400px]",
           "transition-[opacity,translate] duration-(--motion-shared-element) ease-yorha-emphasized",
           "[--shift:calc(50%*var(--motion-spatial))]",
           "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
@@ -129,7 +130,13 @@ function NavigationMenuLink({ className, closeOnClick = true, ...props }: Compon
       data-slot="navigation-menu-link"
       closeOnClick={closeOnClick}
       className={cnState(
-        "focus-visible:yorha-focus data-[active]:font-yorha-bold",
+        [
+          // One row recipe (G8). Links carry no data-highlighted: hover and keyboard focus draw the same fill.
+          "yorha-row cursor-default text-yorha-sm tracking-yorha-body no-underline data-[active]:font-yorha-bold",
+          "hover:[background-size:100%_100%] hover:text-yorha-on-ink hover:[transition-duration:var(--motion-press)]",
+          "focus-visible:[background-size:100%_100%] focus-visible:text-yorha-on-ink focus-visible:[transition-duration:var(--motion-press)]",
+          "forced-colors:focus-visible:outline-2 forced-colors:focus-visible:-outline-offset-2 forced-colors:focus-visible:outline-[Highlight]",
+        ],
         className,
       )}
       {...props}
@@ -141,7 +148,7 @@ function NavigationMenuLink({ className, closeOnClick = true, ...props }: Compon
 function NavigationMenuViewport({
   side = "bottom",
   align = "start",
-  sideOffset = 10,
+  sideOffset = 8,
   alignOffset,
   collisionPadding = 8,
   container,
@@ -162,8 +169,8 @@ function NavigationMenuViewport({
           "z-(--yorha-z-popover) h-(--positioner-height) w-(--positioner-width) max-w-(--available-width)",
           // No transition on top/left/width/height: they are layout properties. The positioner jumps to the new anchor and the panel content slides/fades.
           // hover bridge so the pointer can cross the gap to the popup
-          "before:absolute before:content-[''] data-[side=bottom]:before:inset-x-0 data-[side=bottom]:before:-top-2.5 data-[side=bottom]:before:h-2.5",
-          "data-[side=top]:before:inset-x-0 data-[side=top]:before:-bottom-2.5 data-[side=top]:before:h-2.5",
+          "before:absolute before:content-[''] data-[side=bottom]:before:inset-x-0 data-[side=bottom]:before:-top-2 data-[side=bottom]:before:h-2",
+          "data-[side=top]:before:inset-x-0 data-[side=top]:before:-bottom-2 data-[side=top]:before:h-2",
         )}
       >
         <NavigationMenuPrimitive.Popup

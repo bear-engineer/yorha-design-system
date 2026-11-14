@@ -1,18 +1,10 @@
 import type { ComponentProps } from "react";
 import { Select as SelectPrimitive } from "@base-ui/react/select";
+import { ChevronIcon, TriangleIcon } from "@/components/ui/icons";
 import { cnState } from "@/lib/utils";
 
 /** Root: re-export of the Base UI Select root (value, items, onValueChange, disabled, ...). */
 const Select = SelectPrimitive.Root;
-
-/** Fixed-size chevron (down). Square caps, currentColor; the trigger rotates it 180deg while open. */
-function ChevronGlyph({ up = false }: { up?: boolean }) {
-  return (
-    <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true" focusable="false" className="block shrink-0">
-      <path d={up ? "M2 8 L6 4 L10 8" : "M2 4 L6 8 L10 4"} />
-    </svg>
-  );
-}
 
 type TriggerProps = ComponentProps<typeof SelectPrimitive.Trigger>;
 
@@ -23,11 +15,11 @@ function SelectTrigger({ className, children, ...props }: TriggerProps) {
       data-slot="select-trigger"
       className={cnState(
         [
-          "group/trigger flex w-full min-w-40 items-center justify-between gap-3 rounded-yorha border border-yorha-border bg-yorha-panel px-3 py-2",
+          "group/trigger flex h-control-md w-full min-w-40 items-center justify-between gap-3 rounded-yorha border border-yorha-border bg-yorha-panel px-pad-md",
           "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
           "focus-visible:yorha-focus",
           "data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
-          "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
+          "yorha-disabled",
         ],
         className,
       )}
@@ -36,9 +28,9 @@ function SelectTrigger({ className, children, ...props }: TriggerProps) {
       {children}
       <SelectPrimitive.Icon
         aria-hidden="true"
-        className="inline-flex size-3 shrink-0 items-center justify-center transition-transform duration-(--motion-select) ease-yorha group-data-[popup-open]/trigger:rotate-180"
+        className="grid size-icon-sm shrink-0 place-items-center transition-transform duration-(--motion-select) ease-yorha group-data-[popup-open]/trigger:rotate-180"
       >
-        <ChevronGlyph />
+        <ChevronIcon dir="down" />
       </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
@@ -73,7 +65,7 @@ function SelectContent({
   children,
   side = "bottom",
   align = "start",
-  sideOffset = 4,
+  sideOffset = 8,
   alignOffset,
   alignItemWithTrigger = false,
   container,
@@ -106,7 +98,7 @@ function SelectContent({
           {...props}
         >
           <SelectScrollUpArrow />
-          <SelectPrimitive.List data-slot="select-list" className="min-h-0 flex-1 overflow-y-auto">
+          <SelectPrimitive.List data-slot="select-list" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
             {children}
           </SelectPrimitive.List>
           <SelectScrollDownArrow />
@@ -120,45 +112,23 @@ function SelectContent({
 type ItemProps = ComponentProps<typeof SelectPrimitive.Item>;
 
 /**
- * Row. Highlight (keyboard or pointer) wipes a dark fill left→right, flips text to on-ink,
- * shows the arrow cursor and the thin rules above/below. The square bullet is hollow normally
- * and filled when the item is the selected value; it uses currentColor so it inverts with the row.
+ * Row (`yorha-row`, G8): full-bleed ink fill wipes in on highlight and drops at once, no ring. Cursor gutter, a
+ * 20px indicator slot holding the hollow bullet (filled square for the selected value), then the label.
  */
 function SelectItem({ className, children, ...props }: ItemProps) {
   return (
     <SelectPrimitive.Item
       data-slot="select-item"
-      className={cnState(
-        [
-          "group/item relative mx-1 flex cursor-default items-center gap-3 py-2 pr-3 pl-7 select-none",
-          // dark fill wipe: grows left→right via background-size
-          "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-left bg-no-repeat [background-size:0%_calc(100%_-_4px)]",
-          "yorha-wipe",
-          "data-[highlighted]:text-yorha-on-ink data-[highlighted]:[background-size:100%_calc(100%_-_4px)]",
-          // thin rules above/below the highlighted row (token --menu-rule)
-          "before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-(--menu-rule) before:bg-yorha-ink before:opacity-0 before:content-['']",
-          "after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-(--menu-rule) after:bg-yorha-ink after:opacity-0 after:content-['']",
-          "data-[highlighted]:before:opacity-100 data-[highlighted]:after:opacity-100",
-          "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
-          "focus-visible:yorha-focus",
-        ],
-        className,
-      )}
+      className={cnState(["group/item yorha-row cursor-default text-yorha-sm tracking-yorha-body"], className)}
       {...props}
     >
-      <span
-        aria-hidden="true"
-        data-yorha-cursor=""
-        className="pointer-events-none absolute top-1/2 left-1 size-0 -translate-y-1/2 border-y-[0.3125rem] border-l-[0.4375rem] border-y-transparent border-l-current opacity-0 transition-opacity duration-(--motion-select) group-data-[highlighted]/item:opacity-100"
-      />
-      <span
-        aria-hidden="true"
-        data-yorha-bullet=""
-        className="inline-block size-2 shrink-0 border border-current"
-      >
-        <SelectItemIndicator className="m-0 block size-full bg-current" />
+      <TriangleIcon data-yorha-cursor="" className="size-icon-sm opacity-0 group-data-[highlighted]/item:opacity-100" />
+      <span data-slot="row-indicator" className="grid size-indicator shrink-0 place-items-center">
+        <span aria-hidden="true" data-yorha-bullet="" className="block size-bullet overflow-clip border border-current">
+          <SelectItemIndicator className="m-0 block size-full bg-current" />
+        </span>
       </span>
-      <SelectPrimitive.ItemText className="flex-1 truncate">{children}</SelectPrimitive.ItemText>
+      <SelectPrimitive.ItemText className="min-w-0 flex-1 truncate">{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   );
 }
@@ -212,7 +182,7 @@ const SCROLL_ARROW =
 function SelectScrollUpArrow({ className, ...props }: ComponentProps<typeof SelectPrimitive.ScrollUpArrow>) {
   return (
     <SelectPrimitive.ScrollUpArrow aria-hidden="true" data-slot="select-scroll-up-arrow" className={cnState(SCROLL_ARROW, className)} {...props}>
-      <ChevronGlyph up />
+      <ChevronIcon dir="up" />
     </SelectPrimitive.ScrollUpArrow>
   );
 }
@@ -221,19 +191,18 @@ function SelectScrollUpArrow({ className, ...props }: ComponentProps<typeof Sele
 function SelectScrollDownArrow({ className, ...props }: ComponentProps<typeof SelectPrimitive.ScrollDownArrow>) {
   return (
     <SelectPrimitive.ScrollDownArrow aria-hidden="true" data-slot="select-scroll-down-arrow" className={cnState(SCROLL_ARROW, className)} {...props}>
-      <ChevronGlyph />
+      <ChevronIcon dir="down" />
     </SelectPrimitive.ScrollDownArrow>
   );
 }
 
 /** Check mark slot of the selected item. SelectItem renders it itself; exported for custom rows. */
-function SelectItemIndicator({ className, ...props }: ComponentProps<typeof SelectPrimitive.ItemIndicator>) {
+function SelectItemIndicator({ className, children = null, ...props }: ComponentProps<typeof SelectPrimitive.ItemIndicator>) {
+  // Base UI fills the indicator with an emoji check by default; the indicator is drawn by CSS only (B12).
   return (
-    <SelectPrimitive.ItemIndicator
-      data-slot="select-item-indicator"
-      className={cnState("ml-auto text-current", className)}
-      {...props}
-    />
+    <SelectPrimitive.ItemIndicator data-slot="select-item-indicator" className={cnState("ml-auto text-current", className)} {...props}>
+      {children}
+    </SelectPrimitive.ItemIndicator>
   );
 }
 
@@ -246,7 +215,7 @@ function SelectGroupLabel({ className, ...props }: ComponentProps<typeof SelectP
     <SelectPrimitive.GroupLabel
       data-slot="select-group-label"
       className={cnState(
-        "mx-1 border-b border-yorha-separator px-3 py-1.5 text-yorha-xs font-yorha-bold tracking-yorha-heading text-yorha-fg-soft uppercase",
+        "px-2 py-1.5 text-yorha-xs font-yorha-bold tracking-yorha-heading text-yorha-fg-soft uppercase",
         className,
       )}
       {...props}
@@ -258,7 +227,7 @@ function SelectSeparator({ className, ...props }: ComponentProps<typeof SelectPr
   return (
     <SelectPrimitive.Separator
       data-slot="select-separator"
-      className={cnState("mx-1 my-1 h-px bg-yorha-separator", className)}
+      className={cnState("my-1 h-px bg-yorha-separator", className)}
       {...props}
     />
   );

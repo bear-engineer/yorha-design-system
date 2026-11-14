@@ -1,5 +1,6 @@
 import type { ComponentProps } from "react";
 import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
+import { ChevronIcon, CrossIcon, TriangleIcon } from "@/components/ui/icons";
 import { cnState } from "@/lib/utils";
 
 /** Root: re-export of the Base UI Combobox root (items, value, onValueChange, multiple, ...). */
@@ -15,11 +16,11 @@ function ComboboxInputGroup({ className, ...props }: ComponentProps<typeof Combo
       data-slot="combobox-input-group"
       className={cnState(
         [
-          "flex min-h-8 w-full min-w-40 items-stretch rounded-yorha border border-yorha-border bg-yorha-panel font-yorha text-yorha-sm text-yorha-fg",
+          "flex min-h-control-md w-full min-w-40 items-stretch rounded-yorha border border-yorha-border bg-yorha-panel font-yorha text-yorha-sm text-yorha-fg",
+          // One ring on the frame; an open popup adds no second darkened border (G6 b).
           "focus-within:yorha-focus",
-          "data-[popup-open]:border-yorha-ink",
           "data-[invalid]:border-(length:--yorha-border-width-strong) data-[invalid]:border-yorha-alert-ui",
-          "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
+          "yorha-disabled data-[disabled]:border-yorha-disabled",
         ],
         className,
       )}
@@ -38,7 +39,7 @@ function ComboboxInput({ className, onKeyDown, ...props }: ComponentProps<typeof
       data-slot="combobox-input"
       className={cnState(
         [
-          "min-w-0 flex-1 rounded-none border-0 bg-transparent px-3 py-1.5 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
+          "min-w-0 flex-1 self-stretch rounded-none border-0 bg-transparent px-pad-md py-0 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
           "placeholder:text-yorha-fg-soft focus-visible:outline-none disabled:cursor-not-allowed",
         ],
         className,
@@ -64,9 +65,9 @@ function ComboboxTrigger({ className, children, ...props }: ComponentProps<typeo
       aria-label="목록 열기"
       className={cnState(
         [
-          "group/trigger grid min-w-[24px] place-items-center border-l border-yorha-border px-2 text-yorha-fg",
-          "focus-visible:yorha-focus data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
-          "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
+          "group/trigger grid aspect-square h-[calc(var(--yorha-control-md)-2px)] shrink-0 self-start place-items-center border-l border-yorha-border text-yorha-fg",
+          "focus-visible:yorha-focus-inset data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
+          "yorha-disabled data-[disabled]:border-yorha-disabled",
         ],
         className,
       )}
@@ -77,27 +78,18 @@ function ComboboxTrigger({ className, children, ...props }: ComponentProps<typeo
   );
 }
 
-/** Fixed-size chevron (down). Square caps, currentColor; the trigger rotates it 180deg while open. */
-function ChevronGlyph({ up = false }: { up?: boolean }) {
-  return (
-    <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true" focusable="false" className="block shrink-0">
-      <path d={up ? "M2 8 L6 4 L10 8" : "M2 4 L6 8 L10 4"} />
-    </svg>
-  );
-}
-
 function ComboboxIcon({ className, ...props }: ComponentProps<typeof ComboboxPrimitive.Icon>) {
   return (
     <ComboboxPrimitive.Icon
       data-slot="combobox-icon"
       aria-hidden="true"
       className={cnState(
-        "inline-flex size-3 shrink-0 items-center justify-center transition-transform duration-(--motion-select) ease-yorha group-data-[popup-open]/trigger:rotate-180",
+        "grid size-icon-sm shrink-0 place-items-center transition-transform duration-(--motion-select) ease-yorha group-data-[popup-open]/trigger:rotate-180",
         className,
       )}
       {...props}
     >
-      <ChevronGlyph />
+      <ChevronIcon dir="down" />
     </ComboboxPrimitive.Icon>
   );
 }
@@ -109,12 +101,12 @@ function ComboboxClear({ className, children, ...props }: ComponentProps<typeof 
       data-slot="combobox-clear"
       aria-label="지우기"
       className={cnState(
-        "grid min-w-[24px] place-items-center px-2 text-yorha-fg focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
+        "grid aspect-square h-[calc(var(--yorha-control-md)-2px)] shrink-0 self-start place-items-center text-yorha-fg focus-visible:yorha-focus-inset yorha-disabled",
         className,
       )}
       {...props}
     >
-      {children ?? <span aria-hidden="true">×</span>}
+      {children ?? <CrossIcon />}
     </ComboboxPrimitive.Clear>
   );
 }
@@ -171,7 +163,7 @@ function ComboboxContent({
   children,
   side = "bottom",
   align = "start",
-  sideOffset = 4,
+  sideOffset = 8,
   alignOffset,
   container,
   ...props
@@ -190,8 +182,10 @@ function ComboboxContent({
           data-yorha-combobox-popup=""
           className={cnState(
             [
-              "yorha-pop max-h-(--available-height) min-w-(--anchor-width) overflow-y-auto rounded-yorha border border-yorha-border bg-yorha-panel py-1 shadow-yorha-md",
+              "yorha-pop yorha-scroll max-h-(--available-height) min-w-(--anchor-width) rounded-yorha border border-yorha-border bg-yorha-panel py-1 shadow-yorha-md",
               "font-yorha text-yorha-sm text-yorha-fg",
+              // A popup with no results shows the message only: no rule under it.
+              "[&:has([data-empty])_[data-slot=combobox-separator]]:hidden",
             ],
             className,
           )}
@@ -219,7 +213,7 @@ function ComboboxEmpty({ className, ...props }: ComponentProps<typeof ComboboxPr
   return (
     <ComboboxPrimitive.Empty
       data-slot="combobox-empty"
-      className={cnState("mx-1 px-3 py-2 text-yorha-fg-soft empty:p-0", className)}
+      className={cnState("px-3 py-3 text-center text-pretty text-yorha-fg-soft empty:p-0", className)}
       {...props}
     />
   );
@@ -230,7 +224,7 @@ function ComboboxStatus({ className, ...props }: ComponentProps<typeof ComboboxP
   return (
     <ComboboxPrimitive.Status
       data-slot="combobox-status"
-      className={cnState("mx-1 px-3 py-1 text-yorha-xs text-yorha-fg-soft empty:p-0", className)}
+      className={cnState("px-3 py-1 text-yorha-xs text-yorha-fg-soft empty:p-0", className)}
       {...props}
     />
   );
@@ -246,52 +240,38 @@ function ComboboxRow({ className, ...props }: ComponentProps<typeof ComboboxPrim
 }
 
 /**
- * Row. Highlight (keyboard or pointer) wipes a dark fill left→right, flips text to on-ink,
- * shows the arrow cursor and the thin rules above/below, like Select and Menu.
- * The square bullet is hollow normally; ItemIndicator draws the filled square inside it only
- * for selected rows, so selection is shape, not colour. It inverts with the row via currentColor.
+ * Row (`yorha-row`, G8): full-bleed ink fill wipes in on highlight and drops at once, no ring. The indicator slot
+ * holds a hollow bullet; ItemIndicator draws the filled square inside it only for selected rows (shape, not colour).
  */
 function ComboboxItem({ className, children, ...props }: ComponentProps<typeof ComboboxPrimitive.Item>) {
   return (
     <ComboboxPrimitive.Item
       data-slot="combobox-item"
-      className={cnState(
-        [
-          "group/item relative mx-1 flex cursor-default items-center gap-3 py-2 pr-3 pl-7 select-none",
-          "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-left bg-no-repeat [background-size:0%_calc(100%_-_4px)]",
-          "yorha-wipe",
-          "data-[highlighted]:text-yorha-on-ink data-[highlighted]:[background-size:100%_calc(100%_-_4px)]",
-          "before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-(--menu-rule) before:bg-yorha-ink before:opacity-0 before:content-['']",
-          "after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-(--menu-rule) after:bg-yorha-ink after:opacity-0 after:content-['']",
-          "data-[highlighted]:before:opacity-100 data-[highlighted]:after:opacity-100",
-          "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
-        ],
-        className,
-      )}
+      className={cnState(["group/item yorha-row cursor-default text-yorha-sm tracking-yorha-body"], className)}
       {...props}
     >
-      <span
-        aria-hidden="true"
-        data-yorha-cursor=""
-        className="pointer-events-none absolute top-1/2 left-1 size-0 -translate-y-1/2 border-y-[0.3125rem] border-l-[0.4375rem] border-y-transparent border-l-current opacity-0 group-data-[highlighted]/item:opacity-100"
-      />
-      <span aria-hidden="true" data-yorha-bullet="" className="inline-block size-2 shrink-0 border border-current">
-        <ComboboxItemIndicator />
+      <TriangleIcon data-yorha-cursor="" className="size-icon-sm opacity-0 group-data-[highlighted]/item:opacity-100" />
+      <span data-slot="row-indicator" className="grid size-indicator shrink-0 place-items-center">
+        <span aria-hidden="true" data-yorha-bullet="" className="block size-bullet overflow-clip border border-current">
+          <ComboboxItemIndicator />
+        </span>
       </span>
-      <span className="flex-1 truncate">{children}</span>
+      <span className="min-w-0 flex-1 truncate">{children}</span>
     </ComboboxPrimitive.Item>
   );
 }
 
-/** Filled square for the selected row; Base UI mounts it only while the item is selected. */
-function ComboboxItemIndicator({ className, ...props }: ComponentProps<typeof ComboboxPrimitive.ItemIndicator>) {
+/** Filled square for the selected row; Base UI mounts it only while the item is selected. Carries no text (no emoji check). */
+function ComboboxItemIndicator({ className, children = null, ...props }: ComponentProps<typeof ComboboxPrimitive.ItemIndicator>) {
   return (
     <ComboboxPrimitive.ItemIndicator
       data-slot="combobox-item-indicator"
       data-yorha-indicator=""
       className={cnState("block size-full bg-current", className)}
       {...props}
-    />
+    >
+      {children}
+    </ComboboxPrimitive.ItemIndicator>
   );
 }
 
@@ -311,7 +291,7 @@ function ComboboxChips({ className, ...props }: ComponentProps<typeof ComboboxPr
   return (
     <ComboboxPrimitive.Chips
       data-slot="combobox-chips"
-      className={cnState("flex min-w-0 flex-1 flex-wrap items-center gap-1 px-2 py-1", className)}
+      className={cnState("yorha-scroll flex max-h-32 min-w-0 flex-1 flex-wrap content-start items-center gap-1 p-1 [&_[data-slot=combobox-input]]:h-6 [&_[data-slot=combobox-input]]:min-w-16 [&_[data-slot=combobox-input]]:px-1", className)}
       {...props}
     />
   );
@@ -326,8 +306,8 @@ function ComboboxChip({ className, children, ...props }: ComponentProps<typeof C
       aria-description="Backspace 또는 Delete 키로 제거"
       className={cnState(
         [
-          "group/chip inline-flex min-h-6 items-center gap-1 rounded-yorha border border-yorha-border bg-yorha-bg pl-2 font-yorha text-yorha-sm text-yorha-fg",
-          "focus-visible:yorha-focus data-[highlighted]:bg-yorha-ink data-[highlighted]:text-yorha-on-ink",
+          "group/chip inline-flex h-6 shrink-0 items-center gap-1 rounded-yorha border border-yorha-border bg-yorha-bg pl-2 font-yorha text-yorha-sm text-yorha-fg",
+          "focus-visible:yorha-focus-inset data-[highlighted]:bg-yorha-ink data-[highlighted]:text-yorha-on-ink",
         ],
         className,
       )}
@@ -345,12 +325,12 @@ function ComboboxChipRemove({ className, children, ...props }: ComponentProps<ty
       data-slot="combobox-chip-remove"
       aria-label="제거"
       className={cnState(
-        "grid size-6 min-h-[24px] min-w-[24px] shrink-0 place-items-center border-l border-yorha-border text-current focus-visible:yorha-focus",
+        "grid -my-px -mr-px size-6 shrink-0 place-items-center border-l border-yorha-border text-current focus-visible:yorha-focus-inset",
         className,
       )}
       {...props}
     >
-      {children ?? <span aria-hidden="true">×</span>}
+      {children ?? <CrossIcon />}
     </ComboboxPrimitive.ChipRemove>
   );
 }
@@ -364,7 +344,7 @@ function ComboboxGroupLabel({ className, ...props }: ComponentProps<typeof Combo
     <ComboboxPrimitive.GroupLabel
       data-slot="combobox-group-label"
       className={cnState(
-        "mx-1 border-b border-yorha-separator px-3 py-1.5 text-yorha-xs font-yorha-bold tracking-yorha-heading text-yorha-fg-soft uppercase",
+        "px-2 py-1.5 text-yorha-xs font-yorha-bold tracking-yorha-heading text-yorha-fg-soft uppercase",
         className,
       )}
       {...props}
@@ -376,7 +356,7 @@ function ComboboxSeparator({ className, ...props }: ComponentProps<typeof Combob
   return (
     <ComboboxPrimitive.Separator
       data-slot="combobox-separator"
-      className={cnState("mx-1 my-1 h-px bg-yorha-separator", className)}
+      className={cnState("my-1 h-px bg-yorha-separator", className)}
       {...props}
     />
   );
