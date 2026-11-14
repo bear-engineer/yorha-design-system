@@ -8,15 +8,20 @@ const Select = SelectPrimitive.Root;
 
 type TriggerProps = ComponentProps<typeof SelectPrimitive.Trigger>;
 
-/** Square-edged field-like button; chevron is an inline svg glyph. */
+/**
+ * Square-edged field-like button; chevron is an inline svg glyph.
+ * Migration (C2-302/303): the trigger is a field, not a button: inset field fill (`bg-yorha-bg`, same as Input)
+ * and body-size text (`text-yorha-base`, same as Input) instead of the raised panel fill and 14px. The open state
+ * still inverts to the control fill. Pass `className` to restore the old look.
+ */
 function SelectTrigger({ className, children, ...props }: TriggerProps) {
   return (
     <SelectPrimitive.Trigger
       data-slot="select-trigger"
       className={cnState(
         [
-          "group/trigger flex h-control-md w-full min-w-40 items-center justify-between gap-3 rounded-yorha border border-yorha-border bg-yorha-panel px-pad-md",
-          "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
+          "group/trigger flex h-control-md w-full min-w-40 items-center justify-between gap-3 rounded-yorha border border-yorha-border bg-yorha-bg px-pad-md",
+          "font-yorha text-yorha-base tracking-yorha-body text-yorha-fg-strong",
           "focus-visible:yorha-focus",
           "data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
           "yorha-disabled",
