@@ -156,7 +156,7 @@ function ToastViewport({ className, container, contained = false, ...props }: Vi
         data-slot="toast-viewport"
         aria-label="알림"
         className={cnState(
-          cn(contained ? "absolute" : "fixed", "right-4 bottom-4 z-(--yorha-z-toast) flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2 outline-none focus-visible:yorha-focus"),
+          cn(contained ? "absolute right-4 bottom-4" : "fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))]", "z-(--yorha-z-toast) flex w-80 max-w-[calc(100%-2rem)] flex-col gap-2 outline-none focus-visible:yorha-focus"),
           className,
         )}
         {...props}

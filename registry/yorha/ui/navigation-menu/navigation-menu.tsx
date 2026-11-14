@@ -102,7 +102,7 @@ function NavigationMenuContent({ className, ...props }: ComponentProps<typeof Na
       data-slot="navigation-menu-content"
       className={cnState(
         [
-          "h-full w-[calc(100vw-40px)] p-2 min-[500px]:w-max min-[500px]:max-w-[400px]",
+          "h-full w-[calc(100dvw-40px)] p-2 min-[500px]:w-max min-[500px]:max-w-[400px]",
           "transition-[opacity,translate] duration-(--motion-shared-element) ease-yorha-emphasized",
           "[--shift:calc(50%*var(--motion-spatial))]",
           "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",

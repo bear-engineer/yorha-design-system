@@ -202,7 +202,7 @@ export default function BentoDashboardRoute() {
   }, [focusContent, state]);
 
   return (
-    <main aria-label="본문" lang="ko" className="min-h-screen bg-yorha-bg pb-8 text-yorha-fg">
+    <main aria-label="본문" lang="ko" className="min-h-dvh bg-yorha-bg pb-8 text-yorha-fg">
       <PageHeader eyebrow="SEC-12" title="유닛 대시보드" description="코어 상태와 유닛 현황을 한 화면에서 봅니다." />
       <div className="flex flex-col gap-4 px-6 pt-4">
         {unitId === null ? (

@@ -173,7 +173,7 @@ function SettingsFormBody() {
 export default function SettingsFormRoute() {
   return (
     <ToastProvider>
-      <main aria-label="본문" lang="ko" className="min-h-screen bg-yorha-bg pb-8 text-yorha-fg">
+      <main aria-label="본문" lang="ko" className="min-h-dvh bg-yorha-bg pb-8 text-yorha-fg">
         <PageHeader eyebrow="SEC-13" title="유닛 설정" description="이름, 구역, 인증 코드를 입력하고 저장합니다." />
         <SettingsFormBody />
       </main>
