@@ -20,9 +20,29 @@
         }
       ],
       "css": {
-        "::view-transition-group(.yorha-route)": {
-          "animation-duration": "var(--motion-panel)",
-          "animation-timing-function": "var(--yorha-ease)"
+        "::view-transition-old(.yorha-route-exit)": {
+          "animation": "yorha-route-out var(--motion-panel-exit) var(--yorha-ease-in) both"
+        },
+        "::view-transition-new(.yorha-route-enter)": {
+          "animation": "yorha-route-in var(--motion-panel) var(--yorha-ease-out) both"
+        },
+        "@keyframes yorha-route-in": {
+          "from": {
+            "opacity": "0",
+            "transform": "translateX(-0.5rem)"
+          },
+          "to": {
+            "opacity": "1",
+            "transform": "none"
+          }
+        },
+        "@keyframes yorha-route-out": {
+          "from": {
+            "opacity": "1"
+          },
+          "to": {
+            "opacity": "0"
+          }
         }
       },
       "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Needs React 19.3+ (stable ViewTransition) and navigation inside a transition (RouterProvider does this). Replaces react-router's deprecated viewTransition APIs; never calls document.startViewTransition."
