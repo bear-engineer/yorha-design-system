@@ -40,7 +40,10 @@ export async function mountStory(item: string, name: string): Promise<HTMLElemen
   document.body.append(container);
   const root = createRoot(container);
   mounted.push({ root, container });
-  root.render(createElement("div", { lang: "ko" }, createElement(composed as unknown as ComponentType)));
+  // Storybook `layout: centered` centres the story in the viewport, so any height change of the story
+  // (e.g. a second panel mid-swap) moves everything inside it. Mirror that stage here.
+  const stage = { display: "flex", alignItems: "center", justifyContent: "center", minHeight: "600px" };
+  root.render(createElement("div", { lang: "ko", style: stage }, createElement(composed as unknown as ComponentType)));
   await frames(2);
   await document.fonts.ready;
   await frames(2);
@@ -64,4 +67,20 @@ describe("state changes never move or resize a control or its row", () => {
       });
     }
   }
+});
+
+describe("tabs indicator", () => {
+  test("covers the selected tab through transform only (translate + scale, no left/width transition)", async () => {
+    const wrapper = await mountStory("tabs", "Default");
+    const indicator = wrapper.querySelector<HTMLElement>('[data-slot="tabs-indicator"]')!;
+    const tab = wrapper.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')!;
+    await frames(3);
+    const i = indicator.getBoundingClientRect();
+    const t = tab.getBoundingClientRect();
+    expect(Math.abs(i.x - t.x), "indicator x").toBeLessThan(1);
+    expect(Math.abs(i.width - t.width), "indicator width").toBeLessThan(1);
+    const props = getComputedStyle(indicator).transitionProperty;
+    expect(props).not.toMatch(/left|width/);
+    expect(props).toMatch(/translate/);
+  });
 });
