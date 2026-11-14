@@ -50,7 +50,7 @@ function formatStamp(ms: number): string {
 }
 
 const controlClass =
-  "border border-yorha-border px-3 py-1 text-yorha-sm text-yorha-fg hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus disabled:opacity-50";
+  "border border-yorha-border px-3 py-1 text-yorha-sm text-yorha-fg hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus yorha-disabled";
 
 /**
  * Boot sequence: lines are typed one after another. Only the visible lines are mounted; the
