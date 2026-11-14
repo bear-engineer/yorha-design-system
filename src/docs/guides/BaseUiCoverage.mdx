@@ -1,0 +1,20 @@
+import { Markdown, Meta } from "@storybook/addon-docs/blocks";
+import report from "../generated/base-ui-coverage.md?raw";
+
+<Meta title="가이드/Base UI 커버리지" />
+
+<main lang="ko">
+
+# Base UI 커버리지
+
+Base UI가 공개하는 컴포넌트와 파트를 yorha 항목이 모두 쓰는지 기계적으로 측정한 표입니다. 컴포넌트마다 레지스트리 항목(스토리가 아닌 소스)이 있어야 하고, 네임스페이스의 모든 파트를 써야 합니다. 예외는 `coverage.exceptions.json`에 사유와 함께 적습니다. CI의 `pnpm coverage:base-ui`가 같은 검사를 하고 실패하면 종료 코드 1을 냅니다.
+
+이 표는 `src/docs/generated/base-ui-coverage.md`입니다. 항목이나 파트가 바뀌면 다음 명령으로 다시 만들어 커밋합니다. 최신 여부는 단위 테스트가 검사합니다.
+
+```sh
+pnpm coverage:base-ui --report --out src/docs/generated/base-ui-coverage.md
+```
+
+<Markdown>{report.replace(/^# .*\n/, "")}</Markdown>
+
+</main>
