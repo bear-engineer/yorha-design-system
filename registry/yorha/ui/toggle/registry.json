@@ -1,4 +1,25 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "toggle",
+      "type": "registry:ui",
+      "title": "Toggle",
+      "description": "Two-state pressed button with a square bullet; pressed fills with ink (Base UI Toggle).",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils"
+      ],
+      "files": [
+        {
+          "path": "toggle.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only."
+    }
+  ]
 }

@@ -1,3 +1,4 @@
+import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { Checkbox } from "./checkbox";
@@ -42,8 +43,27 @@ export const LabelClick: Story = {
   },
 };
 
+// indeterminate is controlled: the parent clears it when the user clicks.
+const IndeterminateDemo = ({ children }: { children: React.ReactNode }) => {
+  const [indeterminate, setIndeterminate] = React.useState(true);
+  const [checked, setChecked] = React.useState(false);
+  return (
+    <Checkbox
+      checked={checked}
+      indeterminate={indeterminate}
+      onCheckedChange={(next) => {
+        setChecked(next);
+        setIndeterminate(false);
+      }}
+    >
+      {children}
+    </Checkbox>
+  );
+};
+
 export const Indeterminate: Story = {
-  args: { children: "일부 선택", indeterminate: true },
+  args: { children: "일부 선택" },
+  render: (args) => <IndeterminateDemo>{args.children}</IndeterminateDemo>,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const box = c.getByRole("checkbox", { name: "일부 선택" });
@@ -58,7 +78,7 @@ export const Disabled: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const box = c.getByRole("checkbox", { name: "잠긴 옵션" });
-    await expect(box).toBeDisabled();
+    await expect(box).toHaveAttribute("aria-disabled", "true");
     box.focus();
     await userEvent.keyboard(" ");
     await userEvent.click(c.getByText("잠긴 옵션"));
@@ -94,7 +114,7 @@ export const States: Story = {
     await expect(c.getByRole("checkbox", { name: "꺼짐" })).toHaveAttribute("aria-checked", "false");
     await expect(c.getByRole("checkbox", { name: "켜짐" })).toHaveAttribute("aria-checked", "true");
     await expect(c.getByRole("checkbox", { name: "일부" })).toHaveAttribute("aria-checked", "mixed");
-    await expect(c.getByRole("checkbox", { name: "꺼짐 비활성" })).toBeDisabled();
+    await expect(c.getByRole("checkbox", { name: "꺼짐 비활성" })).toHaveAttribute("aria-disabled", "true");
   },
 };
 

@@ -1,4 +1,25 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "checkbox",
+      "type": "registry:ui",
+      "title": "Checkbox",
+      "description": "Square checkbox with checked and indeterminate states; check mark and bar drawn on ink (Base UI Checkbox).",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils"
+      ],
+      "files": [
+        {
+          "path": "checkbox.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only."
+    }
+  ]
 }

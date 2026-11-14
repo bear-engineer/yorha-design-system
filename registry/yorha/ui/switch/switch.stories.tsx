@@ -47,7 +47,7 @@ export const Disabled: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const sw = c.getByRole("switch", { name: "잠긴 스위치" });
-    await expect(sw).toBeDisabled();
+    await expect(sw).toHaveAttribute("aria-disabled", "true");
     sw.focus();
     await userEvent.keyboard(" ");
     await userEvent.click(c.getByText("잠긴 스위치"));
@@ -81,8 +81,8 @@ export const States: Story = {
     const c = within(canvasElement);
     await expect(c.getByRole("switch", { name: "꺼짐" })).toHaveAttribute("aria-checked", "false");
     await expect(c.getByRole("switch", { name: "켜짐" })).toHaveAttribute("aria-checked", "true");
-    await expect(c.getByRole("switch", { name: "꺼짐 비활성" })).toBeDisabled();
-    await expect(c.getByRole("switch", { name: "켜짐 비활성" })).toBeDisabled();
+    await expect(c.getByRole("switch", { name: "꺼짐 비활성" })).toHaveAttribute("aria-disabled", "true");
+    await expect(c.getByRole("switch", { name: "켜짐 비활성" })).toHaveAttribute("aria-disabled", "true");
   },
 };
 
