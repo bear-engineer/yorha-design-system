@@ -572,4 +572,16 @@ describe("craft v3 recipes (G5-G10)", () => {
       for (const name of ["yorha-tint", "yorha-disabled", "yorha-readonly", "yorha-invalid"]) expect(keys).toContain(`@utility ${name}`);
     });
   });
+
+  describe("G6 focus", () => {
+    it("yorha-focus-inset draws the ring inside the box in currentColor; yorha-focus is unchanged", () => {
+      const inset = utility("yorha-focus-inset");
+      expect(inset).toContain("outline: var(--yorha-ring-width) solid currentColor;");
+      expect(inset).toContain("outline-offset: calc(var(--yorha-ring-width) * -1);");
+      const ring = utility("yorha-focus");
+      expect(ring).toContain("outline: var(--yorha-ring-width) solid var(--yorha-ring);");
+      expect(ring).toContain("outline-offset: var(--yorha-ring-offset);");
+      expect(Object.keys(baseItem().css)).toContain("@utility yorha-focus-inset");
+    });
+  });
 });
