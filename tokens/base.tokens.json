@@ -413,6 +413,13 @@
         },
         "$description": "Decipher interval per character."
       },
+      "loop": {
+        "$value": {
+          "value": 1200,
+          "unit": "ms"
+        },
+        "$description": "One cycle of a looping indicator (spinner, indeterminate progress, skeleton, button busy). Reduced: slower, opacity only. Off: 0 (indicators render static)."
+      },
       "popover": {
         "$value": {
           "value": 160,

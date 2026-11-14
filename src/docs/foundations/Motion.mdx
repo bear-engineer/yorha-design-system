@@ -16,6 +16,7 @@ import { tokens } from "./tokens.generated";
 - 나가는 동작은 들어오는 동작보다 빠릅니다.
 - 팝업은 `--transform-origin`(Base UI Positioner가 설정)에서 커집니다.
 - 깜빡임은 초당 3회 이하, 5초를 넘는 자동 동작에는 일시정지 수단을 둡니다.
+- 로딩 표시(Spinner, 불확정 Progress, Skeleton, Button `loading`)는 마운트되어 있는 동안 `--motion-loop` 주기로 반복합니다. 멈춘 로더는 "끝났다/멈췄다"로 읽히기 때문입니다. `reduced`는 느린 주기(2400ms)의 불투명도 펄스만, `off`는 정지하되 줄무늬·단계 불투명도로 "진행 중"임을 보입니다.
 
 ## 모드
 

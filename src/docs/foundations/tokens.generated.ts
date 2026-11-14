@@ -1111,6 +1111,17 @@ export const tokens = {
         "off": "0ms"
       },
       {
+        "name": "loop",
+        "cssVar": "--yorha-motion-loop",
+        "alias": "--motion-loop",
+        "utility": "",
+        "value": "1200ms",
+        "description": "One cycle of a looping indicator (spinner, indeterminate progress, skeleton, button busy). Reduced: slower, opacity only. Off: 0 (indicators render static).",
+        "full": "1200ms",
+        "reduced": "2400ms",
+        "off": "0ms"
+      },
+      {
         "name": "popover",
         "cssVar": "--yorha-motion-popover",
         "alias": "--motion-popover",

@@ -38,6 +38,12 @@
           "unit": "ms"
         }
       },
+      "loop": {
+        "$value": {
+          "value": 2400,
+          "unit": "ms"
+        }
+      },
       "popover": {
         "$value": {
           "value": 0,

@@ -60,8 +60,8 @@ export function buttonVariants({ variant = "default", size = "md", square = fals
 const LOOP_FALLBACK_MS = 1200; // used when the --motion-loop token is absent
 
 /**
- * Busy indicator pulse (opacity only, so the indicator never changes the button's box). full = LOOP,
- * reduced (data-motion or prefers-reduced-motion) = twice as slow, off = static and fully opaque.
+ * Busy indicator pulse (opacity only, so the indicator never changes the button's box). full = --motion-loop,
+ * reduced (data-motion or prefers-reduced-motion) = the slower reduced token value, off = static and fully opaque.
  */
 function usePulse(ref: RefObject<HTMLSpanElement | null>, active: boolean) {
   useEffect(() => {
@@ -76,9 +76,9 @@ function usePulse(ref: RefObject<HTMLSpanElement | null>, active: boolean) {
       anim = undefined;
       const mode = motionOf();
       if (mode === "off" || typeof el.animate !== "function") return;
-      const loop = parseFloat(getComputedStyle(html).getPropertyValue("--motion-loop")) || LOOP_FALLBACK_MS;
+      const duration = parseFloat(getComputedStyle(html).getPropertyValue("--motion-loop")) || LOOP_FALLBACK_MS; // the token is 1200ms full / 2400ms reduced
       anim = el.animate([{ opacity: 0.15 }, { opacity: 1 }, { opacity: 0.15 }], {
-        duration: mode === "reduced" ? loop * 2 : loop,
+        duration,
         iterations: Infinity,
         easing: "linear",
       });
