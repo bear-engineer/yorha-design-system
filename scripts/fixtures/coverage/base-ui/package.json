@@ -1,0 +1,15 @@
+{
+  "name": "@base-ui/react",
+  "version": "0.0.0-fixture",
+  "exports": {
+    ".": { "require": "./index.cjs" },
+    "./package.json": "./package.json",
+    "./checkbox": { "types": "./checkbox.d.ts", "require": "./checkbox.cjs" },
+    "./tabs": { "require": "./tabs.cjs" },
+    "./merge-props": { "require": "./merge-props.cjs" },
+    "./use-render": { "require": "./use-render.cjs" },
+    "./types": { "require": "./types.cjs" },
+    "./unstable-thing": { "require": "./unstable-thing.cjs" },
+    "./internals/helper": { "require": "./internals-helper.cjs" }
+  }
+}
