@@ -74,12 +74,12 @@ export const LineClamp: Story = {
 export const Tabular: Story = {
   render: () => (
     <div className="flex flex-col gap-1">
-      <Text tabular>{"1111111.00"}</Text>
+      <Text tabular data-testid="tab">{"1111111.00"}</Text>
       <Text>{"1111111.00"}</Text>
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const [tab] = within(canvasElement).getAllByText("1111111.00");
+    const tab = within(canvasElement).getByTestId("tab");
     await expect(getComputedStyle(tab).fontVariantNumeric).toContain("tabular-nums");
   },
 };

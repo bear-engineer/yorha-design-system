@@ -8,15 +8,15 @@ const LONG_URL = "https://example.com/archive/unit-registry/2026/maintenance/" +
 const KO_PARAS = [
   "장비 점검은 매 교대 시작 전에 끝낸다. 점검 항목이 하나라도 비어 있으면 출격 승인은 보류된다.",
   "보고서의 문장은 짧게 끊고, 숫자와 단위 사이에는 공백을 둔다. 긴 복합어는 어절 단위에서만 줄바꿈한다.",
-];
+] as const;
 const JA_PARAS = [
   "点検記録は交代の開始前に完了させる。項目が一つでも未記入の場合、出撃の承認は保留となる。",
   "文章は短く区切り、句読点の後で改行を許す。見出しと本文の間には十分な余白を置く。",
-];
+] as const;
 const EN_PARAS = [
   "Inspection logs close before each shift starts. A single blank item holds the launch approval until the unit is re-checked.",
   "Keep sentences short, leave a clear gap between paragraphs, and let long identifiers wrap instead of pushing the layout sideways.",
-];
+] as const;
 
 function Fixture() {
   return (
@@ -160,7 +160,7 @@ export const WideTable: Story = {
             <tr>
               <th scope="col">Unit</th>
               <th scope="col">Load</th>
-              {ROWS[0].cells.map((_, i) => (
+              {Array.from({ length: 8 }, (_, i) => (
                 <th scope="col" key={i}>{`CH${i + 1}`}</th>
               ))}
             </tr>
