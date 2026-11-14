@@ -28,10 +28,33 @@ function toToastType(type: string | undefined): ToastType {
   return type === "success" || type === "alert" ? type : "info";
 }
 
+// Stacked from the bottom edge: every toast sits at bottom-0 and is lifted by Base UI's `--toast-offset-y` (height of
+// the toasts in front) plus a gap per index, so removing one moves the others with a transform transition instead of
+// a layout jump. While dragging, Base UI writes an inline `transform` that freezes the drag; on release the class
+// transform (same value, from --toast-swipe-movement-*) takes over and `translate` carries the toast on outward in
+// the swipe direction. Enter/exit use opacity + `translate`; every movement is scaled by --motion-spatial, so reduced
+// motion is opacity only and off is instant.
 const ROOT =
-  "relative flex w-80 max-w-full items-start gap-3 border bg-yorha-panel p-3 pr-2 rounded-yorha shadow-yorha-md " +
+  "absolute right-0 bottom-0 flex w-full items-start gap-3 border bg-yorha-panel p-3 pr-2 rounded-yorha shadow-yorha-md " +
   "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg " +
-  "yorha-slide-left [--yorha-slide-distance:1rem]";
+  "[transform:translate(var(--toast-swipe-movement-x),calc(var(--toast-swipe-movement-y)-(var(--toast-offset-y)+var(--toast-index)*0.5rem)))] " +
+  // The pointer-safe strip below keeps the viewport hovered (timers paused) while the cursor crosses the gap.
+  "after:absolute after:top-full after:left-0 after:h-2 after:w-full after:content-[''] " +
+  "[transition-property:opacity,transform,translate] " +
+  "[transition-duration:max(var(--motion-panel),var(--motion-reduced-fade)),calc(var(--motion-panel)*var(--motion-spatial)),calc(var(--motion-panel)*var(--motion-spatial))] " +
+  "[transition-timing-function:var(--yorha-ease-out)] " +
+  "data-[starting-style]:opacity-0 data-[starting-style]:[translate:calc(var(--toast-exit-x,1rem)*var(--motion-spatial))_calc(var(--toast-exit-y,0px)*var(--motion-spatial))]" +
+  " " +
+  "data-[ending-style]:opacity-0 data-[ending-style]:[translate:calc(var(--toast-exit-x,1rem)*var(--motion-spatial))_calc(var(--toast-exit-y,0px)*var(--motion-spatial))]" +
+  " " +
+  "data-[ending-style]:[transition-duration:max(var(--motion-panel-exit),var(--motion-reduced-fade)),calc(var(--motion-panel-exit)*var(--motion-spatial)),calc(var(--motion-panel-exit)*var(--motion-spatial))] " +
+  "data-[ending-style]:[transition-timing-function:var(--yorha-ease-in)] " +
+  // A swipe release keeps going the way it was thrown, decelerating from the release point.
+  "data-[swipe-direction]:data-[ending-style]:[transition-timing-function:var(--yorha-ease-out)] " +
+  "data-[swipe-direction=right]:[--toast-exit-x:calc(100%+1rem)] data-[swipe-direction=left]:[--toast-exit-x:calc(-100%-1rem)] " +
+  "data-[swipe-direction=down]:[--toast-exit-x:0px] data-[swipe-direction=down]:[--toast-exit-y:calc(100%+1rem)] " +
+  "data-[swipe-direction=up]:[--toast-exit-x:0px] data-[swipe-direction=up]:[--toast-exit-y:calc(-100%-1rem)] " +
+  "data-[swiping]:[transition-duration:0s]";
 
 // Anchored toasts (added with `positionerProps`) pop from their anchor instead of sliding in.
 const ANCHORED_ROOT =
@@ -156,7 +179,7 @@ function ToastViewport({ className, container, contained = false, ...props }: Vi
         data-slot="toast-viewport"
         aria-label="알림"
         className={cnState(
-          cn(contained ? "absolute right-4 bottom-4" : "fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))]", "z-(--yorha-z-toast) flex w-80 max-w-[calc(100%-2rem)] flex-col gap-2 outline-none focus-visible:yorha-focus"),
+          cn(contained ? "absolute right-4 bottom-4" : "fixed right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))]", "z-(--yorha-z-toast) w-80 max-w-[calc(100%-2rem)] outline-none focus-visible:yorha-focus"),
           className,
         )}
         {...props}

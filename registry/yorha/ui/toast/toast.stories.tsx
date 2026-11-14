@@ -1,7 +1,7 @@
 import { expectTargetSize } from "../../../../.storybook/preview";
 import { useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, screen, userEvent, waitFor, within } from "storybook/test";
+import { expect, fireEvent, screen, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "@/components/ui/button";
 import { ToastProvider, ToastViewport, useToast, type ToastType } from "./toast";
 
@@ -141,6 +141,88 @@ export const CloseWithKeyboard: Story = {
     await expect(close).toHaveFocus();
     await userEvent.keyboard("{Enter}");
     await waitFor(() => expect(body(canvasElement).queryByText(TITLE.success)).toBeNull());
+  },
+};
+
+/** Samples one value per animation frame until `done` or `ms` elapse. */
+async function sample<T>(read: () => T, ms: number, done?: (values: T[]) => boolean): Promise<T[]> {
+  const values: T[] = [];
+  const end = performance.now() + ms;
+  while (performance.now() < end && !(done && done(values))) {
+    values.push(read());
+    await new Promise((r) => requestAnimationFrame(r));
+  }
+  return values;
+}
+
+export const MotionRecipe: Story = {
+  args: { timeout: 0 },
+  play: async ({ canvasElement }) => {
+    const toasts = () => [...canvasElement.ownerDocument.querySelectorAll<HTMLElement>("[data-slot=toast]")];
+    const add = within(canvasElement).getByRole("button", { name: LABEL.info });
+
+    // Enter: starts transparent and fades in.
+    await userEvent.click(add);
+    const first = await waitFor(() => {
+      const [t] = toasts();
+      expect(t).toBeDefined();
+      return t;
+    });
+    const enter = await sample(() => +getComputedStyle(first).opacity, 700, (v) => v.at(-1) === 1);
+    await expect(enter[0]).toBeLessThan(1);
+
+    // Adding another toast moves the first with a transition, not a jump.
+    await userEvent.click(add);
+    await waitFor(() => expect(toasts()).toHaveLength(2));
+    const lift = await sample(() => first.getBoundingClientRect().y, 700, (v) => v.length > 3 && v.at(-1) === v.at(-2));
+    await expect(new Set(lift.map((y) => Math.round(y))).size).toBeGreaterThan(2);
+
+    // Exit: opacity falls gradually; the node is not held at 1 and then removed.
+    const [newest] = toasts();
+    const exit = (async () => sample(() => +getComputedStyle(newest).opacity, 700, () => !newest.isConnected))();
+    await userEvent.click(within(newest).getByRole("button", { name: "닫기" }));
+    const fade = await exit;
+    await expect(fade.filter((o) => o < 1 && o > 0).length).toBeGreaterThan(1);
+    await expect(Math.min(...fade)).toBeLessThan(0.5);
+
+    // The remaining toast settles back down over more than one frame.
+    await waitFor(() => expect(toasts()).toHaveLength(1));
+    const [rest] = toasts();
+    const drop = await sample(() => rest.getBoundingClientRect().y, 700, (v) => v.length > 3 && v.at(-1) === v.at(-2));
+    await expect(new Set(drop.map((y) => Math.round(y))).size).toBeGreaterThan(1);
+  },
+};
+
+/** A swipe release carries on outward from where it was let go; it does not snap back first. */
+export const SwipeContinues: Story = {
+  args: { timeout: 0 },
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole("button", { name: LABEL.info }));
+    const toast = await waitFor(() => {
+      const t = canvasElement.ownerDocument.querySelector<HTMLElement>("[data-slot=toast]");
+      expect(t).not.toBeNull();
+      return t as HTMLElement;
+    });
+    await new Promise((r) => setTimeout(r, 600));
+    const box = toast.getBoundingClientRect();
+    const x0 = box.x + 40;
+    const y0 = box.y + 20;
+    const opts = { pointerId: 1, pointerType: "mouse", isPrimary: true, bubbles: true, clientY: y0 } as const;
+    const frame = () => new Promise<void>((res) => requestAnimationFrame(() => res()));
+    fireEvent.pointerDown(toast, { ...opts, clientX: x0, buttons: 1 });
+    for (let dx = 10; dx <= 120; dx += 10) {
+      fireEvent.pointerMove(toast, { ...opts, clientX: x0 + dx, buttons: 1 });
+      await frame();
+    }
+    await expect(toast).toHaveAttribute("data-swiping");
+    const release = toast.getBoundingClientRect().x;
+    const run = (async () => sample(() => toast.getBoundingClientRect().x, 700, () => !toast.isConnected))();
+    fireEvent.pointerUp(toast, { ...opts, clientX: x0 + 120, buttons: 0 });
+    const xs = await run;
+    await expect(release).toBeGreaterThan(box.x);
+    await expect(xs.length).toBeGreaterThan(2);
+    for (let i = 1; i < xs.length; i++) await expect(xs[i]).toBeGreaterThanOrEqual(xs[i - 1] - 0.5);
+    await expect(Math.max(...xs)).toBeGreaterThan(release + 20);
   },
 };
 
