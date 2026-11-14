@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { MenuList, MenuListItem } from "@/components/ui/menu-list";
 import { Panel } from "@/components/ui/panel";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
@@ -85,19 +85,6 @@ function SectionBody({
 }) {
   const item = section.items.find((candidate) => candidate.id === itemId) ?? null;
   const detail = useRef<HTMLDivElement>(null);
-  const [phase, setPhase] = useState<"pre" | "in">("in");
-  const first = useRef(true);
-
-  // Detail fades and slides in over --motion-panel whenever the row changes (not on mount).
-  useLayoutEffect(() => {
-    if (first.current) {
-      first.current = false;
-      return;
-    }
-    setPhase("pre");
-    const id = requestAnimationFrame(() => setPhase("in"));
-    return () => cancelAnimationFrame(id);
-  }, [itemId]);
 
   return (
     <Split
@@ -119,8 +106,6 @@ function SectionBody({
         <div
           ref={detail}
           data-slot="system-menu-detail"
-          data-phase={phase}
-          className="transition-[opacity,translate] duration-(--motion-panel) ease-yorha-out data-[phase=pre]:translate-x-2 data-[phase=pre]:opacity-0"
         >
           {item && (
             <Panel
