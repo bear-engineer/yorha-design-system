@@ -124,8 +124,6 @@ const SIZE_EXEMPT_ITEMS: Record<string, string> = {
  * that already passes is listed in the console as stale.
  */
 const PENDING_FAMILY_SWEEP = new Set<string>([
-  "calendar / Default",
-  "calendar / States",
   "tabs / Default",
   "tabs / States",
   "timeline / Default",
@@ -170,7 +168,7 @@ describe("pixel snap and control heights (comfortable density)", () => {
           }
           if (!SIZE_EXEMPT_ITEMS[item] && !el.hasAttribute("data-size-exempt") && heightControls(el)) {
             // Parts of an InputGroup fill the frame's inner height; the frame is the control that sits on the scale.
-            const h = (el.closest("[data-slot=input-group]") ?? el).getBoundingClientRect().height;
+            const h = (el.closest("[data-slot$=input-group]") ?? el).getBoundingClientRect().height;
             if (![...allowed].some((a) => Math.abs(a - h) < 0.01)) heights.push(`${label(el)}: height ${h}`);
           }
         }
