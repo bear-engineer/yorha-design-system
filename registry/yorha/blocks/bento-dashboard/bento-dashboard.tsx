@@ -52,7 +52,7 @@ export function meta() {
 function Tile({ area, title, children }: { area: string; title: string; children: ReactNode }) {
   return (
     <BentoTile area={area}>
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
+      <div className="flex min-w-0 flex-1 flex-col gap-3 self-stretch">
         <Heading level={2} className="text-yorha-base">
           {title}
         </Heading>
@@ -76,7 +76,7 @@ function Placeholder({ area, title }: { area: string; title: string }) {
 
 function UnitTable() {
   return (
-    <DataTable caption="유닛 목록" density="dense">
+    <DataTable caption="유닛 목록" density="dense" hideCaption>
       <DataTableHeader>
         <DataTableRow>
           <DataTableHeadCell>이름</DataTableHeadCell>
@@ -124,10 +124,16 @@ function DashboardTiles({ state }: { state: "ready" | "loading" | "empty" }) {
     <Bento preset="dashboard">
       <Tile area="hero" title="코어">
         {empty ? <Empty>집계된 코어 데이터가 없습니다</Empty> : (
-          <>
-            <Meter label="코어 가동률" value={87} />
-            <Progress label="동기화" value={64} />
-          </>
+          <div className="flex flex-1 flex-col justify-between gap-4">
+            <p className="m-0 font-yorha-bold text-yorha-3xl leading-none yorha-tabular text-yorha-fg-strong">
+              87<span className="text-yorha-lg">%</span>
+              <span className="sr-only"> 코어 가동률</span>
+            </p>
+            <div className="flex flex-col gap-3">
+              <Meter label="코어 가동률" value={87} />
+              <Progress label="동기화" value={64} />
+            </div>
+          </div>
         )}
       </Tile>
       <Tile area="a" title="배터리">

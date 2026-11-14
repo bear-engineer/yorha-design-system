@@ -9,6 +9,7 @@ export function DataTable({
   caption,
   density = "comfortable",
   zebra = true,
+  hideCaption = false,
   className,
   children,
   ...props
@@ -16,6 +17,8 @@ export function DataTable({
   caption: ReactNode;
   density?: DataTableDensity;
   zebra?: boolean;
+  /** Keep the caption as the table's accessible name but hide it visually (when a surrounding heading already names it). */
+  hideCaption?: boolean;
 }) {
   return (
     <div data-slot="data-table-wrapper" className="w-full overflow-x-auto">
@@ -26,7 +29,7 @@ export function DataTable({
         className={cn("group/table w-full border-collapse font-yorha text-yorha-sm text-yorha-fg", className)}
         {...props}
       >
-        <caption className="mb-2 text-left font-yorha-bold text-yorha-base uppercase tracking-yorha-heading text-yorha-fg-strong">
+        <caption className={hideCaption ? "sr-only" : "mb-2 text-left font-yorha-bold text-yorha-base uppercase tracking-yorha-heading text-yorha-fg-strong"}>
           {caption}
         </caption>
         {children}
