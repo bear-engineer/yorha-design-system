@@ -20,6 +20,19 @@ describe("cn tailwind-merge", () => {
     expect(cn("text-yorha-fg text-yorha-sm", "text-yorha-xl text-yorha-alert")).toBe("text-yorha-xl text-yorha-alert");
   });
 
+  it("merges the size-scale utilities (G2): the last control height / padding wins, widths and heights stay apart", () => {
+    expect(cn("h-control-md", "h-control-sm")).toBe("h-control-sm");
+    expect(cn("h-control-md", "h-9")).toBe("h-9");
+    expect(cn("h-9", "h-control-lg")).toBe("h-control-lg");
+    expect(cn("px-pad-md", "px-3")).toBe("px-3");
+    expect(cn("px-3", "px-pad-sm")).toBe("px-pad-sm");
+    expect(cn("size-control-md", "size-icon-sm")).toBe("size-icon-sm");
+    expect(cn("min-h-row", "min-h-0")).toBe("min-h-0");
+    expect(cn("h-control-md", "w-control-md")).toBe("h-control-md w-control-md");
+    expect(cn("size-indicator", "size-bullet")).toBe("size-bullet");
+    expect(cn("leading-yorha-latin", "leading-none")).toBe("leading-none");
+  });
+
   it("replaces yorha motion utilities with the last one", () => {
     expect(cn("yorha-pop", "yorha-fade")).toBe("yorha-fade");
     expect(cn("yorha-slide-up yorha-stagger", "yorha-slide-left")).toBe("yorha-stagger yorha-slide-left");
@@ -64,6 +77,17 @@ describe("cn tailwind-merge", () => {
     }
     expect(bad).toEqual([]);
     expect(cn("text-shadow-yorha", "text-shadow-none")).toBe("text-shadow-none");
+  });
+});
+
+describe("cn size scale", () => {
+  it("knows every --spacing-* key of the generated @theme block", () => {
+    const css = readFileSync(new URL("../../../../src/styles/tokens.generated.css", import.meta.url), "utf8");
+    const theme = /@theme inline \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
+    const keys = [...theme.matchAll(/--spacing-([a-z-]+):/g)].map((m) => m[1] ?? "");
+    expect(keys).toEqual(expect.arrayContaining(["control-sm", "control-md", "control-lg", "row", "pad-sm", "pad-md", "pad-lg", "indicator", "bullet", "icon-sm", "icon-md", "icon-lg"]));
+    const bad = keys.filter((key) => cn(`h-${key}`, "h-9") !== "h-9" || cn("h-9", `h-${key}`) !== `h-${key}` || cn(`px-${key}`, "px-3") !== "px-3");
+    expect(bad).toEqual([]);
   });
 });
 

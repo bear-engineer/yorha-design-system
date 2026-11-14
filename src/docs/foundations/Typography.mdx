@@ -7,7 +7,7 @@ import { tokens } from "./tokens.generated";
 
 원작 서체는 쓰지 않습니다. OFL 서체만 npm 의존성으로 받아 `unicode-range` 조각 단위로 내려받습니다(Pretendard dynamic subset, Fontsource). 한국어는 `word-break: keep-all`, 일본어는 `:lang(ja)`에서 일본어 자형 스택으로 바뀝니다.
 
-제목은 대문자, 넓은 자간(`tracking-yorha-heading`), 단단한 오프셋 그림자(`text-shadow-yorha`)를 씁니다.
+제목은 대문자, 넓은 자간(`tracking-yorha-heading`)을 씁니다. 단단한 오프셋 그림자(`text-shadow-yorha`)는 **Heading 레벨 1의 라틴 문자에만** 씁니다. 잉크 띠 위, 36px 미만, 한국어·일본어에는 쓰지 않습니다.
 
 ## 서체
 
@@ -46,6 +46,10 @@ import { tokens } from "./tokens.generated";
   </tbody>
 </table>
 
+## 글자 크기와 줄 높이 쌍
+
+컴포넌트는 `text-yorha-*`가 가져오는 **크기-줄 높이 쌍**만 씁니다. 모든 줄 높이는 16px 루트에서 정수 px입니다: xs 12/16, sm 14/20, base 16/26(한·일 28), lg 18/28, xl 22/30, 2xl 28/36, 3xl 36/44, display 48/56. `leading-yorha-tight`·`leading-yorha-snug`는 앱 코드용으로만 남고 컴포넌트에서는 쓰지 않습니다. 숫자가 바뀌거나 줄을 맞추는 곳(달력 날짜, 표 숫자, 진행률, 개수, OTP, 시각)은 `yorha-tabular`입니다. 컨트롤 레이블은 한 줄(`whitespace-nowrap`), 데이터 텍스트는 `min-w-0 truncate`와 `title`, 숫자·금액·날짜는 자르지 않습니다. 제목은 `text-balance`, 설명·오류는 `text-pretty`, 생략은 `…`입니다.
+
 ## 굵기 · 줄 높이 · 자간
 
 <table>
@@ -53,7 +57,7 @@ import { tokens } from "./tokens.generated";
     <tr><th>유틸리티</th><th>CSS 변수</th><th>값</th><th>용도</th></tr>
   </thead>
   <tbody>
-    {[...tokens.fontWeights, ...tokens.leading, ...tokens.tracking].map((token) => (
+    {[...tokens.fontWeights, ...tokens.lineHeights, ...tokens.leading, ...tokens.tracking].map((token) => (
       <tr key={token.cssVar}><td><code>{token.utility}</code></td><td><code>{token.cssVar}</code></td><td>{token.value}</td><td>{token.description}</td></tr>
     ))}
   </tbody>
@@ -61,7 +65,7 @@ import { tokens } from "./tokens.generated";
 
 ## 가독성
 
-본문 줄 높이는 언어로 갈립니다. `:lang(ko)`·`:lang(ja)` 안에서는 `--yorha-leading-body`가 `--yorha-leading-body-cjk`(1.7)로 바뀌고, 라틴 문자(`:lang(en)` 또는 lang 미지정)는 1.6을 유지합니다. 그러려면 `<html lang="ko">`처럼 문서 언어를 표시해야 합니다. 영어 구절은 `lang="en"`으로 감싸면 1.6으로 돌아갑니다.
+본문 줄 높이는 언어로 갈립니다. `:lang(ko)`·`:lang(ja)` 안에서는 `--yorha-leading-body`가 `--yorha-leading-body-cjk`(28px, comfortable 30px)로 바뀌고, 라틴 문자(`:lang(en)` 또는 lang 미지정)는 `--yorha-leading-latin`(26px, comfortable 28px)을 씁니다. 그러려면 `<html lang="ko">`처럼 문서 언어를 표시해야 합니다. 영어 구절은 `lang="en"`으로 감싸면 라틴 값으로 돌아갑니다.
 
 <table>
   <thead>
@@ -75,6 +79,6 @@ import { tokens } from "./tokens.generated";
 </table>
 
 - **줄 길이**: `.yorha-prose`는 `max-width: var(--yorha-measure)`(40em, 한글 약 40자)로 줄 길이를 제한하고, 문단 사이는 `--yorha-paragraph-gap`(1em)을 둡니다.
-- **밀도**: `data-density="comfortable"`은 본문 글자를 17px(`--yorha-text-base: 1.0625rem`)로 키웁니다. 기본·compact는 16px입니다. 글자 크기는 `body`와 `<html>`이 아닌 `data-density` 요소에만 걸리므로 `rem` 기준 크기와 간격 계산은 바뀌지 않습니다.
+- **밀도**: `data-density="comfortable"`은 본문 글자를 17px(`--yorha-text-base: 1.0625rem`)로 키웁니다. 기본·compact는 16px이고, 본문 줄 높이도 함께 26→28px(라틴)·28→30px(한·일)로 커집니다. 글자 크기는 `body`와 `<html>`이 아닌 `data-density` 요소에만 걸리므로 `rem` 기준 크기와 간격 계산은 바뀌지 않습니다.
 - **숫자**: `yorha-tabular`는 `font-variant-numeric: tabular-nums`로 표·미터·타이머의 자릿수 폭을 맞춥니다.
 - **긴 문자열**: 한국어는 `word-break: keep-all`을 유지합니다. 링크·코드·표 셀(`a`, `code`, `td`, `th`)은 `overflow-wrap: anywhere`로 넘치기 전에 줄을 바꾸고, 그 밖의 요소에는 `yorha-break` 유틸리티를 씁니다.

@@ -789,7 +789,7 @@ export const tokens = {
       "utility": "text-yorha-xs",
       "value": "0.75rem",
       "description": "",
-      "lineHeight": "1.4"
+      "lineHeight": "var(--yorha-line-height-xs)"
     },
     {
       "name": "sm",
@@ -798,7 +798,7 @@ export const tokens = {
       "utility": "text-yorha-sm",
       "value": "0.875rem",
       "description": "",
-      "lineHeight": "1.6"
+      "lineHeight": "var(--yorha-line-height-sm)"
     },
     {
       "name": "base",
@@ -807,7 +807,7 @@ export const tokens = {
       "utility": "text-yorha-base",
       "value": "1rem",
       "description": "",
-      "lineHeight": "1.6"
+      "lineHeight": "var(--yorha-leading-body)"
     },
     {
       "name": "lg",
@@ -816,7 +816,7 @@ export const tokens = {
       "utility": "text-yorha-lg",
       "value": "1.125rem",
       "description": "",
-      "lineHeight": "1.6"
+      "lineHeight": "var(--yorha-line-height-lg)"
     },
     {
       "name": "xl",
@@ -825,7 +825,7 @@ export const tokens = {
       "utility": "text-yorha-xl",
       "value": "1.375rem",
       "description": "",
-      "lineHeight": "1.4"
+      "lineHeight": "var(--yorha-line-height-xl)"
     },
     {
       "name": "2xl",
@@ -834,7 +834,7 @@ export const tokens = {
       "utility": "text-yorha-2xl",
       "value": "1.75rem",
       "description": "",
-      "lineHeight": "1.2"
+      "lineHeight": "var(--yorha-line-height-2xl)"
     },
     {
       "name": "3xl",
@@ -843,7 +843,7 @@ export const tokens = {
       "utility": "text-yorha-3xl",
       "value": "2.25rem",
       "description": "",
-      "lineHeight": "1.2"
+      "lineHeight": "var(--yorha-line-height-3xl)"
     },
     {
       "name": "display",
@@ -852,7 +852,199 @@ export const tokens = {
       "utility": "text-yorha-display",
       "value": "3rem",
       "description": "",
-      "lineHeight": "1.2"
+      "lineHeight": "var(--yorha-line-height-display)"
+    }
+  ],
+  "lineHeights": [
+    {
+      "name": "xs",
+      "cssVar": "--yorha-line-height-xs",
+      "alias": "",
+      "utility": "",
+      "value": "1rem",
+      "description": "Line height paired with 12px type (whole px)."
+    },
+    {
+      "name": "sm",
+      "cssVar": "--yorha-line-height-sm",
+      "alias": "",
+      "utility": "",
+      "value": "1.25rem",
+      "description": "Line height paired with 14px type (whole px)."
+    },
+    {
+      "name": "lg",
+      "cssVar": "--yorha-line-height-lg",
+      "alias": "",
+      "utility": "",
+      "value": "1.75rem",
+      "description": "Line height paired with 18px type (whole px)."
+    },
+    {
+      "name": "xl",
+      "cssVar": "--yorha-line-height-xl",
+      "alias": "",
+      "utility": "",
+      "value": "1.875rem",
+      "description": "Line height paired with 22px type (whole px)."
+    },
+    {
+      "name": "2xl",
+      "cssVar": "--yorha-line-height-2xl",
+      "alias": "",
+      "utility": "",
+      "value": "2.25rem",
+      "description": "Line height paired with 28px type (whole px)."
+    },
+    {
+      "name": "3xl",
+      "cssVar": "--yorha-line-height-3xl",
+      "alias": "",
+      "utility": "",
+      "value": "2.75rem",
+      "description": "Line height paired with 36px type (whole px)."
+    },
+    {
+      "name": "display",
+      "cssVar": "--yorha-line-height-display",
+      "alias": "",
+      "utility": "",
+      "value": "3.5rem",
+      "description": "Line height paired with 48px type (whole px)."
+    }
+  ],
+  "sizes": [
+    {
+      "name": "control.sm",
+      "cssVar": "--yorha-control-sm",
+      "alias": "",
+      "utility": "control-sm",
+      "value": "2rem",
+      "description": "Small control height (toolbar item, tab, chip, calendar cell). 24 / 32 / 40px by density.",
+      "default": "2rem",
+      "compact": "1.5rem",
+      "comfortable": "2.5rem"
+    },
+    {
+      "name": "control.md",
+      "cssVar": "--yorha-control-md",
+      "alias": "",
+      "utility": "control-md",
+      "value": "2.5rem",
+      "description": "Default control height (button, input, select trigger, toggle). 32 / 40 / 48px by density.",
+      "default": "2.5rem",
+      "compact": "2rem",
+      "comfortable": "3rem"
+    },
+    {
+      "name": "control.lg",
+      "cssVar": "--yorha-control-lg",
+      "alias": "",
+      "utility": "control-lg",
+      "value": "3rem",
+      "description": "Large control height. 40 / 48 / 56px by density.",
+      "default": "3rem",
+      "compact": "2.5rem",
+      "comfortable": "3.5rem"
+    },
+    {
+      "name": "row",
+      "cssVar": "--yorha-row",
+      "alias": "",
+      "utility": "row",
+      "value": "2rem",
+      "description": "Row height of menu, option, list and table rows (min). 28 / 32 / 40px by density.",
+      "default": "2rem",
+      "compact": "1.75rem",
+      "comfortable": "2.5rem"
+    },
+    {
+      "name": "pad.sm",
+      "cssVar": "--yorha-pad-sm",
+      "alias": "",
+      "utility": "pad-sm",
+      "value": "0.75rem",
+      "description": "Inline padding of sm controls.",
+      "default": "0.75rem",
+      "compact": "0.5rem",
+      "comfortable": "0.75rem"
+    },
+    {
+      "name": "pad.md",
+      "cssVar": "--yorha-pad-md",
+      "alias": "",
+      "utility": "pad-md",
+      "value": "1rem",
+      "description": "Inline padding of md controls and inputs.",
+      "default": "1rem",
+      "compact": "0.75rem",
+      "comfortable": "1.25rem"
+    },
+    {
+      "name": "pad.lg",
+      "cssVar": "--yorha-pad-lg",
+      "alias": "",
+      "utility": "pad-lg",
+      "value": "1.5rem",
+      "description": "Inline padding of lg controls.",
+      "default": "1.5rem",
+      "compact": "1rem",
+      "comfortable": "1.75rem"
+    },
+    {
+      "name": "indicator",
+      "cssVar": "--yorha-indicator",
+      "alias": "",
+      "utility": "indicator",
+      "value": "20px",
+      "description": "Fixed box of a checkbox, radio, switch thumb track indicator. Density-fixed.",
+      "default": "20px",
+      "compact": "20px",
+      "comfortable": "20px"
+    },
+    {
+      "name": "bullet",
+      "cssVar": "--yorha-bullet",
+      "alias": "",
+      "utility": "bullet",
+      "value": "8px",
+      "description": "Fixed box of a list bullet or status dot. Density-fixed.",
+      "default": "8px",
+      "compact": "8px",
+      "comfortable": "8px"
+    },
+    {
+      "name": "icon.sm",
+      "cssVar": "--yorha-icon-sm",
+      "alias": "",
+      "utility": "icon-sm",
+      "value": "12px",
+      "description": "Icon box, small (check, cross, plus).",
+      "default": "12px",
+      "compact": "12px",
+      "comfortable": "12px"
+    },
+    {
+      "name": "icon.md",
+      "cssVar": "--yorha-icon-md",
+      "alias": "",
+      "utility": "icon-md",
+      "value": "16px",
+      "description": "Icon box, default (chevron, calendar).",
+      "default": "16px",
+      "compact": "16px",
+      "comfortable": "16px"
+    },
+    {
+      "name": "icon.lg",
+      "cssVar": "--yorha-icon-lg",
+      "alias": "",
+      "utility": "icon-lg",
+      "value": "20px",
+      "description": "Icon box, large.",
+      "default": "20px",
+      "compact": "20px",
+      "comfortable": "20px"
     }
   ],
   "leading": [
@@ -862,7 +1054,7 @@ export const tokens = {
       "alias": "",
       "utility": "leading-yorha-tight",
       "value": "1.2",
-      "description": "Headings."
+      "description": "Consumer utility only (headings in app code). Components use the type pair."
     },
     {
       "name": "snug",
@@ -870,23 +1062,23 @@ export const tokens = {
       "alias": "",
       "utility": "leading-yorha-snug",
       "value": "1.4",
-      "description": "Labels, dense UI."
-    },
-    {
-      "name": "body",
-      "cssVar": "--yorha-leading-body",
-      "alias": "",
-      "utility": "leading-yorha-body",
-      "value": "1.6",
-      "description": "Body copy, Latin text (:lang(en) and unmarked)."
+      "description": "Consumer utility only. Components use the type pair."
     },
     {
       "name": "body-cjk",
       "cssVar": "--yorha-leading-body-cjk",
       "alias": "",
       "utility": "leading-yorha-body-cjk",
-      "value": "1.7",
-      "description": "Body copy, Korean / Japanese (:lang(ko), :lang(ja)). Wide glyphs need more air."
+      "value": "1.75rem",
+      "description": "Body line height, Korean / Japanese (28px; 30px comfortable). --yorha-leading-body points here under :lang(ko), :lang(ja)."
+    },
+    {
+      "name": "latin",
+      "cssVar": "--yorha-leading-latin",
+      "alias": "",
+      "utility": "leading-yorha-latin",
+      "value": "1.625rem",
+      "description": "Body line height, Latin text (26px; 28px comfortable). --yorha-leading-body points here under :lang(en) and for unmarked text."
     }
   ],
   "tracking": [
@@ -940,21 +1132,21 @@ export const tokens = {
       "alias": "",
       "utility": "",
       "value": "0.25rem",
-      "description": "Tailwind --spacing multiplier. [data-density] overrides it per subtree."
+      "description": "Tailwind --spacing multiplier (4px). Fixed: density changes the size tokens, not the grid."
     },
     {
       "name": "grid",
       "cssVar": "--yorha-grid-size",
       "alias": "",
       "utility": "",
-      "value": "0.3rem",
-      "description": "Cell size of the decorative background grid."
+      "value": "0.5rem",
+      "description": "Cell size of the decorative background grid (8px, two pixel-grid steps)."
     }
   ],
   "density": {
-    "default": "0.25rem",
-    "compact": "0.2rem",
-    "comfortable": "0.3rem"
+    "default": "2.5rem",
+    "compact": "2rem",
+    "comfortable": "3rem"
   },
   "radius": [
     {
@@ -1160,7 +1352,7 @@ export const tokens = {
         "alias": "--motion-drawer",
         "utility": "",
         "value": "450ms",
-        "description": "Drawer and sheet slide, enter and exit (yorha-slide-*). A swipe release scales it by --drawer-swipe-strength.",
+        "description": "Drawer and sheet slide, enter (yorha-slide-*).",
         "full": "450ms",
         "reduced": "0ms",
         "off": "0ms"
@@ -1228,6 +1420,39 @@ export const tokens = {
         "value": "90ms",
         "description": "Press feedback on buttons and other pressable controls (yorha-press).",
         "full": "90ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "modal",
+        "cssVar": "--yorha-motion-modal",
+        "alias": "--motion-modal",
+        "utility": "",
+        "value": "280ms",
+        "description": "Modal dialog and alert dialog enter, scrim fades with it.",
+        "full": "280ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "modal-exit",
+        "cssVar": "--yorha-motion-modal-exit",
+        "alias": "--motion-modal-exit",
+        "utility": "",
+        "value": "200ms",
+        "description": "Modal exit (faster than enter).",
+        "full": "200ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "drawer-exit",
+        "cssVar": "--yorha-motion-drawer-exit",
+        "alias": "--motion-drawer-exit",
+        "utility": "",
+        "value": "280ms",
+        "description": "Drawer exit, scaled by the swipe strength.",
+        "full": "280ms",
         "reduced": "0ms",
         "off": "0ms"
       }
@@ -1370,8 +1595,8 @@ export const tokens = {
       "cssVar": "--yorha-z-decor",
       "alias": "",
       "utility": "",
-      "value": "1",
-      "description": "Grid, vignette, ornaments."
+      "value": "-1",
+      "description": "Grid, vignette, ornaments: behind content. Host: relative isolate."
     },
     {
       "name": "raised",

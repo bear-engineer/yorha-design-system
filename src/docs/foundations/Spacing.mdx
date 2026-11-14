@@ -5,24 +5,28 @@ import { tokens } from "./tokens.generated";
 
 # 간격과 밀도
 
-간격은 Tailwind의 `--spacing` 한 값에서 나옵니다(`p-4` = `--spacing` × 4). `data-density` 속성이 그 값을 하위 트리 단위로 바꾸므로, 컴포넌트는 숫자 간격 유틸리티(`p-4`, `gap-2`, `h-9`)만 쓰면 밀도를 따라갑니다.
+**픽셀 그리드는 4px로 고정**입니다(`--spacing` = 0.25rem, 밀도가 바꾸지 않음). 높이와 세로 간격은 4px의 배수(헤어라인 오프셋만 2px), 고정 px 자식을 가운데 놓는 상자는 짝수 크기, 텍스트나 테두리 상자에 퍼센트 translate 금지, 소수 px/rem 임의값 금지입니다.
+
+밀도(`data-density`)는 간격이 아니라 **크기 토큰**을 하위 트리 단위로 바꿉니다. 컨트롤 높이는 패딩+줄 높이로 만들지 않고 `h-control-*`(줄바꿈 가능하면 `min-h-*`)로 정하고 내용을 가운데 놓습니다.
 
 <table>
   <thead>
-    <tr><th>data-density</th><th>--spacing</th></tr>
+    <tr><th>토큰</th><th>유틸리티</th><th>compact</th><th>default</th><th>comfortable</th><th>용도</th></tr>
   </thead>
   <tbody>
-    {Object.entries(tokens.density).map(([density, value]) => (
-      <tr key={density}><td><code>{density}</code></td><td>{value}</td></tr>
+    {tokens.sizes.map((size) => (
+      <tr key={size.cssVar}><td><code>{size.cssVar}</code></td><td><code>{size.utility}</code></td><td>{size.compact}</td><td>{size.default}</td><td>{size.comfortable}</td><td>{size.description}</td></tr>
     ))}
   </tbody>
 </table>
+
+`h-control-md`, `size-control-sm`, `min-h-row`, `px-pad-md`, `size-icon-md`처럼 씁니다. 아이콘·인디케이터·불릿은 밀도와 무관하게 고정입니다.
 
 <Unstyled>
   <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", gap: "1rem", margin: "1rem 0" }}>
     {Object.keys(tokens.density).map((density) => (
       <div key={density} data-density={density} className="border border-yorha-border bg-yorha-panel font-yorha text-yorha-fg">
-        <div className="p-4 text-yorha-sm">{density}</div>
+        <div className="grid h-control-md place-items-center px-pad-md text-yorha-sm">{density}</div>
       </div>
     ))}
   </div>
@@ -60,7 +64,7 @@ import { tokens } from "./tokens.generated";
 
 ## 쌓임 순서
 
-`z-(--yorha-z-modal)`처럼 변수로 씁니다.
+`z-(--yorha-z-modal)`처럼 변수로 씁니다. 장식(`--yorha-z-decor`)은 -1로 콘텐츠 뒤에 깔리므로 호스트에 `relative isolate`를 둡니다. 포커스 링은 `yorha-focus`(2px, 오프셋 2px) 하나만 씁니다.
 
 <table>
   <thead>

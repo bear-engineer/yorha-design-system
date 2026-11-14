@@ -17,9 +17,9 @@ function DensityDemo() {
     <div className="flex flex-wrap items-start gap-4 font-yorha text-yorha-fg">
       {DENSITIES.map((density) => (
         <div key={density} role="group" aria-label={`밀도 ${density}`} data-density={density} className="border border-yorha-border bg-yorha-panel">
-          <div data-testid={`box-${density}`} className="p-4">
+          <div data-testid={`spacing-${density}`} className="p-4" />
+          <div data-testid={`box-${density}`} className="grid h-control-md place-items-center px-pad-md">
             <p className="text-yorha-sm tracking-yorha-wide uppercase">{density}</p>
-            <p className="text-yorha-sm text-yorha-fg-soft">p-4 = --spacing × 4</p>
           </div>
         </div>
       ))}
@@ -130,18 +130,47 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** `[data-density]` on any element rescales Tailwind spacing utilities inside that subtree only. */
+/** `[data-density]` rescales the size tokens (control height, row, padding) in that subtree; the 4px grid itself never changes. */
 export const Density: Story = {
   render: () => <DensityDemo />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    const padding = (density: (typeof DENSITIES)[number]) => parseFloat(getComputedStyle(canvas.getByTestId(`box-${density}`)).paddingTop);
+    const box = (density: (typeof DENSITIES)[number]) => getComputedStyle(canvas.getByTestId(`box-${density}`));
+    const control = tokens.sizes.find((size) => size.name === "control.md");
+    await expect(control).toBeDefined();
+    if (!control) return;
     for (const density of DENSITIES) {
-      // p-4 = 4 × the density's --spacing step, taken from the generated tokens (single source).
-      await expect(padding(density)).toBeCloseTo(parseFloat(tokens.density[density]) * rootFontSize() * 4, 1);
+      // h-control-md = the density's control.md token, a whole px on the 4px grid.
+      const expected = parseFloat(control[density]) * rootFontSize();
+      await expect(parseFloat(box(density).height)).toBeCloseTo(expected, 1);
+      await expect(expected % 4).toBe(0);
     }
-    await expect(padding("compact")).toBeLessThan(padding("default"));
-    await expect(padding("default")).toBeLessThan(padding("comfortable"));
+    await expect(parseFloat(box("compact").height)).toBeLessThan(parseFloat(box("default").height));
+    await expect(parseFloat(box("default").height)).toBeLessThan(parseFloat(box("comfortable").height));
+    // spacing is not density-dependent: p-4 is 16px everywhere
+    for (const density of DENSITIES) await expect(canvas.getByTestId(`spacing-${density}`)).toHaveStyle({ paddingTop: "16px" });
+  },
+};
+
+/** Caret, selection and decor layering (G12, G13). Autofill cannot be driven headless; it needs a manual check. */
+export const BaseRules: Story = {
+  render: () => (
+    <div className="font-yorha text-yorha-fg">
+      <input data-testid="field" aria-label="입력" className="border border-yorha-border bg-yorha-bg px-pad-sm" />
+      <p data-testid="text">선택 영역은 잉크 바탕에 반전 글자</p>
+      <button type="button" data-testid="button">버튼</button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await expect(getComputedStyle(canvas.getByTestId("field")).caretColor).not.toBe("auto");
+    const root = getComputedStyle(document.documentElement);
+    const ink = root.getPropertyValue("--yorha-ink").trim();
+    await expect(ink).not.toBe("");
+    const selection = getComputedStyle(canvas.getByTestId("text"), "::selection");
+    await expect(selection.backgroundColor).toBe(getComputedStyle(canvas.getByTestId("field")).caretColor);
+    await expect(getComputedStyle(canvas.getByTestId("button")).userSelect).toBe("none");
+    await expect(root.getPropertyValue("--yorha-z-decor").trim()).toBe("-1");
   },
 };
 

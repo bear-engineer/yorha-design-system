@@ -5,7 +5,9 @@ export type ClassValue = string | number | false | null | undefined | ClassValue
 /** Names from the generated `@theme inline` block (--color-yorha-*, --text-yorha-*, ...), without the `yorha-` prefix. */
 const COLORS = ["bg", "panel", "grid", "line-deco", "fg-ink", "fg-strong", "fg", "fg-soft", "fg-muted", "border", "separator", "ink", "on-ink", "on-ink-soft", "control", "on-control", "alert", "alert-ui", "alert-on-ink", "ring", "shadow", "scrim"];
 const TEXT_SIZES = ["xs", "sm", "base", "lg", "xl", "2xl", "3xl", "display"];
-const LEADINGS = ["tight", "snug", "body", "body-cjk"];
+const LEADINGS = ["tight", "snug", "body", "latin", "body-cjk"];
+/** Size scale (--spacing-<a>-<b>): h-control-md, min-h-row, px-pad-md, size-icon-md ... */
+const SPACINGS = ["control-sm", "control-md", "control-lg", "row", "pad-sm", "pad-md", "pad-lg", "indicator", "bullet", "icon-sm", "icon-md", "icon-lg"];
 const TRACKINGS = ["body", "wide", "heading"];
 const SHADOWS = ["sm", "md", "lg"];
 const EASES = ["", "out", "in", "emphasized", "decelerate"];
@@ -22,6 +24,7 @@ const twMerge = extendTailwindMerge<"yorha-motion" | "yorha-stagger">({
       color: pre(COLORS),
       text: pre(TEXT_SIZES),
       leading: pre(LEADINGS),
+      spacing: SPACINGS,
       tracking: pre(TRACKINGS),
       shadow: pre(SHADOWS),
       "text-shadow": ["yorha"],
