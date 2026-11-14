@@ -47,7 +47,7 @@ export const Authentic: Story = {
   play: async ({ canvasElement }) => expectPage(canvasElement, "authentic"),
 };
 
-export const Meta: Story = {
+export const RouteMeta: Story = {
   name: "meta 제목",
   play: async () => {
     const [entry] = routeMeta() as Array<{ title: string }>;

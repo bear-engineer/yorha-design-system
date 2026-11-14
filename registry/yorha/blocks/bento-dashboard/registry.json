@@ -1,0 +1,35 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "bento-dashboard",
+      "type": "registry:block",
+      "title": "Bento dashboard",
+      "description": "Route page: Bento dashboard preset with Meter, Progress, Avatar, Badge, Card, DataTable and a Timeline; loading (Skeleton), empty and error states you can switch; unit list to detail with a SharedElement transition. Copy the page to app/routes/bento-dashboard.tsx in a react-router app and install the listed items first.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/bento",
+        "@yorha/route-transition",
+        "@yorha/page-header",
+        "@yorha/avatar",
+        "@yorha/badge",
+        "@yorha/button",
+        "@yorha/card",
+        "@yorha/data-table",
+        "@yorha/heading",
+        "@yorha/meter",
+        "@yorha/progress",
+        "@yorha/skeleton",
+        "@yorha/timeline"
+      ],
+      "files": [
+        {
+          "path": "bento-dashboard.tsx",
+          "type": "registry:page",
+          "target": "~/app/routes/bento-dashboard.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Import @/components/route-transition before the router is created (root.tsx or the entry file), and render <RouteTransition /> in the parent layout, or the shared-element transition will not run."
+    }
+  ]
+}

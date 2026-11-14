@@ -1,0 +1,30 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "settings-form",
+      "type": "registry:block",
+      "title": "Settings form",
+      "description": "Route page: Form with Field, Combobox, OtpField and Switch. Validates on submit, moves focus to an error summary on failure, shows a submitting state and a success Toast. Copy the page to app/routes/settings-form.tsx in a react-router app and install the listed items first.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/page-header",
+        "@yorha/button",
+        "@yorha/combobox",
+        "@yorha/field",
+        "@yorha/form",
+        "@yorha/otp-field",
+        "@yorha/switch",
+        "@yorha/toast"
+      ],
+      "files": [
+        {
+          "path": "settings-form.tsx",
+          "type": "registry:page",
+          "target": "~/app/routes/settings-form.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. The save request is a timer stand-in: replace it with your action."
+    }
+  ]
+}
