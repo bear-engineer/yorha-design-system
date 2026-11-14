@@ -1,7 +1,10 @@
 import * as React from "react";
 import { Calendar, type CalendarProps, type DateRange, isSameDay, startOfDay } from "@/components/ui/calendar";
-import { Field, FieldControl, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover as PopoverPrimitive } from "@base-ui/react/popover";
+import { CalendarIcon } from "@/components/ui/icons";
+import { Field, FieldDescription, FieldError, FieldGroupControl, FieldLabel } from "@/components/ui/field";
+import { InputGroup, InputGroupButton, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
+import { Popover, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 /* ---------- locale format and parse (Intl only) ---------- */
@@ -52,10 +55,27 @@ export function parseDate(text: string, locale = "ko-KR"): Date | null {
   return date;
 }
 
+/** Placeholder from the locale's own parts: ko reads `연도. 월. 일.`, other locales `YYYY. MM. DD.` in their order. */
 function placeholderOf(locale: string): string {
+  const names = locale.toLowerCase().startsWith("ko")
+    ? { year: "연도", month: "월", day: "일" }
+    : { year: "YYYY", month: "MM", day: "DD" };
   return partsOf(locale)
-    .map((p) => (p.type === "year" ? "yyyy" : p.type === "month" ? "mm" : p.type === "day" ? "dd" : p.value))
+    .map((p) => (p.type === "year" || p.type === "month" || p.type === "day" ? names[p.type] : p.value))
     .join("");
+}
+
+/** Soft mask for pure digits typed in year-month-day order: `20261114` becomes `2026. 11. 14.` as it is typed. */
+function maskDigits(raw: string, locale: string): string {
+  if (!/^\d{1,8}$/.test(raw)) return raw;
+  const order = fieldOrder(locale);
+  if (order[0] !== "year" || order[1] !== "month" || order[2] !== "day") return raw;
+  const y = raw.slice(0, 4);
+  const m = raw.slice(4, 6);
+  const d = raw.slice(6, 8);
+  if (raw.length <= 4) return y;
+  if (raw.length <= 6) return `${y}. ${m}`;
+  return raw.length === 8 ? `${y}. ${m}. ${d}.` : `${y}. ${m}. ${d}`;
 }
 
 const RANGE_SEPARATOR = " – ";
@@ -84,11 +104,14 @@ interface PickerCommonProps extends CalendarPassThrough {
   required?: boolean;
   /** BCP 47 locale for format, parse and month names. Default `ko-KR`. */
   locale?: string;
+  /** Single picker only: the range picker builds a placeholder per input. */
   placeholder?: string;
   /** Message for text that is not a date. */
   invalidMessage?: string;
   /** Message for a date that is disabled or outside minDate/maxDate. */
   outOfRangeMessage?: string;
+  /** Range only: message when the end is before the start. */
+  rangeOrderMessage?: string;
   /** Accessible name of the trigger button. */
   triggerLabel?: string;
   className?: string;
@@ -108,21 +131,14 @@ export interface DateRangePickerProps extends PickerCommonProps {
 
 const EMPTY_RANGE: DateRange = { from: null, to: null };
 
-function CalendarGlyph() {
-  return (
-    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <rect x="2" y="3" width="12" height="11" />
-      <path d="M2 6.5h12M5 1.5v3M11 1.5v3" />
-    </svg>
-  );
-}
-
 interface PickerImplProps extends PickerCommonProps {
   mode: "single" | "range";
   value?: Date | null | DateRange;
   defaultValue?: Date | null | DateRange;
   onValueChange?: (value: Date | null | DateRange) => void;
 }
+
+type Side = "from" | "to";
 
 function PickerImpl(props: PickerImplProps) {
   const {
@@ -137,6 +153,7 @@ function PickerImpl(props: PickerImplProps) {
     placeholder,
     invalidMessage = "날짜 형식이 올바르지 않다. 예: 2026. 11. 14.",
     outOfRangeMessage = "선택할 수 없는 날짜다.",
+    rangeOrderMessage = "종료일이 시작일보다 빠릅니다",
     triggerLabel = "달력 열기",
     className,
     id,
@@ -160,60 +177,69 @@ function PickerImpl(props: PickerImplProps) {
     props.onValueChange?.(next);
   };
 
-  const format = React.useCallback(
-    (v: Date | null | DateRange): string => {
-      if (!isRange) return v ? formatDate(v as Date, locale) : "";
-      const r = (v as DateRange | null) ?? EMPTY_RANGE;
-      if (!r.from) return "";
-      return r.to ? `${formatDate(r.from, locale)}${RANGE_SEPARATOR}${formatDate(r.to, locale)}` : formatDate(r.from, locale);
-    },
-    [isRange, locale],
-  );
-  const formatted = format(value);
-  const [text, setText] = React.useState(formatted);
-  const [typedError, setTypedError] = React.useState<string | null>(null);
+  const range = isRange ? ((value as DateRange | null) ?? EMPTY_RANGE) : EMPTY_RANGE;
+  const fromFormatted = isRange ? (range.from ? formatDate(range.from, locale) : "") : value ? formatDate(value as Date, locale) : "";
+  const toFormatted = isRange && range.to ? formatDate(range.to, locale) : "";
+  const [text, setText] = React.useState({ from: fromFormatted, to: toFormatted });
+  const [typedError, setTypedError] = React.useState<{ side: Side; message: string } | null>(null);
   React.useEffect(() => {
-    setText(formatted);
+    setText({ from: fromFormatted, to: toFormatted });
     setTypedError(null);
-  }, [formatted]);
+  }, [fromFormatted, toFormatted]);
 
   const min = minDate ? startOfDay(minDate) : undefined;
   const max = maxDate ? startOfDay(maxDate) : undefined;
   const unavailable = (d: Date) => (min && d < min) || (max && d > max) || !!isDateDisabled?.(d);
 
-  const commitText = () => {
-    const raw = text.trim();
+  /** Parse one typed value. Typed text commits on blur and Enter; an error keeps the text so it can be fixed. */
+  const commitText = (side: Side) => {
+    const raw = text[side].trim();
+    const fail = (message: string) => setTypedError({ side, message });
     if (!raw) {
       setTypedError(null);
-      if (formatted) commit(isRange ? EMPTY_RANGE : null);
+      if (!isRange) {
+        if (fromFormatted) commit(null);
+      } else if (range[side]) commit({ ...range, [side]: null });
       return;
     }
+    const d = parseDate(raw, locale);
+    if (!d) return fail(invalidMessage);
+    if (unavailable(d)) return fail(outOfRangeMessage);
     if (!isRange) {
-      const d = parseDate(raw, locale);
-      if (!d) return setTypedError(invalidMessage);
-      if (unavailable(d)) return setTypedError(outOfRangeMessage);
       setTypedError(null);
-      setText(formatDate(d, locale));
+      setText({ from: formatDate(d, locale), to: "" });
       if (!isSameDay(d, value as Date | null)) commit(d);
       return;
     }
-    const pieces = raw.split(RANGE_SPLIT).filter(Boolean);
-    const a = pieces.length === 2 ? parseDate(pieces[0]!, locale) : null;
-    const b = pieces.length === 2 ? parseDate(pieces[1]!, locale) : null;
-    if (!a || !b) return setTypedError(invalidMessage);
-    const [from, to] = a <= b ? [a, b] : [b, a];
-    if (unavailable(from) || unavailable(to)) return setTypedError(outOfRangeMessage);
+    const other = side === "from" ? range.to : range.from;
+    if (other && (side === "from" ? d > other : d < other)) return fail(rangeOrderMessage);
     setTypedError(null);
-    const next = { from, to };
-    setText(format(next));
-    const cur = value as DateRange;
-    if (!isSameDay(cur.from, from) || !isSameDay(cur.to, to)) commit(next);
+    setText((t) => ({ ...t, [side]: formatDate(d, locale) }));
+    if (!isSameDay(range[side], d)) commit({ ...range, [side]: d });
+  };
+  const onTextChange = (side: Side, e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.currentTarget.value;
+    const grew = raw.length > text[side].length;
+    setTypedError(null);
+    setText((t) => ({ ...t, [side]: grew ? maskDigits(raw, locale) : raw }));
+  };
+  const onTextKeyDown = (side: Side, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") commitText(side);
   };
 
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpenState] = React.useState(false);
+  /** Range: the start picked in the popup stays a draft until the end is chosen; Escape restores the committed range. */
+  const [draft, setDraft] = React.useState<DateRange | null>(null);
+  const setOpen = (next: boolean) => {
+    setOpenState(next);
+    if (!next) setDraft(null);
+  };
   const calendarRef = React.useRef<HTMLDivElement | null>(null);
-  const shownError = error || typedError;
-  const iso = isRange ? [isoOf((value as DateRange).from), isoOf((value as DateRange).to)] : [isoOf(value as Date | null)];
+  const frameRef = React.useRef<HTMLDivElement | null>(null);
+  const shownError = error || typedError?.message;
+  const iso = isRange ? [isoOf(range.from), isoOf(range.to)] : [isoOf(value as Date | null)];
+  const fieldPlaceholder = placeholder ?? placeholderOf(locale);
+  const invalidSide = typedError?.side ?? null;
 
   const calendarProps = {
     minDate,
@@ -227,61 +253,128 @@ function PickerImpl(props: PickerImplProps) {
     labels,
     locale,
     autoFocus: true,
-    className: "p-0!",
+    showToday: true,
+    bordered: false,
   };
+
+  const trigger = (
+    <PopoverPrimitive.Trigger
+      render={
+        <InputGroupButton
+          aria-label={triggerLabel}
+          disabled={disabled}
+          className="data-[popup-open]:bg-yorha-ink data-[popup-open]:text-yorha-on-ink"
+        />
+      }
+    >
+      <CalendarIcon />
+    </PopoverPrimitive.Trigger>
+  );
+  const fieldId = id;
 
   return (
     <Field invalid={Boolean(shownError)} disabled={disabled} className={className}>
       <FieldLabel>{label}</FieldLabel>
-      <div className="flex items-stretch gap-2">
-        <FieldControl
-          id={id}
-          type="text"
-          autoComplete="off"
-          required={required}
-          lang={locale}
-          value={text}
-          placeholder={placeholder ?? (isRange ? `${placeholderOf(locale)}${RANGE_SEPARATOR}${placeholderOf(locale)}` : placeholderOf(locale))}
-          onChange={(e) => setText(e.currentTarget.value)}
-          onBlur={commitText}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") commitText();
-          }}
-        />
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger aria-label={triggerLabel} disabled={disabled} className="grid size-10 shrink-0 place-items-center p-0">
-            <CalendarGlyph />
-          </PopoverTrigger>
-          <PopoverContent
-            aria-label={typeof label === "string" ? label : triggerLabel}
-            className={cn((numberOfMonths ?? 1) > 1 && "max-w-none!")}
-            initialFocus={() => calendarRef.current?.querySelector<HTMLElement>("[data-slot=calendar-day][tabindex='0']") ?? true}
-          >
-            {isRange ? (
-              <Calendar
-                ref={calendarRef}
-                mode="range"
-                value={value as DateRange}
-                onValueChange={(next) => {
-                  commit(next);
-                  if (next.from && next.to) setOpen(false);
-                }}
-                {...calendarProps}
+      <Popover open={open} onOpenChange={setOpen}>
+        <InputGroup
+          ref={frameRef}
+          data-slot="date-field"
+          variant={isRange ? "wrap" : "default"}
+          invalid={Boolean(shownError)}
+          disabled={disabled}
+          aria-label={typeof label === "string" ? label : triggerLabel}
+        >
+          {isRange ? (
+            <>
+              <FieldGroupControl
+                id={fieldId}
+                data-slot="date-input"
+                aria-label="시작일"
+                autoComplete="off"
+                inputMode="numeric"
+                required={required}
+                lang={locale}
+                value={text.from}
+                placeholder={placeholderOf(locale)}
+                onChange={(e) => onTextChange("from", e)}
+                onBlur={() => commitText("from")}
+                onKeyDown={(e) => onTextKeyDown("from", e)}
+                className={cn("yorha-tabular h-[calc(var(--yorha-control-md)-2px)] min-w-[calc(13ch+2*var(--yorha-pad-md))] flex-1")}
               />
-            ) : (
-              <Calendar
-                ref={calendarRef}
-                value={value as Date | null}
-                onValueChange={(next) => {
+              <InputGroupText className="h-[calc(var(--yorha-control-md)-2px)]">–</InputGroupText>
+              <InputGroupInput
+                data-slot="date-input"
+                aria-label="종료일"
+                aria-invalid={invalidSide === "to" ? true : undefined}
+                disabled={disabled}
+                autoComplete="off"
+                inputMode="numeric"
+                lang={locale}
+                value={text.to}
+                placeholder={placeholderOf(locale)}
+                onChange={(e) => onTextChange("to", e)}
+                onBlur={() => commitText("to")}
+                onKeyDown={(e) => onTextKeyDown("to", e)}
+                className="yorha-tabular h-[calc(var(--yorha-control-md)-2px)] min-w-[calc(13ch+2*var(--yorha-pad-md))] flex-1"
+              />
+              {trigger}
+            </>
+          ) : (
+            <>
+              <FieldGroupControl
+                id={fieldId}
+                data-slot="date-input"
+                autoComplete="off"
+                inputMode="numeric"
+                required={required}
+                lang={locale}
+                value={text.from}
+                placeholder={fieldPlaceholder}
+                onChange={(e) => onTextChange("from", e)}
+                onBlur={() => commitText("from")}
+                onKeyDown={(e) => onTextKeyDown("from", e)}
+                className="yorha-tabular"
+              />
+              {trigger}
+            </>
+          )}
+        </InputGroup>
+        <PopoverContent
+          anchor={frameRef}
+          side="bottom"
+          align="start"
+          sideOffset={8}
+          collisionPadding={8}
+          aria-label={typeof label === "string" ? label : triggerLabel}
+          className="w-auto max-w-none! min-w-0! p-0!"
+          initialFocus={() => calendarRef.current?.querySelector<HTMLElement>("[data-slot=calendar-day][tabindex='0']") ?? true}
+        >
+          {isRange ? (
+            <Calendar
+              ref={calendarRef}
+              mode="range"
+              value={draft ?? range}
+              onValueChange={(next) => {
+                if (next.from && next.to) {
                   commit(next);
                   setOpen(false);
-                }}
-                {...calendarProps}
-              />
-            )}
-          </PopoverContent>
-        </Popover>
-      </div>
+                } else setDraft(next);
+              }}
+              {...calendarProps}
+            />
+          ) : (
+            <Calendar
+              ref={calendarRef}
+              value={value as Date | null}
+              onValueChange={(next) => {
+                commit(next);
+                setOpen(false);
+              }}
+              {...calendarProps}
+            />
+          )}
+        </PopoverContent>
+      </Popover>
       {description ? <FieldDescription>{description}</FieldDescription> : null}
       {shownError ? <FieldError>{shownError}</FieldError> : null}
       {name
@@ -294,15 +387,19 @@ function PickerImpl(props: PickerImplProps) {
 }
 
 /**
- * Date input plus a calendar popup. Type a date in the locale format (parsed on blur or Enter) or pick one;
- * label, description and error come from the yorha Field. Escape or a pick closes the popup and focus returns
- * to the trigger button.
+ * Date field plus a calendar popup in one InputGroup frame. Type a date in the locale format (digits get their
+ * separators as you type; parsed on blur or Enter) or pick one; label, description and error come from the yorha
+ * Field. The popup opens under the whole field. Escape or a pick closes it and focus returns to the calendar button.
  */
 export function DatePicker(props: DatePickerProps) {
   return <PickerImpl {...(props as PickerImplProps)} mode="single" />;
 }
 
-/** Same as DatePicker for a start–end range. Typed text accepts `a ~ b`, `a – b` or `a - b`, in either order. */
+/**
+ * Start and end in one frame (two inputs, `시작일` and `종료일`; the end drops to a second row under ~400px).
+ * The popup stays open until the end is picked; Escape restores the committed range. Typing a range into one box
+ * is no longer supported (breaking: the single `a ~ b` text field is gone).
+ */
 export function DateRangePicker(props: DateRangePickerProps) {
   return <PickerImpl {...(props as PickerImplProps)} mode="range" />;
 }

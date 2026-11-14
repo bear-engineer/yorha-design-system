@@ -1,8 +1,10 @@
 import * as React from "react";
+import { Popover as PopoverPrimitive } from "@base-ui/react/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Field, FieldControl, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { Field, FieldDescription, FieldError, FieldGroupControl, FieldLabel } from "@/components/ui/field";
+import { CalendarIcon, ClockIcon } from "@/components/ui/icons";
+import { InputGroup, InputGroupButton } from "@/components/ui/input-group";
+import { Popover, PopoverContent } from "@/components/ui/popover";
 
 export type DateInputType = "date" | "datetime-local" | "month" | "week" | "time";
 
@@ -16,15 +18,6 @@ function fromIso(text: string | undefined): Date | null {
 }
 const toIso = (d: Date) => `${pad(d.getFullYear(), 4)}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 
-function CalendarGlyph() {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
-      <rect x="3" y="5" width="18" height="16" />
-      <path d="M3 10h18M8 3v4M16 3v4" />
-    </svg>
-  );
-}
-
 export interface DateInputProps {
   label: React.ReactNode;
   /** date, datetime-local, month, week or time. Values use the native formats (`2026-11-14`, `2026-11-14T09:30`, `2026-11`, `2026-W46`, `09:30`). */
@@ -36,8 +29,9 @@ export interface DateInputProps {
   max?: string;
   /** Native step: days for date, seconds for time and datetime-local, months for month, weeks for week. */
   step?: number;
-  /** Adds a button that opens the Calendar. Only for type=date. */
+  /** type=date only: the end button opens the kit Calendar instead of the native picker. */
   picker?: boolean;
+  /** Accessible name of the end button. Default `달력 열기` (`시간 선택` for type=time). */
   pickerLabel?: string;
   name?: string;
   disabled?: boolean;
@@ -51,9 +45,11 @@ export interface DateInputProps {
 }
 
 /**
- * Native date/time input in the YoRHa control surface. type picks the control; min, max and step pass through.
- * With `picker` (type=date) a button opens the yorha Calendar in a Popover; picking a day writes the ISO value
- * and returns focus to the button.
+ * Native date/time input in one InputGroup frame with a YoRHa icon button at the end (the native indicator is hidden
+ * for every type). The button opens the browser's picker (`showPicker()`); with `picker` and type=date it opens the
+ * kit Calendar below the field instead, and picking a day writes the ISO value and returns focus to the button.
+ * The native control's segment order and month/weekday words follow the browser UI locale, not `lang`: use
+ * DatePicker when the text must be Korean.
  */
 export function DateInput({
   label,
@@ -65,7 +61,7 @@ export function DateInput({
   max,
   step,
   picker = false,
-  pickerLabel = "달력 열기",
+  pickerLabel,
   name,
   disabled,
   required,
@@ -79,58 +75,101 @@ export function DateInput({
   const current = value ?? inner;
   const [open, setOpen] = React.useState(false);
   const calendarRef = React.useRef<HTMLDivElement>(null);
+  const frameRef = React.useRef<HTMLDivElement>(null);
+  const inputRef = React.useRef<HTMLInputElement>(null);
   const showPicker = picker && type === "date";
   const selected = fromIso(current);
+  const buttonLabel = pickerLabel ?? (type === "time" ? "시간 선택" : "달력 열기");
+  const icon = type === "time" ? <ClockIcon /> : <CalendarIcon />;
 
   const set = (next: string) => {
     setInner(next);
     onValueChange?.(next);
   };
 
+  const field = (
+    <InputGroup ref={frameRef} invalid={Boolean(error)} disabled={disabled}>
+      <FieldGroupControl
+        ref={inputRef}
+        data-slot="date-input"
+        type={type}
+        name={name}
+        lang={locale}
+        min={min}
+        max={max}
+        step={step}
+        required={required}
+        value={current}
+        onChange={(e) => set(e.currentTarget.value)}
+        className="yorha-tabular [&::-webkit-calendar-picker-indicator]:hidden"
+      />
+      {showPicker ? (
+        <PopoverPrimitive.Trigger
+          render={
+            <InputGroupButton
+              aria-label={buttonLabel}
+              disabled={disabled}
+              className="data-[popup-open]:bg-yorha-ink data-[popup-open]:text-yorha-on-ink"
+            />
+          }
+        >
+          {icon}
+        </PopoverPrimitive.Trigger>
+      ) : (
+        <InputGroupButton
+          aria-label={buttonLabel}
+          disabled={disabled}
+          onClick={() => {
+            try {
+              inputRef.current?.showPicker?.();
+            } catch {
+              inputRef.current?.focus();
+            }
+          }}
+        >
+          {icon}
+        </InputGroupButton>
+      )}
+    </InputGroup>
+  );
+
   return (
     <Field invalid={Boolean(error)} disabled={disabled} className={className}>
       <FieldLabel>{label}</FieldLabel>
-      <div className="flex items-stretch gap-2">
-        <FieldControl
-          type={type}
-          name={name}
-          lang={locale}
-          min={min}
-          max={max}
-          step={step}
-          required={required}
-          value={current}
-          onChange={(e) => set(e.currentTarget.value)}
-          className={cn("min-w-0 flex-1", showPicker && "[&::-webkit-calendar-picker-indicator]:hidden")}
-        />
-        {showPicker ? (
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger aria-label={pickerLabel} disabled={disabled} className="grid size-10 shrink-0 place-items-center p-0">
-              <CalendarGlyph />
-            </PopoverTrigger>
-            <PopoverContent
-              aria-label={typeof label === "string" ? label : pickerLabel}
-              initialFocus={() => calendarRef.current?.querySelector<HTMLElement>("[data-slot=calendar-day][tabindex='0']") ?? true}
-            >
-              <Calendar
-                ref={calendarRef}
-                value={selected}
-                defaultMonth={selected ?? today}
-                minDate={fromIso(min) ?? undefined}
-                maxDate={fromIso(max) ?? undefined}
-                today={today}
-                locale={locale}
-                autoFocus
-                className="p-0!"
-                onValueChange={(next) => {
-                  set(next ? toIso(next) : "");
-                  setOpen(false);
-                }}
-              />
-            </PopoverContent>
-          </Popover>
-        ) : null}
-      </div>
+      {showPicker ? (
+        <Popover open={open} onOpenChange={setOpen}>
+          {field}
+          <PopoverContent
+            anchor={frameRef}
+            side="bottom"
+            align="start"
+            sideOffset={8}
+            collisionPadding={8}
+            aria-label={typeof label === "string" ? label : buttonLabel}
+            className="w-auto max-w-none! min-w-0! p-0!"
+            initialFocus={() => calendarRef.current?.querySelector<HTMLElement>("[data-slot=calendar-day][tabindex='0']") ?? true}
+          >
+            <Calendar
+              ref={calendarRef}
+              value={selected}
+              defaultMonth={selected ?? today}
+              minDate={fromIso(min) ?? undefined}
+              maxDate={fromIso(max) ?? undefined}
+              today={today}
+              locale={locale}
+              autoFocus
+              showToday
+              bordered={false}
+              onValueChange={(next) => {
+                set(next ? toIso(next) : "");
+                setOpen(false);
+              }}
+            />
+          </PopoverContent>
+        </Popover>
+      ) : (
+        field
+      )}
       {description ? <FieldDescription>{description}</FieldDescription> : null}
       {error ? <FieldError>{error}</FieldError> : null}
     </Field>

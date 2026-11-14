@@ -38,6 +38,8 @@ const q = <T extends Element = HTMLElement>(sel: string, root: ParentNode = docu
 const qa = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => [...root.querySelectorAll<T>(sel)];
 const rect = (el: Element) => el.getBoundingClientRect();
 const TODAY = new Date(2026, 10, 14);
+/** The InputGroup frame: `date-field` in the pickers, `input-group` in DateInput. */
+const FRAME = "[data-slot=date-field], [data-slot=input-group]";
 const day = (c: ParentNode, key: string) => q(`[data-date="${key}"]`, c)!;
 const tdOf = (c: ParentNode, key: string) => day(c, key).closest("td")!;
 
@@ -285,8 +287,8 @@ function controlMd(): number {
 describe("date picker field and popup (FCAL-04, 05, 06, 07, 19, 20)", () => {
   it("FCAL-04/20/19: one frame of control-md height; input and trigger are equal, the trigger sits inside the frame, icon is CalendarIcon", async () => {
     const c = await render(<DatePicker label="출발일" today={TODAY} />);
-    const frame = q("[data-slot=input-group]", c)!;
-    const input = q("input[data-slot=input-group-control]", c)!;
+    const frame = q(FRAME, c)!;
+    const input = q("input[data-slot=date-input]", c)!;
     const trigger = q("[data-slot=input-group-button]", c)!;
     expect(rect(frame).height).toBe(controlMd());
     expectSameHeight(input, trigger);
@@ -308,7 +310,7 @@ describe("date picker field and popup (FCAL-04, 05, 06, 07, 19, 20)", () => {
     expect(getComputedStyle(off).cursor).toBe("not-allowed");
     expect(getComputedStyle(off).color).not.toBe(getComputedStyle(on).color);
     expect(rect(off).height).toBe(rect(on).height);
-    expect(rect(q("[data-slot=input-group]", b)!).height).toBe(rect(q("[data-slot=input-group]", a)!).height);
+    expect(rect(q(FRAME, b)!).height).toBe(rect(q(FRAME, a)!).height);
   });
 
   it("FCAL-06/07: the popup opens below the field, start-aligned, 8px gap, inside the viewport and content-wide", async () => {
@@ -317,7 +319,7 @@ describe("date picker field and popup (FCAL-04, 05, 06, 07, 19, 20)", () => {
     await until(() => !!q("[data-slot=popover-content] [data-slot=calendar]"));
     await frames(8);
     const popup = q("[data-slot=popover-content]")!;
-    const frame = q("[data-slot=input-group]", c)!;
+    const frame = q(FRAME, c)!;
     expectAnchoredBelow(popup, frame, { gap: 8, align: "start" });
     expectWithinViewport(popup, 8);
     expectGrid(qa("[data-slot=popover-content] tbody td"), { columns: 7, rows: 6 });
@@ -340,7 +342,7 @@ describe("date range picker (FCAL-21)", () => {
     const s2 = q<HTMLInputElement>("input[aria-label=시작일]", narrow)!;
     const e2 = q<HTMLInputElement>("input[aria-label=종료일]", narrow)!;
     expect(rect(e2).top).toBeGreaterThan(rect(s2).top);
-    const frame = rect(q("[data-slot=input-group]", narrow)!);
+    const frame = rect(q(FRAME, narrow)!);
     expect(rect(e2).bottom).toBeLessThanOrEqual(frame.bottom);
     for (const i of [s2, e2]) expect(i.scrollWidth).toBeLessThanOrEqual(i.clientWidth);
   });
@@ -362,10 +364,20 @@ describe("date input (FCAL-19, 25, 26)", () => {
     for (const type of ["date", "datetime-local", "month", "week", "time"] as const) {
       const c = await render(<DateInput label="값" type={type} today={TODAY} />);
       const input = q<HTMLInputElement>("input", c)!;
-      expect(getComputedStyle(input, "::-webkit-calendar-picker-indicator").display).toBe("none");
+      // getComputedStyle on the webkit pseudo returns the host's style, so assert the class and the generated rule
+      expect(input.className).toContain("[&::-webkit-calendar-picker-indicator]:hidden");
+      const rules = [...document.styleSheets].flatMap((sheet) => {
+        try {
+          return [...sheet.cssRules];
+        } catch {
+          return [];
+        }
+      });
+      const flat = (list: CSSRuleList | CSSRule[]): CSSRule[] => [...list].flatMap((r) => [r, ...("cssRules" in r ? flat((r as CSSGroupingRule).cssRules) : [])]);
+      expect(flat(rules).some((r) => r.cssText.includes("webkit-calendar-picker-indicator") && /display:\s*none/.test(r.cssText))).toBe(true);
       const btn = q("[data-slot=input-group-button]", c)!;
       expect(rect(btn).height).toBe(rect(input).height);
-      expect(rect(q("[data-slot=input-group]", c)!).height).toBe(controlMd());
+      expect(rect(q(FRAME, c)!).height).toBe(controlMd());
       expect(q("svg", btn)!.getAttribute("viewBox")).toBe("0 0 16 16");
     }
   });
@@ -376,6 +388,6 @@ describe("date input (FCAL-19, 25, 26)", () => {
     await userEvent.click(q("[data-slot=input-group-button]", c)!);
     await until(() => !!q("[data-slot=popover-content] [data-slot=calendar]"));
     await frames(8);
-    expectAnchoredBelow(q("[data-slot=popover-content]")!, q("[data-slot=input-group]", c)!, { gap: 8, align: "start" });
+    expectAnchoredBelow(q("[data-slot=popover-content]")!, q(FRAME, c)!, { gap: 8, align: "start" });
   });
 });
