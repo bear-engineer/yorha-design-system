@@ -77,10 +77,11 @@ describe("popover and tooltip triggers, close, anchor (FOVL-10, FOVL-11)", () =>
     const pop = q('[data-slot="popover-trigger"]', c)!;
     const tip = q('[data-slot="tooltip-trigger"]', c)!;
     expectSameHeight(ref, pop, tip);
-    // button recipe: ink wipe layer + press scale come from buttonVariants
+    // button recipe: ink wipe layer from buttonVariants; no press scale since C2-106
     for (const el of [pop, tip]) {
       expect(getComputedStyle(el).backgroundImage).toContain("linear-gradient");
-      expect(el.className).toContain("yorha-press");
+      expect(el.className).toContain("yorha-wipe");
+      expect(el.className).not.toContain("yorha-press");
     }
   });
 
