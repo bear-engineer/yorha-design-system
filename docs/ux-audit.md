@@ -14,10 +14,10 @@ WCAG 2.5.8의 목표는 comfortable과 compact 양쪽에서 대상의 너비와 
 | --- | --- | --- | --- | --- |
 | button | 기본, 비활성, 로딩·Enter 후 포커스 유지 | >=24 (assert) | PASS | 없음 |
 | icon-button | 크기별 기본, 비활성, 로딩·Enter 후 포커스 유지 | >=24 (assert) | PASS | 없음 |
-| toggle | 꺼짐, 켜짐, 비활성(꺼짐·켜짐) | >=24 (assert) | PASS | `PARENT` |
-| checkbox | 꺼짐, 켜짐, 일부, 비활성(꺼짐·켜짐) | >=24 (assert) | PASS | `d920b5c`, `PARENT` |
+| toggle | 꺼짐, 켜짐, 비활성(꺼짐·켜짐) | >=24 (assert) | PASS | `5b88234` |
+| checkbox | 꺼짐, 켜짐, 일부, 비활성(꺼짐·켜짐) | >=24 (assert) | PASS | `d920b5c`, `5b88234` |
 | radio-group | 선택, 일부·전체 비활성 | >=24 (assert) | PASS | `d920b5c` |
-| switch | 꺼짐, 켜짐, 비활성(꺼짐·켜짐) | >=24 (assert) | PASS | `d920b5c`, `PARENT` |
+| switch | 꺼짐, 켜짐, 비활성(꺼짐·켜짐) | >=24 (assert) | PASS | `d920b5c`, `5b88234` |
 | slider | 기본, 범위, 비활성, 화살표 키 | >=24 (assert) | PASS | `d920b5c` |
 | text-field | 기본, 읽기 전용, 비활성, 오류·aria-describedby | >=24 (assert) | PASS | 없음 |
 | textarea | 기본, 읽기 전용, 비활성, 오류·aria-describedby | >=24 (assert) | PASS | 없음 |
@@ -100,5 +100,5 @@ WCAG 2.5.8의 목표는 comfortable과 compact 양쪽에서 대상의 너비와 
 
 - `cn`에는 `tailwind-merge`가 없어 `date-picker`가 `!` 우선순위 override를 사용한다.
 - `MenuClear`는 접근성 트리에서 숨겨져 대상 측정에 포함되지 않는다. `min-h-6`은 코드상의 선언이지 실측값이 아니다.
-- navigation-menu `States`는 전체 묶음 실행에서 한 번 `aria-hidden-focus`로 실패했다. Escape 뒤 팝업이 사라질 때까지 기다리게 고쳤다(`PARENT`).
+- navigation-menu `States`는 전체 묶음 실행에서 한 번 `aria-hidden-focus`로 실패했다. Escape 뒤 팝업이 사라질 때까지 기다리게 고쳤다(`5b88234`).
 - kanban의 포인터·터치 드래그는 자동화되지 않았다. 키보드 픽업 중 포커스 확인과는 별개다.
