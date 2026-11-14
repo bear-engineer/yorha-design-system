@@ -434,6 +434,8 @@ function buildModel(tokens) {
   css["@media (prefers-reduced-motion: reduce)"] = { ":root:not([data-motion=full])": dashed(modifierBlocks.motion.reduced) };
   for (const [context, vars] of Object.entries(modifierBlocks.motion)) css[`[data-motion=${context}]`] = dashed(vars);
   css["@utility yorha-focus"] = focusRing;
+  // Flush items inside a clipping or shared-border container: the ring sits inside the box (currentColor stays visible on ink).
+  css["@utility yorha-focus-inset"] = { outline: "var(--yorha-ring-width) solid currentColor", "outline-offset": "calc(var(--yorha-ring-width) * -1)" };
   css["@utility yorha-tint"] = TINT;
   css["@utility yorha-disabled"] = DISABLED;
   css["@utility yorha-readonly"] = READONLY;

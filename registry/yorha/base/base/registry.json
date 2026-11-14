@@ -660,6 +660,10 @@
           "outline": "var(--yorha-ring-width) solid var(--yorha-ring)",
           "outline-offset": "var(--yorha-ring-offset)"
         },
+        "@utility yorha-focus-inset": {
+          "outline": "var(--yorha-ring-width) solid currentColor",
+          "outline-offset": "calc(var(--yorha-ring-width) * -1)"
+        },
         "@utility yorha-tint": {
           "@media (hover: hover) and (pointer: fine)": {
             "&:hover:not(:disabled, [data-disabled], [aria-disabled=\"true\"], [data-checked], [data-pressed], [aria-pressed=\"true\"], [data-selected], [aria-selected=\"true\"], [aria-current], [data-highlighted], [data-popup-open], [data-panel-open])": {
