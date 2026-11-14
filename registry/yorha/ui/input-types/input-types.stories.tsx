@@ -1,6 +1,18 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
+import { buttonVariants } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Field, FieldLabel, Fieldset, FieldsetLegend } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
+import { NumberField } from "@/components/ui/number-field";
+import { Radio, RadioGroup } from "@/components/ui/radio-group";
+import { Slider } from "@/components/ui/slider";
+import { ColorInput } from "../color-input/color-input";
+import { DateInput } from "../date-input/date-input";
+import { FileInput } from "../file-input/file-input";
+import { PasswordInput } from "../password-input/password-input";
+import { SearchInput } from "../search-input/search-input";
 import { INPUT_TYPES, INPUT_TYPE_TABLE, inputPresets } from "./input-types";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -23,8 +35,103 @@ async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
 }
 const seconds = (el: Element) => parseFloat(getComputedStyle(el).transitionDuration) || 0;
 
-function InputTypesGallery(_props: { idPrefix?: string }) {
-  return null;
+const IMAGE_SRC =
+  "data:image/svg+xml;utf8," +
+  encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect x="4" y="4" width="16" height="16" fill="black"/></svg>');
+
+/** One control per HTML input type, each rendered by the yorha item that owns it. */
+function InputTypesGallery({ formLabel = "모든 입력 유형" }: { formLabel?: string }) {
+  return (
+    <form
+      lang="ko"
+      className="grid gap-8"
+      onSubmit={(e) => e.preventDefault()}
+      onReset={(e) => e.preventDefault()}
+      aria-label={formLabel}
+    >
+      <div className="grid gap-6 sm:grid-cols-2">
+        <Field>
+          <FieldLabel>텍스트</FieldLabel>
+          <Input {...inputPresets.text} />
+        </Field>
+        <Field>
+          <FieldLabel>이메일</FieldLabel>
+          <Input {...inputPresets.email} />
+        </Field>
+        <Field>
+          <FieldLabel>전화번호</FieldLabel>
+          <Input {...inputPresets.tel} />
+        </Field>
+        <Field>
+          <FieldLabel>URL</FieldLabel>
+          <Input {...inputPresets.url} />
+        </Field>
+        <Field>
+          <FieldLabel>숫자</FieldLabel>
+          <Input type="number" inputMode="numeric" min={0} max={99} step={1} />
+        </Field>
+        <NumberField label="수량 (NumberField)" defaultValue={1} min={0} max={99} />
+        <SearchInput label="검색" />
+        <PasswordInput label="비밀번호" />
+        <ColorInput label="색상" defaultValue="#336699" />
+        <FileInput label="파일" multiple />
+        <DateInput label="날짜" picker />
+        <DateInput type="datetime-local" label="날짜와 시각" />
+        <DateInput type="month" label="월" />
+        <DateInput type="week" label="주" />
+        <DateInput type="time" label="시각" />
+        <Slider label="범위" defaultValue={40} showValue />
+        <Field>
+          <Checkbox>약관 동의</Checkbox>
+        </Field>
+        <Fieldset>
+          <FieldsetLegend>등급</FieldsetLegend>
+          <RadioGroup defaultValue="a" aria-label="등급">
+            <Radio value="a">A형</Radio>
+            <Radio value="b">B형</Radio>
+          </RadioGroup>
+        </Fieldset>
+        <Field>
+          <FieldLabel>버튼 (input type=button)</FieldLabel>
+          <input type="button" value="버튼" className={buttonVariants()} />
+        </Field>
+        <Field>
+          <FieldLabel>전송 (input type=submit)</FieldLabel>
+          <input type="submit" value="전송" className={buttonVariants({ variant: "primary" })} />
+        </Field>
+        <Field>
+          <FieldLabel>초기화 (input type=reset)</FieldLabel>
+          <input type="reset" value="초기화" className={buttonVariants({ variant: "ghost" })} />
+        </Field>
+        <Field>
+          <FieldLabel>이미지 버튼 (input type=image)</FieldLabel>
+          <input type="image" src={IMAGE_SRC} alt="이미지 전송" width={24} height={24} className={buttonVariants({ square: true })} />
+        </Field>
+        <div data-slot="hidden-doc" className="text-yorha-sm">
+          type=hidden: 화면에 나타나지 않고 폼 값만 전달합니다. 이 폼에는 name=&quot;csrf&quot; 입력이 있습니다.
+          <input type="hidden" name="csrf" value="demo-token" />
+        </div>
+      </div>
+      <table aria-label="입력 유형과 담당 아이템" className="w-full border-collapse text-left text-yorha-sm">
+        <thead>
+          <tr>
+            <th scope="col" className="border border-yorha-border p-2">type</th>
+            <th scope="col" className="border border-yorha-border p-2">item</th>
+            <th scope="col" className="border border-yorha-border p-2">how</th>
+          </tr>
+        </thead>
+        <tbody>
+          {INPUT_TYPES.map((type) => (
+            <tr key={type}>
+              <td className="border border-yorha-border p-2 font-yorha-mono">{type}</td>
+              <td className="border border-yorha-border p-2">{INPUT_TYPE_TABLE[type].item}</td>
+              <td className="border border-yorha-border p-2">{INPUT_TYPE_TABLE[type].how}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </form>
+  );
 }
 
 const meta = {
@@ -95,7 +202,7 @@ export const Themes: Story = {
     <div className="grid gap-4">
       {THEMES.map((t) => (
         <div key={t} data-theme={t} className="bg-yorha-bg p-4 text-yorha-fg">
-          <InputTypesGallery />
+          <InputTypesGallery formLabel={`모든 입력 유형 (${THEME_LABEL[t]})`} />
         </div>
       ))}
     </div>
