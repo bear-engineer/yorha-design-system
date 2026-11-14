@@ -1,4 +1,4 @@
-import { Meta, Typeset } from "@storybook/addon-docs/blocks";
+import { Meta } from "@storybook/addon-docs/blocks";
 import { tokens } from "./tokens.generated";
 
 <Meta title="파운데이션/Typography" />
@@ -24,12 +24,16 @@ import { tokens } from "./tokens.generated";
 
 ## 크기
 
-<Typeset
-  fontSizes={tokens.fontSizes.map((size) => size.value)}
-  fontWeight={400}
-  fontFamily={tokens.fontFamilies[0].value}
-  sampleText="기록 보관소 접속 SYSTEM LOG 0123"
-/>
+<ul style={{ listStyle: "none", padding: 0 }}>
+  {tokens.fontSizes.map((size) => (
+    <li key={size.name} style={{ margin: "0.5rem 0" }}>
+      <code style={{ display: "block" }}>{size.value}</code>
+      <span style={{ display: "block", fontFamily: tokens.fontFamilies[0].value, fontSize: size.value, lineHeight: size.lineHeight }}>
+        기록 보관소 접속 SYSTEM LOG 0123
+      </span>
+    </li>
+  ))}
+</ul>
 
 <table>
   <thead>

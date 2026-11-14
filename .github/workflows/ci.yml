@@ -96,6 +96,12 @@ jobs:
       - name: Storybook tests (a11y = error, play functions)
         run: pnpm test:storybook
 
+      - name: Storybook build
+        run: pnpm build-storybook
+
+      - name: Docs axe (every docs page, zero violations)
+        run: pnpm docs:axe
+
       - name: Text spacing (WCAG 1.4.12, no clipped text)
         run: pnpm test:text-spacing
 

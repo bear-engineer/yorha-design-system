@@ -1,5 +1,9 @@
 import { DocsContainer, type DocsContainerProps } from "@storybook/addon-docs/blocks";
 import { type PropsWithChildren, useEffect, useRef } from "react";
+import { themes } from "storybook/theming";
+
+/** Storybook's light docs theme with a muted text colour that passes AA on white (default #73828C does not). */
+const DOCS_THEME = { ...themes.light, textMutedColor: "#566069" };
 
 /**
  * Wraps every docs page (MDX and autodocs) in one `<main lang="ko">` landmark, so pages need no
@@ -9,13 +13,20 @@ import { type PropsWithChildren, useEffect, useRef } from "react";
 export function YorhaDocsContainer({ children, ...props }: PropsWithChildren<DocsContainerProps>) {
   const ref = useRef<HTMLElement>(null);
 
-  // Storybook's object control (react-json-tree) renders <li> children directly under a <div>.
-  // Give that div the list role so the markup is valid (axe `listitem`).
   useEffect(() => {
+    // Storybook's iframe.html has no lang; some docs pages never get one from a story (axe html-has-lang).
+    const html = document.documentElement;
+    if (!html.getAttribute("lang")) html.setAttribute("lang", "ko");
+
+    // The object control (react-json-tree) renders <li> rows under divs. Drop their list semantics
+    // instead of faking a list (axe `listitem`); the tree stays readable as plain text rows.
     const root = ref.current;
     if (!root) return;
     const fix = () => {
-      for (const tree of root.querySelectorAll(".rejt-tree:not([role])")) tree.setAttribute("role", "list");
+      for (const li of root.querySelectorAll("li:not([role])")) {
+        const parent = li.parentElement;
+        if (parent && !["UL", "OL", "MENU"].includes(parent.tagName)) li.setAttribute("role", "none");
+      }
     };
     fix();
     const observer = new MutationObserver(fix);
@@ -24,7 +35,7 @@ export function YorhaDocsContainer({ children, ...props }: PropsWithChildren<Doc
   }, []);
 
   return (
-    <DocsContainer {...props}>
+    <DocsContainer {...props} theme={DOCS_THEME}>
       <main lang="ko" ref={ref}>
         {children}
       </main>

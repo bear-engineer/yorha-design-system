@@ -58,6 +58,9 @@ export function formatViolations(id, violations) {
   );
 }
 
+// Popups portal to <body>, outside the docs <main>; they belong to the story that opened them.
+const PORTALS = "body > :not(#storybook-root):not(#storybook-docs):not(script):not(style):not(.sb-wrapper):not(.sb-nopreview):not(.sb-errordisplay):not(.sb-preparing-story):not(.sb-preparing-docs)";
+
 async function auditEntry(browser, base, entry) {
   const context = await browser.newContext({ viewport: { width: 1280, height: 800 }, reducedMotion: "reduce" });
   const page = await context.newPage();
@@ -73,11 +76,23 @@ async function auditEntry(browser, base, entry) {
       null,
       { timeout: 30_000 },
     ).catch(() => {});
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("networkidle", { timeout: 5_000 }).catch(() => {});
     await page.evaluate(() => document.fonts?.ready);
     await page.waitForTimeout(500);
-    const results = await new AxeBuilder({ page }).analyze();
-    problems.push(...formatViolations(entry.id, results.violations));
+    // Pass 1: the docs page itself (prose, tables, controls). Story canvases are audited in pass 2;
+    // iframe canvases (layout/block stories) are covered by their own story a11y tests.
+    const docsPage = await new AxeBuilder({ page }).exclude(".docs-story").exclude(PORTALS).analyze();
+    problems.push(...formatViolations(entry.id, docsPage.violations));
+    // Pass 2: inline story canvases, minus rules that only make sense for a whole page: several
+    // stories share one document, so landmarks repeat and heading levels restart per story.
+    if (await page.$(`.docs-story .sb-story, .docs-story [id^=story--], ${PORTALS}`)) {
+      const canvases = await new AxeBuilder({ page })
+        .include([".docs-story", PORTALS])
+        .exclude(".docs-story iframe")
+        .disableRules(["landmark-unique", "region", "heading-order", "landmark-one-main", "page-has-heading-one"])
+        .analyze();
+      problems.push(...formatViolations(entry.id, canvases.violations));
+    }
   } catch (error) {
     problems.push(`${entry.id}\trender failed\t${String(error.message).split("\n")[0]}`);
   } finally {
