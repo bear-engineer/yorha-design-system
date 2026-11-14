@@ -142,7 +142,8 @@ export const MotionTokens: Story = {
       await userEvent.keyboard("{Enter}");
       await waitFor(() => expect(overview).toHaveAttribute("aria-expanded", "true"));
       await expect(parseFloat(getComputedStyle(panelOf()).transitionDuration)).toBeCloseTo(0.24, 2);
-      await expect(getComputedStyle(panelOf()).transitionTimingFunction).toContain("0.32, 0.72, 0, 1");
+      const token = getComputedStyle(document.documentElement).getPropertyValue("--yorha-ease-emphasized").trim();
+      await expect(getComputedStyle(panelOf()).transitionTimingFunction).toContain(token);
     });
     await withMotion("reduced", async () => {
       await waitFor(() => expect(parseFloat(getComputedStyle(panelOf()).transitionDuration)).toBeLessThanOrEqual(0.12));
