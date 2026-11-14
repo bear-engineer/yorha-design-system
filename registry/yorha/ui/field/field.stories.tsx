@@ -1,0 +1,169 @@
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, userEvent, within } from "storybook/test";
+import {
+  Field,
+  FieldControl,
+  FieldDescription,
+  FieldError,
+  FieldFrame,
+  FieldLabel,
+  Fieldset,
+  FieldsetLegend,
+} from "./field";
+
+const DESCRIPTION = "영문 대문자와 숫자 8자 이내";
+const THEMES = ["light", "dark", "high-contrast"] as const;
+const THEME_LABEL: Record<(typeof THEMES)[number], string> = {
+  light: "라이트",
+  dark: "다크",
+  "high-contrast": "고대비",
+};
+
+function describedIds(el: Element): string[] {
+  return (el.getAttribute("aria-describedby") ?? "").split(/\s+/).filter(Boolean);
+}
+
+const meta = {
+  title: "컴포넌트/폼/Field",
+  component: FieldFrame,
+  tags: ["autodocs"],
+  args: {
+    label: "유닛 코드",
+    description: DESCRIPTION,
+    children: <FieldControl placeholder="예: 2B-9S" />,
+  },
+  decorators: [
+    (Story) => (
+      <div className="w-72 bg-yorha-panel p-6 text-yorha-fg">
+        <Story />
+      </div>
+    ),
+  ],
+} satisfies Meta<typeof FieldFrame>;
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole("textbox", { name: "유닛 코드" });
+    const description = canvas.getByText(DESCRIPTION);
+    await expect(description.id).not.toBe("");
+    await expect(describedIds(input)).toContain(description.id);
+    await expect(input).not.toHaveAttribute("aria-invalid", "true");
+  },
+};
+
+export const LabelFocusesControl: Story = {
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole("textbox", { name: "유닛 코드" });
+    await userEvent.click(canvas.getByText("유닛 코드"));
+    await expect(input).toHaveFocus();
+  },
+};
+
+export const Invalid: Story = {
+  args: { error: "필수 입력 항목입니다" },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole("textbox", { name: "유닛 코드" });
+    await expect(input).toHaveAttribute("aria-invalid", "true");
+    const alert = canvas.getByRole("alert");
+    await expect(alert).toHaveTextContent("필수 입력 항목입니다");
+    await expect(alert.id).not.toBe("");
+    await expect(describedIds(input)).toContain(alert.id);
+    // Shape/icon cue, not colour alone: the icon is decorative and sits inside the alert.
+    await expect(alert.querySelector('[aria-hidden="true"]')).not.toBeNull();
+  },
+};
+
+export const Themes: Story = {
+  render: () => (
+    <div className="grid gap-6">
+      {THEMES.map((theme) => (
+        <div key={theme} data-theme={theme} className="bg-yorha-bg p-4 text-yorha-fg">
+          <FieldFrame
+            label={`유닛 코드 (${THEME_LABEL[theme]})`}
+            description={DESCRIPTION}
+            error="필수 입력 항목입니다"
+            invalid
+          >
+            <FieldControl />
+          </FieldFrame>
+        </div>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const inputs = canvas.getAllByRole("textbox");
+    await expect(inputs).toHaveLength(THEMES.length);
+    for (const input of inputs) {
+      await expect(input).toHaveAttribute("aria-invalid", "true");
+      await expect(describedIds(input).length).toBeGreaterThanOrEqual(2);
+    }
+    for (const theme of THEMES) {
+      await userEvent.click(canvas.getByText(`유닛 코드 (${THEME_LABEL[theme]})`));
+      await expect(canvas.getByRole("textbox", { name: `유닛 코드 (${THEME_LABEL[theme]})` })).toHaveFocus();
+    }
+  },
+};
+
+export const Authentic: Story = {
+  // Authentic is the fan palette; it fails AA by design (dossier §9). Opt-in decorative only,
+  // so this single story renders that theme alone and skips the a11y gate.
+  parameters: { a11y: { test: "todo" } },
+  render: () => (
+    <div data-theme="authentic" className="bg-yorha-bg p-4 text-yorha-fg">
+      <FieldFrame label="유닛 코드" description={DESCRIPTION}>
+        <FieldControl />
+      </FieldFrame>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByText("유닛 코드"));
+    await expect(canvas.getByRole("textbox", { name: "유닛 코드" })).toHaveFocus();
+  },
+};
+
+export const Parts: Story = {
+  render: () => (
+    <Field>
+      <FieldLabel>작전 코드</FieldLabel>
+      <FieldControl placeholder="예: YK-07" />
+      <FieldDescription>자동 발급 코드를 그대로 입력하십시오</FieldDescription>
+      <FieldError match>오류 메시지 자리</FieldError>
+    </Field>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const input = canvas.getByRole("textbox", { name: "작전 코드" });
+    await userEvent.click(canvas.getByText("작전 코드"));
+    await expect(input).toHaveFocus();
+    const description = canvas.getByText("자동 발급 코드를 그대로 입력하십시오");
+    await expect(describedIds(input)).toContain(description.id);
+  },
+};
+
+export const FieldsetGroup: Story = {
+  render: () => (
+    <Fieldset>
+      <FieldsetLegend>작전 설정</FieldsetLegend>
+      <FieldFrame label="유닛 코드" description={DESCRIPTION}>
+        <FieldControl />
+      </FieldFrame>
+      <FieldFrame label="작전 구역">
+        <FieldControl />
+      </FieldFrame>
+    </Fieldset>
+  ),
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const group = canvas.getByRole("group", { name: "작전 설정" });
+    await expect(within(group).getAllByRole("textbox")).toHaveLength(2);
+    await userEvent.click(canvas.getByText("작전 구역"));
+    await expect(canvas.getByRole("textbox", { name: "작전 구역" })).toHaveFocus();
+  },
+};
