@@ -26,7 +26,11 @@ type Story = StoryObj<typeof meta>;
 
 function PathProbe() {
   const { pathname } = useLocation();
-  return <p data-testid="path">{pathname}</p>;
+  return (
+    <p data-testid="path" className="m-0 font-yorha-mono text-yorha-xs text-yorha-fg-soft">
+      {pathname}
+    </p>
+  );
 }
 
 function Shell({ items }: { items: BreadcrumbItem[] }) {
@@ -94,6 +98,30 @@ export const KeyboardNavigate: Story = {
     await waitFor(() => expect(c.getByTestId("path")).toHaveTextContent("/"));
     // 현재 위치 항목은 링크가 아니다.
     await expect(c.getByText("A-2 기체").closest("a")).toBeNull();
+  },
+};
+
+const LONG_ITEMS: BreadcrumbItem[] = [
+  { label: "홈", to: "/" },
+  { label: "비공식 팬 프로젝트 유닛 운용 기록 보관소 및 정기 점검 일정 관리", to: "/units" },
+  { label: "A-2 기체" },
+];
+
+/** 긴 라벨은 24ch에서 말줄임으로 잘리고, 전체 텍스트는 title로 남는다. */
+export const LongLabel: Story = {
+  parameters: {
+    route: { routes: routedElements(LONG_ITEMS), initialEntries: ["/units"] },
+  },
+  args: { items: LONG_ITEMS },
+  render: (args) => (
+    <div className="w-[min(100%,36rem)] bg-yorha-panel p-4 text-yorha-fg">
+      <Breadcrumb {...args} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const long = within(canvasElement).getByRole("link", { name: /비공식 팬 프로젝트/ });
+    await expect(long).toHaveAttribute("title", long.textContent ?? "");
+    await expect(long.scrollWidth).toBeGreaterThan(long.clientWidth);
   },
 };
 

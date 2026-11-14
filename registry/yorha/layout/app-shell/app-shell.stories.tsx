@@ -56,9 +56,11 @@ type Story = StoryObj<typeof meta>;
 
 /** 건너뛰기 링크가 탭 순서 첫 번째이며, Enter로 본문 main에 포커스를 옮긴다. 랜드마크는 이름이 있다. */
 export const Default: Story = {
-  render: () => <Demo grid vignette className="min-h-0 h-96" />,
+  render: () => <Demo />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
+    // FL-13: the default frame is plain paper; grid and vignette are shown by the Authentic story only.
+    await expect(canvasElement.querySelector('[data-slot="vignette"], [data-slot="grid-background"]')).toBeNull();
     await expect(c.getByRole("banner")).toBeInTheDocument();
     await expect(c.getByRole("main", { name: "본문" })).toBeInTheDocument();
     await expect(c.getByRole("navigation", { name: "주 메뉴" })).toBeInTheDocument();
@@ -90,7 +92,7 @@ export const LightTheme: Story = {
   name: "라이트 테마",
   render: () => (
     <div data-theme="light">
-      <Demo grid vignette className="min-h-0 h-96" />
+      <Demo grid vignette />
     </div>
   ),
   play: themePlay("light"),
@@ -128,6 +130,12 @@ export const Authentic: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await expect(c.getByRole("main", { name: "본문" })).toBeInTheDocument();
+    // FL-13: the decor slots paint under the content, so a sidebar label is what the pointer hits.
+    await expect(canvasElement.querySelector('[data-slot="vignette"]')).not.toBeNull();
+    const link = c.getByRole("link", { name: "유닛" });
+    const box = link.getBoundingClientRect();
+    const hit = document.elementFromPoint(box.left + box.width / 2, box.top + box.height / 2);
+    await expect(link.contains(hit)).toBe(true);
   },
 };
 
@@ -158,6 +166,15 @@ export const MobileDisclosure: Story = {
     await userEvent.keyboard("{Enter}");
     await expect(toggle).toHaveAttribute("aria-expanded", "false");
     await expect(region).not.toBeVisible();
+    // FL-14: Escape closes the open disclosure from inside the nav and hands focus back to the trigger.
+    await userEvent.keyboard("{Enter}");
+    await expect(region).toBeVisible();
+    await userEvent.tab();
+    await expect(c.getByRole("link", { name: "홈" })).toHaveFocus();
+    await userEvent.keyboard("{Escape}");
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(region).not.toBeVisible();
+    await expect(toggle).toHaveFocus();
   },
 };
 
