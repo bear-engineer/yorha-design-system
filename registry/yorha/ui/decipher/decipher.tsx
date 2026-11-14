@@ -30,19 +30,26 @@ export function poolFor(grapheme: string): Pool {
   return "latin";
 }
 
-function pick(grapheme: string, seed: number | null): string {
+function pick(grapheme: string, seed: number | null, index = 0): string {
   if (/^\s+$/.test(grapheme)) return grapheme;
   const pool = POOLS[poolFor(grapheme)];
-  // seed === null → deterministic (first paint / SSR), otherwise random.
-  let i = seed === null ? 0 : Math.floor(Math.random() * pool.length);
+  // seed === null → deterministic (first paint / SSR), varied by position; otherwise random.
+  let i = seed === null ? index % pool.length : Math.floor(Math.random() * pool.length);
   if (pool[i] === grapheme) i = (i + 1) % pool.length;
   return pool[i]!;
+}
+
+/** Deterministic resting glyphs (SSR and first paint): one per grapheme, varied by position. */
+export function restingGlyphs(graphemes: string[]): string[] {
+  return graphemes.map((g, i) => pick(g, null, i));
 }
 
 function motionAllowsAnimation(): boolean {
   if (typeof document === "undefined") return false;
   const mode = document.documentElement.dataset.motion;
   if (mode === "reduced" || mode === "off") return false;
+  // Same rule as Typer: with no data-motion setting, the OS preference decides.
+  if (mode !== "full" && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
   const raw = getComputedStyle(document.documentElement).getPropertyValue("--motion-scramble-char").trim();
   return !(raw !== "" && parseFloat(raw) === 0);
 }
@@ -64,7 +71,7 @@ function initial(text: string, graphemes: string[], animate: boolean): RunState 
   return {
     text,
     revealed: animate ? 0 : graphemes.length,
-    glyphs: graphemes.map((g) => pick(g, null)),
+    glyphs: restingGlyphs(graphemes),
   };
 }
 

@@ -46,12 +46,26 @@ export function useInstantMotion(): boolean {
   return instant;
 }
 
-/** Plays the tick once per new revealed character. Rendered only when `sound` is set. */
-function TypingTick({ count }: { count: number }) {
+/** Revealed non-whitespace graphemes: spaces make no sound, so they do not count. */
+export function tickCount(chars: readonly string[], shown: number): number {
+  return chars.slice(0, shown).filter((c) => !/^\s+$/.test(c)).length;
+}
+
+/**
+ * Plays the tick once per new revealed glyph. Fires on `count` changes only: `play` and `enabled`
+ * are read through refs, so a volume change or a pause/resume never re-fires it.
+ */
+function TypingTick({ count, enabled }: { count: number; enabled: boolean }) {
   const { play } = useSound();
+  const playRef = useRef(play);
+  const enabledRef = useRef(enabled);
   useEffect(() => {
-    if (count > 0) play("typing-tick");
-  }, [count, play]);
+    playRef.current = play;
+    enabledRef.current = enabled;
+  });
+  useEffect(() => {
+    if (count > 0 && enabledRef.current) playRef.current("typing-tick");
+  }, [count]);
   return null;
 }
 
@@ -90,7 +104,7 @@ function Typer({ text, speed = DEFAULT_SPEED, paused = false, revealAll = false,
         {chars.slice(0, shown).join("")}
       </span>
       {!done && <span aria-hidden="true" data-yorha-caret="" className="ml-px inline-block h-[1em] w-[0.5em] align-[-0.1em] bg-yorha-fg-strong" />}
-      {sound && !instant && !paused && <TypingTick count={shown} />}
+      {sound && <TypingTick count={tickCount(chars, shown)} enabled={!instant && !paused} />}
     </span>
   );
 }
