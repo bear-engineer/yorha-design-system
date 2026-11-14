@@ -1,5 +1,6 @@
-import type { ComponentProps } from "react";
+import { useRef, type ComponentProps, type Ref } from "react";
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover";
+import { buttonVariants } from "@/components/ui/button";
 import { cnState } from "@/lib/utils";
 
 /** Root: re-export of the Base UI Popover root (open, defaultOpen, onOpenChange, modal, ...). */
@@ -7,20 +8,15 @@ const Popover = PopoverPrimitive.Root;
 
 type TriggerProps = ComponentProps<typeof PopoverPrimitive.Trigger>;
 
-/** Button that toggles the popup. Keyboard: Enter/Space. Focus-visible ring is the YoRHa focus token. */
+/**
+ * Button that toggles the popup. Same recipe as Button (height, wipe, press); while open it holds the ink fill.
+ * Keyboard: Enter/Space. Focus-visible ring is the YoRHa focus token.
+ */
 function PopoverTrigger({ className, ...props }: TriggerProps) {
   return (
     <PopoverPrimitive.Trigger
       data-slot="popover-trigger"
-      className={cnState(
-        [
-          "cursor-pointer rounded-yorha border border-yorha-border bg-yorha-panel px-3 py-2",
-          "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
-          "focus-visible:yorha-focus",
-          "data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
-        ],
-        className,
-      )}
+      className={cnState([buttonVariants(), "data-[popup-open]:bg-[length:100%_100%] data-[popup-open]:text-yorha-on-ink"], className)}
       {...props}
     />
   );
@@ -28,7 +24,7 @@ function PopoverTrigger({ className, ...props }: TriggerProps) {
 
 type PositionerProps = ComponentProps<typeof PopoverPrimitive.Positioner>;
 type ContentProps = ComponentProps<typeof PopoverPrimitive.Popup> &
-  Pick<PositionerProps, "side" | "align" | "sideOffset" | "alignOffset" | "collisionPadding"> & {
+  Pick<PositionerProps, "side" | "align" | "sideOffset" | "alignOffset" | "collisionPadding" | "anchor"> & {
     /** Portal mount node; defaults to document.body. */
     container?: ComponentProps<typeof PopoverPrimitive.Portal>["container"];
     /** Render a PopoverBackdrop (scrim) behind the popup. Use with `modal` on the root. */
@@ -46,10 +42,13 @@ function PopoverContent({
   sideOffset = 8,
   alignOffset,
   collisionPadding = 8,
+  anchor,
   container,
   backdrop = false,
+  ref,
   ...props
-}: ContentProps) {
+}: ContentProps & { ref?: Ref<HTMLDivElement> }) {
+  const popupRef = useRef<HTMLDivElement | null>(null);
   return (
     <PopoverPrimitive.Portal container={container}>
       {backdrop ? <PopoverBackdrop /> : null}
@@ -59,13 +58,21 @@ function PopoverContent({
         sideOffset={sideOffset}
         alignOffset={alignOffset}
         collisionPadding={collisionPadding}
+        anchor={anchor}
         className="z-(--yorha-z-popover) outline-none"
       >
         <PopoverPrimitive.Popup
           data-slot="popover-content"
+          ref={(node) => {
+            popupRef.current = node;
+            if (typeof ref === "function") ref(node);
+            else if (ref) ref.current = node;
+          }}
+          // Pointer and touch opens focus the popup itself (a close button must not take the ring); keyboard opens move to the first control.
+          initialFocus={(type) => (type === "keyboard" ? true : popupRef.current)}
           className={cnState(
             [
-              "max-w-80 min-w-56 rounded-yorha border border-yorha-border bg-yorha-panel p-4 text-yorha-fg shadow-yorha-md",
+              "yorha-surface yorha-scroll max-h-(--available-height) max-w-[min(20rem,var(--available-width))] min-w-56 p-4 outline-none",
               "font-yorha text-yorha-sm tracking-yorha-body",
               "yorha-pop",
             ],
@@ -154,18 +161,12 @@ function PopoverDescription({ className, ...props }: ComponentProps<typeof Popov
   );
 }
 
-/** Closes the popup and returns focus to the trigger. */
+/** Closes the popup and returns focus to the trigger. A ghost Button sm. */
 function PopoverClose({ className, ...props }: ComponentProps<typeof PopoverPrimitive.Close>) {
   return (
     <PopoverPrimitive.Close
       data-slot="popover-close"
-      className={cnState(
-        [
-          "mt-3 cursor-pointer rounded-yorha border border-yorha-border px-3 py-1 font-yorha text-yorha-sm text-yorha-fg",
-          "hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus",
-        ],
-        className,
-      )}
+      className={cnState([buttonVariants({ variant: "ghost", size: "sm" }), "mt-3"], className)}
       {...props}
     />
   );

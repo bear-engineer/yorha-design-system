@@ -157,8 +157,6 @@ const PENDING_FAMILY_SWEEP = new Set<string>([
   "number-field / States",
   "page-header / Default",
   "page-header / States",
-  "popover / Default",
-  "popover / States",
   "search-input / States",
   "select / Default",
   "select / States",
@@ -173,8 +171,6 @@ const PENDING_FAMILY_SWEEP = new Set<string>([
   "toggle-group / States",
   "toolbar / Default",
   "toolbar / States",
-  "tooltip / Default",
-  "tooltip / States",
   "yorha-demo / Default",
 ]);
 

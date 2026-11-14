@@ -1,5 +1,6 @@
 import { createContext, useContext, useId, useState, type ComponentProps } from "react";
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
+import { buttonVariants } from "@/components/ui/button";
 import { cnState } from "@/lib/utils";
 
 interface TooltipState {
@@ -54,14 +55,7 @@ function TooltipTrigger({ className, ...props }: TriggerProps) {
     <TooltipPrimitive.Trigger
       data-slot="tooltip-trigger"
       aria-describedby={ctx?.open ? ctx.id : undefined}
-      className={cnState(
-        [
-          "cursor-pointer rounded-yorha border border-yorha-border bg-yorha-panel px-3 py-2",
-          "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
-          "focus-visible:yorha-focus",
-        ],
-        className,
-      )}
+      className={cnState(buttonVariants(), className)}
       {...props}
     />
   );
@@ -79,7 +73,7 @@ function TooltipContent({
   className,
   side = "top",
   align = "center",
-  sideOffset = 6,
+  sideOffset = 8,
   alignOffset,
   collisionPadding = 8,
   container,
