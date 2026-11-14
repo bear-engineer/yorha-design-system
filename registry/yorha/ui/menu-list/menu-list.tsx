@@ -2,6 +2,7 @@ import * as React from "react";
 import { mergeProps } from "@base-ui/react/merge-props";
 import { useRender } from "@base-ui/react/use-render";
 import { useSound } from "@/lib/sound";
+import { TriangleIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
 
 type Variant = "listbox" | "navigation";
@@ -38,8 +39,8 @@ export interface MenuListProps extends Omit<React.ComponentProps<"ul">, "default
 const noop: Play = () => {};
 
 /**
- * The focus ring is drawn outside each row (2px + 2px offset). Inside an overflow container give it at least `p-1`,
- * or the ring is clipped on the first/last row and at the edges.
+ * The selected row is the focused row (selection follows focus), so its ink fill is the focus indicator and no ring is
+ * drawn (an inset `Highlight` outline under forced colours). Nothing paints outside the row box.
  * Picks the sound hook only when asked, so MenuList works without a provider.
  */
 export function MenuList({ sound = false, ...props }: MenuListProps) {
@@ -194,12 +195,13 @@ export interface MenuListItemProps extends Omit<React.HTMLAttributes<HTMLElement
 }
 
 const ROW = cn(
-  "group relative flex w-full cursor-pointer items-center gap-3 py-2 pl-8 pr-3 text-left text-yorha-base uppercase tracking-yorha-wide text-yorha-fg",
+  "group relative flex min-h-row w-full cursor-pointer items-center gap-2 py-1 pl-2 pr-3 text-left text-yorha-base uppercase tracking-yorha-wide text-yorha-fg",
   "border-y-[length:var(--menu-rule)] border-solid border-transparent",
   "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-no-repeat [background-size:0%_100%]",
   "data-[enter=pre]:-translate-x-2 data-[enter=pre]:opacity-0",
   "data-[selected]:text-yorha-on-ink data-[selected]:border-yorha-border data-[selected]:[background-size:100%_100%]",
-  "focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
+  "outline-none forced-colors:focus-visible:outline-2 forced-colors:focus-visible:-outline-offset-2 forced-colors:focus-visible:outline-[Highlight]",
+  "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-disabled",
 );
 
 // Index is clamped by the token: later rows enter together.
@@ -228,7 +230,8 @@ export function MenuListItem({
     if (textValue === undefined) setText(label.current?.textContent ?? "");
   }, [textValue, children]);
 
-  const wipe = selected ? "var(--motion-select)" : "var(--motion-select-exit, var(--motion-select))";
+  // 90ms in, 0 out: the row being left drops at once so only one wipe is on screen (G8).
+  const wipe = selected ? "var(--motion-press)" : "0s";
   const transition = [
     `opacity var(--motion-stagger-enter) var(--yorha-ease-out) ${STAGGER}`,
     `translate var(--motion-stagger-enter) var(--yorha-ease-out) ${STAGGER}`,
@@ -266,12 +269,8 @@ export function MenuListItem({
         },
         children: (
           <>
-            <span
-              data-menu-arrow=""
-              aria-hidden="true"
-              className="pointer-events-none absolute left-2 top-1/2 size-0 -translate-y-1/2 border-y-[0.35rem] border-l-[0.5rem] border-y-transparent border-l-current opacity-0 group-data-[selected]:opacity-100"
-            />
-            <span data-menu-bullet="" aria-hidden="true" className="size-2 shrink-0 bg-current" />
+            <TriangleIcon data-menu-arrow="" className="size-icon-sm opacity-0 group-data-[selected]:opacity-100" />
+            <span data-menu-bullet="" aria-hidden="true" className="size-bullet shrink-0 bg-current" />
             <span className="flex min-w-0 flex-col">
               <span ref={label} data-menu-label="">
                 {children}

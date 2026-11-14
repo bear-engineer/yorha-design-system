@@ -12,7 +12,8 @@
       "registryDependencies": [
         "@yorha/base",
         "@yorha/utils",
-        "@yorha/sound"
+        "@yorha/sound",
+        "@yorha/icons"
       ],
       "files": [
         {
