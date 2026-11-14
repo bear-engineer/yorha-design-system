@@ -115,9 +115,8 @@ describe("story descriptions (Tokens docs freeze)", () => {
   // Autodocs renders a story's JSDoc as markdown, so an unquoted `<html>` becomes a real <html> React element.
   // React then ties <html> to a fiber of the docs root; the next `selectionchange` from any input on the page
   // walks container -> parent forever (dispatchEventForPluginEventSystem) and the main thread never returns.
-  it("no raw HTML tags in src/ story JSDoc", () => {
-    // registry/ stories (yorha-demo, yorha-provider, alert-dialog, dialog) still carry the same pattern; tracked in r-docs.md.
-    const offenders = storyFiles("src").flatMap((file) => rawTagsInDocComments(read(file)).map((tag) => `${file}: ${tag}`));
+  it("no raw HTML tags in story JSDoc (src/ and registry/)", () => {
+    const offenders = [...storyFiles("src"), ...storyFiles("registry")].flatMap((file) => rawTagsInDocComments(read(file)).map((tag) => `${file}: ${tag}`));
     expect(offenders, "wrap tags in backticks, e.g. `<html>`").toEqual([]);
   });
 });
