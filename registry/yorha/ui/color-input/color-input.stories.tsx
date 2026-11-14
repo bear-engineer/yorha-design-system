@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fireEvent, fn, userEvent, waitFor, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { ColorInput } from "./color-input";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -134,5 +135,24 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByLabelText("오리지널 팔레트")).toHaveValue("#336699");
+  },
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="flex w-96 flex-col gap-4">
+      <ColorInput label="기본" defaultValue="#336699" />
+      <ColorInput label="잠김" defaultValue="#336699" disabled />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByLabelText("잠김", { selector: "input[type=text]" })).toBeDisabled();
+    const text = c.getByLabelText("기본", { selector: "input[type=text]" });
+    await userEvent.clear(text);
+    await userEvent.type(text, "#zz1");
+    await expect(text).toHaveAttribute("aria-invalid", "true");
+    await expect(text.getAttribute("aria-describedby") ?? "").toContain(c.getByRole("alert").id);
+    await expectTargetSize(canvasElement);
   },
 };

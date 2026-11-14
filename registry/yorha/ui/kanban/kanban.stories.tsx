@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { KanbanBoard, type KanbanColumnData } from "./kanban";
 
 const THEMES = [
@@ -281,4 +282,24 @@ export const Authentic: Story = {
       <Interactive />
     </div>
   ),
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="grid gap-6">
+      <Interactive />
+      <KanbanBoard label="WIP 초과 보드" columns={overLimit} onChange={() => {}} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByText(/WIP 한도 초과/)).toBeVisible();
+    const handle = c.getAllByRole("button", { name: "유닛 A 점검 카드 이동" })[0]!;
+    handle.focus();
+    await userEvent.keyboard(" ");
+    await waitFor(() => expect(liveText()).toMatch(/집었습니다/));
+    await expect(handle).toHaveFocus();
+    await userEvent.keyboard("{Escape}");
+    await expectTargetSize(canvasElement);
+  },
 };

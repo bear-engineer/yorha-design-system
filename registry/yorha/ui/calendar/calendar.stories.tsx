@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { Calendar, getWeekStart, type CalendarSingleProps, type DateRange } from "./calendar";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -343,5 +344,34 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(cellOf(canvasElement, "2026-11-09")).toHaveAttribute("aria-selected", "true");
+  },
+};
+
+export const States: Story = {
+  args: { minDate: new Date(2026, 10, 3), isDateDisabled: (d: Date) => d.getDate() === 20 },
+  render: (args) => (
+    <div className="flex flex-wrap gap-6">
+      <Calendar {...args} defaultValue={new Date(2026, 10, 18)} />
+      <Calendar mode="range" today={TODAY} defaultValue={{ from: new Date(2026, 10, 10), to: new Date(2026, 10, 12) }} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(cellOf(canvasElement, "2026-11-18")).toHaveAttribute("aria-selected", "true");
+    await expect(cellOf(canvasElement, "2026-11-20")).toHaveAttribute("aria-disabled", "true");
+    await expect(cellOf(canvasElement, "2026-11-02")).toHaveAttribute("aria-disabled", "true");
+    await expect(c.getAllByRole("button", { name: "다음 달" })[0]).toBeEnabled();
+    await expectTargetSize(canvasElement);
+    // day cells are gridcells, which the shared helper does not select: measure them directly
+    const html = document.documentElement;
+    for (const density of ["comfortable", "compact"]) {
+      html.setAttribute("data-density", density);
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const small = [...canvasElement.querySelectorAll<HTMLElement>("[data-slot=calendar-day]")]
+        .map((el) => ({ date: el.dataset.date, w: el.getBoundingClientRect().width, h: el.getBoundingClientRect().height }))
+        .filter((m) => m.w < 23.5 || m.h < 23.5);
+      await expect(small, `${density}: day cells under 24px`).toEqual([]);
+    }
+    html.removeAttribute("data-density");
   },
 };

@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import {
   Field,
   FieldControl,
@@ -200,5 +201,33 @@ export const ItemAndValidity: Story = {
     await expect(message).toBeInTheDocument();
     await expect(message.closest('[role="alert"]')).not.toBeNull();
     await expect(input).toHaveAttribute("aria-invalid", "true");
+  },
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <FieldFrame label="기본" description={DESCRIPTION}>
+        <FieldControl />
+      </FieldFrame>
+      <FieldFrame label="읽기 전용">
+        <FieldControl readOnly defaultValue="고정 값" />
+      </FieldFrame>
+      <FieldFrame label="잠김" disabled>
+        <FieldControl defaultValue="locked" />
+      </FieldFrame>
+      <FieldFrame label="오류" error="필수 입력 항목입니다">
+        <FieldControl />
+      </FieldFrame>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const bad = c.getByRole("textbox", { name: "오류" });
+    await expect(bad).toHaveAttribute("aria-invalid", "true");
+    await expect(describedIds(bad)).toContain(c.getByRole("alert").id);
+    await expect(c.getByRole("textbox", { name: "읽기 전용" })).toHaveAttribute("readonly");
+    await expect(c.getByRole("textbox", { name: "잠김" })).toBeDisabled();
+    await expectTargetSize(canvasElement);
   },
 };

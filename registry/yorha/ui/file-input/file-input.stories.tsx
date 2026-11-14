@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fireEvent, fn, userEvent, waitFor, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { FileInput, formatFileSize } from "./file-input";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -221,5 +222,24 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(nativeOf(canvasElement)).toHaveAttribute("type", "file");
+  },
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="flex w-96 flex-col gap-4">
+      <FileInput label="기본" multiple maxSize={1000} />
+      <FileInput label="잠김" disabled />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const native = canvasElement.querySelectorAll<HTMLInputElement>("input[type=file]")[0]!;
+    fireEvent.change(native, { target: { files: toDataTransfer(makeFiles(["small.txt", 500], ["big.txt", 5000])).files } });
+    await c.findByText("small.txt");
+    const alert = c.getByRole("alert");
+    const zone = canvasElement.querySelectorAll<HTMLElement>("[data-slot=file-drop-zone]")[0]!;
+    await expect(zone.getAttribute("aria-describedby") ?? "").toContain(alert.id);
+    await expectTargetSize(canvasElement);
   },
 };

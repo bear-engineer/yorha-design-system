@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fireEvent, userEvent, waitFor, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { PasswordInput } from "./password-input";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -145,5 +146,26 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByLabelText("오리지널 팔레트", { selector: "input" })).toHaveAttribute("type", "password");
+  },
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="flex w-96 flex-col gap-4">
+      <PasswordInput label="기본" />
+      <PasswordInput label="오류" error="8자 이상이어야 합니다" />
+      <PasswordInput label="잠김" disabled />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const bad = c.getByLabelText("오류", { selector: "input" });
+    await expect(bad).toHaveAttribute("aria-invalid", "true");
+    await expect(bad.getAttribute("aria-describedby") ?? "").toContain(c.getByRole("alert").id);
+    await expect(c.getByLabelText("잠김", { selector: "input" })).toBeDisabled();
+    const toggle = c.getAllByRole("button", { name: "비밀번호 표시" })[0]!;
+    await userEvent.click(toggle);
+    await expect(toggle).toHaveAttribute("aria-pressed", "true");
+    await expectTargetSize(canvasElement);
   },
 };

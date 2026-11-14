@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { DatePicker, DateRangePicker, formatDate, parseDate } from "./date-picker";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -272,5 +273,34 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("textbox", { name: "출발일 (오리지널)" })).toHaveAttribute("aria-invalid", "true");
+  },
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <DatePicker label="기본" today={TODAY} />
+      <DatePicker label="오류" today={TODAY} defaultValue={null as never} />
+      <DatePicker label="잠김" today={TODAY} disabled />
+      <DateRangePicker label="기간" today={TODAY} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const bad = c.getByRole("textbox", { name: "오류" });
+    await userEvent.type(bad, "abc");
+    await userEvent.tab();
+    await waitFor(() => expect(c.getByRole("alert")).toHaveTextContent("날짜 형식"));
+    await expect(bad).toHaveAttribute("aria-invalid", "true");
+    await expect(bad.getAttribute("aria-describedby") ?? "").toContain(c.getByRole("alert").id);
+    await expect(c.getByRole("textbox", { name: "잠김" })).toBeDisabled();
+    // focus stays on the trigger after opening and closing the picker
+    const trigger = c.getAllByRole("button", { name: "달력 열기" })[0]!;
+    await userEvent.click(trigger);
+    await screen.findByRole("grid");
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(popup()).toBeNull());
+    await expect(trigger).toHaveFocus();
+    await expectTargetSize(canvasElement);
   },
 };

@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fireEvent, fn, screen, userEvent, waitFor, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { DateInput } from "./date-input";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -181,5 +182,24 @@ export const Authentic: Story = {
   play: async ({ canvasElement }) => {
     const input = within(canvasElement).getByLabelText("오리지널 팔레트");
     await expect(input).toHaveAttribute("type", "date");
+  },
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="flex w-96 flex-col gap-4">
+      <DateInput label="기본" today={TODAY} />
+      <DateInput label="달력 포함" picker today={TODAY} />
+      <DateInput label="오류" error="날짜를 선택하세요" />
+      <DateInput label="잠김" disabled defaultValue="2026-11-14" picker />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const bad = c.getByLabelText("오류");
+    await expect(bad).toHaveAttribute("aria-invalid", "true");
+    await expect(bad.getAttribute("aria-describedby") ?? "").toContain(c.getByRole("alert").id);
+    await expect(c.getByLabelText("잠김")).toBeDisabled();
+    await expectTargetSize(canvasElement);
   },
 };

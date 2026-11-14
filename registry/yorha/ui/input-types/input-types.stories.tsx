@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel, Fieldset, FieldsetLegend } from "@/components/ui/field";
@@ -221,5 +222,11 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelector('input[type="week"]')).not.toBeNull();
+  },
+};
+
+export const States: Story = {
+  play: async ({ canvasElement }) => {
+    await expectTargetSize(canvasElement);
   },
 };

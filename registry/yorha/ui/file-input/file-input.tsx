@@ -74,6 +74,7 @@ export function FileInput({
   const labelId = `${uid}-label`;
   const buttonId = `${uid}-button`;
   const hintId = `${uid}-hint`;
+  const alertId = `${uid}-alert`;
   const nativeRef = React.useRef<HTMLInputElement>(null);
   const buttonRef = React.useRef<HTMLElement>(null);
   const removeRefs = React.useRef<(HTMLElement | null)[]>([]);
@@ -184,7 +185,7 @@ export function FileInput({
       <div
         role="group"
         aria-labelledby={labelId}
-        aria-describedby={hintId}
+        aria-describedby={rejected.length ? `${hintId} ${alertId}` : hintId}
         data-slot="file-drop-zone"
         data-dragging={dragging ? "true" : undefined}
         className={cn(
@@ -234,7 +235,7 @@ export function FileInput({
         </ul>
       ) : null}
       {rejected.length ? (
-        <div role="alert" className="grid gap-1 text-yorha-sm text-yorha-alert">
+        <div id={alertId} role="alert" className="grid gap-1 text-yorha-sm text-yorha-alert">
           {rejected.map((m) => (
             <p key={m}>{m}</p>
           ))}

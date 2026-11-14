@@ -105,7 +105,7 @@ export function ColorInput({
         />
       </div>
       {description ? <FieldDescription>{description}</FieldDescription> : null}
-      {error ? <FieldError>{error}</FieldError> : null}
+      {error || invalid ? <FieldError>{error ?? "색상은 #RRGGBB 형식이어야 합니다"}</FieldError> : null}
     </Field>
   );
 }

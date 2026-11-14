@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { Field, FieldControl, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Form, FormSubmit } from "./form";
 
@@ -153,5 +154,21 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("button", { name: "등록" })).toBeInTheDocument();
+  },
+};
+
+export const States: Story = {
+  args: { onFormSubmit: fn() },
+  render: (args) => <UnitForm {...args} />,
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    await expectTargetSize(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "등록" }));
+    await expect(args.onFormSubmit).not.toHaveBeenCalled();
+    const first = field(c, "유닛 이름");
+    await expect(first).toHaveFocus();
+    await expect(first).toHaveAttribute("aria-invalid", "true");
+    await expect(first.getAttribute("aria-describedby") ?? "").toContain(c.getAllByRole("alert")[0]!.id);
+    await expectTargetSize(canvasElement);
   },
 };

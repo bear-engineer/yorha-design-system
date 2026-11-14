@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { SearchInput } from "./search-input";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -128,5 +129,24 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("searchbox", { name: "오리지널 팔레트" })).toHaveValue("유닛");
+  },
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="flex w-96 flex-col gap-4">
+      <SearchInput label="기본" />
+      <SearchInput label="값 있음" defaultValue="유닛" />
+      <SearchInput label="오류" defaultValue="??" error="검색어를 확인하세요" />
+      <SearchInput label="잠김" defaultValue="잠김" disabled />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const bad = c.getByRole("searchbox", { name: "오류" });
+    await expect(bad).toHaveAttribute("aria-invalid", "true");
+    await expect(bad.getAttribute("aria-describedby") ?? "").toContain(c.getByRole("alert").id);
+    await expect(c.getByRole("searchbox", { name: "잠김" })).toBeDisabled();
+    await expectTargetSize(canvasElement);
   },
 };

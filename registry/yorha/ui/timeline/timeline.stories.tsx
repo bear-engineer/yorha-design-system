@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { Timeline, TimelineGraph } from "./timeline";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -301,4 +302,22 @@ export const VerticalAuthentic: StoryObj<typeof Timeline> = {
       <Timeline label="배포 이력 authentic" items={events} />
     </div>
   ),
+};
+
+export const States: Story = {
+  render: (args) => (
+    <div className="grid gap-6">
+      <TimelineGraph {...args} />
+      <Timeline label="배포 이력" items={events} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getAllByRole("button").filter((b) => b.hasAttribute("data-item-id"))).toHaveLength(items.length);
+    const first = itemEl(c, "와이어프레임");
+    first.focus();
+    await expect(first).toHaveFocus();
+    await expect(c.getByRole("list", { name: "배포 이력" })).toBeInTheDocument();
+    await expectTargetSize(canvasElement);
+  },
 };
