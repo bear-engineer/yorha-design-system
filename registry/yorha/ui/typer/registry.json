@@ -1,4 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "typer",
+      "type": "registry:ui",
+      "title": "Typer",
+      "description": "Typing reveal of a text. The full text sits in a visually hidden node from the first render, so assistive tech reads it at once; the visible typed portion is aria-hidden. Reduced or off motion shows the full text immediately. An optional typing-tick sound is silent by default.",
+      "dependencies": [],
+      "registryDependencies": ["@yorha/utils", "@yorha/base", "@yorha/sound"],
+      "files": [{ "path": "typer.tsx", "type": "registry:ui" }],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The typing reveal is plain DOM text updated on a timer; the tick is a synthesized WebAudio cue. No original assets are used."
+    }
+  ]
 }
