@@ -9,6 +9,11 @@
 // border-width/font-weight/inset...) and no `hidden` + `group-data-[..]:block` display switches for state indicators; a
 // Also: `transition-colors` on a line carrying `focus-visible:` classes.
 // `lint-allow layout-transition: <reason>` comment on the line or the line above allows an unavoidable layout transition. Use --motion-* tokens, ease-yorha-* and the yorha-* motion utilities.
+// Rule `craft` (G16; warning, error with env YORHA_CRAFT_STRICT=1 or options.craftStrict - the sweeps that fix the existing
+// components land first, then the gate flips): display:grid|flex on td/th; opacity-based disabled; text-shadow-yorha outside
+// heading.tsx; leading-yorha-tight|snug in components; inline <svg> in ui/ outside icons and timeline; text glyphs used as icons;
+// fractional arbitrary lengths; yorha-press on grouped items (border-l/r, td, menuitem/option/tab). Raw h-8|10|12 / size-8|10|12 on
+// button, input and [role] elements in ui/ only ever warns (use the h-control-* scale).
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, basename, extname, resolve, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -38,6 +43,47 @@ const DISPLAY_SWITCH = /(?<![\w-])((?:peer-|group-)?(?:data|aria)-\[[^\]]+\](?:\
 const WIPE_HINT = "use the yorha-wipe utility for the selection wipe";
 const LAYOUT_ALLOW = /lint-allow layout-transition:\s*\S/;
 const LAYOUT_HINT = "animate transform, opacity or colour; allow only with a `lint-allow layout-transition: <reason>` comment";
+
+const CLASS_TOKEN = (name) => new RegExp(`(?<![\\w-])${name}(?![\\w-])`);
+const TAG = /<([A-Za-z][\w.]*)\b([^<>]*?)\/?>/g;
+const SIZE_UTILITY = /(?<![\w-])(?:[\w[\]=&>/-]+:)*((?:h|size)-(?:8|10|12))(?![\w.-])/;
+const GLYPH = /(?:>|["'`])\s*(×|−|⠿|✔)\s*(?:<|["'`])|>\s*(\+)\s*</;
+const FRACTIONAL = /(?<![\w-])(?:[\w[\]=&>/-]+:)*[a-z][\w-]*-\[-?\d*\.\d+(?:px|rem|em)\]/g;
+const OPACITY_DISABLED = /(?<![\w-])(?:[\w[\]=&>/-]+:)*[\w[\]=&>/-]*disabled[\w[\]=&>/-]*:opacity-[\w./[\]-]+/;
+
+/** `craft` findings for one file: [{ line, message, soft }] (soft = warns even when craft is strict). */
+function craftFindings(code, relPath) {
+  const lineOf = (index) => code.slice(0, index).split("\n").length;
+  const out = [];
+  const file = basename(relPath);
+  const inUi = /(^|\/)ui\//.test(relPath.split(sep).join("/"));
+  const add = (index, message, soft = false) => out.push({ line: lineOf(index), message: `craft: ${message}`, soft });
+  for (const m of code.matchAll(TAG)) {
+    const [tag, name, attrs] = m;
+    const lower = name.toLowerCase();
+    if ((lower === "td" || lower === "th") && /className=/.test(attrs)) {
+      const hit = ["grid", "flex", "inline-flex", "inline-grid"].find((u) => CLASS_TOKEN(u).test(attrs));
+      if (hit) add(m.index, `display:${hit.replace("inline-", "")} on a table cell (wrap the content in a div; a flex/grid td leaves the table layout)`);
+    }
+    if (/(?<![\w-])yorha-press(?![\w-])/.test(attrs) && (lower === "td" || /(?<![\w-])border-[lr](?![\w-])/.test(attrs) || /role=["{]*["']?(menuitem|option|tab)\b/.test(attrs))) {
+      add(m.index, "yorha-press on a grouped item (td, border-l/r, menuitem, option, tab); the press scale belongs to standalone buttons, use a tint");
+    }
+    if (inUi && (lower === "button" || lower === "input" || /role=/.test(attrs))) {
+      const size = SIZE_UTILITY.exec(attrs);
+      if (size) add(m.index, `raw ${size[1]} on a control (use the h-control-* scale)`, true);
+    }
+    void tag;
+  }
+  for (const m of code.matchAll(new RegExp(OPACITY_DISABLED.source, "g"))) add(m.index, "opacity-based disabled (use yorha-disabled / the --yorha-disabled colour; opacity washes out the whole control)");
+  if (file !== "heading.tsx") for (const m of code.matchAll(/(?<![\w-])text-shadow-yorha(?![\w-])/g)) add(m.index, "text-shadow-yorha outside heading.tsx");
+  for (const m of code.matchAll(/(?<![\w-])leading-yorha-(tight|snug)(?![\w-])/g)) add(m.index, `leading-yorha-${m[1]} in a component (use the text-yorha-* size/line-height pair)`);
+  if (inUi && !/(^|\/)(icons|timeline)\//.test(relPath.split(sep).join("/"))) {
+    for (const m of code.matchAll(/<svg\b/g)) add(m.index, "inline <svg> outside icons/timeline (import from @ui/icons)");
+    for (const m of code.matchAll(new RegExp(GLYPH.source, "g"))) add(m.index, `text glyph "${m[1] ?? m[2]}" used as an icon (import from @ui/icons)`);
+  }
+  for (const m of code.matchAll(FRACTIONAL)) add(m.index, `fractional arbitrary length "${m[0].replace(/^.*?:/, "")}" (stay on the 4px grid)`);
+  return out;
+}
 
 function walk(dir) {
   if (!existsSync(dir)) return [];
@@ -80,10 +126,11 @@ function motionFindings(code, raw = code) {
   return findings;
 }
 
-export function lintRegistry(rootDir = process.cwd(), { motionStrict = process.env.YORHA_MOTION_STRICT === "1" } = {}) {
+export function lintRegistry(rootDir = process.cwd(), { motionStrict = process.env.YORHA_MOTION_STRICT === "1", craftStrict = process.env.YORHA_CRAFT_STRICT === "1" } = {}) {
   const errors = [];
   const warnings = [];
   const motion = motionStrict ? errors : warnings;
+  const craft = craftStrict ? errors : warnings;
   const root = JSON.parse(readFileSync(join(rootDir, "registry.json"), "utf8"));
   const entries = []; // { item, dir }
   for (const inc of root.include ?? []) {
@@ -143,6 +190,7 @@ export function lintRegistry(rootDir = process.cwd(), { motionStrict = process.e
       if (hex) errors.push(`${item.name}: ${f.path} hard-codes hex color ${[...new Set(hex)].join(", ")} (use tokens)`);
       if (OUTLINE_OFF.test(code) && !/focus-visible/.test(code)) errors.push(`${item.name}: ${f.path} removes outline without focus-visible replacement`);
       for (const finding of motionFindings(code, src)) motion.push(`${item.name}: ${f.path}:${finding}`);
+      for (const finding of craftFindings(code, relative(rootDir, abs))) (finding.soft ? warnings : craft).push(`${item.name}: ${f.path}:${finding.line} ${finding.message}`);
       if (item.type === "registry:ui") {
         for (const m of src.matchAll(IMPORT)) {
           const spec = m[1];
@@ -175,5 +223,5 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const { errors, warnings, includes } = lintRegistry(process.cwd());
   if (warnings.length) console.warn(warnings.map((warning) => `warning: ${warning}`).join("\n"));
   if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-  console.log(`registry lint ok (${includes} includes${warnings.length ? `, ${warnings.length} motion warnings` : ""})`);
+  console.log(`registry lint ok (${includes} includes${warnings.length ? `, ${warnings.length} ${warnings.some((w) => w.includes(" craft: ")) ? "motion/craft " : "motion "}warnings` : ""})`);
 }
