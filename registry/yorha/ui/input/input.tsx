@@ -9,7 +9,7 @@ export interface InputProps extends Omit<React.ComponentProps<typeof BaseInput>,
 
 /**
  * Bare single-line input on Base UI Input: every native input prop passes through, the ref reaches
- * the <input>, and it picks up Field wiring (invalid, disabled, dirty) when placed inside Field.Root.
+ * the `<input>`, and it picks up Field wiring (invalid, disabled, dirty) when placed inside Field.Root.
  * Labels and descriptions come from the caller or from Field; see text-field for the composed form.
  */
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(function Input({ className, ...props }, ref) {
