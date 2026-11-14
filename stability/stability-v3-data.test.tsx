@@ -169,6 +169,86 @@ describe("kanban overlay under a transformed ancestor (user report: card floats 
   });
 });
 
+describe("C2-201..204 kanban", () => {
+  const live = () => document.querySelector<HTMLElement>("[id^=DndLiveRegion]")!;
+  const handleOf = (root: ParentNode, prefix: string) =>
+    qa(root, "button").find((b) => b.getAttribute("aria-label")?.startsWith(prefix))!;
+  const ptr = (target: EventTarget, type: string, x: number, y: number) =>
+    target.dispatchEvent(
+      new PointerEvent(type, { bubbles: true, cancelable: true, clientX: x, clientY: y, button: 0, buttons: type === "pointerup" ? 0 : 1, pointerId: 1, pointerType: "mouse", isPrimary: true }),
+    );
+  /** Real pointer sequence on the handle; resolves after pointerup is dispatched (held at the target first). */
+  async function drag(handle: HTMLElement, to: { x: number; y: number }, release = true) {
+    const h = r(handle);
+    const x0 = h.left + h.width / 2;
+    const y0 = h.top + h.height / 2;
+    ptr(handle, "pointerdown", x0, y0);
+    for (let i = 1; i <= 12; i++) {
+      ptr(document, "pointermove", x0 + ((to.x - x0) * i) / 12, y0 + ((to.y - y0) * i) / 12);
+      await frames(2);
+    }
+    await frames(4);
+    if (release) ptr(document, "pointerup", to.x, to.y);
+  }
+
+  test("C2-201: every sr-only span inside the board is contained by the board scroller", async () => {
+    const root = await mountStory("kanban", "Default");
+    const board = q(root, "[role=region]");
+    const spans = qa(board, ".sr-only");
+    expect(spans.length).toBeGreaterThan(0);
+    for (const s of spans) expect(s.offsetParent, "sr-only containing block").toBe(board);
+  });
+
+  test("C2-202: pointer drop announces the target column", async () => {
+    const root = await mountStory("kanban", "Default");
+    const cols = qa(root, "[role=group]");
+    const t = r(cols[2]!);
+    await drag(handleOf(root, "통신 모듈 교체"), { x: t.left + t.width / 2, y: t.top + 60 });
+    await wait(60);
+    const text = live().textContent ?? "";
+    expect(text, text).toContain(cols[2]!.querySelector("h2")!.textContent!);
+    await wait(500);
+  });
+
+  test("C2-203: keyboard move into the middle column announces that column", async () => {
+    const root = await mountStory("kanban", "Default");
+    const middle = qa(root, "[role=group] h2")[1]!.textContent!;
+    handleOf(root, "통신 모듈 교체").focus();
+    await userEvent.keyboard(" ");
+    await frames(4);
+    await userEvent.keyboard("{ArrowRight}");
+    await frames(8);
+    const text = live().textContent ?? "";
+    expect(text, text).toContain(middle);
+    expect(text, text).not.toContain("집었습니다");
+    await userEvent.keyboard("{Escape}");
+    await frames(4);
+  });
+
+  test("C2-204: the drop settle starts at release (no idle hold)", async () => {
+    const root = await mountStory("kanban", "Default");
+    const cols = qa(root, "[role=group]");
+    const t = r(cols[2]!);
+    await drag(handleOf(root, "통신 모듈 교체"), { x: t.left + t.width / 2, y: t.top + 80 }, false);
+    const overlay = document.querySelector<HTMLElement>("[data-slot=kanban-overlay]")!;
+    const at = () => r(document.querySelector("[data-slot=kanban-overlay]") ?? overlay);
+    ptr(document, "pointerup", t.left + t.width / 2, t.top + 80);
+    const start = at();
+    const samples: number[] = [];
+    const t0 = performance.now();
+    while (performance.now() - t0 < 150) {
+      await new Promise((res) => requestAnimationFrame(() => res(null)));
+      const o = at();
+      samples.push(Math.hypot(o.left - start.left, o.top - start.top));
+    }
+    // moved within the first ~50ms, and never idles for 3 consecutive frames before arriving
+    const firstMove = samples.findIndex((d) => d > 1);
+    expect(firstMove, JSON.stringify(samples)).toBeGreaterThanOrEqual(0);
+    expect(firstMove, "frames before motion " + JSON.stringify(samples)).toBeLessThanOrEqual(2);
+    await wait(500);
+  });
+});
+
 describe("FD-12/13 timeline", () => {
   test("no dependency connector crosses a milestone label (FD-12)", async () => {
     const root = await mountStory("timeline", "Default");

@@ -89,10 +89,10 @@ function readMotionMs(name: string): number {
 }
 
 function readDropAnimation(): DropAnimation | null {
-  const duration = readMotionMs("--motion-collapse");
+  const duration = readMotionMs("--motion-select");
   if (duration <= 0) return null;
   const easing = getComputedStyle(document.documentElement)
-    .getPropertyValue("--yorha-ease-emphasized")
+    .getPropertyValue("--yorha-ease-out")
     .trim();
   return { duration, easing: easing || "ease" };
 }
@@ -331,8 +331,8 @@ export function KanbanBoard({
   const [overlayScope, setOverlayScope] = useState<OverlayScope>({});
   useEffect(() => setOverlayHost(document.body), []);
   const draftRef = useRef<KanbanColumnData[] | null>(null);
-  const lastColumnRef = useRef<string | null>(null);
-  const pickedUpRef = useRef("");
+  const lastDraftRef = useRef<KanbanColumnData[] | null>(null);
+  const pickupPendingRef = useRef(false);
   const [dropAnimation, setDropAnimation] = useState<DropAnimation | null>(
     null,
   );
@@ -350,45 +350,59 @@ export function KanbanBoard({
 
   const commitDraft = useCallback((next: KanbanColumnData[] | null) => {
     draftRef.current = next;
+    if (next) lastDraftRef.current = next;
     setDraft(next);
   }, []);
 
+  // dnd-kit runs the board's onDragEnd before the announcement, which has already cleared `draftRef`: announcements read
+  // `lastDraftRef` (kept until the next drag starts) so they describe where the card is, not where it started.
   const announcements = useMemo<Announcements>(() => {
-    const where = (id: UniqueIdentifier, overId?: UniqueIdentifier) => {
-      const current = draftRef.current ?? columns;
-      const loc = findCard(current, id);
-      if (!loc) return "";
-      let index = loc.index;
-      if (overId !== undefined && lastColumnRef.current === loc.column.id) {
-        const over = findCard(current, overId);
-        index = over ? over.index : loc.column.cards.length - 1;
-      }
-      lastColumnRef.current = loc.column.id;
-      return `${loc.column.title} 열 ${loc.column.cards.length}장 중 ${index + 1}번째`;
-    };
+    const position = (column: KanbanColumnData, index: number, count: number) =>
+      `${column.title} 열 ${count}장 중 ${index + 1}번째`;
     const name = (id: UniqueIdentifier) => {
-      const found = findCard(draftRef.current ?? columns, id);
+      const found = findCard(lastDraftRef.current ?? columns, id);
       return found ? cardLabel(found.card) : String(id);
+    };
+    /** Where the card is heading, from the over target; the draft may not have caught up with it yet. */
+    const heading = (id: UniqueIdentifier, overId: UniqueIdentifier) => {
+      const current = lastDraftRef.current ?? columns;
+      const from = findCard(current, id);
+      const target = findColumnOf(current, overId);
+      if (!from || !target) return "";
+      const here = from.column.id === target.id;
+      const count = target.cards.length + (here ? 0 : 1);
+      const over = findCard(current, overId);
+      const index = over ? over.index : count - 1;
+      return position(target, index, count);
+    };
+    /** Where the card ends up on drop: the committed draft, with the same-column reorder applied. */
+    const landed = (id: UniqueIdentifier, overId: UniqueIdentifier) => {
+      const current = lastDraftRef.current ?? columns;
+      const from = findCard(current, id);
+      if (!from) return "";
+      const to = findCard(current, overId);
+      const index = to && to.column.id === from.column.id ? to.index : from.index;
+      return position(from.column, index, from.column.cards.length);
     };
     return {
       onDragStart: ({ active }) => {
         const loc = findCard(columns, active.id);
-        lastColumnRef.current = loc?.column.id ?? null;
-        pickedUpRef.current = `${name(active.id)} 카드를 집었습니다. 현재 ${loc ? `${loc.column.title} 열 ${loc.column.cards.length}장 중 ${loc.index + 1}번째` : ""}입니다.`;
-        return pickedUpRef.current;
+        pickupPendingRef.current = true;
+        return `${cardLabel(loc?.card ?? { id: String(active.id), title: "" })} 카드를 집었습니다. 현재 ${loc ? position(loc.column, loc.index, loc.column.cards.length) : ""}입니다.`;
       },
       // dnd-kit fires onDragOver right after start with over = the card itself: keep the pick-up text then.
-      onDragOver: ({ active, over }) =>
-        over?.id === active.id &&
-        lastColumnRef.current ===
-          findCard(draftRef.current ?? columns, active.id)?.column.id
-          ? pickedUpRef.current
-          : over
-            ? `${name(active.id)} 카드를 ${where(active.id, over.id)}로 옮기는 중입니다.`
-            : `${name(active.id)} 카드가 열 밖에 있습니다.`,
+      onDragOver: ({ active, over }) => {
+        if (!over) return `${name(active.id)} 카드가 열 밖에 있습니다.`;
+        if (pickupPendingRef.current && over.id === active.id) {
+          const loc = findCard(lastDraftRef.current ?? columns, active.id);
+          return `${name(active.id)} 카드를 집었습니다. 현재 ${loc ? position(loc.column, loc.index, loc.column.cards.length) : ""}입니다.`;
+        }
+        pickupPendingRef.current = false;
+        return `${name(active.id)} 카드를 ${heading(active.id, over.id)}로 옮기는 중입니다.`;
+      },
       onDragEnd: ({ active, over }) =>
         over
-          ? `${name(active.id)} 카드를 ${where(active.id, over.id)}에 놓았습니다.`
+          ? `${name(active.id)} 카드를 ${landed(active.id, over.id)}에 놓았습니다.`
           : `${name(active.id)} 카드를 원래 위치에 놓았습니다.`,
       onDragCancel: ({ active }) =>
         `이동을 취소했습니다. ${name(active.id)} 카드가 원래 위치로 돌아갑니다.`,
@@ -481,7 +495,7 @@ export function KanbanBoard({
         ref={boardRef}
         role="region"
         aria-label={label}
-        className={cn("flex snap-x snap-proximity scroll-px-1 items-start gap-4 overflow-x-auto overscroll-x-contain p-1", className)}
+        className={cn("relative flex snap-x snap-proximity scroll-px-1 items-start gap-4 overflow-x-auto overscroll-x-contain p-1", className)}
       >
         {view.map((column) => (
           <KanbanColumn
