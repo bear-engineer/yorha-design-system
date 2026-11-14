@@ -554,7 +554,8 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
                   };
                   const suffix = getDayLabelSuffix?.(date);
                   const isRoving = isSameDay(date, roving);
-                  const name = [dayLabel.format(date), isToday ? labels.today : null, suffix].filter(Boolean).join(", ");
+                  // axe label-content-name-mismatch needs the visible numeral as its own word in the name ("14일" does not count)
+                  const name = [String(date.getDate()), dayLabel.format(date), isToday ? labels.today : null, suffix].filter(Boolean).join(", ");
                   return (
                     <td
                       key={di}

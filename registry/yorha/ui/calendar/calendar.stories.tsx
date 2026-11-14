@@ -2,6 +2,7 @@ import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { expectTargetSize } from "../../../../.storybook/preview";
+import { expectGrid, expectPixelSnapped } from "../../../../.storybook/geometry";
 import { Calendar, getWeekStart, type CalendarSingleProps, type DateRange } from "./calendar";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -12,6 +13,8 @@ const TODAY = new Date(2026, 10, 14);
 
 // --- helpers ---
 const cellOf = (root: HTMLElement, key: string) => root.querySelector<HTMLElement>(`[data-date="${key}"]`)!;
+/** The gridcell (td) holding a day: selection, range and preview marks live on it. */
+const tdOf = (root: HTMLElement, key: string) => cellOf(root, key).closest("td")!;
 /** Tab through the header buttons until the roving day has focus. */
 async function tabToGrid() {
   for (let i = 0; i < 6 && !(document.activeElement as HTMLElement | null)?.dataset.date; i++) await userEvent.tab();
@@ -60,17 +63,22 @@ export const Default: Story = {
     const grid = c.getByRole("grid", { name: "2026년 11월" });
     await expect(grid).toBeInTheDocument();
     const today = cellOf(canvasElement, "2026-11-14");
-    await expect(today).toHaveAttribute("aria-current", "date");
+    await expect(tdOf(canvasElement, "2026-11-14")).toHaveAttribute("aria-current", "date");
     await expect(canvasElement.querySelectorAll("[aria-current='date']")).toHaveLength(1);
     await expect(today).toHaveTextContent("14");
     // exactly one tab stop in the grid (roving tabindex)
-    await expect(canvasElement.querySelectorAll("[role=gridcell][tabindex='0']")).toHaveLength(1);
+    await expect(canvasElement.querySelectorAll("[data-slot=calendar-day][tabindex='0']")).toHaveLength(1);
     await expect(today).toHaveAttribute("tabindex", "0");
     // week starts per locale (Intl weekInfo, Monday fallback)
     const first = canvasElement.querySelector("thead th")!;
     const start = getWeekStart("ko-KR");
     const expected = new Intl.DateTimeFormat("ko-KR", { weekday: "short" }).format(new Date(2023, 0, 1 + start));
     await expect(first).toHaveTextContent(expected);
+    // geometry (FCAL-01/02): the month is a 7 x 6 grid of equal cells on whole pixels
+    const cells = [...canvasElement.querySelectorAll("tbody td")];
+    await expect(cells).toHaveLength(42);
+    expectGrid(cells, { columns: 7, rows: 6 });
+    expectPixelSnapped(cells[0]!, { axes: "xy" });
   },
 };
 
@@ -136,7 +144,7 @@ export const DisabledDaysSkipped: Story = {
     await expect(disabled).toHaveAttribute("aria-disabled", "true");
     await expect(disabled).toHaveAttribute("tabindex", "-1");
     await userEvent.click(disabled);
-    await expect(disabled).toHaveAttribute("aria-selected", "false");
+    await expect(disabled.closest("td")).toHaveAttribute("aria-selected", "false");
     await expect(args.onValueChange).not.toHaveBeenCalled();
     // minDate / maxDate disable the whole day
     await expect(cellOf(canvasElement, "2026-11-09")).toHaveAttribute("aria-disabled", "true");
@@ -150,16 +158,16 @@ export const SingleSelection: Story = {
   args: { onValueChange: fn() },
   play: async ({ canvasElement, args }) => {
     await userEvent.click(cellOf(canvasElement, "2026-11-20"));
-    await expect(cellOf(canvasElement, "2026-11-20")).toHaveAttribute("aria-selected", "true");
+    await expect(tdOf(canvasElement, "2026-11-20")).toHaveAttribute("aria-selected", "true");
     await expect(args.onValueChange).toHaveBeenLastCalledWith(expect.objectContaining({}));
     const called = (args.onValueChange as ReturnType<typeof fn>).mock.calls.at(-1)![0] as Date;
     await expect([called.getFullYear(), called.getMonth(), called.getDate()]).toEqual([2026, 10, 20]);
     // keyboard: move and select with Enter, then Space
     await userEvent.keyboard("{ArrowRight}{Enter}");
-    await expect(cellOf(canvasElement, "2026-11-21")).toHaveAttribute("aria-selected", "true");
-    await expect(cellOf(canvasElement, "2026-11-20")).toHaveAttribute("aria-selected", "false");
+    await expect(tdOf(canvasElement, "2026-11-21")).toHaveAttribute("aria-selected", "true");
+    await expect(tdOf(canvasElement, "2026-11-20")).toHaveAttribute("aria-selected", "false");
     await userEvent.keyboard("{ArrowRight} ");
-    await expect(cellOf(canvasElement, "2026-11-22")).toHaveAttribute("aria-selected", "true");
+    await expect(tdOf(canvasElement, "2026-11-22")).toHaveAttribute("aria-selected", "true");
   },
 };
 
@@ -177,11 +185,11 @@ function ControlledDemo() {
 export const Controlled: Story = {
   render: () => <ControlledDemo />,
   play: async ({ canvasElement }) => {
-    await expect(cellOf(canvasElement, "2026-11-03")).toHaveAttribute("aria-selected", "true");
+    await expect(tdOf(canvasElement, "2026-11-03")).toHaveAttribute("aria-selected", "true");
     await userEvent.click(cellOf(canvasElement, "2026-11-09"));
     await expect(within(canvasElement).getByTestId("value")).toHaveTextContent("2026-11-");
-    await expect(cellOf(canvasElement, "2026-11-09")).toHaveAttribute("aria-selected", "true");
-    await expect(cellOf(canvasElement, "2026-11-03")).toHaveAttribute("aria-selected", "false");
+    await expect(tdOf(canvasElement, "2026-11-09")).toHaveAttribute("aria-selected", "true");
+    await expect(tdOf(canvasElement, "2026-11-03")).toHaveAttribute("aria-selected", "false");
   },
 };
 
@@ -191,8 +199,8 @@ export const ControlledIgnoresClicks: Story = {
   play: async ({ canvasElement, args }) => {
     await userEvent.click(cellOf(canvasElement, "2026-11-09"));
     await expect(args.onValueChange).toHaveBeenCalledTimes(1);
-    await expect(cellOf(canvasElement, "2026-11-03")).toHaveAttribute("aria-selected", "true");
-    await expect(cellOf(canvasElement, "2026-11-09")).toHaveAttribute("aria-selected", "false");
+    await expect(tdOf(canvasElement, "2026-11-03")).toHaveAttribute("aria-selected", "true");
+    await expect(tdOf(canvasElement, "2026-11-09")).toHaveAttribute("aria-selected", "false");
   },
 };
 
@@ -201,33 +209,33 @@ export const RangeSelection: Story = {
   play: async ({ canvasElement, args }) => {
     const spy = args.onValueChange as unknown as ReturnType<typeof fn>;
     await userEvent.click(cellOf(canvasElement, "2026-11-10"));
-    await expect(cellOf(canvasElement, "2026-11-10")).toHaveAttribute("aria-selected", "true");
-    await expect(cellOf(canvasElement, "2026-11-12")).toHaveAttribute("aria-selected", "false");
+    await expect(tdOf(canvasElement, "2026-11-10")).toHaveAttribute("aria-selected", "true");
+    await expect(tdOf(canvasElement, "2026-11-12")).toHaveAttribute("aria-selected", "false");
     await userEvent.click(cellOf(canvasElement, "2026-11-15"));
     for (const day of ["10", "11", "12", "13", "14", "15"]) {
-      await expect(cellOf(canvasElement, `2026-11-${day}`)).toHaveAttribute("aria-selected", "true");
+      await expect(tdOf(canvasElement, `2026-11-${day}`)).toHaveAttribute("aria-selected", "true");
     }
-    await expect(cellOf(canvasElement, "2026-11-11")).toHaveAttribute("data-in-range");
+    await expect(tdOf(canvasElement, "2026-11-11")).toHaveAttribute("data-in-range");
     await expect(cellOf(canvasElement, "2026-11-10")).toHaveAttribute("data-range-start");
     await expect(cellOf(canvasElement, "2026-11-15")).toHaveAttribute("data-range-end");
-    await expect(cellOf(canvasElement, "2026-11-16")).toHaveAttribute("aria-selected", "false");
+    await expect(tdOf(canvasElement, "2026-11-16")).toHaveAttribute("aria-selected", "false");
     const last = spy.mock.calls.at(-1)![0] as DateRange;
     await expect([last.from?.getDate(), last.to?.getDate()]).toEqual([10, 15]);
     // third click starts over; a click before the start swaps the ends
     await userEvent.click(cellOf(canvasElement, "2026-11-20"));
-    await expect(cellOf(canvasElement, "2026-11-12")).toHaveAttribute("aria-selected", "false");
+    await expect(tdOf(canvasElement, "2026-11-12")).toHaveAttribute("aria-selected", "false");
     await userEvent.click(cellOf(canvasElement, "2026-11-18"));
     const swapped = spy.mock.calls.at(-1)![0] as DateRange;
     await expect([swapped.from?.getDate(), swapped.to?.getDate()]).toEqual([18, 20]);
-    await expect(cellOf(canvasElement, "2026-11-19")).toHaveAttribute("data-in-range");
+    await expect(tdOf(canvasElement, "2026-11-19")).toHaveAttribute("data-in-range");
   },
 };
 
 export const RangeControlled: Story = {
   args: { mode: "range", value: { from: new Date(2026, 10, 2), to: new Date(2026, 10, 4) } } as never,
   play: async ({ canvasElement }) => {
-    await expect(cellOf(canvasElement, "2026-11-03")).toHaveAttribute("data-in-range");
-    await expect(cellOf(canvasElement, "2026-11-04")).toHaveAttribute("aria-selected", "true");
+    await expect(tdOf(canvasElement, "2026-11-03")).toHaveAttribute("data-in-range");
+    await expect(tdOf(canvasElement, "2026-11-04")).toHaveAttribute("aria-selected", "true");
   },
 };
 
@@ -236,7 +244,7 @@ export const TwoMonths: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await expect(gridNames(canvasElement)).toEqual(["2026년 11월", "2026년 12월"]);
-    await expect(canvasElement.querySelectorAll("[role=gridcell][tabindex='0']")).toHaveLength(1);
+    await expect(canvasElement.querySelectorAll("[data-slot=calendar-day][tabindex='0']")).toHaveLength(1);
     // header buttons are at least 24px
     const next = c.getByRole("button", { name: "다음 달" });
     const rect = next.getBoundingClientRect();
@@ -265,7 +273,7 @@ export const HeaderNavigation: Story = {
     await waitFor(() => expect(canvasElement.querySelector("[data-entering]")).toBeNull());
     await Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined)));
     // the roving tab stop follows the visible month
-    await expect(canvasElement.querySelectorAll("[role=gridcell][tabindex='0']")).toHaveLength(1);
+    await expect(canvasElement.querySelectorAll("[data-slot=calendar-day][tabindex='0']")).toHaveLength(1);
   },
 };
 
@@ -292,7 +300,7 @@ export const MonthChangeMotion: Story = {
     const cs = getComputedStyle(grid());
     await expect(Math.max(...durationsMs(grid()))).toBeLessThanOrEqual(180);
     // keyboard month change (PageDown from a day) runs no animation
-    (canvasElement.querySelector("[role=gridcell][tabindex='0']") as HTMLElement).focus();
+    (canvasElement.querySelector("[data-slot=calendar-day][tabindex='0']") as HTMLElement).focus();
     await userEvent.keyboard("{PageDown}");
     await new Promise((r) => setTimeout(r, 40));
     await expect(grid().getAnimations()).toHaveLength(0);
@@ -308,8 +316,8 @@ export const RenderDay: Story = {
   },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getAllByTestId("dot")).toHaveLength(4);
-    await expect(cellOf(canvasElement, "2026-11-07")).toHaveTextContent("일정 있음");
-    await expect(cellOf(canvasElement, "2026-11-08")).not.toHaveTextContent("일정");
+    await expect(cellOf(canvasElement, "2026-11-07")).toHaveAccessibleName(/2026년 11월 7일 토요일, 일정 있음/);
+    await expect(cellOf(canvasElement, "2026-11-08")).not.toHaveAccessibleName(/일정/);
   },
 };
 
@@ -319,7 +327,7 @@ export const ReducedMotion: Story = {
       const c = within(canvasElement);
       await userEvent.click(c.getByRole("button", { name: "다음 달" }));
       await waitFor(() => expect(c.getByRole("grid", { name: "2026년 12월" })).toBeInTheDocument());
-      const slider = canvasElement.querySelector("[data-slot=calendar-month-body]")!;
+      const slider = canvasElement.querySelector("[data-slot=calendar-months]")!;
       const body = c.getByRole("grid", { name: "2026년 12월" });
       // the slide starts from data-entering (no transition) and then eases to rest
       await waitFor(() => expect(slider).not.toHaveAttribute("data-entering"));
@@ -379,7 +387,7 @@ export const Authentic: Story = {
     </div>
   ),
   play: async ({ canvasElement }) => {
-    await expect(cellOf(canvasElement, "2026-11-09")).toHaveAttribute("aria-selected", "true");
+    await expect(tdOf(canvasElement, "2026-11-09")).toHaveAttribute("aria-selected", "true");
   },
 };
 
@@ -387,13 +395,13 @@ export const States: Story = {
   args: { minDate: new Date(2026, 10, 3), isDateDisabled: (d: Date) => d.getDate() === 20 },
   render: (args) => (
     <div className="flex flex-wrap gap-6">
-      <Calendar {...args} defaultValue={new Date(2026, 10, 18)} />
+      <Calendar {...args} defaultValue={new Date(2026, 10, 18)} showToday />
       <Calendar mode="range" today={TODAY} defaultValue={{ from: new Date(2026, 10, 10), to: new Date(2026, 10, 12) }} />
     </div>
   ),
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
-    await expect(cellOf(canvasElement, "2026-11-18")).toHaveAttribute("aria-selected", "true");
+    await expect(tdOf(canvasElement, "2026-11-18")).toHaveAttribute("aria-selected", "true");
     await expect(cellOf(canvasElement, "2026-11-20")).toHaveAttribute("aria-disabled", "true");
     await expect(cellOf(canvasElement, "2026-11-02")).toHaveAttribute("aria-disabled", "true");
     await expect(c.getAllByRole("button", { name: "다음 달" })[0]).toBeEnabled();
