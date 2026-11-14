@@ -1,0 +1,44 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+import { tokens } from "./tokens.generated";
+
+<Meta title="파운데이션/Recipes" />
+
+# 상태·행·표면 레시피
+
+컴포넌트는 hover·pressed·disabled·read-only·invalid를 **직접 쓰지 않고 아래 유틸리티**로 만듭니다. 상태는 컨트롤의 크기를 바꾸지 않습니다(배경색, 테두리색, 안쪽 그림자만).
+
+## 상태
+
+색은 테마마다 다시 계산되는 `color-mix`입니다. 세기는 토큰(`state.*`, 퍼센트)이고 high-contrast 테마는 더 진하게 덮어씁니다.
+
+<table>
+  <thead>
+    <tr><th>CSS 변수</th><th>기본</th><th>용도</th></tr>
+  </thead>
+  <tbody>
+    {tokens.states.map((state) => (
+      <tr key={state.cssVar}><td><code>{state.cssVar}</code></td><td>{state.value}</td><td>{state.description}</td></tr>
+    ))}
+  </tbody>
+</table>
+
+색 유틸리티: `bg-yorha-hover`, `bg-yorha-pressed`, `bg-yorha-range`, `text-yorha-disabled`, `border-yorha-disabled`, `bg-yorha-disabled`.
+
+| 상태 | 레시피 | 클래스 |
+|---|---|---|
+| hover, 동작 버튼 | 잉크 와이프 | `buttonVariants` |
+| hover, 상태가 있는 컨트롤(체크 상자, 토글, 탭, 달력 날짜, 표 행, 카드 링크) | 배경 `--yorha-hover`만, 크기·scale 없음, 마우스 같은 정밀 포인터에서만 | `yorha-tint` |
+| pressed, 단독 버튼 | scale 0.97 | `yorha-press` |
+| pressed, 묶음 항목·행·셀 | 배경 `--yorha-pressed`, 전환 0s, scale 없음 | `yorha-tint` |
+| 선택됨 / 체크됨 / 현재 | 잉크 채움, 잉크 위 글자, 색만으로 표시하지 않음 | 컴포넌트 |
+| disabled | 불투명도 없음. 글자·테두리 `--yorha-disabled`, 채움·그림자·scale 제거, `cursor: not-allowed`. 체크된 disabled는 표시(채움 `--yorha-disabled`, 내용 `--yorha-bg`)를 유지. forced-colors는 `GrayText` | `yorha-disabled` |
+| read-only | 글자 그대로, 채움 없음, 아래 테두리만(인쇄된 양식 선), `cursor: default`, 포커스는 가능 | `yorha-readonly` |
+| invalid | 테두리 `--yorha-alert-ui` + `inset 0 0 0 1px`(2px 가장자리, 크기 불변). 아이콘과 문구를 함께 | `yorha-invalid` |
+
+`yorha-tint`는 `:disabled`, `[data-disabled]`, `[aria-disabled]`, 선택됨(`[data-checked]`, `[data-pressed]`, `[aria-pressed=true]`, `[data-selected]`, `[aria-selected=true]`), `[aria-current]`, `[data-highlighted]`, `[data-popup-open]`, `[data-panel-open]`에서는 적용되지 않습니다.
+
+텍스트 필드 프레임의 hover는 `hover:border-yorha-fg`(포커스·invalid·disabled·read-only 제외)입니다.
+
+### 마이그레이션 (B5)
+
+`disabled:opacity-*`는 사라집니다. 칠해지는 상자에 `yorha-disabled`를 쓰고, 라벨·설명은 `data-[disabled]:text-yorha-disabled`를 씁니다.

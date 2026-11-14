@@ -174,6 +174,74 @@ export const BaseRules: Story = {
   },
 };
 
+/** State recipes (G7): tint, disabled, read-only, invalid. Each box has a fixed size; no state changes it. */
+function StateRecipeDemo() {
+  const box = "grid h-control-md w-40 place-items-center border border-yorha-border bg-yorha-bg px-pad-md";
+  return (
+    <div className="flex flex-col gap-4 font-yorha text-yorha-fg">
+      {(["light", "high-contrast"] as const).map((theme) => (
+        <div key={theme} data-theme={theme} data-testid={`states-${theme}`} className="flex flex-wrap items-start gap-4 bg-yorha-bg p-4">
+          <button type="button" data-testid={`tint-${theme}`} className={`${box} yorha-tint`}>tint</button>
+          <button type="button" data-selected="" data-testid={`tint-selected-${theme}`} className={`${box} yorha-tint bg-yorha-ink text-yorha-on-ink`}>selected</button>
+          <button type="button" disabled data-testid={`disabled-${theme}`} className={`${box} yorha-tint yorha-disabled shadow-yorha-sm`}>disabled</button>
+          <button type="button" disabled data-checked="" data-testid={`disabled-checked-${theme}`} className={`${box} yorha-disabled bg-yorha-ink text-yorha-on-ink`}>checked</button>
+          <input readOnly defaultValue="읽기 전용" aria-label={`읽기 전용 ${theme}`} data-testid={`readonly-${theme}`} className={`${box} yorha-readonly`} />
+          <input aria-invalid="true" defaultValue="잘못된 값" aria-label={`잘못됨 ${theme}`} data-testid={`invalid-${theme}`} className={`${box} yorha-invalid`} />
+          <span data-testid={`probe-disabled-${theme}`} className="text-yorha-disabled" />
+          <span data-testid={`probe-bg-${theme}`} className="text-yorha-bg" />
+          <span data-testid={`probe-hover-${theme}`} className="bg-yorha-hover" />
+          <span data-testid={`probe-pressed-${theme}`} className="bg-yorha-pressed" />
+          <span data-testid={`probe-alert-${theme}`} className="text-yorha-alert-ui" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export const StateRecipes: Story = {
+  render: () => <StateRecipeDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const style = (id: string) => getComputedStyle(canvas.getByTestId(id));
+    const TRANSPARENT = "rgba(0, 0, 0, 0)";
+    for (const theme of ["light", "high-contrast"]) {
+      const probe = (name: string, prop: "color" | "backgroundColor") => style(`probe-${name}-${theme}`)[prop];
+      // Real :hover cannot be driven from a story (synthetic events); the recipe's selectors are asserted in
+      // build-tokens.test.ts and a CDP pointer hover runs in stability/. Here: the resting boxes and the state colours.
+      await expect(style(`tint-${theme}`).backgroundColor).not.toBe(probe("hover", "backgroundColor"));
+      await expect(probe("hover", "backgroundColor")).not.toBe(TRANSPARENT);
+      await expect(probe("pressed", "backgroundColor")).not.toBe(probe("hover", "backgroundColor"));
+      await expect(style(`tint-selected-${theme}`).backgroundColor).not.toBe(TRANSPARENT);
+
+      // disabled: no opacity, content and border in the disabled colour, no shadow, no tint on hover
+      const disabled = style(`disabled-${theme}`);
+      await expect(disabled.opacity).toBe("1");
+      await expect(disabled.color).toBe(probe("disabled", "color"));
+      await expect(disabled.borderTopColor).toBe(probe("disabled", "color"));
+      await expect(disabled.boxShadow).toBe("none");
+      await expect(disabled.cursor).toBe("not-allowed");
+      await expect(disabled.backgroundColor).toBe(TRANSPARENT);
+      // a checked disabled control keeps its mark in the disabled colour
+      const checked = style(`disabled-checked-${theme}`);
+      await expect(checked.backgroundColor).toBe(probe("disabled", "color"));
+      await expect(checked.color).toBe(probe("bg", "color"));
+      await expect(checked.opacity).toBe("1");
+
+      // read-only: only the bottom rule remains
+      const readonly = style(`readonly-${theme}`);
+      await expect(readonly.borderTopColor).toBe(TRANSPARENT);
+      await expect(readonly.borderBottomColor).not.toBe(TRANSPARENT);
+      await expect(readonly.backgroundColor).toBe(TRANSPARENT);
+
+      // invalid: alert edge, an inset shadow makes it 2px; border width is untouched
+      const invalid = style(`invalid-${theme}`);
+      await expect(invalid.borderTopColor).toBe(probe("alert", "color"));
+      await expect(invalid.boxShadow).toContain("inset");
+      await expect(invalid.borderTopWidth).toBe("1px");
+    }
+  },
+};
+
 /** `[data-motion=reduced|off]` zeroes every motion duration, so transitions land on their final state at once. */
 export const Motion: Story = {
   render: () => <MotionDemo />,

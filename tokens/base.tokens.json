@@ -782,5 +782,45 @@
     "tooltip": {
       "$value": 1400
     }
+  },
+  "state": {
+    "$type": "number",
+    "$description": "Interaction state strengths in percent (colour-mix of ink; disabled mixes fg). High-contrast overrides them.",
+    "hover": {
+      "$value": 8,
+      "$description": "Hover tint strength (yorha-tint, bg-yorha-hover).",
+      "$extensions": {
+        "dev.yorha": {
+          "unit": "%"
+        }
+      }
+    },
+    "pressed": {
+      "$value": 16,
+      "$description": "Pressed tint strength for grouped items, rows and cells (bg-yorha-pressed).",
+      "$extensions": {
+        "dev.yorha": {
+          "unit": "%"
+        }
+      }
+    },
+    "range": {
+      "$value": 12,
+      "$description": "Range fill strength between calendar range ends (bg-yorha-range).",
+      "$extensions": {
+        "dev.yorha": {
+          "unit": "%"
+        }
+      }
+    },
+    "disabled": {
+      "$value": 55,
+      "$description": "Disabled content strength, mixed from fg (text-yorha-disabled).",
+      "$extensions": {
+        "dev.yorha": {
+          "unit": "%"
+        }
+      }
+    }
   }
 }

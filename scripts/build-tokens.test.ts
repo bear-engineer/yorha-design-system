@@ -145,7 +145,7 @@ describe("token generator", () => {
       loop: "1200ms",
     };
     const MOTION_UTILITIES = ["yorha-pop", "yorha-panel", "yorha-fade", "yorha-slide-up", "yorha-slide-down", "yorha-slide-left", "yorha-slide-right", "yorha-collapse", "yorha-wipe", "yorha-press", "yorha-stagger"];
-    const OTHER_UTILITIES = ["yorha-focus", "yorha-tabular", "yorha-segments", "yorha-break"];
+    const OTHER_UTILITIES = ["yorha-focus", "yorha-tabular", "yorha-segments", "yorha-break", "yorha-focus-inset", "yorha-tint", "yorha-disabled", "yorha-readonly", "yorha-invalid", "yorha-row", "yorha-surface", "yorha-scroll", "yorha-scroll-cue-x"];
     const utilityBlock = (name: string) => block(`@utility ${name}`);
 
     it.each(Object.entries(DURATIONS))("duration token %s is %s under both names", (name, value) => {
@@ -508,7 +508,7 @@ describe("craft v3 recipes (G5-G10)", () => {
 
   describe("G7 state recipes", () => {
     it("state tokens: hover 8, pressed 16, range 12, disabled 55 (percent); high-contrast re-declares them", () => {
-      const root = find(":root", "--yorha-motion-select:");
+      const root = find(":root", "--yorha-state-hover:");
       expect([varIn(root, "yorha-state-hover"), varIn(root, "yorha-state-pressed"), varIn(root, "yorha-state-range"), varIn(root, "yorha-state-disabled")]).toEqual(["8%", "16%", "12%", "55%"]);
       const hc = find("[data-theme=high-contrast]");
       expect([varIn(hc, "yorha-state-hover"), varIn(hc, "yorha-state-pressed"), varIn(hc, "yorha-state-range"), varIn(hc, "yorha-state-disabled")]).toEqual(["16%", "28%", "20%", "60%"]);
@@ -517,7 +517,7 @@ describe("craft v3 recipes (G5-G10)", () => {
     });
 
     it("state colours are colour-mix of ink / fg and are declared per theme (a subtree re-resolves them)", () => {
-      for (const block of [find(":root", "--yorha-motion-select:"), find("[data-theme=dark]"), find("[data-theme=high-contrast]")]) {
+      for (const block of [find(":root", "--yorha-hover:"), find("[data-theme=dark]"), find("[data-theme=high-contrast]")]) {
         expect(varIn(block, "yorha-hover")).toBe("color-mix(in oklab, var(--yorha-ink) var(--yorha-state-hover), transparent)");
         expect(varIn(block, "yorha-pressed")).toBe("color-mix(in oklab, var(--yorha-ink) var(--yorha-state-pressed), transparent)");
         expect(varIn(block, "yorha-range")).toBe("color-mix(in oklab, var(--yorha-ink) var(--yorha-state-range), transparent)");
@@ -564,7 +564,7 @@ describe("craft v3 recipes (G5-G10)", () => {
       expect(invalid).toContain("&:is([data-invalid], [aria-invalid=\"true\"])");
       expect(invalid).toContain("border-color: var(--yorha-alert-ui);");
       expect(invalid).toContain("box-shadow: inset 0 0 0 calc(var(--yorha-border-width-strong) - var(--yorha-border-width)) var(--yorha-alert-ui);");
-      expect(invalid).not.toContain("border-width");
+      expect(invalid).not.toMatch(/^\s+border-width:/m);
     });
 
     it("registry base item carries the new utilities", () => {

@@ -38,6 +38,10 @@
           "color-yorha-ring": "var(--yorha-ring)",
           "color-yorha-shadow": "var(--yorha-shadow)",
           "color-yorha-scrim": "var(--yorha-scrim)",
+          "color-yorha-hover": "var(--yorha-hover)",
+          "color-yorha-pressed": "var(--yorha-pressed)",
+          "color-yorha-range": "var(--yorha-range)",
+          "color-yorha-disabled": "var(--yorha-disabled)",
           "font-yorha": "var(--yorha-font-sans)",
           "font-yorha-ja": "var(--yorha-font-sans-ja)",
           "font-yorha-mono": "var(--yorha-font-mono)",
@@ -115,7 +119,15 @@
           "yorha-alert-on-ink": "oklch(0.739 0.0902 34.84)",
           "yorha-ring": "oklch(0.3597 0.0121 93.78)",
           "yorha-shadow": "oklch(0.7524 0.0298 96)",
-          "yorha-scrim": "oklch(0.3597 0.0121 93.78 / 0.6)"
+          "yorha-scrim": "oklch(0.3597 0.0121 93.78 / 0.6)",
+          "yorha-state-hover": "8%",
+          "yorha-state-pressed": "16%",
+          "yorha-state-range": "12%",
+          "yorha-state-disabled": "55%",
+          "yorha-hover": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-hover), transparent)",
+          "yorha-pressed": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-pressed), transparent)",
+          "yorha-range": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-range), transparent)",
+          "yorha-disabled": "color-mix(in oklab, var(--yorha-fg) var(--yorha-state-disabled), transparent)"
         },
         "dark": {
           "yorha-bg": "oklch(0.3015 0.0092 88.76)",
@@ -139,7 +151,15 @@
           "yorha-alert-on-ink": "oklch(0.4695 0.1187 34.7)",
           "yorha-ring": "oklch(0.8681 0.0342 95.91)",
           "yorha-shadow": "oklch(0.2217 0.0077 95.41)",
-          "yorha-scrim": "oklch(0.1864 0.008 95.48 / 0.7)"
+          "yorha-scrim": "oklch(0.1864 0.008 95.48 / 0.7)",
+          "yorha-state-hover": "8%",
+          "yorha-state-pressed": "16%",
+          "yorha-state-range": "12%",
+          "yorha-state-disabled": "55%",
+          "yorha-hover": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-hover), transparent)",
+          "yorha-pressed": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-pressed), transparent)",
+          "yorha-range": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-range), transparent)",
+          "yorha-disabled": "color-mix(in oklab, var(--yorha-fg) var(--yorha-state-disabled), transparent)"
         }
       },
       "css": {
@@ -298,7 +318,15 @@
           "--yorha-alert-on-ink": "oklch(0.739 0.0902 34.84)",
           "--yorha-ring": "oklch(0.3597 0.0121 93.78)",
           "--yorha-shadow": "oklch(0.7524 0.0298 96)",
-          "--yorha-scrim": "oklch(0.3597 0.0121 93.78 / 0.6)"
+          "--yorha-scrim": "oklch(0.3597 0.0121 93.78 / 0.6)",
+          "--yorha-state-hover": "8%",
+          "--yorha-state-pressed": "16%",
+          "--yorha-state-range": "12%",
+          "--yorha-state-disabled": "55%",
+          "--yorha-hover": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-hover), transparent)",
+          "--yorha-pressed": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-pressed), transparent)",
+          "--yorha-range": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-range), transparent)",
+          "--yorha-disabled": "color-mix(in oklab, var(--yorha-fg) var(--yorha-state-disabled), transparent)"
         },
         "[data-theme=dark]": {
           "color-scheme": "dark",
@@ -323,7 +351,15 @@
           "--yorha-alert-on-ink": "oklch(0.4695 0.1187 34.7)",
           "--yorha-ring": "oklch(0.8681 0.0342 95.91)",
           "--yorha-shadow": "oklch(0.2217 0.0077 95.41)",
-          "--yorha-scrim": "oklch(0.1864 0.008 95.48 / 0.7)"
+          "--yorha-scrim": "oklch(0.1864 0.008 95.48 / 0.7)",
+          "--yorha-state-hover": "8%",
+          "--yorha-state-pressed": "16%",
+          "--yorha-state-range": "12%",
+          "--yorha-state-disabled": "55%",
+          "--yorha-hover": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-hover), transparent)",
+          "--yorha-pressed": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-pressed), transparent)",
+          "--yorha-range": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-range), transparent)",
+          "--yorha-disabled": "color-mix(in oklab, var(--yorha-fg) var(--yorha-state-disabled), transparent)"
         },
         "[data-theme=authentic]": {
           "color-scheme": "light",
@@ -348,7 +384,15 @@
           "--yorha-alert-on-ink": "oklch(0.6275 0.1365 34.8)",
           "--yorha-ring": "oklch(0.4128 0.0151 91.68)",
           "--yorha-shadow": "oklch(0.7524 0.0298 96)",
-          "--yorha-scrim": "oklch(0.4128 0.0151 91.68 / 0.5)"
+          "--yorha-scrim": "oklch(0.4128 0.0151 91.68 / 0.5)",
+          "--yorha-state-hover": "8%",
+          "--yorha-state-pressed": "16%",
+          "--yorha-state-range": "12%",
+          "--yorha-state-disabled": "55%",
+          "--yorha-hover": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-hover), transparent)",
+          "--yorha-pressed": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-pressed), transparent)",
+          "--yorha-range": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-range), transparent)",
+          "--yorha-disabled": "color-mix(in oklab, var(--yorha-fg) var(--yorha-state-disabled), transparent)"
         },
         "[data-theme=high-contrast]": {
           "color-scheme": "light",
@@ -374,6 +418,14 @@
           "--yorha-ring": "oklch(0.1864 0.008 95.48)",
           "--yorha-shadow": "oklch(0.3247 0.0123 93.82)",
           "--yorha-scrim": "oklch(0.1864 0.008 95.48 / 0.75)",
+          "--yorha-state-hover": "16%",
+          "--yorha-state-pressed": "28%",
+          "--yorha-state-range": "20%",
+          "--yorha-state-disabled": "60%",
+          "--yorha-hover": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-hover), transparent)",
+          "--yorha-pressed": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-pressed), transparent)",
+          "--yorha-range": "color-mix(in oklab, var(--yorha-ink) var(--yorha-state-range), transparent)",
+          "--yorha-disabled": "color-mix(in oklab, var(--yorha-fg) var(--yorha-state-disabled), transparent)",
           "--yorha-text-shadow": "none"
         },
         "[data-density=default]": {
@@ -607,6 +659,53 @@
         "@utility yorha-focus": {
           "outline": "var(--yorha-ring-width) solid var(--yorha-ring)",
           "outline-offset": "var(--yorha-ring-offset)"
+        },
+        "@utility yorha-tint": {
+          "@media (hover: hover) and (pointer: fine)": {
+            "&:hover:not(:disabled, [data-disabled], [aria-disabled=\"true\"], [data-checked], [data-pressed], [aria-pressed=\"true\"], [data-selected], [aria-selected=\"true\"], [aria-current], [data-highlighted], [data-popup-open], [data-panel-open])": {
+              "background-color": "var(--yorha-hover)"
+            }
+          },
+          "&:active:not(:disabled, [data-disabled], [aria-disabled=\"true\"], [data-checked], [data-pressed], [aria-pressed=\"true\"], [data-selected], [aria-selected=\"true\"], [aria-current], [data-highlighted], [data-popup-open], [data-panel-open])": {
+            "background-color": "var(--yorha-pressed)",
+            "transition-duration": "0s"
+          }
+        },
+        "@utility yorha-disabled": {
+          "&:is(:disabled, [data-disabled], [aria-disabled=\"true\"])": {
+            "cursor": "not-allowed",
+            "color": "var(--yorha-disabled)",
+            "border-color": "var(--yorha-disabled)",
+            "background-color": "transparent",
+            "background-image": "none",
+            "box-shadow": "none",
+            "scale": "none",
+            "opacity": "1"
+          },
+          "&:is(:disabled, [data-disabled], [aria-disabled=\"true\"]):is([data-checked], [data-indeterminate], [data-pressed], [aria-pressed=\"true\"], [data-selected], [aria-selected=\"true\"])": {
+            "background-color": "var(--yorha-disabled)",
+            "color": "var(--yorha-bg)"
+          },
+          "@media (forced-colors: active)": {
+            "&:is(:disabled, [data-disabled], [aria-disabled=\"true\"])": {
+              "color": "GrayText",
+              "border-color": "GrayText"
+            }
+          }
+        },
+        "@utility yorha-readonly": {
+          "&:is(input, textarea):read-only:not(:disabled, [data-disabled], [aria-disabled=\"true\"]), &[data-readonly]:not(:disabled, [data-disabled], [aria-disabled=\"true\"]), &[aria-readonly=\"true\"]:not(:disabled, [data-disabled], [aria-disabled=\"true\"])": {
+            "background-color": "transparent",
+            "border-color": "transparent",
+            "border-bottom-color": "var(--yorha-border)",
+            "cursor": "default"
+          }
+        },
+        "@utility yorha-invalid": {
+          "&:is([data-invalid], [aria-invalid=\"true\"])": {
+            "border-color": "var(--yorha-alert-ui)",
+            "box-shadow": "inset 0 0 0 calc(var(--yorha-border-width-strong) - var(--yorha-border-width)) var(--yorha-alert-ui)"
+          }
         },
         "@utility yorha-tabular": {
           "font-variant-numeric": "tabular-nums"

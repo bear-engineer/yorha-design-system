@@ -111,7 +111,12 @@ const RULES = [
   [/^motion\.easing\.(.+)$/, (k) => ({ cssVar: k === "standard" ? "yorha-ease" : `yorha-ease-${k}`, theme: k === "standard" ? "ease-yorha" : `ease-yorha-${k}` })],
   [/^motion\.(.+)$/, (k) => ({ cssVar: `yorha-motion-${k.replaceAll(".", "-")}`, alias: `motion-${k.replaceAll(".", "-")}` })],
   [/^z\.(.+)$/, (k) => ({ cssVar: `yorha-z-${k}` })],
+  // state.<k> -> --yorha-state-<k> (a percentage); the derived colours (--yorha-hover ...) are declared with the theme colours.
+  [/^state\.(.+)$/, (k) => ({ cssVar: `yorha-state-${k}` })],
 ];
+
+/** Interaction-state colours: a percentage of ink (fg for disabled) over transparent. Declared in every theme block so a subtree re-resolves them. */
+const STATE_COLORS = { hover: "ink", pressed: "ink", range: "ink", disabled: "fg" };
 
 function names(path) {
   for (const [pattern, toNames] of RULES) {
@@ -285,6 +290,56 @@ const MOTION_KEYFRAMES = {
     from: { opacity: "0", translate: `0 ${spatial("var(--motion-shift)")}` },
   },
 };
+/* ---------------------------------------------------------- state recipes */
+
+const IDLE = ":disabled, [data-disabled], [aria-disabled=\"true\"]";
+const SELECTED = "[data-checked], [data-pressed], [aria-pressed=\"true\"], [data-selected], [aria-selected=\"true\"]";
+const NOT_TINTED = `${IDLE}, ${SELECTED}, [aria-current], [data-highlighted], [data-popup-open], [data-panel-open]`;
+// Stateful controls (grouped items, cells, rows, boxes): background tint on hover, a darker one on press (no delay, no scale).
+const TINT = {
+  "@media (hover: hover) and (pointer: fine)": {
+    [`&:hover:not(${NOT_TINTED})`]: { "background-color": "var(--yorha-hover)" },
+  },
+  [`&:active:not(${NOT_TINTED})`]: { "background-color": "var(--yorha-pressed)", "transition-duration": "0s" },
+};
+// Disabled is a part-by-part recipe, never container opacity: content, border and mark are re-coloured, fills and effects removed.
+const DISABLED = {
+  [`&:is(${IDLE})`]: {
+    cursor: "not-allowed",
+    color: "var(--yorha-disabled)",
+    "border-color": "var(--yorha-disabled)",
+    "background-color": "transparent",
+    "background-image": "none",
+    "box-shadow": "none",
+    scale: "none",
+    opacity: "1",
+  },
+  [`&:is(${IDLE}):is([data-checked], [data-indeterminate], [data-pressed], [aria-pressed=\"true\"], [data-selected], [aria-selected=\"true\"])`]: {
+    "background-color": "var(--yorha-disabled)",
+    color: "var(--yorha-bg)",
+  },
+  "@media (forced-colors: active)": {
+    [`&:is(${IDLE})`]: { color: "GrayText", "border-color": "GrayText" },
+  },
+};
+// Read-only: full-strength text, no fill, only the bottom rule remains (a printed form line). Still focusable.
+const NOT_DISABLED = ":not(:disabled, [data-disabled], [aria-disabled=\"true\"])";
+const READONLY = {
+  [`&:is(input, textarea):read-only${NOT_DISABLED}, &[data-readonly]${NOT_DISABLED}, &[aria-readonly="true"]${NOT_DISABLED}`]: {
+    "background-color": "transparent",
+    "border-color": "transparent",
+    "border-bottom-color": "var(--yorha-border)",
+    cursor: "default",
+  },
+};
+// Invalid: the alert colour on the border plus an inset 1px of the same colour = a 2px edge without resizing the box.
+const INVALID = {
+  "&:is([data-invalid], [aria-invalid=\"true\"])": {
+    "border-color": "var(--yorha-alert-ui)",
+    "box-shadow": "inset 0 0 0 calc(var(--yorha-border-width-strong) - var(--yorha-border-width)) var(--yorha-alert-ui)",
+  },
+};
+
 const MOTION_UTILITIES = Object.keys(MOTION_CSS).map((key) => key.slice("@utility ".length));
 
 /* ----------------------------------------------------------------- model */
@@ -297,8 +352,15 @@ function buildModel(tokens) {
   const themeNames = Object.keys(theme.contexts);
   const hexByTheme = themeColors(tokens);
 
-  const colorVars = (context) =>
-    Object.fromEntries([...theme.contexts[context]].filter(([path]) => path.startsWith("color.")).map(([path, token]) => [names(path).cssVar, cssValue(path, token)]));
+  const statePaths = [...base.keys()].filter((path) => path.startsWith("state."));
+  const stateVars = (context) => ({
+    ...Object.fromEntries(statePaths.map((path) => [names(path).cssVar, cssValue(path, theme.contexts[context].get(path) ?? base.get(path))])),
+    ...Object.fromEntries(Object.entries(STATE_COLORS).map(([state, from]) => [`yorha-${state}`, `color-mix(in oklab, var(--yorha-${from}) var(--yorha-state-${state}), transparent)`])),
+  });
+  const colorVars = (context) => ({
+    ...Object.fromEntries([...theme.contexts[context]].filter(([path]) => path.startsWith("color.")).map(([path, token]) => [names(path).cssVar, cssValue(path, token)])),
+    ...stateVars(context),
+  });
   const colorPaths = [...theme.contexts[theme.default].keys()].filter((path) => path.startsWith("color."));
   for (const context of themeNames) {
     const paths = [...theme.contexts[context].keys()].filter((path) => path.startsWith("color."));
@@ -309,7 +371,7 @@ function buildModel(tokens) {
   const rootVars = {};
   for (const [path, token] of base) {
     const { cssVar, alias } = names(path);
-    if (!cssVar) continue;
+    if (!cssVar || path.startsWith("state.")) continue;
     rootVars[cssVar] = cssValue(path, token);
     if (alias) rootVars[alias] = cssValue(path, token);
   }
@@ -317,6 +379,7 @@ function buildModel(tokens) {
   // Tailwind `@theme inline`: every key points at a custom property so subtree overrides re-evaluate.
   const themeVars = {};
   for (const path of colorPaths) themeVars[names(path).theme] = `var(--${names(path).cssVar})`;
+  for (const state of Object.keys(STATE_COLORS)) themeVars[`color-yorha-${state}`] = `var(--yorha-${state})`;
   for (const [path, token] of base) {
     const { cssVar, theme: themeKey } = names(path);
     if (!themeKey) continue;
@@ -371,6 +434,10 @@ function buildModel(tokens) {
   css["@media (prefers-reduced-motion: reduce)"] = { ":root:not([data-motion=full])": dashed(modifierBlocks.motion.reduced) };
   for (const [context, vars] of Object.entries(modifierBlocks.motion)) css[`[data-motion=${context}]`] = dashed(vars);
   css["@utility yorha-focus"] = focusRing;
+  css["@utility yorha-tint"] = TINT;
+  css["@utility yorha-disabled"] = DISABLED;
+  css["@utility yorha-readonly"] = READONLY;
+  css["@utility yorha-invalid"] = INVALID;
   css["@utility yorha-tabular"] = { "font-variant-numeric": "tabular-nums" };
   // Segmented gauge: track (text-yorha-control) and fill (text-yorha-ink) both use it, so the phases match. Snap widths to
   // the pitch in the component: `width: 100%; width: round(down, 100%, var(--yorha-seg-pitch));`.
@@ -569,6 +636,7 @@ function renderDocs({ tokens, themeNames, hexByTheme, colorPaths, modifierBlocks
       utilities: MOTION_UTILITIES,
     },
     zIndex: list("z."),
+    states: list("state."),
     contrast,
   };
   return `// ${HEADER}\nexport const tokens = ${JSON.stringify(docs, null, 2)} as const;\n\nexport type ThemeName = (typeof tokens.themes)[number];\nexport type DensityName = keyof typeof tokens.density;\n`;

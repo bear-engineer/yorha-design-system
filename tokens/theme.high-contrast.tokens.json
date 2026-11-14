@@ -267,5 +267,40 @@
       },
       "$description": "Backdrop behind dialogs and overlays."
     }
+  },
+  "state": {
+    "$type": "number",
+    "hover": {
+      "$value": 16,
+      "$extensions": {
+        "dev.yorha": {
+          "unit": "%"
+        }
+      }
+    },
+    "pressed": {
+      "$value": 28,
+      "$extensions": {
+        "dev.yorha": {
+          "unit": "%"
+        }
+      }
+    },
+    "range": {
+      "$value": 20,
+      "$extensions": {
+        "dev.yorha": {
+          "unit": "%"
+        }
+      }
+    },
+    "disabled": {
+      "$value": 60,
+      "$extensions": {
+        "dev.yorha": {
+          "unit": "%"
+        }
+      }
+    }
   }
 }

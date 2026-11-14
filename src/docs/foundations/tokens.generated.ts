@@ -1655,6 +1655,40 @@ export const tokens = {
       "description": ""
     }
   ],
+  "states": [
+    {
+      "name": "hover",
+      "cssVar": "--yorha-state-hover",
+      "alias": "",
+      "utility": "",
+      "value": "8%",
+      "description": "Hover tint strength (yorha-tint, bg-yorha-hover)."
+    },
+    {
+      "name": "pressed",
+      "cssVar": "--yorha-state-pressed",
+      "alias": "",
+      "utility": "",
+      "value": "16%",
+      "description": "Pressed tint strength for grouped items, rows and cells (bg-yorha-pressed)."
+    },
+    {
+      "name": "range",
+      "cssVar": "--yorha-state-range",
+      "alias": "",
+      "utility": "",
+      "value": "12%",
+      "description": "Range fill strength between calendar range ends (bg-yorha-range)."
+    },
+    {
+      "name": "disabled",
+      "cssVar": "--yorha-state-disabled",
+      "alias": "",
+      "utility": "",
+      "value": "55%",
+      "description": "Disabled content strength, mixed from fg (text-yorha-disabled)."
+    }
+  ],
   "contrast": {
     "light": {
       "enforced": true,
