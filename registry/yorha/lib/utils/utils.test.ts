@@ -91,6 +91,16 @@ describe("cn size scale", () => {
   });
 });
 
+describe("cn state colours (G7)", () => {
+  it("keeps bg-yorha-hover and bg-yorha-ink as one colour group, text-yorha-disabled apart from text sizes", () => {
+    expect(cn("bg-yorha-hover", "bg-yorha-pressed")).toBe("bg-yorha-pressed");
+    expect(cn("bg-yorha-ink", "bg-yorha-hover")).toBe("bg-yorha-hover");
+    expect(cn("text-yorha-sm", "text-yorha-disabled")).toBe("text-yorha-sm text-yorha-disabled");
+    expect(cn("border-yorha-border", "border-yorha-disabled")).toBe("border-yorha-disabled");
+    expect(cn("border", "border-yorha-disabled")).toBe("border border-yorha-disabled");
+  });
+});
+
 describe("cnState", () => {
   it("returns a string for string className", () => {
     expect(cnState("base", "extra")).toBe("base extra");

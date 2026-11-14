@@ -492,3 +492,84 @@ describe("token generator", () => {
     });
   });
 });
+
+describe("craft v3 recipes (G5-G10)", () => {
+  const css = () => read("src/styles/tokens.generated.css");
+  const find = (selector: string, marker = "") => {
+    const all = css();
+    for (let start = all.indexOf(`\n${selector} {\n`); start >= 0; start = all.indexOf(`\n${selector} {\n`, start + 1)) {
+      const text = all.slice(start, all.indexOf("\n}\n", start));
+      if (text.includes(marker)) return text;
+    }
+    return expect.fail(`no "${selector}" block containing "${marker}"`);
+  };
+  const varIn = (block: string, name: string) => new RegExp(`\\n\\s+--${name}: ([^;]+);`).exec(block)?.[1];
+  const utility = (name: string) => find(`@utility ${name}`);
+
+  describe("G7 state recipes", () => {
+    it("state tokens: hover 8, pressed 16, range 12, disabled 55 (percent); high-contrast re-declares them", () => {
+      const root = find(":root", "--yorha-motion-select:");
+      expect([varIn(root, "yorha-state-hover"), varIn(root, "yorha-state-pressed"), varIn(root, "yorha-state-range"), varIn(root, "yorha-state-disabled")]).toEqual(["8%", "16%", "12%", "55%"]);
+      const hc = find("[data-theme=high-contrast]");
+      expect([varIn(hc, "yorha-state-hover"), varIn(hc, "yorha-state-pressed"), varIn(hc, "yorha-state-range"), varIn(hc, "yorha-state-disabled")]).toEqual(["16%", "28%", "20%", "60%"]);
+      // every theme block re-declares them so a nested data-theme subtree does not inherit another theme's percentages
+      for (const theme of ["dark", "authentic", "light"]) expect(find(`[data-theme=${theme}]`), theme).toContain("--yorha-state-hover:");
+    });
+
+    it("state colours are colour-mix of ink / fg and are declared per theme (a subtree re-resolves them)", () => {
+      for (const block of [find(":root", "--yorha-motion-select:"), find("[data-theme=dark]"), find("[data-theme=high-contrast]")]) {
+        expect(varIn(block, "yorha-hover")).toBe("color-mix(in oklab, var(--yorha-ink) var(--yorha-state-hover), transparent)");
+        expect(varIn(block, "yorha-pressed")).toBe("color-mix(in oklab, var(--yorha-ink) var(--yorha-state-pressed), transparent)");
+        expect(varIn(block, "yorha-range")).toBe("color-mix(in oklab, var(--yorha-ink) var(--yorha-state-range), transparent)");
+        expect(varIn(block, "yorha-disabled")).toBe("color-mix(in oklab, var(--yorha-fg) var(--yorha-state-disabled), transparent)");
+      }
+    });
+
+    it("Tailwind emits bg-yorha-hover / bg-yorha-pressed / bg-yorha-range / text-yorha-disabled / border-yorha-disabled", async () => {
+      const { compile } = await import("tailwindcss");
+      const theme = /@theme inline \{[\s\S]*?\n\}/.exec(css())?.[0] ?? "";
+      const classes = ["bg-yorha-hover", "bg-yorha-pressed", "bg-yorha-range", "text-yorha-disabled", "border-yorha-disabled", "bg-yorha-disabled"];
+      const built = (await compile(`${theme}\n@tailwind utilities;`)).build(classes);
+      for (const name of classes) expect(built, name).toContain(`.${name}`);
+      expect(built).toMatch(/\.bg-yorha-hover \{\s*background-color: var\(--yorha-hover\)/);
+    });
+
+    it("yorha-tint: hover and press backgrounds on fine pointers only, never over a selected, disabled or highlighted state", () => {
+      const tint = utility("yorha-tint");
+      expect(tint).toContain("@media (hover: hover) and (pointer: fine)");
+      const guard = ":disabled, [data-disabled], [aria-disabled=\"true\"], [data-checked], [data-pressed], [aria-pressed=\"true\"], [data-selected], [aria-selected=\"true\"], [aria-current], [data-highlighted], [data-popup-open], [data-panel-open]";
+      expect(tint).toContain(`&:hover:not(${guard})`);
+      expect(tint).toContain(`&:active:not(${guard})`);
+      expect(tint).toMatch(/background-color: var\(--yorha-hover\);/);
+      expect(tint).toMatch(/background-color: var\(--yorha-pressed\);\n\s+transition-duration: 0s;/);
+      expect(tint).not.toMatch(/\bscale\b/);
+    });
+
+    it("yorha-disabled: no opacity, part-by-part colours, checked keeps its mark, GrayText in forced colours", () => {
+      const disabled = utility("yorha-disabled");
+      expect(disabled).toContain("&:is(:disabled, [data-disabled], [aria-disabled=\"true\"])");
+      for (const rule of ["cursor: not-allowed;", "color: var(--yorha-disabled);", "border-color: var(--yorha-disabled);", "background-color: transparent;", "background-image: none;", "box-shadow: none;", "scale: none;", "opacity: 1;"]) expect(disabled, rule).toContain(rule);
+      expect(disabled).toMatch(/\[data-checked\], \[data-indeterminate\], \[data-pressed\], \[aria-pressed="true"\], \[data-selected\], \[aria-selected="true"\]\)[^{]*\{[^}]*background-color: var\(--yorha-disabled\);[^}]*color: var\(--yorha-bg\);/);
+      expect(disabled).toContain("@media (forced-colors: active)");
+      expect(disabled).toContain("GrayText");
+    });
+
+    it("yorha-readonly: a printed form line; yorha-invalid: alert edge as an inset shadow, no border-width change", () => {
+      const readonly = utility("yorha-readonly");
+      expect(readonly).toContain("[data-readonly]");
+      expect(readonly).toContain("[aria-readonly=\"true\"]");
+      expect(readonly).toContain("border-bottom-color: var(--yorha-border);");
+      expect(readonly).toContain("cursor: default;");
+      const invalid = utility("yorha-invalid");
+      expect(invalid).toContain("&:is([data-invalid], [aria-invalid=\"true\"])");
+      expect(invalid).toContain("border-color: var(--yorha-alert-ui);");
+      expect(invalid).toContain("box-shadow: inset 0 0 0 calc(var(--yorha-border-width-strong) - var(--yorha-border-width)) var(--yorha-alert-ui);");
+      expect(invalid).not.toContain("border-width");
+    });
+
+    it("registry base item carries the new utilities", () => {
+      const keys = Object.keys(baseItem().css);
+      for (const name of ["yorha-tint", "yorha-disabled", "yorha-readonly", "yorha-invalid"]) expect(keys).toContain(`@utility ${name}`);
+    });
+  });
+});
