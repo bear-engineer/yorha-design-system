@@ -523,5 +523,26 @@
     "type": "registry:component",
     "alias": "@/components/bento",
     "file": "bento.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "kanban",
+    "type": "registry:ui",
+    "alias": "@/components/ui/kanban",
+    "file": "kanban.tsx"
+  },
+  {
+    "group": "blocks",
+    "name": "bento-dashboard",
+    "type": "registry:block",
+    "alias": null,
+    "file": null
+  },
+  {
+    "group": "blocks",
+    "name": "settings-form",
+    "type": "registry:block",
+    "alias": null,
+    "file": null
   }
 ]

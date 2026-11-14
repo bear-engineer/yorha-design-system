@@ -237,6 +237,9 @@
       ],
       "@/components/bento": [
         "./registry/yorha/layout/bento/bento.tsx"
+      ],
+      "@/components/ui/kanban": [
+        "./registry/yorha/ui/kanban/kanban.tsx"
       ]
     }
   },

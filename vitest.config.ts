@@ -9,6 +9,8 @@ export default defineConfig({
   // @storybook/addon-vitest ignores builder.viteConfigPath: Tailwind must be loaded here too.
   plugins: [react(), tailwindcss()],
   resolve: { tsconfigPaths: true },
+  // Pre-bundle deps that otherwise trigger a Vite reload (and a failed first run) on cold cache.
+  optimizeDeps: { include: ["@dnd-kit/core", "@dnd-kit/sortable", "@dnd-kit/utilities"] },
   test: {
     projects: [
       {
