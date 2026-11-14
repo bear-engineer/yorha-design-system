@@ -340,17 +340,11 @@ const DETAILS: Record<string, string> = {
 };
 
 export const WithDescriptionPane: Story = {
-  decorators: [
-    (Story) => (
-      <div className="w-[34rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
-        <Story />
-      </div>
-    ),
-  ],
+  // Meta's w-80 panel decorator still wraps this story: the grid cancels its padding (-m-6) and paints its own wider panel.
   render: (args) => {
     const [value, setValue] = React.useState("status");
     return (
-      <div className="grid grid-cols-2 gap-6">
+      <div className="-m-6 grid w-[34rem] max-w-[calc(100vw-2rem)] grid-cols-[minmax(0,1fr)_minmax(0,1fr)] gap-6 bg-yorha-panel p-6 text-yorha-fg">
         <MenuList {...args} value={value} onValueChange={setValue}>
           <Rows />
         </MenuList>

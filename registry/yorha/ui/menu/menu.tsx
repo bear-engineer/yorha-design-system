@@ -4,6 +4,12 @@ import { buttonVariants } from "@/components/ui/button";
 import { TriangleIcon } from "@/components/ui/icons";
 import { cn, cnState } from "@/lib/utils";
 
+/**
+ * Migration (v3 sel): nested content opens to the side (`MenuSubContent` is the explicit name; no `side`/`align` needed);
+ * action rows carry no bullet (only check/radio rows reserve the indicator slot, which renders no children);
+ * the cursor and submenu chevron are `TriangleIcon` from `@yorha/icons` (new dependency of menu, context-menu,
+ * menubar, menu-list and navigation-menu). Custom indicator children are no longer rendered.
+ */
 /** Root: re-export of the Base UI Menu root (open, onOpenChange, modal, ...). */
 const Menu = MenuPrimitive.Root;
 /** Groups items so a label can name them. */
