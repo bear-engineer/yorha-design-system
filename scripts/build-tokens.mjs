@@ -96,6 +96,9 @@ const RULES = [
   [/^font\.measure$/, () => ({ cssVar: "yorha-measure" })],
   [/^font\.paragraph-gap$/, () => ({ cssVar: "yorha-paragraph-gap" })],
   [/^font\.tracking\.(.+)$/, (k) => ({ cssVar: `yorha-tracking-${k}`, theme: `tracking-yorha-${k}` })],
+  [/^font\.line-height\.(.+)$/, (k) => ({ cssVar: `yorha-line-height-${k}` })],
+  // size.<a>.<b> -> --yorha-<a>-<b> and theme key spacing-<a>-<b> (h-control-md, px-pad-md, size-icon-md ...)
+  [/^size\.(.+)$/, (k) => ({ cssVar: `yorha-${k.replaceAll(".", "-")}`, theme: `spacing-${k.replaceAll(".", "-")}` })],
   [/^spacing\.base$/, () => ({ cssVar: "yorha-spacing", theme: "spacing", mirror: true })],
   [/^spacing\.grid$/, () => ({ cssVar: "yorha-grid-size" })],
   [/^radius\.none$/, () => ({ cssVar: "yorha-radius", theme: "radius-yorha" })],
@@ -121,6 +124,7 @@ function names(path) {
 /** Tailwind class a theme key produces (colours take a bg-/text-/border- prefix, so they return the suffix). */
 function utility(themeKey) {
   if (!themeKey || themeKey === "spacing") return "";
+  if (themeKey.startsWith("spacing-")) return themeKey.slice("spacing-".length);
   if (themeKey.startsWith("color-")) return themeKey.slice("color-".length);
   if (themeKey.startsWith("font-weight-")) return themeKey.replace("font-weight-", "font-");
   if (themeKey.startsWith("radius-")) return themeKey.replace("radius-", "rounded-");
@@ -159,6 +163,14 @@ function cssValue(path, token) {
   }
 }
 
+/** Type pair of a font.size token: the body size follows :lang(), every other size has a fixed whole-px line height. */
+function lineHeightVar(token) {
+  const ext = token.extensions?.["dev.yorha"];
+  if (ext?.lineHeight) return `--${names(`font.line-height.${ext.lineHeight}`).cssVar}`;
+  if (ext?.leading === "body") return "--yorha-leading-body";
+  return undefined;
+}
+
 /* ---------------------------------------------------------------- motion */
 
 // Base motion utilities (spec: src/docs/foundations/Motion.mdx, which lists exactly these names).
@@ -185,7 +197,7 @@ function slide([x, y]) {
     // Full motion slides without fading; reduced fades in place.
     [HIDDEN]: { opacity: "var(--motion-spatial)", translate: `${distance(-x)} ${distance(-y)}` },
     "&[data-swiping]": { "transition-duration": "0s" },
-    [EXIT]: { "transition-duration": `calc(${fade("drawer")} * var(--drawer-swipe-strength, 1))` },
+    [EXIT]: { "transition-duration": `calc(${fade("drawer-exit")} * var(--drawer-swipe-strength, 1))`, "transition-timing-function": "var(--yorha-ease)" },
   };
 }
 
@@ -235,20 +247,28 @@ const MOTION_CSS = {
   // Selection wipe: the ink layer grows left to right (`background-size`) while the text colour inverts. Enter speed
   // when the row turns selected / highlighted / open / hovered, exit speed when it turns back. Pair with a
   // `background-size` layer that goes 0% -> 100% on the same state; do not add `transition-*` classes next to it.
+  // Selection wipe: the ink layer grows left to right (`background-size`) while the text colour inverts. The colour
+  // follows at press speed and starts at 35% of the select duration, so it flips as the fill front crosses centred text
+  // (both directions). Enter speed when the row turns selected / highlighted / open / hovered, exit speed (or
+  // `--yorha-wipe-exit`, e.g. 0s for list rows) when it turns back. Pair with a `background-size` layer that goes
+  // 0% -> 100% on the same state; do not add `transition-*` classes next to it.
   "@utility yorha-wipe": {
     "transition-property": "background-size, color",
-    "transition-duration": "var(--motion-select-exit)",
+    "transition-duration": "var(--yorha-wipe-exit, var(--motion-select-exit)), var(--motion-press)",
+    "transition-delay": "0s, calc(var(--motion-select) * 0.35)",
     "transition-timing-function": "var(--yorha-ease-out)",
     "&:is([data-highlighted], [data-panel-open], [data-popup-open], [data-checked], [data-selected], [aria-current=page], :has([data-checked]), :hover)": {
-      "transition-duration": "var(--motion-select)",
+      "transition-duration": "var(--motion-select), var(--motion-press)",
     },
   },
   // Owns the control's whole transition: scale at the press speed, the selection wipe properties at the select speed.
+  // Scale belongs to standalone buttons (not grouped items, rows, cells). Never while disabled or busy.
   "@utility yorha-press": {
     "transition-property": "scale, color, background-color, border-color, background-size",
-    "transition-duration": ["press", "select", "select", "select", "select"].map((token) => `var(--motion-${token})`).join(", "),
+    "transition-duration": ["press", "press", "select", "select", "select"].map((token) => `var(--motion-${token})`).join(", "),
+    "transition-delay": "0s, calc(var(--motion-select) * 0.35), 0s, 0s, 0s",
     "transition-timing-function": "var(--yorha-ease-out)",
-    "&:active:not(:disabled, [data-disabled], [aria-disabled=true])": { scale: scaleTo("press") },
+    "&:active:not(:disabled, [data-disabled], [aria-disabled=true], [data-loading], [aria-busy=true])": { scale: scaleTo("press") },
   },
   "@utility yorha-stagger": {
     "animation-name": "yorha-stagger-in",
@@ -301,9 +321,11 @@ function buildModel(tokens) {
     const { cssVar, theme: themeKey } = names(path);
     if (!themeKey) continue;
     themeVars[themeKey] = cssVar ? `var(--${cssVar})` : cssValue(path, token);
-    const leading = token.extensions?.["dev.yorha"]?.leading;
-    if (leading) themeVars[`${themeKey}--line-height`] = `var(--${names(`font.leading.${leading}`).cssVar})`;
+    const lineHeight = lineHeightVar(token);
+    if (lineHeight) themeVars[`${themeKey}--line-height`] = `var(${lineHeight})`;
   }
+  // `leading-yorha-body` follows :lang() (see the :lang rules below), so it points at the switched variable, not a token.
+  themeVars["leading-yorha-body"] = "var(--yorha-leading-body)";
 
   // density / motion: every context re-declares the tokens any context overrides (the default context restores base).
   const modifierBlocks = {};
@@ -343,12 +365,22 @@ function buildModel(tokens) {
   }
   for (const [context, vars] of Object.entries(modifierBlocks.density)) css[`[data-density=${context}]`] = dashed(vars);
   // Language leading: CJK gets the roomier body leading; Latin keeps the base value (a lang="en" island inside a ko page resets it).
+  // `--yorha-leading-body` is declared where the lang matches (and on every density root), so a density subtree re-resolves it.
+  css[":root, [data-density], :lang(en)"] = { "--yorha-leading-body": "var(--yorha-leading-latin)" };
   css[":lang(ko), :lang(ja)"] = { "--yorha-leading-body": "var(--yorha-leading-body-cjk)" };
-  css[":lang(en)"] = { "--yorha-leading-body": cssValue("font.leading.body", base.get("font.leading.body")) };
   css["@media (prefers-reduced-motion: reduce)"] = { ":root:not([data-motion=full])": dashed(modifierBlocks.motion.reduced) };
   for (const [context, vars] of Object.entries(modifierBlocks.motion)) css[`[data-motion=${context}]`] = dashed(vars);
   css["@utility yorha-focus"] = focusRing;
   css["@utility yorha-tabular"] = { "font-variant-numeric": "tabular-nums" };
+  // Segmented gauge: track (text-yorha-control) and fill (text-yorha-ink) both use it, so the phases match. Snap widths to
+  // the pitch in the component: `width: 100%; width: round(down, 100%, var(--yorha-seg-pitch));`.
+  css["@utility yorha-segments"] = {
+    "--yorha-seg-pitch": "8px",
+    "--yorha-seg-gap": "2px",
+    "background-image": "repeating-linear-gradient(to right, currentColor 0 calc(var(--yorha-seg-pitch) - var(--yorha-seg-gap)), transparent 0 var(--yorha-seg-pitch))",
+    "background-repeat": "repeat-x",
+    "background-position": "left center",
+  };
   css["@utility yorha-break"] = { "overflow-wrap": "anywhere", "word-break": "normal" };
   Object.assign(css, MOTION_CSS);
   // Forced colours (Windows contrast themes): the UA replaces background-color with Canvas and fill/stroke with text colours,
@@ -357,6 +389,7 @@ function buildModel(tokens) {
   const selectedFill = { "forced-color-adjust": "none", "background-color": "Highlight", color: "HighlightText" };
   css["@media (forced-colors: active)"] = {
     ":root, [data-theme]": { "--yorha-text-shadow": "none" },
+    "::selection": { "background-color": "Highlight", color: "HighlightText" },
     // Filled bars (progress, meter, tab indicator) and every control state that fills with ink.
     ".bg-yorha-ink": selectedFill,
     "[role=switch][data-checked], [role=checkbox][data-checked], [role=checkbox][data-indeterminate], [role=tab][data-active], [role=tab][aria-selected=true], [data-pressed]": selectedFill,
@@ -397,6 +430,19 @@ function buildModel(tokens) {
     ".yorha-prose": { "max-width": "var(--yorha-measure)" },
     ".yorha-prose p + p": { "margin-top": "var(--yorha-paragraph-gap)" },
     "[data-theme]": { color: "var(--yorha-fg)" },
+    "input, textarea": { "caret-color": "var(--yorha-ink)" },
+    "::selection": { "background-color": "var(--yorha-ink)", color: "var(--yorha-on-ink)" },
+    // Autofill paints its own yellow/blue ground: repaint it with the control's ground (alert hairline first when invalid).
+    ":is(input, textarea, select):-webkit-autofill": {
+      "-webkit-text-fill-color": "var(--yorha-fg-strong)",
+      "caret-color": "var(--yorha-ink)",
+      "box-shadow": "inset 0 0 0 100vmax var(--yorha-bg)",
+    },
+    ":is(input, textarea, select):is([aria-invalid=true], [data-invalid]):-webkit-autofill": {
+      "box-shadow": "inset 0 0 0 1px var(--yorha-alert-ui), inset 0 0 0 100vmax var(--yorha-bg)",
+    },
+    // Pressable controls never start a text selection from a drag or double-click.
+    ":where(button, summary, [role=button], [role=tab], [role=menuitem], [role=option], [role=switch], [role=checkbox], [role=radio])": { "user-select": "none", "-webkit-user-select": "none" },
     ":focus-visible": focusRing,
     ...MOTION_KEYFRAMES,
   };
@@ -500,12 +546,17 @@ function renderDocs({ tokens, themeNames, hexByTheme, colorPaths, modifierBlocks
     colors,
     fontFamilies: list("font.family."),
     fontWeights: list("font.weight."),
-    fontSizes: list("font.size.").map((size) => ({ ...size, lineHeight: cssValue("", base.get(`font.leading.${base.get(`font.size.${size.name}`).extensions["dev.yorha"].leading}`)) })),
+    fontSizes: list("font.size.").map((size) => ({ ...size, lineHeight: `var(${lineHeightVar(base.get(`font.size.${size.name}`))})` })),
+    lineHeights: list("font.line-height."),
+    sizes: list("size.").map((size) => {
+      const byDensity = Object.fromEntries(Object.entries(modifierBlocks.density).map(([context, vars]) => [context, vars[size.cssVar.slice(2)] ?? size.value]));
+      return { ...size, ...byDensity };
+    }),
     leading: list("font.leading."),
     tracking: list("font.tracking."),
     readability: [...list("font.measure"), ...list("font.paragraph-gap")],
     spacing: list("spacing."),
-    density: Object.fromEntries(Object.entries(modifierBlocks.density).map(([context, vars]) => [context, vars["yorha-spacing"]])),
+    density: Object.fromEntries(Object.entries(modifierBlocks.density).map(([context, vars]) => [context, vars["yorha-control-md"]])),
     radius: list("radius."),
     borders: list("border."),
     shadows: list("shadow."),

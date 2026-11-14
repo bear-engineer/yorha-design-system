@@ -111,7 +111,7 @@ describe("token generator", () => {
 
     it("registry base item carries the same rules", () => {
       const item = baseItem();
-      expect(Object.keys(item.css)).toEqual(expect.arrayContaining(["@utility yorha-tabular", "@utility yorha-break", ":lang(ko), :lang(ja)", ":lang(en)"]));
+      expect(Object.keys(item.css)).toEqual(expect.arrayContaining(["@utility yorha-tabular", "@utility yorha-break", ":lang(ko), :lang(ja)", ":root, [data-density], :lang(en)"]));
       expect((item.css[":root"] as Record<string, string>)["--yorha-measure"]).toBe("40em");
     });
   });
@@ -139,10 +139,13 @@ describe("token generator", () => {
       "route-exit": "120ms",
       "shared-element": "360ms",
       press: "90ms",
+      modal: "280ms",
+      "modal-exit": "200ms",
+      "drawer-exit": "280ms",
       loop: "1200ms",
     };
     const MOTION_UTILITIES = ["yorha-pop", "yorha-panel", "yorha-fade", "yorha-slide-up", "yorha-slide-down", "yorha-slide-left", "yorha-slide-right", "yorha-collapse", "yorha-wipe", "yorha-press", "yorha-stagger"];
-    const OTHER_UTILITIES = ["yorha-focus", "yorha-tabular", "yorha-break"];
+    const OTHER_UTILITIES = ["yorha-focus", "yorha-tabular", "yorha-segments", "yorha-break"];
     const utilityBlock = (name: string) => block(`@utility ${name}`);
 
     it.each(Object.entries(DURATIONS))("duration token %s is %s under both names", (name, value) => {
@@ -242,7 +245,7 @@ describe("token generator", () => {
       const doc = read("src/docs/foundations/Motion.mdx");
       const rows = [...doc.matchAll(/<tr><td><code>(yorha-[a-z-]+)<\/code><\/td>(.*?)<\/tr>/g)];
       expect(rows.map((row) => row[1])).toEqual(MOTION_UTILITIES);
-      const DURATION = /--motion-(popover-exit|popover|panel-exit|panel|drawer|collapse|select-exit|select|press|stagger-enter|stagger)(?![a-z-])/g;
+      const DURATION = /--motion-(popover-exit|popover|panel-exit|panel|modal-exit|modal|drawer-exit|drawer|collapse|select-exit|select|press|stagger-enter|stagger)(?![a-z-])/g;
       for (const [, name, cells] of rows) {
         const tokenCell = (cells ?? "").split("</td>")[1] ?? "";
         const documented = new Set([...tokenCell.matchAll(DURATION)].map((match) => match[1]));
@@ -291,8 +294,8 @@ describe("token generator", () => {
       const wipe = utilityBlock("yorha-wipe");
       expect(wipe).toContain("transition-property: background-size, color;");
       expect(wipe).toContain("transition-timing-function: var(--yorha-ease-out);");
-      expect(wipe).toMatch(/^\s+transition-duration: var\(--motion-select-exit\);/m);
-      expect(wipe).toMatch(/&:is\(.*\[data-highlighted\].*\[data-checked\].*\) \{\n\s+transition-duration: var\(--motion-select\);/);
+      expect(wipe).toMatch(/^\s+transition-duration: var\(--yorha-wipe-exit, var\(--motion-select-exit\)\), var\(--motion-press\);/m);
+      expect(wipe).toMatch(/&:is\(.*\[data-highlighted\].*\[data-checked\].*\) \{\n\s+transition-duration: var\(--motion-select\), var\(--motion-press\);/);
     });
 
     it("yorha-press scales on :active with the press token; yorha-stagger delays by --motion-stagger times an index", () => {

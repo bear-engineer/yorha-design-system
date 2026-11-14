@@ -1,10 +1,50 @@
 {
-  "spacing": {
+  "size": {
     "$type": "dimension",
-    "base": {
+    "control": {
+      "sm": {
+        "$value": {
+          "value": 1.5,
+          "unit": "rem"
+        }
+      },
+      "md": {
+        "$value": {
+          "value": 2,
+          "unit": "rem"
+        }
+      },
+      "lg": {
+        "$value": {
+          "value": 2.5,
+          "unit": "rem"
+        }
+      }
+    },
+    "row": {
       "$value": {
-        "value": 0.2,
+        "value": 1.75,
         "unit": "rem"
+      }
+    },
+    "pad": {
+      "sm": {
+        "$value": {
+          "value": 0.5,
+          "unit": "rem"
+        }
+      },
+      "md": {
+        "$value": {
+          "value": 0.75,
+          "unit": "rem"
+        }
+      },
+      "lg": {
+        "$value": {
+          "value": 1,
+          "unit": "rem"
+        }
       }
     }
   },

@@ -1,10 +1,50 @@
 {
-  "spacing": {
+  "size": {
     "$type": "dimension",
-    "base": {
+    "control": {
+      "sm": {
+        "$value": {
+          "value": 2.5,
+          "unit": "rem"
+        }
+      },
+      "md": {
+        "$value": {
+          "value": 3,
+          "unit": "rem"
+        }
+      },
+      "lg": {
+        "$value": {
+          "value": 3.5,
+          "unit": "rem"
+        }
+      }
+    },
+    "row": {
       "$value": {
-        "value": 0.3,
+        "value": 2.5,
         "unit": "rem"
+      }
+    },
+    "pad": {
+      "sm": {
+        "$value": {
+          "value": 0.75,
+          "unit": "rem"
+        }
+      },
+      "md": {
+        "$value": {
+          "value": 1.25,
+          "unit": "rem"
+        }
+      },
+      "lg": {
+        "$value": {
+          "value": 1.75,
+          "unit": "rem"
+        }
       }
     }
   },
@@ -14,6 +54,21 @@
       "base": {
         "$value": {
           "value": 1.0625,
+          "unit": "rem"
+        }
+      }
+    },
+    "leading": {
+      "$type": "dimension",
+      "latin": {
+        "$value": {
+          "value": 1.75,
+          "unit": "rem"
+        }
+      },
+      "body-cjk": {
+        "$value": {
+          "value": 1.875,
           "unit": "rem"
         }
       }

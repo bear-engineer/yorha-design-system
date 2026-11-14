@@ -60,7 +60,7 @@
         },
         "$extensions": {
           "dev.yorha": {
-            "leading": "snug"
+            "lineHeight": "xs"
           }
         }
       },
@@ -71,7 +71,7 @@
         },
         "$extensions": {
           "dev.yorha": {
-            "leading": "body"
+            "lineHeight": "sm"
           }
         }
       },
@@ -93,7 +93,7 @@
         },
         "$extensions": {
           "dev.yorha": {
-            "leading": "body"
+            "lineHeight": "lg"
           }
         }
       },
@@ -104,7 +104,7 @@
         },
         "$extensions": {
           "dev.yorha": {
-            "leading": "snug"
+            "lineHeight": "xl"
           }
         }
       },
@@ -115,7 +115,7 @@
         },
         "$extensions": {
           "dev.yorha": {
-            "leading": "tight"
+            "lineHeight": "2xl"
           }
         }
       },
@@ -126,7 +126,7 @@
         },
         "$extensions": {
           "dev.yorha": {
-            "leading": "tight"
+            "lineHeight": "3xl"
           }
         }
       },
@@ -137,7 +137,7 @@
         },
         "$extensions": {
           "dev.yorha": {
-            "leading": "tight"
+            "lineHeight": "display"
           }
         }
       }
@@ -146,19 +146,79 @@
       "$type": "number",
       "tight": {
         "$value": 1.2,
-        "$description": "Headings."
+        "$description": "Consumer utility only (headings in app code). Components use the type pair."
       },
       "snug": {
         "$value": 1.4,
-        "$description": "Labels, dense UI."
-      },
-      "body": {
-        "$value": 1.6,
-        "$description": "Body copy, Latin text (:lang(en) and unmarked)."
+        "$description": "Consumer utility only. Components use the type pair."
       },
       "body-cjk": {
-        "$value": 1.7,
-        "$description": "Body copy, Korean / Japanese (:lang(ko), :lang(ja)). Wide glyphs need more air."
+        "$type": "dimension",
+        "$value": {
+          "value": 1.75,
+          "unit": "rem"
+        },
+        "$description": "Body line height, Korean / Japanese (28px; 30px comfortable). --yorha-leading-body points here under :lang(ko), :lang(ja)."
+      },
+      "latin": {
+        "$type": "dimension",
+        "$value": {
+          "value": 1.625,
+          "unit": "rem"
+        },
+        "$description": "Body line height, Latin text (26px; 28px comfortable). --yorha-leading-body points here under :lang(en) and for unmarked text."
+      }
+    },
+    "line-height": {
+      "$type": "dimension",
+      "xs": {
+        "$value": {
+          "value": 1,
+          "unit": "rem"
+        },
+        "$description": "Line height paired with 12px type (whole px)."
+      },
+      "sm": {
+        "$value": {
+          "value": 1.25,
+          "unit": "rem"
+        },
+        "$description": "Line height paired with 14px type (whole px)."
+      },
+      "lg": {
+        "$value": {
+          "value": 1.75,
+          "unit": "rem"
+        },
+        "$description": "Line height paired with 18px type (whole px)."
+      },
+      "xl": {
+        "$value": {
+          "value": 1.875,
+          "unit": "rem"
+        },
+        "$description": "Line height paired with 22px type (whole px)."
+      },
+      "2xl": {
+        "$value": {
+          "value": 2.25,
+          "unit": "rem"
+        },
+        "$description": "Line height paired with 28px type (whole px)."
+      },
+      "3xl": {
+        "$value": {
+          "value": 2.75,
+          "unit": "rem"
+        },
+        "$description": "Line height paired with 36px type (whole px)."
+      },
+      "display": {
+        "$value": {
+          "value": 3.5,
+          "unit": "rem"
+        },
+        "$description": "Line height paired with 48px type (whole px)."
       }
     },
     "tracking": {
@@ -215,14 +275,107 @@
         "value": 0.25,
         "unit": "rem"
       },
-      "$description": "Tailwind --spacing multiplier. [data-density] overrides it per subtree."
+      "$description": "Tailwind --spacing multiplier (4px). Fixed: density changes the size tokens, not the grid."
     },
     "grid": {
       "$value": {
-        "value": 0.3,
+        "value": 0.5,
         "unit": "rem"
       },
-      "$description": "Cell size of the decorative background grid."
+      "$description": "Cell size of the decorative background grid (8px, two pixel-grid steps)."
+    }
+  },
+  "size": {
+    "$type": "dimension",
+    "control": {
+      "sm": {
+        "$value": {
+          "value": 2,
+          "unit": "rem"
+        },
+        "$description": "Small control height (toolbar item, tab, chip, calendar cell). 24 / 32 / 40px by density."
+      },
+      "md": {
+        "$value": {
+          "value": 2.5,
+          "unit": "rem"
+        },
+        "$description": "Default control height (button, input, select trigger, toggle). 32 / 40 / 48px by density."
+      },
+      "lg": {
+        "$value": {
+          "value": 3,
+          "unit": "rem"
+        },
+        "$description": "Large control height. 40 / 48 / 56px by density."
+      }
+    },
+    "row": {
+      "$value": {
+        "value": 2,
+        "unit": "rem"
+      },
+      "$description": "Row height of menu, option, list and table rows (min). 28 / 32 / 40px by density."
+    },
+    "pad": {
+      "sm": {
+        "$value": {
+          "value": 0.75,
+          "unit": "rem"
+        },
+        "$description": "Inline padding of sm controls."
+      },
+      "md": {
+        "$value": {
+          "value": 1,
+          "unit": "rem"
+        },
+        "$description": "Inline padding of md controls and inputs."
+      },
+      "lg": {
+        "$value": {
+          "value": 1.5,
+          "unit": "rem"
+        },
+        "$description": "Inline padding of lg controls."
+      }
+    },
+    "indicator": {
+      "$value": {
+        "value": 20,
+        "unit": "px"
+      },
+      "$description": "Fixed box of a checkbox, radio, switch thumb track indicator. Density-fixed."
+    },
+    "bullet": {
+      "$value": {
+        "value": 8,
+        "unit": "px"
+      },
+      "$description": "Fixed box of a list bullet or status dot. Density-fixed."
+    },
+    "icon": {
+      "sm": {
+        "$value": {
+          "value": 12,
+          "unit": "px"
+        },
+        "$description": "Icon box, small (check, cross, plus)."
+      },
+      "md": {
+        "$value": {
+          "value": 16,
+          "unit": "px"
+        },
+        "$description": "Icon box, default (chevron, calendar)."
+      },
+      "lg": {
+        "$value": {
+          "value": 20,
+          "unit": "px"
+        },
+        "$description": "Icon box, large."
+      }
     }
   },
   "radius": {
@@ -446,7 +599,7 @@
           "value": 450,
           "unit": "ms"
         },
-        "$description": "Drawer and sheet slide, enter and exit (yorha-slide-*). A swipe release scales it by --drawer-swipe-strength."
+        "$description": "Drawer and sheet slide, enter (yorha-slide-*)."
       },
       "collapse": {
         "$value": {
@@ -489,6 +642,27 @@
           "unit": "ms"
         },
         "$description": "Press feedback on buttons and other pressable controls (yorha-press)."
+      },
+      "modal": {
+        "$value": {
+          "value": 280,
+          "unit": "ms"
+        },
+        "$description": "Modal dialog and alert dialog enter, scrim fades with it."
+      },
+      "modal-exit": {
+        "$value": {
+          "value": 200,
+          "unit": "ms"
+        },
+        "$description": "Modal exit (faster than enter)."
+      },
+      "drawer-exit": {
+        "$value": {
+          "value": 280,
+          "unit": "ms"
+        },
+        "$description": "Drawer exit, scaled by the swipe strength."
       }
     },
     "easing": {
@@ -583,8 +757,8 @@
       "$value": 0
     },
     "decor": {
-      "$value": 1,
-      "$description": "Grid, vignette, ornaments."
+      "$value": -1,
+      "$description": "Grid, vignette, ornaments: behind content. Host: relative isolate."
     },
     "raised": {
       "$value": 10

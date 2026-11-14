@@ -103,6 +103,24 @@
           "value": 0,
           "unit": "ms"
         }
+      },
+      "modal": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "modal-exit": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "drawer-exit": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
       }
     },
     "spatial": {
