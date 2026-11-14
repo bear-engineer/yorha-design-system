@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within, waitFor } from "storybook/test";
-import { NavLink as RouterNavLink } from "react-router";
 import { withRouter } from "../../../../.storybook/decorators";
 import { RouteTransition } from "@/components/route-transition";
 import { NavLink } from "@/components/nav-link";
@@ -39,8 +38,6 @@ const routes = [
     ],
   },
 ];
-
-void RouterNavLink;
 
 /** 라우트를 바꾸면 새 화면이 나타납니다. 모션이 `full`일 때만 전환 래퍼가 켜집니다. */
 export const Default: Story = {
