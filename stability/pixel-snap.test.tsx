@@ -124,8 +124,6 @@ const SIZE_EXEMPT_ITEMS: Record<string, string> = {
  * that already passes is listed in the console as stale.
  */
 const PENDING_FAMILY_SWEEP = new Set<string>([
-  // sel: the multi-select story wraps chips onto a second row on purpose (FSEL-08), so the frame is not on the control scale.
-  "combobox / States",
 ]);
 
 const px = (value: string) => {
@@ -166,8 +164,11 @@ describe("pixel snap and control heights (comfortable density)", () => {
           }
           if (!SIZE_EXEMPT_ITEMS[item] && !el.hasAttribute("data-size-exempt") && heightControls(el)) {
             // Parts of an InputGroup fill the frame's inner height; the frame is the control that sits on the scale.
-            const h = (el.closest("[data-slot$=input-group]") ?? el).getBoundingClientRect().height;
-            if (![...allowed].some((a) => Math.abs(a - h) < 0.01)) heights.push(`${label(el)}: height ${h}`);
+            const frame = el.closest("[data-slot$=input-group]");
+            const h = (frame ?? el).getBoundingClientRect().height;
+            // A multi-select frame grows by whole chip rows (FSEL-08): it must start on the scale and stay on whole pixels.
+            const chipRows = frame?.querySelector("[data-slot$=-chips]") && h >= Math.min(...allowed) && Number.isInteger(h);
+            if (!chipRows && ![...allowed].some((a) => Math.abs(a - h) < 0.01)) heights.push(`${label(el)}: height ${h}`);
           }
         }
         const problems = [...snap, ...heights.map((h) => `${h} (allowed ${[...allowed].join("/")})`)];

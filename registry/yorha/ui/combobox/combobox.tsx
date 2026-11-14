@@ -16,7 +16,7 @@ function ComboboxInputGroup({ className, ...props }: ComponentProps<typeof Combo
       data-slot="combobox-input-group"
       className={cnState(
         [
-          "flex min-h-control-md w-full min-w-40 items-stretch rounded-yorha border border-yorha-border bg-yorha-panel font-yorha text-yorha-sm text-yorha-fg",
+          "relative flex min-h-control-md w-full min-w-40 items-stretch rounded-yorha border border-yorha-border bg-yorha-panel font-yorha text-yorha-sm text-yorha-fg",
           // One ring on the frame; an open popup adds no second darkened border (G6 b).
           "focus-within:yorha-focus",
           "data-[invalid]:border-(length:--yorha-border-width-strong) data-[invalid]:border-yorha-alert-ui",
@@ -65,9 +65,12 @@ function ComboboxTrigger({ className, children, ...props }: ComponentProps<typeo
       aria-label="목록 열기"
       className={cnState(
         [
-          "group/trigger grid aspect-square h-[calc(var(--yorha-control-md)-2px)] shrink-0 self-start place-items-center border-l border-yorha-border text-yorha-fg",
+          "group/trigger grid aspect-square h-[calc(var(--yorha-control-md)-2px)] shrink-0 self-start place-items-center text-yorha-fg",
+          // Divider spans the whole frame even when chips wrap to more rows (the button stays one control high, top-aligned):
+          // an absolute pseudo with no left offset sits at the trigger's static position, inset-y-0 against the relative frame.
+          "before:absolute before:inset-y-0 before:justify-self-start before:w-px before:bg-yorha-border data-[disabled]:before:bg-yorha-disabled",
           "focus-visible:yorha-focus-inset data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
-          "yorha-disabled data-[disabled]:border-yorha-disabled",
+          "yorha-disabled",
         ],
         className,
       )}
