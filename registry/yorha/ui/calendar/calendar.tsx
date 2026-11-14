@@ -136,7 +136,7 @@ const NAV_BUTTON = cn(
 
 const DAY_CELL = cn(
   "yorha-tabular relative isolate grid size-10 cursor-pointer select-none place-items-center font-yorha text-yorha-sm text-yorha-fg",
-  "transition-colors duration-(--motion-press) ease-yorha",
+  "transition-[color,background-color,border-color] duration-(--motion-press) ease-yorha",
   // dark wipe: a pseudo element that scales in from the left (opacity-only when motion is reduced)
   "before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:origin-left before:bg-yorha-control before:opacity-0",
   "before:scale-x-[calc(1-var(--motion-spatial))]",
@@ -159,10 +159,14 @@ function Chevron({ dir }: { dir: "left" | "right" }) {
   );
 }
 
-/** Slide of the month title and grid (SLIDE_ITEM) from the travel direction; reduced = opacity fade, off = instant. The prev/next buttons never move. */
+/**
+ * Pointer month change: the month title and grid ease from 60% opacity with at most --motion-shift of travel
+ * over --motion-select (never from 0, so rapid clicks cannot blank the grid). reduced = opacity only, off = instant.
+ * Keyboard month changes set dir 0 and run no animation. The prev/next buttons never move.
+ */
 const SLIDE_ITEM = cn(
-  "transition-[translate,opacity] duration-[max(var(--motion-route),var(--motion-reduced-fade))] ease-yorha-decelerate",
-  "group-data-[entering]/slide:translate-x-[calc(var(--yorha-cal-dir)*var(--motion-spatial)*var(--motion-shift)*3)] group-data-[entering]/slide:opacity-0 group-data-[entering]/slide:transition-none",
+  "transition-[translate,opacity] duration-[max(var(--motion-select),var(--motion-reduced-fade))] ease-yorha-out",
+  "group-data-[entering]/slide:translate-x-[calc(var(--yorha-cal-dir)*var(--motion-spatial)*var(--motion-shift))] group-data-[entering]/slide:opacity-60 group-data-[entering]/slide:transition-none",
 );
 
 /** Carries the travel direction and the entering flag for the SLIDE_ITEM descendants. */
@@ -253,11 +257,12 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
     onMonthChange,
   );
   const [dir, setDir] = React.useState(0);
-  const setMonth = (next: Date) => {
+  /** `animate` is true only for pointer-driven month changes; keyboard paths pass nothing and run no animation. */
+  const setMonth = (next: Date, animate = false) => {
     const n = startOfMonth(next);
     const delta = monthIndex(n) - monthIndex(month);
     if (delta === 0) return;
-    setDir(Math.sign(delta));
+    setDir(animate ? Math.sign(delta) : 0);
     setMonthValue(n);
   };
   const firstIdx = monthIndex(month);
@@ -382,9 +387,9 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
 
   const canPrev = !min || monthIndex(min) < firstIdx;
   const canNext = !max || monthIndex(max) > lastIdx;
-  const shift = (n: number) => {
+  const shift = (n: number, pointer: boolean) => {
     setFocusedState(addMonths(roving, n));
-    setMonth(new Date(month.getFullYear(), month.getMonth() + n, 1));
+    setMonth(new Date(month.getFullYear(), month.getMonth() + n, 1), pointer);
   };
 
   const renderMonth = (offset: number) => {
@@ -407,7 +412,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
               data-slot="calendar-prev"
               aria-label={labels.previousMonth}
               disabled={!canPrev}
-              onClick={() => shift(-1)}
+              onClick={(e) => shift(-1, e.detail > 0)}
               className={NAV_BUTTON}
             >
               <Chevron dir="left" />
@@ -428,7 +433,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
               data-slot="calendar-next"
               aria-label={labels.nextMonth}
               disabled={!canNext}
-              onClick={() => shift(1)}
+              onClick={(e) => shift(1, e.detail > 0)}
               className={NAV_BUTTON}
             >
               <Chevron dir="right" />

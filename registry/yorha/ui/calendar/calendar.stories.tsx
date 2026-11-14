@@ -45,7 +45,7 @@ const meta = {
   args: { today: TODAY },
   decorators: [
     (Story) => (
-      <div lang="ko" className="bg-yorha-panel p-6 text-yorha-fg">
+      <div lang="ko" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -261,8 +261,42 @@ export const HeaderNavigation: Story = {
     await userEvent.click(c.getByRole("button", { name: "이전 달" }));
     await userEvent.click(c.getByRole("button", { name: "이전 달" }));
     await waitFor(() => expect(c.getByRole("grid", { name: "2026년 10월" })).toBeInTheDocument());
+    // let the month fade finish so axe reads the resting colours
+    await waitFor(() => expect(canvasElement.querySelector("[data-entering]")).toBeNull());
+    await Promise.all(document.getAnimations().map((a) => a.finished.catch(() => undefined)));
     // the roving tab stop follows the visible month
     await expect(canvasElement.querySelectorAll("[role=gridcell][tabindex='0']")).toHaveLength(1);
+  },
+};
+
+/** M05: month change is a short opacity + at most --motion-shift travel; rapid clicks never blank the grid; keyboard is instant. */
+export const MonthChangeMotion: Story = {
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const grid = () => canvasElement.querySelector<HTMLElement>("table[role=grid]")!;
+    let min = 1;
+    let running = true;
+    const sample = () => {
+      if (!running) return;
+      min = Math.min(min, parseFloat(getComputedStyle(grid()).opacity));
+      requestAnimationFrame(sample);
+    };
+    requestAnimationFrame(sample);
+    for (let i = 0; i < 5; i++) {
+      await userEvent.click(c.getByRole("button", { name: "다음 달" }));
+      await new Promise((r) => setTimeout(r, 40));
+    }
+    await new Promise((r) => setTimeout(r, 300));
+    running = false;
+    await expect(min).toBeGreaterThanOrEqual(0.5);
+    const cs = getComputedStyle(grid());
+    await expect(Math.max(...durationsMs(grid()))).toBeLessThanOrEqual(180);
+    // keyboard month change (PageDown from a day) runs no animation
+    (canvasElement.querySelector("[role=gridcell][tabindex='0']") as HTMLElement).focus();
+    await userEvent.keyboard("{PageDown}");
+    await new Promise((r) => setTimeout(r, 40));
+    await expect(grid().getAnimations()).toHaveLength(0);
+    await expect(parseFloat(getComputedStyle(grid()).opacity)).toBe(1);
   },
 };
 
@@ -317,7 +351,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid gap-4">
       {THEMES.map((theme) => (
-        <div key={theme} data-theme={theme} lang="ko" className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={theme} data-theme={theme} lang="ko" className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <Calendar
             today={TODAY}
             aria-label={`달력 (${THEME_LABEL[theme]})`}
@@ -340,7 +374,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" lang="ko" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" lang="ko" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <Calendar today={TODAY} defaultValue={new Date(2026, 10, 9)} />
     </div>
   ),
