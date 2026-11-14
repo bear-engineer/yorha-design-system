@@ -367,6 +367,8 @@ export const States: Story = {
     const list = await listbox();
     await expectTargetSize((list.closest("[data-yorha-combobox-popup],[role=presentation]") as HTMLElement | null) ?? (list as HTMLElement));
     await userEvent.keyboard("{Escape}");
+    // Let the popup unmount before the a11y pass: a closing listbox has no accessible name.
+    await waitFor(() => expect(body().queryByRole("listbox")).toBeNull(), { timeout: 3000 });
   },
 };
 
