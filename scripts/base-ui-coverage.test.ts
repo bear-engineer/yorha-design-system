@@ -59,7 +59,7 @@ describe("scanSources", () => {
   it("records aliased, multi-line and type-only imports plus member usage", () => {
     const u = scanSources([{ path: "registry/yorha/ui/tabs/tabs.tsx", text: src }]);
     expect(u.tabs).toEqual({ dirs: ["registry/yorha/ui/tabs"], members: ["Root", "Tab"] });
-    expect(u.checkbox.members).toEqual(["Root"]);
+    expect(u.checkbox?.members).toEqual(["Root"]);
   });
 
   it("ignores story files", () => {
