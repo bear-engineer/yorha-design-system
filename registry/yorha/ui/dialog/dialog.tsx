@@ -1,0 +1,10 @@
+export const dialogStyles = { popup: "", title: "", body: "", description: "", footer: "" };
+const Stub = (_: Record<string, unknown>) => null;
+export const Dialog = Stub;
+export const DialogTrigger = Stub;
+export const DialogContent = Stub;
+export const DialogTitle = Stub;
+export const DialogDescription = Stub;
+export const DialogBody = Stub;
+export const DialogFooter = Stub;
+export const DialogClose = Stub;
