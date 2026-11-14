@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { Kbd } from "./kbd";
 
-const THEMES = ["light", "dark", "authentic", "high-contrast"] as const;
+const THEMES = ["light", "dark", "high-contrast"] as const;
 
 const meta = {
   title: "컴포넌트/폼/Kbd",
@@ -40,8 +40,6 @@ export const Combo: Story = {
 };
 
 export const Themes: Story = {
-  // authentic theme is intentionally low-contrast (faithful palette), so a11y is todo here
-  parameters: { a11y: { test: "todo" } },
   render: () => (
     <div className="grid grid-cols-2 gap-4">
       {THEMES.map((t) => (
@@ -53,5 +51,19 @@ export const Themes: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelectorAll("kbd")).toHaveLength(THEMES.length * 2);
+  },
+};
+
+/** Authentic palette alone (fidelity, decorative-only, not contrast-gated): the only story with a11y todo. */
+export const Authentic: Story = {
+  name: "Authentic (원작 팔레트)",
+  parameters: { a11y: { test: "todo" } },
+  render: () => (
+    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+      authentic <Kbd>Esc</Kbd> <Kbd>Space</Kbd>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(canvasElement.querySelectorAll("kbd")).toHaveLength(2);
   },
 };

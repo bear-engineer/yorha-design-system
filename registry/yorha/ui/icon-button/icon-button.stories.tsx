@@ -4,7 +4,7 @@ import { IconButton } from "./icon-button";
 
 const VARIANTS = ["default", "primary", "ghost", "danger"] as const;
 const SIZES = ["sm", "md", "lg"] as const;
-const THEMES = ["light", "dark", "authentic", "high-contrast"] as const;
+const THEMES = ["light", "dark", "high-contrast"] as const;
 
 function Glyph() {
   return <span aria-hidden="true" className="block size-3 border-2 border-current" />;
@@ -98,8 +98,6 @@ export const Matrix: Story = {
 };
 
 export const Themes: Story = {
-  // authentic theme is intentionally low-contrast (faithful palette), so a11y is todo here
-  parameters: { a11y: { test: "todo" } },
   render: (args) => (
     <div className="grid grid-cols-2 gap-4">
       {THEMES.map((t) => (
@@ -116,5 +114,21 @@ export const Themes: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getAllByRole("button")).toHaveLength(THEMES.length * VARIANTS.length);
+  },
+};
+
+/** Authentic palette alone (fidelity, decorative-only, not contrast-gated): the only story with a11y todo. */
+export const Authentic: Story = {
+  name: "Authentic (원작 팔레트)",
+  parameters: { a11y: { test: "todo" } },
+  render: (args) => (
+    <div data-theme="authentic" className="flex gap-2 bg-yorha-panel p-4 text-yorha-fg">
+      {VARIANTS.map((v) => (
+        <IconButton key={v} {...args} aria-label={`authentic ${v}`} variant={v} />
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getAllByRole("button")).toHaveLength(VARIANTS.length);
   },
 };

@@ -3,7 +3,7 @@ import { expect, userEvent, waitFor } from "storybook/test";
 import type { ReactNode } from "react";
 import { Split } from "./split";
 
-const THEMES = ["light", "dark", "authentic", "high-contrast"] as const;
+const THEMES = ["light", "dark", "high-contrast"] as const;
 
 function Frame({ width, children }: { width: string; children: ReactNode }) {
   return (
@@ -116,9 +116,7 @@ export const ReadingOrderKeyboard: Story = {
 };
 
 export const FourThemes: Story = {
-  name: "4 테마",
-  // authentic fails contrast pairs by design (tokens); this story compares the four token sets, so a11y is todo here.
-  parameters: { a11y: { test: "todo" } },
+  name: "3 테마",
   render: () => (
     <div className="flex flex-col gap-4">
       {THEMES.map((theme) => (
@@ -132,9 +130,22 @@ export const FourThemes: Story = {
     const bgs = Array.from(canvasElement.querySelectorAll<HTMLElement>("[data-theme]")).map((el) =>
       getComputedStyle(el).getPropertyValue("--yorha-bg").trim(),
     );
-    // Every theme wrapper resolves its own token set; authentic shares light's background by design, so only dark is compared.
-    expect(bgs.length).toBe(4);
+    expect(bgs.length).toBe(3);
     for (const bg of bgs) expect(bg).not.toBe("");
     expect(bgs[1]).not.toBe(bgs[0]);
+  },
+};
+
+/** Authentic palette alone (fidelity, decorative-only, not contrast-gated): the only story with a11y todo. */
+export const Authentic: Story = {
+  name: "Authentic (원작 팔레트)",
+  parameters: { a11y: { test: "todo" } },
+  render: () => (
+    <div data-theme="authentic" className="bg-yorha-bg p-2">
+      <Split list={<span className="text-yorha-fg">authentic</span>} detail={<span className="text-yorha-fg">상세</span>} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    expect(canvasElement.querySelector('[data-theme="authentic"] [data-slot="split"]')).not.toBeNull();
   },
 };

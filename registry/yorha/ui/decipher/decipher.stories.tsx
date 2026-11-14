@@ -103,12 +103,10 @@ export const MotionOff: Story = {
 };
 
 export const Themes: Story = {
-  // Includes the authentic theme, which is intentionally low-contrast by design.
-  parameters: { a11y: { test: "todo" } },
   beforeEach: () => setMotion("full"),
   render: () => (
     <div className="grid gap-4">
-      {(["light", "dark", "high-contrast", "authentic"] as const).map((theme) => (
+      {(["light", "dark", "high-contrast"] as const).map((theme) => (
         <div
           key={theme}
           data-theme={theme}
@@ -121,7 +119,23 @@ export const Themes: Story = {
   ),
   play: async ({ canvasElement }) => {
     const headings = within(canvasElement).getAllByRole("heading");
-    expect(headings).toHaveLength(4);
+    expect(headings).toHaveLength(3);
     for (const h of headings) expect(glyphLayer(h).getAttribute("aria-hidden")).toBe("true");
+  },
+};
+
+/** Authentic palette alone (fidelity, decorative-only, not contrast-gated): the only story with a11y todo. */
+export const Authentic: Story = {
+  name: "Authentic (원작 팔레트)",
+  parameters: { a11y: { test: "todo" } },
+  beforeEach: () => setMotion("full"),
+  render: () => (
+    <div data-theme="authentic" className="bg-yorha-bg text-yorha-fg-strong p-4">
+      <Heading text="authentic — 시스템 복호화" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const heading = within(canvasElement).getByRole("heading");
+    expect(glyphLayer(heading).getAttribute("aria-hidden")).toBe("true");
   },
 };

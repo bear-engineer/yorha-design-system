@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { NumberField } from "./number-field";
 
-const THEMES = ["light", "dark", "authentic", "high-contrast"] as const;
+const THEMES = ["light", "dark", "high-contrast"] as const;
 
 const meta = {
   title: "컴포넌트/폼/NumberField",
@@ -84,9 +84,22 @@ export const Themes: Story = {
       ))}
     </div>
   ),
-  // The authentic theme is a fidelity-first palette that is not contrast-gated.
-  parameters: { a11y: { test: "todo" } },
   play: async ({ canvasElement }) => {
-    await expect(within(canvasElement).getAllByRole("textbox")).toHaveLength(4);
+    await expect(within(canvasElement).getAllByRole("textbox")).toHaveLength(3);
+  },
+};
+
+/** Authentic palette alone (fidelity, decorative-only, not contrast-gated): the only story with a11y todo. */
+export const Authentic: Story = {
+  name: "Authentic (원작 팔레트)",
+  args: { label: "테마 authentic", defaultValue: 3 },
+  parameters: { a11y: { test: "todo" } },
+  render: () => (
+    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+      <NumberField label="테마 authentic" defaultValue={3} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole("textbox", { name: "테마 authentic" })).toHaveValue("3");
   },
 };

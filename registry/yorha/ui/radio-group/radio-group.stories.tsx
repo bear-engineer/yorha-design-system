@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { Radio, RadioGroup } from "./radio-group";
 
-const THEMES = ["light", "dark", "authentic", "high-contrast"] as const;
+const THEMES = ["light", "dark", "high-contrast"] as const;
 
 const meta = {
   title: "컴포넌트/폼/RadioGroup",
@@ -116,11 +116,26 @@ export const Themes: Story = {
       ))}
     </div>
   ),
-  // The authentic theme is a fidelity-first palette that is not contrast-gated.
-  parameters: { a11y: { test: "todo" } },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
-    await expect(c.getAllByRole("radiogroup")).toHaveLength(4);
-    await expect(c.getAllByRole("radio", { name: "브라보 유닛" })).toHaveLength(4);
+    await expect(c.getAllByRole("radiogroup")).toHaveLength(3);
+    await expect(c.getAllByRole("radio", { name: "브라보 유닛" })).toHaveLength(3);
+  },
+};
+
+/** Authentic palette alone (fidelity, decorative-only, not contrast-gated): the only story with a11y todo. */
+export const Authentic: Story = {
+  name: "Authentic (원작 팔레트)",
+  parameters: { a11y: { test: "todo" } },
+  render: () => (
+    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+      <RadioGroup aria-label="테마 authentic" defaultValue="bravo">
+        <Options />
+      </RadioGroup>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole("radiogroup")).toBeInTheDocument();
+    await expect(within(canvasElement).getByRole("radio", { name: "브라보 유닛" })).toBeChecked();
   },
 };
