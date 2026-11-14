@@ -70,7 +70,7 @@ function Single({ defaultValue, grouped, disabled }: { defaultValue?: string; gr
 function Multiple({ onChange, initial = ["Archive", "Bunker"] }: { onChange?: (v: string[]) => void; initial?: string[] }) {
   const [value, setValue] = useState<string[]>(initial);
   return (
-    <div lang="ko" className="w-80 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
+    <div lang="ko" className="w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
       <Combobox
         items={UNITS}
         multiple

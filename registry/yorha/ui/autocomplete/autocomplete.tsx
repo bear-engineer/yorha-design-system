@@ -16,7 +16,7 @@ function AutocompleteInputGroup({ className, ...props }: ComponentProps<typeof A
       data-slot="autocomplete-input-group"
       className={cnState(
         [
-          "flex min-h-control-md w-full min-w-40 items-stretch rounded-yorha border border-yorha-border bg-yorha-panel font-yorha text-yorha-sm text-yorha-fg",
+          "flex min-h-control-md w-full min-w-40 items-stretch rounded-yorha border border-yorha-border bg-yorha-bg font-yorha text-yorha-base text-yorha-fg",
           // One ring on the frame; an open popup adds no second darkened border (G6 b).
           "focus-within:yorha-focus",
           "data-[invalid]:border-(length:--yorha-border-width-strong) data-[invalid]:border-yorha-alert-ui",
@@ -39,7 +39,7 @@ function AutocompleteInput({ className, onKeyDown, ...props }: ComponentProps<ty
       data-slot="autocomplete-input"
       className={cnState(
         [
-          "min-w-0 flex-1 self-stretch rounded-none border-0 bg-transparent px-pad-md py-0 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
+          "min-w-0 flex-1 self-stretch rounded-none border-0 bg-transparent px-pad-md py-0 font-yorha text-yorha-base tracking-yorha-body text-yorha-fg",
           "placeholder:text-yorha-fg-soft focus-visible:outline-none disabled:cursor-not-allowed",
         ],
         className,

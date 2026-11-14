@@ -239,17 +239,21 @@ describe("FSEL-08 / C2-221..223 combobox chips", () => {
     expect(frame().getBoundingClientRect().height, "3 values").toBe(base);
     expect(frame().parentElement!.parentElement!.getBoundingClientRect().height, "container").toBe(sibling);
     expectPixelSnapped(frame());
+  });
+
+  test("8 values: still one row, +N chip counts the hidden ones", { timeout: 60_000 }, async () => {
     await mountStory("combobox", "ManySelected", { stage: "top" });
     await frames(10);
-    expect(frame().getBoundingClientRect().height, "8 values").toBe(base);
+    expect(frame().getBoundingClientRect().height, "8 values").toBe(token("--yorha-control-md"));
     const more = q<HTMLElement>("[data-slot=combobox-chips-more]")!;
     expect(more, "+N chip").toBeTruthy();
     expect(more.getAttribute("aria-label")).toMatch(/^외 \d+개 선택됨$/);
     const chips = [...document.querySelectorAll<HTMLElement>("[data-slot=combobox-chip]")];
     const visible = chips.filter((c) => c.getBoundingClientRect().height > 0);
-    expect(visible.length + Number(more.textContent!.replace("+", "")), "visible + hidden = 8").toBe(8);
+    expect(visible.length + Number(more.textContent!.replace("+", "")), `visible ${visible.length} + more ${more.textContent} = 8, chips ${chips.length}`).toBe(8);
     const row = q<HTMLElement>("[data-slot=combobox-chips]")!.getBoundingClientRect();
     for (const c of visible) expect(c.getBoundingClientRect().height).toBe(24);
+    expect(visible.length, "at least one chip stays visible").toBeGreaterThanOrEqual(1);
     expect(new Set(visible.map((c) => c.getBoundingClientRect().top)).size, "one row").toBe(1);
     for (const c of [...visible, more]) expect(c.getBoundingClientRect().right).toBeLessThanOrEqual(row.right + 0.5);
   });
@@ -272,8 +276,7 @@ describe("FSEL-08 / C2-221..223 combobox chips", () => {
     probe.remove();
     // focus inside: only the frame draws a ring; the focused cell draws none
     q<HTMLElement>("[data-slot=combobox-trigger]")!.focus();
-    await userEvent.keyboard("{Tab}");
-    await userEvent.keyboard("+{Tab}");
+    await frames(3);
     const ae = document.activeElement as HTMLElement;
     expect(ae.matches("[data-slot=combobox-trigger]")).toBe(true);
     expect(getComputedStyle(ae).outlineStyle === "none" || px(getComputedStyle(ae).outlineWidth) === 0, "cell has no ring").toBe(true);

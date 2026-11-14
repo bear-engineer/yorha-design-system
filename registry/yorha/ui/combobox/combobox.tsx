@@ -1,7 +1,10 @@
-import type { ComponentProps } from "react";
+import { useLayoutEffect, useRef, useState, type ComponentProps } from "react";
 import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
 import { ChevronIcon, CrossIcon, TriangleIcon } from "@/components/ui/icons";
 import { cnState } from "@/lib/utils";
+
+const INPUT_MIN = 48; // typing area kept beside the chips (min-w-12)
+const MORE_W = 36; // room reserved for the "+N" chip
 
 /** Root: re-export of the Base UI Combobox root (items, value, onValueChange, multiple, ...). */
 const Combobox = ComboboxPrimitive.Root;
@@ -16,7 +19,7 @@ function ComboboxInputGroup({ className, ...props }: ComponentProps<typeof Combo
       data-slot="combobox-input-group"
       className={cnState(
         [
-          "relative flex min-h-control-md w-full min-w-40 items-stretch rounded-yorha border border-yorha-border bg-yorha-panel font-yorha text-yorha-sm text-yorha-fg",
+          "relative flex min-h-control-md w-full min-w-40 items-stretch rounded-yorha border border-yorha-border bg-yorha-bg font-yorha text-yorha-base text-yorha-fg",
           // One ring on the frame; an open popup adds no second darkened border (G6 b).
           "focus-within:yorha-focus",
           "data-[invalid]:border-(length:--yorha-border-width-strong) data-[invalid]:border-yorha-alert-ui",
@@ -39,7 +42,7 @@ function ComboboxInput({ className, onKeyDown, ...props }: ComponentProps<typeof
       data-slot="combobox-input"
       className={cnState(
         [
-          "min-w-0 flex-1 self-stretch rounded-none border-0 bg-transparent px-pad-md py-0 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
+          "min-w-0 flex-1 self-stretch rounded-none border-0 bg-transparent px-pad-md py-0 font-yorha text-yorha-base tracking-yorha-body text-yorha-fg",
           "placeholder:text-yorha-fg-soft focus-visible:outline-none disabled:cursor-not-allowed",
         ],
         className,
@@ -65,11 +68,10 @@ function ComboboxTrigger({ className, children, ...props }: ComponentProps<typeo
       aria-label="목록 열기"
       className={cnState(
         [
-          "group/trigger grid aspect-square h-[calc(var(--yorha-control-md)-2px)] shrink-0 self-start place-items-center text-yorha-fg",
-          // Divider spans the whole frame even when chips wrap to more rows (the button stays one control high, top-aligned):
-          // an absolute pseudo with no left offset sits at the trigger's static position, inset-y-0 against the relative frame.
+          "group/trigger grid w-[calc(var(--yorha-control-md)-2px)] shrink-0 self-stretch place-items-center text-yorha-fg",
+          // Divider spans the whole frame: an absolute pseudo with no left offset sits at the cell's static position, inset-y-0 against the relative frame.
           "before:absolute before:inset-y-0 before:justify-self-start before:w-px before:bg-yorha-border data-[disabled]:before:bg-yorha-disabled",
-          "focus-visible:yorha-focus-inset data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
+          "focus-visible:outline-none focus-visible:bg-yorha-control focus-visible:text-yorha-on-control data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
           "yorha-disabled",
         ],
         className,
@@ -104,7 +106,12 @@ function ComboboxClear({ className, children, ...props }: ComponentProps<typeof 
       data-slot="combobox-clear"
       aria-label="지우기"
       className={cnState(
-        "grid aspect-square h-[calc(var(--yorha-control-md)-2px)] shrink-0 self-start place-items-center text-yorha-fg focus-visible:yorha-focus-inset yorha-disabled",
+        [
+          "grid w-[calc(var(--yorha-control-md)-2px)] shrink-0 self-stretch place-items-center text-yorha-fg yorha-disabled",
+          // Same divider as the chevron cell, so clear and chevron read as two equal cells; the frame carries the only focus ring.
+          "before:absolute before:inset-y-0 before:justify-self-start before:w-px before:bg-yorha-border data-[disabled]:before:bg-yorha-disabled",
+          "focus-visible:outline-none focus-visible:bg-yorha-control focus-visible:text-yorha-on-control",
+        ],
         className,
       )}
       {...props}
@@ -289,14 +296,70 @@ function ComboboxLabel({ className, ...props }: ComponentProps<typeof ComboboxPr
   );
 }
 
-/** Chip container for `multiple`; put ComboboxChip children and the ComboboxInput inside it. */
-function ComboboxChips({ className, ...props }: ComponentProps<typeof ComboboxPrimitive.Chips>) {
+/**
+ * Chip container for `multiple`; put ComboboxChip children and the ComboboxInput inside it.
+ *
+ * The row is one line at `h-control-md` and never grows. Chips that do not fit (the input keeps 3rem) collapse into a
+ * "+N" count chip named "외 N개 선택됨"; the hidden chips stay in the DOM (`data-overflow`), the popup lists every
+ * selected row with its filled bullet. Migration: the row no longer wraps and `max-h-32` is gone, so anything that
+ * relied on the field growing (taller frames, a second chip row) now sees the count chip instead.
+ */
+function ComboboxChips({ className, children, ...props }: ComponentProps<typeof ComboboxPrimitive.Chips>) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [hidden, setHidden] = useState(0);
+  // Runs after every render (chips come and go) and on resize; the guard on setHidden ends the loop.
+  const measure = () => {
+    const el = ref.current;
+    if (!el) return;
+    const chips = [...el.querySelectorAll<HTMLElement>("[data-slot=combobox-chip]")];
+    for (const c of chips) c.removeAttribute("data-overflow");
+    const cs = getComputedStyle(el);
+    const gap = parseFloat(cs.columnGap) || 0;
+    const room = el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - INPUT_MIN - gap;
+    const widths = chips.map((c) => c.offsetWidth);
+    const total = widths.reduce((a, w) => a + w + gap, 0);
+    let count = 0;
+    if (total > room) {
+      const limit = room - MORE_W - gap;
+      let used = 0;
+      let fit = 0;
+      for (const w of widths) {
+        if (used + w + gap > limit) break;
+        used += w + gap;
+        fit += 1;
+      }
+      count = chips.length - fit;
+      chips.slice(fit).forEach((c) => c.setAttribute("data-overflow", ""));
+    }
+    setHidden(count);
+  };
+  useLayoutEffect(measure);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
   return (
     <ComboboxPrimitive.Chips
+      ref={ref}
       data-slot="combobox-chips"
-      className={cnState("yorha-scroll flex max-h-32 min-w-0 flex-1 flex-wrap content-start items-center gap-1 p-1 [&_[data-slot=combobox-input]]:h-6 [&_[data-slot=combobox-input]]:min-w-16 [&_[data-slot=combobox-input]]:px-1", className)}
+      className={cnState("flex min-w-0 flex-1 flex-nowrap items-center gap-1 self-stretch overflow-hidden px-1 [&_[data-slot=combobox-input]]:order-2 [&_[data-slot=combobox-input]]:h-6 [&_[data-slot=combobox-input]]:min-w-12 [&_[data-slot=combobox-input]]:px-1", className)}
       {...props}
-    />
+    >
+      {children}
+      {hidden > 0 && (
+        <span
+          data-slot="combobox-chips-more"
+          role="img"
+          aria-label={`외 ${hidden}개 선택됨`}
+          className="order-1 inline-flex h-6 shrink-0 items-center rounded-yorha border border-yorha-border bg-yorha-bg px-2 font-yorha text-yorha-sm text-yorha-fg"
+        >
+          +{hidden}
+        </span>
+      )}
+    </ComboboxPrimitive.Chips>
   );
 }
 
@@ -309,8 +372,8 @@ function ComboboxChip({ className, children, ...props }: ComponentProps<typeof C
       aria-description="Backspace 또는 Delete 키로 제거"
       className={cnState(
         [
-          "group/chip inline-flex h-6 shrink-0 items-center gap-1 rounded-yorha border border-yorha-border bg-yorha-bg pl-2 font-yorha text-yorha-sm text-yorha-fg",
-          "focus-visible:yorha-focus-inset data-[highlighted]:bg-yorha-ink data-[highlighted]:text-yorha-on-ink",
+          "group/chip inline-flex h-6 shrink-0 data-[overflow]:hidden items-center gap-1 rounded-yorha border border-yorha-border bg-yorha-bg pl-2 font-yorha text-yorha-sm text-yorha-fg",
+          "focus-visible:outline-none data-[highlighted]:bg-yorha-ink data-[highlighted]:text-yorha-on-ink",
         ],
         className,
       )}
@@ -328,7 +391,7 @@ function ComboboxChipRemove({ className, children, ...props }: ComponentProps<ty
       data-slot="combobox-chip-remove"
       aria-label="제거"
       className={cnState(
-        "grid -my-px -mr-px size-6 shrink-0 place-items-center border-l border-yorha-border text-current focus-visible:yorha-focus-inset",
+        "grid -my-px -mr-px size-6 shrink-0 place-items-center border-l border-yorha-border text-current focus-visible:outline-none focus-visible:bg-yorha-ink focus-visible:text-yorha-on-ink",
         className,
       )}
       {...props}
