@@ -17,7 +17,7 @@ export function Switch({ children, className, rowClassName, ...props }: SwitchPr
   return (
     <label
       className={cn(
-        "inline-flex cursor-pointer items-center gap-3 font-yorha text-yorha-base text-yorha-fg",
+        "inline-flex cursor-pointer items-center gap-3 align-middle font-yorha text-yorha-base text-yorha-fg",
         "has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:opacity-50",
         rowClassName,
       )}
@@ -25,7 +25,7 @@ export function Switch({ children, className, rowClassName, ...props }: SwitchPr
       <BaseSwitch.Root
         className={cnState(
           cn(
-            "relative inline-flex h-5 w-9 min-h-[24px] min-w-[24px] shrink-0 items-center rounded-yorha border border-current bg-transparent p-0.5",
+            "relative inline-flex h-5 self-center w-9 min-h-[24px] min-w-[24px] shrink-0 items-center rounded-yorha border border-current bg-transparent p-0.5",
             "text-yorha-fg transition-colors duration-(--motion-select) ease-yorha",
             "data-[checked]:bg-yorha-ink data-[checked]:text-yorha-on-ink",
             "focus-visible:yorha-focus",
