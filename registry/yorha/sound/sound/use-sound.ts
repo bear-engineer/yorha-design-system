@@ -1,8 +1,19 @@
-// RED stub: play() does nothing. Replaced in the GREEN commit.
-import type { SoundCue } from "./sound";
+import { useCallback } from "react";
+import { useSoundPreference } from "@/components/yorha-provider";
+import { playCue, type SoundCue } from "./sound";
 
+/**
+ * Returns `play(cue)`. Does nothing while the sound preference is off (the default).
+ * Volume comes from the provider's `sound.volume`.
+ */
 export function useSound() {
-  return {
-    play: (_cue: SoundCue) => {},
-  };
+  const { enabled, volume } = useSoundPreference();
+  const play = useCallback(
+    (cue: SoundCue) => {
+      if (!enabled) return;
+      playCue(cue, volume);
+    },
+    [enabled, volume],
+  );
+  return { play };
 }

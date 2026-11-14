@@ -201,7 +201,9 @@ export const MuteToggleAndVolume: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const slider = c.getByRole("slider") as HTMLInputElement;
-    slider.value = "0.8";
+    // Native setter: React tracks the value, so a plain assignment would not fire onChange.
+    const setValue = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    setValue?.call(slider, "0.8");
     slider.dispatchEvent(new Event("input", { bubbles: true }));
     await waitFor(() => expect(c.getByTestId("sound-volume")).toHaveTextContent("0.8"));
     await userEvent.click(c.getByRole("button", { name: "선택" }));
