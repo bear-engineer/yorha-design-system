@@ -197,11 +197,10 @@ export const FocusTrap: Story = {
     await waitFor(() => expect(d.contains(document.activeElement)).toBe(true), { timeout: 3000 });
     for (let i = 0; i < 4; i += 1) {
       await userEvent.tab();
-      await waitFor(() => { if (!d.contains(document.activeElement)) throw new Error(`TRAP i=${i} active=${document.activeElement?.outerHTML.slice(0,90)} hasFocus=${document.hasFocus()}`); }, { timeout: 3000 });
-      await expect(d.contains(document.activeElement)).toBe(true);
+      await waitFor(() => expect(d.contains(document.activeElement)).toBe(true), { timeout: 3000 });
     }
     await userEvent.tab({ shift: true });
-    await expect(d.contains(document.activeElement)).toBe(true);
+    await waitFor(() => expect(d.contains(document.activeElement)).toBe(true), { timeout: 3000 });
     await userEvent.click(within(d).getByRole("button", { name: "닫기" }));
     await waitFor(() => expect(body().queryByRole("dialog")).toBeNull());
     await waitFor(() => expect(trigger()).toHaveFocus());
@@ -250,13 +249,16 @@ export const SwipeToDismiss: Story = {
     const y = r.top + r.height / 2;
     const opts = { pointerId: 1, pointerType: "mouse", isPrimary: true, bubbles: true, clientX: x } as const;
     fireEvent.pointerDown(target, { ...opts, clientY: y, buttons: 1 });
-    for (let i = 1; i <= 8; i += 1) {
-      fireEvent.pointerMove(target, { ...opts, clientY: y + i * 40, buttons: 1 });
-      await new Promise((res) => setTimeout(res, 16));
+    const frame = () => new Promise<void>((res) => requestAnimationFrame(() => res()));
+    for (let i = 1; i <= 12; i += 1) {
+      fireEvent.pointerMove(target, { ...opts, clientY: y + i * 50, buttons: 1 });
+      await frame();
     }
     // while dragging, Base UI exposes the swiping state and --drawer-swipe-movement-y
     await expect(d).toHaveAttribute("data-swiping");
-    fireEvent.pointerUp(target, { ...opts, clientY: y + 320, buttons: 0 });
+    // release straight after the last move so the release velocity stays high
+    fireEvent.pointerMove(target, { ...opts, clientY: y + 650, buttons: 1 });
+    fireEvent.pointerUp(target, { ...opts, clientY: y + 650, buttons: 0 });
     await waitFor(() => expect(body().queryByRole("dialog")).toBeNull(), { timeout: 4000 });
   },
 };

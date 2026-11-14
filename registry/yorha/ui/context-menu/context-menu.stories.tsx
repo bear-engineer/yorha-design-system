@@ -148,10 +148,20 @@ export const Submenu: Story = {
     const m = await menu();
     const sub = within(m).getByRole("menuitem", { name: "이동" });
     sub.focus();
+    await waitFor(() => expect(sub).toHaveFocus());
     await userEvent.keyboard("{ArrowRight}");
-    const item = await body().findByRole("menuitem", { name: "벙커" });
+    const item = await body().findByRole("menuitem", { name: "벙커" }, { timeout: 4000 });
+    // wait for the submenu popup to finish opening before clicking
+    await waitFor(() => {
+      const popup = item.closest("[data-slot]") ?? item;
+      expect(popup).not.toHaveAttribute("data-starting-style");
+      expect(item.getBoundingClientRect().width).toBeGreaterThan(0);
+    });
+    await new Promise((res) => setTimeout(res, 150));
     await userEvent.click(item);
     await expect(args.onSelect).toHaveBeenCalledWith("벙커");
+    // end with every popup unmounted so Base UI's aria-hidden focus guards are gone before the a11y pass
+    await waitFor(() => expect(body().queryByRole("menu")).toBeNull(), { timeout: 4000 });
   },
 };
 
