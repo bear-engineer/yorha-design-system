@@ -5,7 +5,7 @@
       "name": "route-transition",
       "type": "registry:component",
       "title": "RouteTransition",
-      "description": "Renders <Outlet/> inside React <ViewTransition> so route changes animate as YoRHa panel motion. Disabled when data-motion is reduced or off.",
+      "description": "Route transitions on React <ViewTransition>: forward/back/replace direction from the history index, SharedElement (list -> detail), useRouteTransition, SegmentTransition + changeSegment for tabs. Falls back to no animation without document.startViewTransition; reduced = 120ms crossfade, off = none.",
       "dependencies": [
         "react-router@^8.5.1"
       ],
@@ -21,32 +21,150 @@
         }
       ],
       "css": {
+        "::view-transition-new(.yorha-route-forward)": {
+          "animation": "yorha-route-in-forward max(var(--motion-route), var(--motion-reduced-fade)) var(--yorha-ease-out) both"
+        },
+        "::view-transition-new(.yorha-route-back)": {
+          "animation": "yorha-route-in-back max(var(--motion-route), var(--motion-reduced-fade)) var(--yorha-ease-out) both"
+        },
+        "::view-transition-new(.yorha-route-replace)": {
+          "animation": "yorha-route-in-replace max(var(--motion-route), var(--motion-reduced-fade)) var(--yorha-ease-out) both"
+        },
         "::view-transition-old(.yorha-route-exit)": {
-          "animation": "yorha-route-out var(--motion-panel-exit) var(--yorha-ease-in) both"
+          "animation": "yorha-route-out-replace max(var(--motion-route-exit), var(--motion-reduced-fade)) var(--yorha-ease-in) both"
         },
-        "::view-transition-new(.yorha-route-enter)": {
-          "animation": "yorha-route-in var(--motion-panel) var(--yorha-ease-out) both"
+        "html[data-route-direction=\"forward\"]::view-transition-old(.yorha-route-exit)": {
+          "animation": "yorha-route-out-forward max(var(--motion-route-exit), var(--motion-reduced-fade)) var(--yorha-ease-in) both"
         },
-        "@keyframes yorha-route-in": {
+        "html[data-route-direction=\"back\"]::view-transition-old(.yorha-route-exit)": {
+          "animation": "yorha-route-out-back max(var(--motion-route-exit), var(--motion-reduced-fade)) var(--yorha-ease-in) both"
+        },
+        "::view-transition-group(.yorha-shared)": {
+          "animation-duration": "var(--motion-shared-element)",
+          "animation-timing-function": "var(--yorha-ease-emphasized)"
+        },
+        "::view-transition-old(.yorha-shared)": {
+          "animation-duration": "max(var(--motion-shared-element), var(--motion-reduced-fade))",
+          "animation-timing-function": "var(--yorha-ease-emphasized)"
+        },
+        "::view-transition-new(.yorha-shared)": {
+          "animation-duration": "max(var(--motion-shared-element), var(--motion-reduced-fade))",
+          "animation-timing-function": "var(--yorha-ease-emphasized)"
+        },
+        "::view-transition-new(.yorha-segment-enter.yorha-segment-forward)": {
+          "animation": "yorha-segment-in-forward max(var(--motion-tab-indicator), var(--motion-reduced-fade)) var(--yorha-ease-emphasized) both"
+        },
+        "::view-transition-old(.yorha-segment-exit.yorha-segment-forward)": {
+          "animation": "yorha-segment-out-forward max(var(--motion-tab-indicator), var(--motion-reduced-fade)) var(--yorha-ease-emphasized) both"
+        },
+        "::view-transition-new(.yorha-segment-enter.yorha-segment-back)": {
+          "animation": "yorha-segment-in-back max(var(--motion-tab-indicator), var(--motion-reduced-fade)) var(--yorha-ease-emphasized) both"
+        },
+        "::view-transition-old(.yorha-segment-exit.yorha-segment-back)": {
+          "animation": "yorha-segment-out-back max(var(--motion-tab-indicator), var(--motion-reduced-fade)) var(--yorha-ease-emphasized) both"
+        },
+        "@keyframes yorha-route-in-forward": {
           "from": {
             "opacity": "0",
-            "transform": "translateX(-0.5rem)"
+            "transform": "translateX(calc(calc(var(--motion-shift) * var(--motion-spatial)) * 1))"
           },
           "to": {
             "opacity": "1",
             "transform": "none"
           }
         },
-        "@keyframes yorha-route-out": {
+        "@keyframes yorha-route-out-forward": {
           "from": {
-            "opacity": "1"
+            "opacity": "1",
+            "transform": "none"
           },
           "to": {
-            "opacity": "0"
+            "opacity": "0",
+            "transform": "translateX(calc(calc(var(--motion-shift) * var(--motion-spatial)) * -1))"
+          }
+        },
+        "@keyframes yorha-route-in-back": {
+          "from": {
+            "opacity": "0",
+            "transform": "translateX(calc(calc(var(--motion-shift) * var(--motion-spatial)) * -1))"
+          },
+          "to": {
+            "opacity": "1",
+            "transform": "none"
+          }
+        },
+        "@keyframes yorha-route-out-back": {
+          "from": {
+            "opacity": "1",
+            "transform": "none"
+          },
+          "to": {
+            "opacity": "0",
+            "transform": "translateX(calc(calc(var(--motion-shift) * var(--motion-spatial)) * 1))"
+          }
+        },
+        "@keyframes yorha-route-in-replace": {
+          "from": {
+            "opacity": "0",
+            "transform": "none"
+          },
+          "to": {
+            "opacity": "1",
+            "transform": "none"
+          }
+        },
+        "@keyframes yorha-route-out-replace": {
+          "from": {
+            "opacity": "1",
+            "transform": "none"
+          },
+          "to": {
+            "opacity": "0",
+            "transform": "none"
+          }
+        },
+        "@keyframes yorha-segment-in-forward": {
+          "from": {
+            "opacity": "0",
+            "transform": "translateX(calc(calc(var(--motion-shift) * var(--motion-spatial)) * 1))"
+          },
+          "to": {
+            "opacity": "1",
+            "transform": "none"
+          }
+        },
+        "@keyframes yorha-segment-out-forward": {
+          "from": {
+            "opacity": "1",
+            "transform": "none"
+          },
+          "to": {
+            "opacity": "0",
+            "transform": "translateX(calc(calc(var(--motion-shift) * var(--motion-spatial)) * -1))"
+          }
+        },
+        "@keyframes yorha-segment-in-back": {
+          "from": {
+            "opacity": "0",
+            "transform": "translateX(calc(calc(var(--motion-shift) * var(--motion-spatial)) * -1))"
+          },
+          "to": {
+            "opacity": "1",
+            "transform": "none"
+          }
+        },
+        "@keyframes yorha-segment-out-back": {
+          "from": {
+            "opacity": "1",
+            "transform": "none"
+          },
+          "to": {
+            "opacity": "0",
+            "transform": "translateX(calc(calc(var(--motion-shift) * var(--motion-spatial)) * 1))"
           }
         }
       },
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Needs React 19.3+ (stable ViewTransition) and navigation inside a transition (RouterProvider does this). Replaces react-router's deprecated viewTransition APIs; never calls document.startViewTransition."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Needs React 19.3+ (stable ViewTransition) and navigation inside a transition (RouterProvider does this). Durations and easings come from the motion tokens. Replaces react-router's deprecated viewTransition props; never calls document.startViewTransition (it is only feature-detected)."
     }
   ]
 }
