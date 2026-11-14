@@ -53,7 +53,7 @@ const centerOf = (el: Element, svg: Element) => {
   const r = el.getBoundingClientRect();
   return r.left + r.width / 2 - svg.getBoundingClientRect().left;
 };
-const itemEl = (c: HTMLElement, title: string) => c.getByRole("button", { name: new RegExp(title) });
+const itemEl = (c: ReturnType<typeof within>, title: string) => c.getByRole("button", { name: new RegExp(title) });
 
 const withMotion = async (mode: string, run: () => Promise<void>) => {
   const root = document.documentElement;
