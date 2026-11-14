@@ -1,33 +1,51 @@
-import type { ComponentProps } from "react";
+import { createContext, useContext, type ComponentProps, type ReactNode } from "react";
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { buttonVariants } from "@/components/ui/button";
+import { TriangleIcon } from "@/components/ui/icons";
 import { cn, cnState } from "@/lib/utils";
 
 /** Root: re-export of the Base UI Menu root (open, onOpenChange, modal, ...). */
 const Menu = MenuPrimitive.Root;
 /** Groups items so a label can name them. */
 const MenuGroup = MenuPrimitive.Group;
-/** Root of a nested menu; place it inside MenuContent next to a MenuSubTrigger. */
-const MenuSub = MenuPrimitive.SubmenuRoot;
+// Content rendered inside a MenuSub is a submenu: it opens beside its trigger row, not below it (FSEL-01).
+const SubContext = createContext(false);
+
+/** True inside a MenuSub: wrappers (Menubar) use it to keep the submenu defaults. */
+const useMenuIsSub = () => useContext(SubContext);
+
+/** Root of a nested menu; place it inside MenuContent next to a MenuSubTrigger. Its content opens to the side. */
+function MenuSub(props: ComponentProps<typeof MenuPrimitive.SubmenuRoot>) {
+  return (
+    <SubContext.Provider value>
+      <MenuPrimitive.SubmenuRoot {...props} />
+    </SubContext.Provider>
+  );
+}
 /** Radio items share a value through this group. */
 const MenuRadioGroup = MenuPrimitive.RadioGroup;
 
-// Selected row: dark fill wipes in left to right (--motion-select), text inverts,
-// thin rules above and below (--menu-rule, 0 turns them off), arrow cursor at the left edge.
+// One row recipe (`yorha-row`, G8): 4px block padding on the row token, full-bleed ink fill that wipes in over 90ms and
+// drops at once, no ring (the fill is the focus indicator), `Highlight` outline under forced colours.
+// Anatomy: cursor gutter, indicator slot (only in popups that hold check/radio rows), label, trailing shortcut/chevron.
 const ROW =
-  "group/row relative flex min-h-8 cursor-default select-none items-center gap-3 py-1.5 pr-3 pl-9 outline-none focus-visible:yorha-focus " +
-  "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg " +
-  "bg-linear-to-r from-yorha-ink to-yorha-ink bg-no-repeat bg-[position:left_center] bg-[length:0%_100%] " +
-  "yorha-wipe " +
-  "data-[highlighted]:bg-[length:100%_100%] data-[highlighted]:text-yorha-on-ink " +
-  "data-[highlighted]:shadow-[0_calc(var(--menu-rule)*-1)_0_0_var(--yorha-ink),0_var(--menu-rule)_0_0_var(--yorha-ink)] " +
-  "data-[highlighted]:z-1 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-60 " +
-  // arrow cursor (CSS triangle), only on the selected row
-  "after:absolute after:top-1/2 after:left-2 after:size-0 after:-translate-y-1/2 after:border-y-[5px] after:border-l-[7px] " +
-  "after:border-y-transparent after:border-l-current after:opacity-0 data-[highlighted]:after:opacity-100";
+  "group/row yorha-row cursor-default font-yorha text-yorha-sm tracking-yorha-body " +
+  "data-[popup-open]:bg-[length:100%_100%] data-[popup-open]:text-yorha-on-ink";
 
-// Square bullet in currentColor: inverts with the row because the row text colour inverts.
-const BULLET = "before:absolute before:top-1/2 before:left-5 before:size-1.5 before:-translate-y-1/2 before:bg-current";
+/** Cursor + indicator slot + label wrapper shared by every row. */
+function RowBody({ indicator, children }: { indicator?: ReactNode; children?: ReactNode }) {
+  return (
+    <>
+      <TriangleIcon data-slot="row-cursor" className="size-icon-sm opacity-0 group-data-[highlighted]/row:opacity-100 group-data-[popup-open]/row:opacity-100" />
+      <span data-slot="row-indicator" className="grid size-indicator shrink-0 place-items-center">
+        {indicator}
+      </span>
+      <span data-slot="row-label" className="flex min-w-0 flex-1 items-center">
+        {children}
+      </span>
+    </>
+  );
+}
 
 type TriggerProps = ComponentProps<typeof MenuPrimitive.Trigger>;
 
@@ -52,21 +70,26 @@ type ContentProps = ComponentProps<typeof MenuPrimitive.Popup> &
   };
 
 const POPUP =
-  "min-w-48 border border-yorha-border bg-yorha-panel py-1 text-yorha-fg shadow-yorha-md rounded-yorha outline-none " +
+  "min-w-56 border border-yorha-border bg-yorha-panel py-1 text-yorha-fg shadow-yorha-md rounded-yorha outline-none " +
   "yorha-pop";
 
 /** Popup in a portal. Arrows move the selected row, Enter activates, Escape closes and returns focus to the trigger. */
 function MenuContent({
   className,
-  side = "bottom",
+  side: sideProp,
   align = "start",
-  sideOffset = 6,
-  alignOffset,
+  sideOffset: sideOffsetProp,
+  alignOffset: alignOffsetProp,
   collisionPadding = 8,
   container,
   backdrop = false,
   ...props
 }: ContentProps) {
+  // Nested content (inside MenuSub) opens beside its trigger: first row lines up with the trigger row (-4 = popup padding).
+  const nested = useContext(SubContext);
+  const side = sideProp ?? (nested ? "inline-end" : "bottom");
+  const sideOffset = sideOffsetProp ?? (nested ? -1 : 8);
+  const alignOffset = alignOffsetProp ?? (nested ? -4 : undefined);
   return (
     <MenuPrimitive.Portal container={container}>
       {backdrop ? <MenuBackdrop /> : null}
@@ -113,6 +136,15 @@ function MenuBackdrop({ className, ...props }: ComponentProps<typeof MenuPrimiti
   );
 }
 
+/** Content of a submenu. Same as MenuContent inside a MenuSub (which already opens to the side); explicit for clarity. */
+function MenuSubContent(props: ContentProps) {
+  return (
+    <SubContext.Provider value>
+      <MenuContent {...props} />
+    </SubContext.Provider>
+  );
+}
+
 /** Wrap the content of a menu with several triggers (one handle) so it cross-fades between them. */
 function MenuViewport({ className, ...props }: ComponentProps<typeof MenuPrimitive.Viewport>) {
   return (
@@ -137,7 +169,7 @@ function MenuInput({ className, ...props }: ComponentProps<typeof MenuPrimitive.
     <MenuPrimitive.Input
       data-slot="menu-input"
       className={cnState(
-        "mx-1 mb-1 block h-8 w-[calc(100%-0.5rem)] rounded-yorha border border-yorha-border bg-yorha-bg px-2 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg placeholder:text-yorha-fg-soft focus-visible:yorha-focus",
+        "mx-1 mb-1 block h-control-sm w-[calc(100%-0.5rem)] rounded-yorha border border-yorha-border bg-yorha-bg px-2 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg placeholder:text-yorha-fg-soft focus-visible:yorha-focus",
         className,
       )}
       {...props}
@@ -151,7 +183,7 @@ function MenuClear({ className, ...props }: ComponentProps<typeof MenuPrimitive.
     <MenuPrimitive.Clear
       data-slot="menu-clear"
       className={cnState(
-        "mx-1 mb-1 min-h-6 cursor-pointer rounded-yorha border border-yorha-border px-2 font-yorha text-yorha-xs tracking-yorha-body text-yorha-fg hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus",
+        "mx-1 mb-1 h-control-sm cursor-pointer rounded-yorha border border-yorha-border px-2 font-yorha text-yorha-xs tracking-yorha-body text-yorha-fg hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus",
         className,
       )}
       {...props}
@@ -164,7 +196,7 @@ function MenuEmpty({ className, ...props }: ComponentProps<typeof MenuPrimitive.
   return (
     <MenuPrimitive.Empty
       data-slot="menu-empty"
-      className={cnState("px-3 py-2 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg-soft empty:hidden", className)}
+      className={cnState("px-3 py-3 text-center font-yorha text-yorha-sm tracking-yorha-body text-pretty text-yorha-fg-soft empty:hidden", className)}
       {...props}
     />
   );
@@ -176,40 +208,49 @@ function MenuList({ className, ...props }: ComponentProps<typeof MenuPrimitive.L
 }
 
 /** Row that navigates: renders an `<a>`. Same selected-row look as MenuItem. */
-function MenuLinkItem({ className, ...props }: ComponentProps<typeof MenuPrimitive.LinkItem>) {
-  return <MenuPrimitive.LinkItem data-slot="menu-link-item" className={cnState([ROW, BULLET], className)} {...props} />;
+function MenuLinkItem({ className, children, ...props }: ComponentProps<typeof MenuPrimitive.LinkItem>) {
+  return (
+    <MenuPrimitive.LinkItem data-slot="menu-link-item" className={cnState(ROW, className)} {...props}>
+      <RowBody>{children}</RowBody>
+    </MenuPrimitive.LinkItem>
+  );
 }
 
-/** Plain action row. */
-function MenuItem({ className, ...props }: ComponentProps<typeof MenuPrimitive.Item>) {
-  return <MenuPrimitive.Item data-slot="menu-item" className={cnState([ROW, BULLET], className)} {...props} />;
+/** Plain action row. No bullet: only check and radio rows carry an indicator. */
+function MenuItem({ className, children, ...props }: ComponentProps<typeof MenuPrimitive.Item>) {
+  return (
+    <MenuPrimitive.Item data-slot="menu-item" className={cnState(ROW, className)} {...props}>
+      <RowBody>{children}</RowBody>
+    </MenuPrimitive.Item>
+  );
 }
 
 /** Row that opens a submenu. ArrowRight opens, ArrowLeft or Escape closes. */
 function MenuSubTrigger({ className, children, ...props }: ComponentProps<typeof MenuPrimitive.SubmenuTrigger>) {
   return (
-    <MenuPrimitive.SubmenuTrigger
-      data-slot="menu-sub-trigger"
-      className={cnState([ROW, BULLET, "data-[popup-open]:bg-[length:100%_100%] data-[popup-open]:text-yorha-on-ink"], className)}
-      {...props}
-    >
-      {children}
-      <span aria-hidden="true" className="ml-auto border-y-[4px] border-l-[5px] border-y-transparent border-l-current" />
+    <MenuPrimitive.SubmenuTrigger data-slot="menu-sub-trigger" className={cnState(ROW, className)} {...props}>
+      <RowBody>{children}</RowBody>
+      <TriangleIcon data-slot="row-chevron" className="size-icon-sm" />
     </MenuPrimitive.SubmenuTrigger>
   );
 }
 
-// Boxes in the bullet slot: square (checkbox) vs diamond (radio), so the kind is not colour-only.
-const BOX = "absolute top-1/2 left-5 flex size-2.5 -translate-y-1/2 items-center justify-center border border-current";
+// Boxes in the indicator slot: square (checkbox) vs diamond (radio), so the kind is not colour-only.
+const BOX = "grid size-2.5 place-items-center border border-current";
 
 /** Toggle row (role menuitemcheckbox). Stays open after toggling by default. */
 function MenuCheckboxItem({ className, children, ...props }: ComponentProps<typeof MenuPrimitive.CheckboxItem>) {
   return (
     <MenuPrimitive.CheckboxItem data-slot="menu-checkbox-item" className={cnState(ROW, className)} {...props}>
-      <span aria-hidden="true" className={BOX}>
-        <MenuPrimitive.CheckboxItemIndicator keepMounted className="size-1.5 bg-current data-[unchecked]:hidden" />
-      </span>
-      {children}
+      <RowBody
+        indicator={
+          <span aria-hidden="true" className={BOX}>
+            <MenuPrimitive.CheckboxItemIndicator keepMounted className="size-1.5 bg-current data-[unchecked]:hidden" />
+          </span>
+        }
+      >
+        {children}
+      </RowBody>
     </MenuPrimitive.CheckboxItem>
   );
 }
@@ -218,10 +259,15 @@ function MenuCheckboxItem({ className, children, ...props }: ComponentProps<type
 function MenuRadioItem({ className, children, ...props }: ComponentProps<typeof MenuPrimitive.RadioItem>) {
   return (
     <MenuPrimitive.RadioItem data-slot="menu-radio-item" className={cnState(ROW, className)} {...props}>
-      <span aria-hidden="true" className={cn(BOX, "rotate-45")}>
-        <MenuPrimitive.RadioItemIndicator keepMounted className="size-1 bg-current data-[unchecked]:hidden" />
-      </span>
-      {children}
+      <RowBody
+        indicator={
+          <span aria-hidden="true" className={cn(BOX, "rotate-45")}>
+            <MenuPrimitive.RadioItemIndicator keepMounted className="size-1 bg-current data-[unchecked]:hidden" />
+          </span>
+        }
+      >
+        {children}
+      </RowBody>
     </MenuPrimitive.RadioItem>
   );
 }
@@ -231,7 +277,7 @@ function MenuLabel({ className, ...props }: ComponentProps<typeof MenuPrimitive.
   return (
     <MenuPrimitive.GroupLabel
       data-slot="menu-label"
-      className={cnState("px-3 py-1.5 font-yorha-bold text-yorha-xs tracking-yorha-heading text-yorha-fg-soft uppercase", className)}
+      className={cnState("px-2 py-1.5 font-yorha-bold text-yorha-xs tracking-yorha-heading text-yorha-fg-soft uppercase", className)}
       {...props}
     />
   );
@@ -253,7 +299,7 @@ function MenuShortcut({ className, ...props }: ComponentProps<"span">) {
   return (
     <span
       data-slot="menu-shortcut"
-      className={cn("ml-auto pl-6 font-yorha-mono text-yorha-xs tracking-yorha-wide text-current opacity-80", className)}
+      className={cn("ml-auto pl-6 font-yorha-mono text-yorha-xs tracking-yorha-wide text-current yorha-tabular opacity-80", className)}
       {...props}
     />
   );
@@ -267,6 +313,7 @@ export {
   MenuSeparator,
   MenuSub,
   MenuSubTrigger,
+  MenuSubContent,
   MenuCheckboxItem,
   MenuRadioGroup,
   MenuRadioItem,
@@ -283,5 +330,6 @@ export {
   MenuList,
   MenuLinkItem,
   createMenuHandle,
+  useMenuIsSub,
 };
 export type { MenuHandle };

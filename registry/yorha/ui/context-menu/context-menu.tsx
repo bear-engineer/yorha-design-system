@@ -1,5 +1,6 @@
-import type { ComponentProps } from "react";
+import { createContext, useContext, type ComponentProps, type ReactNode } from "react";
 import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu";
+import { TriangleIcon } from "@/components/ui/icons";
 import { cn, cnState } from "@/lib/utils";
 
 /**
@@ -8,19 +9,14 @@ import { cn, cnState } from "@/lib/utils";
  */
 export const contextMenuStyles = {
   popup:
-    "yorha-pop min-w-48 rounded-yorha border border-yorha-border bg-yorha-panel py-1 text-yorha-fg shadow-yorha-md outline-none",
-  // Selected row: dark fill, inverted text, arrow cursor at the left edge, square bullet in currentColor.
+    "yorha-pop min-w-56 rounded-yorha border border-yorha-border bg-yorha-panel py-1 text-yorha-fg shadow-yorha-md outline-none",
+  // One row recipe (`yorha-row`, G8): ink fill wipes in, no ring, no rules outside the box.
   item:
-    "relative flex min-h-8 cursor-default select-none items-center gap-3 py-1.5 pr-3 pl-9 outline-none focus-visible:yorha-focus " +
-    "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg " +
-    "data-[highlighted]:bg-yorha-ink data-[highlighted]:text-yorha-on-ink " +
-    "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-60 " +
-    "before:absolute before:top-1/2 before:left-5 before:size-1.5 before:-translate-y-1/2 before:bg-current " +
-    "after:absolute after:top-1/2 after:left-2 after:size-0 after:-translate-y-1/2 after:border-y-[5px] after:border-l-[7px] " +
-    "after:border-y-transparent after:border-l-current after:opacity-0 data-[highlighted]:after:opacity-100",
-  // box in the bullet slot: square (checkbox) vs diamond (radio) so the kind is not colour-only
-  box: "absolute top-1/2 left-5 flex size-2.5 -translate-y-1/2 items-center justify-center border border-current",
-  label: "px-3 py-1.5 font-yorha-bold text-yorha-xs tracking-yorha-heading text-yorha-fg-soft uppercase",
+    "group/row yorha-row cursor-default font-yorha text-yorha-sm tracking-yorha-body " +
+    "data-[popup-open]:bg-[length:100%_100%] data-[popup-open]:text-yorha-on-ink",
+  // box in the indicator slot: square (checkbox) vs diamond (radio) so the kind is not colour-only
+  box: "grid size-2.5 place-items-center border border-current",
+  label: "px-2 py-1.5 font-yorha-bold text-yorha-xs tracking-yorha-heading text-yorha-fg-soft uppercase",
   separator: "my-1 h-px bg-yorha-separator",
   arrow:
     "size-2.5 rotate-45 border-yorha-border bg-yorha-panel " +
@@ -30,12 +26,36 @@ export const contextMenuStyles = {
     "data-[side=right]:left-[-6px] data-[side=right]:border-b data-[side=right]:border-l",
 };
 
+/** Cursor gutter, indicator slot (hidden unless the popup holds check/radio rows) and label. */
+function RowBody({ indicator, children }: { indicator?: ReactNode; children?: ReactNode }) {
+  return (
+    <>
+      <TriangleIcon data-slot="row-cursor" className="size-icon-sm opacity-0 group-data-[highlighted]/row:opacity-100 group-data-[popup-open]/row:opacity-100" />
+      <span data-slot="row-indicator" className="grid size-indicator shrink-0 place-items-center">
+        {indicator}
+      </span>
+      <span data-slot="row-label" className="flex min-w-0 flex-1 items-center">
+        {children}
+      </span>
+    </>
+  );
+}
+
+// Content rendered inside a ContextMenuSub opens beside its trigger row, not below it (FSEL-01).
+const SubContext = createContext(false);
+
 /** Root: Base UI ContextMenu root (open, onOpenChange, ...). */
 const ContextMenu = ContextMenuPrimitive.Root;
 /** Groups items so a label can name them. */
 const ContextMenuGroup = ContextMenuPrimitive.Group;
 /** Root of a nested menu; place it inside ContextMenuContent next to a ContextMenuSubTrigger. */
-const ContextMenuSub = ContextMenuPrimitive.SubmenuRoot;
+function ContextMenuSub(props: ComponentProps<typeof ContextMenuPrimitive.SubmenuRoot>) {
+  return (
+    <SubContext.Provider value>
+      <ContextMenuPrimitive.SubmenuRoot {...props} />
+    </SubContext.Provider>
+  );
+}
 /** Radio items share a value through this group. */
 const ContextMenuRadioGroup = ContextMenuPrimitive.RadioGroup;
 
@@ -88,16 +108,20 @@ type ContentProps = ComponentProps<typeof ContextMenuPrimitive.Popup> &
 function ContextMenuContent({
   className,
   children,
-  side = "bottom",
+  side: sideProp,
   align = "start",
-  sideOffset = 6,
-  alignOffset,
+  sideOffset: sideOffsetProp,
+  alignOffset: alignOffsetProp,
   collisionPadding = 8,
   arrow = false,
   backdrop = false,
   container,
   ...props
 }: ContentProps) {
+  const nested = useContext(SubContext);
+  const side = sideProp ?? (nested ? "inline-end" : "bottom");
+  const sideOffset = sideOffsetProp ?? (nested ? -1 : 8);
+  const alignOffset = alignOffsetProp ?? (nested ? -4 : undefined);
   return (
     <ContextMenuPrimitive.Portal container={container}>
       {backdrop && <ContextMenuPrimitive.Backdrop className="fixed inset-0 z-(--yorha-z-popover)" />}
@@ -118,26 +142,30 @@ function ContextMenuContent({
   );
 }
 
-/** Plain action row. */
-function ContextMenuItem({ className, ...props }: ComponentProps<typeof ContextMenuPrimitive.Item>) {
-  return <ContextMenuPrimitive.Item data-slot="context-menu-item" className={cnState(contextMenuStyles.item, className)} {...props} />;
+/** Plain action row. No bullet: only check and radio rows carry an indicator. */
+function ContextMenuItem({ className, children, ...props }: ComponentProps<typeof ContextMenuPrimitive.Item>) {
+  return (
+    <ContextMenuPrimitive.Item data-slot="context-menu-item" className={cnState(contextMenuStyles.item, className)} {...props}>
+      <RowBody>{children}</RowBody>
+    </ContextMenuPrimitive.Item>
+  );
 }
 
 /** Row that navigates (renders an `<a>`). */
-function ContextMenuLinkItem({ className, ...props }: ComponentProps<typeof ContextMenuPrimitive.LinkItem>) {
-  return <ContextMenuPrimitive.LinkItem data-slot="context-menu-link-item" className={cnState(contextMenuStyles.item, className)} {...props} />;
+function ContextMenuLinkItem({ className, children, ...props }: ComponentProps<typeof ContextMenuPrimitive.LinkItem>) {
+  return (
+    <ContextMenuPrimitive.LinkItem data-slot="context-menu-link-item" className={cnState(contextMenuStyles.item, className)} {...props}>
+      <RowBody>{children}</RowBody>
+    </ContextMenuPrimitive.LinkItem>
+  );
 }
 
 /** Row that opens a submenu. ArrowRight opens, ArrowLeft or Escape closes. */
 function ContextMenuSubTrigger({ className, children, ...props }: ComponentProps<typeof ContextMenuPrimitive.SubmenuTrigger>) {
   return (
-    <ContextMenuPrimitive.SubmenuTrigger
-      data-slot="context-menu-sub-trigger"
-      className={cnState([contextMenuStyles.item, "data-[popup-open]:bg-yorha-ink data-[popup-open]:text-yorha-on-ink"], className)}
-      {...props}
-    >
-      {children}
-      <span aria-hidden="true" className="ml-auto border-y-[4px] border-l-[5px] border-y-transparent border-l-current" />
+    <ContextMenuPrimitive.SubmenuTrigger data-slot="context-menu-sub-trigger" className={cnState(contextMenuStyles.item, className)} {...props}>
+      <RowBody>{children}</RowBody>
+      <TriangleIcon data-slot="row-chevron" className="size-icon-sm" />
     </ContextMenuPrimitive.SubmenuTrigger>
   );
 }
@@ -146,10 +174,15 @@ function ContextMenuSubTrigger({ className, children, ...props }: ComponentProps
 function ContextMenuCheckboxItem({ className, children, ...props }: ComponentProps<typeof ContextMenuPrimitive.CheckboxItem>) {
   return (
     <ContextMenuPrimitive.CheckboxItem data-slot="context-menu-checkbox-item" className={cnState(contextMenuStyles.item, className)} {...props}>
-      <span aria-hidden="true" className={contextMenuStyles.box}>
-        <ContextMenuPrimitive.CheckboxItemIndicator keepMounted className="size-1.5 bg-current data-[unchecked]:hidden" />
-      </span>
-      {children}
+      <RowBody
+        indicator={
+          <span aria-hidden="true" className={contextMenuStyles.box}>
+            <ContextMenuPrimitive.CheckboxItemIndicator keepMounted className="size-1.5 bg-current data-[unchecked]:hidden" />
+          </span>
+        }
+      >
+        {children}
+      </RowBody>
     </ContextMenuPrimitive.CheckboxItem>
   );
 }
@@ -158,10 +191,15 @@ function ContextMenuCheckboxItem({ className, children, ...props }: ComponentPro
 function ContextMenuRadioItem({ className, children, ...props }: ComponentProps<typeof ContextMenuPrimitive.RadioItem>) {
   return (
     <ContextMenuPrimitive.RadioItem data-slot="context-menu-radio-item" className={cnState(contextMenuStyles.item, className)} {...props}>
-      <span aria-hidden="true" className={cn(contextMenuStyles.box, "rotate-45")}>
-        <ContextMenuPrimitive.RadioItemIndicator keepMounted className="size-1 bg-current data-[unchecked]:hidden" />
-      </span>
-      {children}
+      <RowBody
+        indicator={
+          <span aria-hidden="true" className={cn(contextMenuStyles.box, "rotate-45")}>
+            <ContextMenuPrimitive.RadioItemIndicator keepMounted className="size-1 bg-current data-[unchecked]:hidden" />
+          </span>
+        }
+      >
+        {children}
+      </RowBody>
     </ContextMenuPrimitive.RadioItem>
   );
 }
@@ -181,7 +219,7 @@ function ContextMenuShortcut({ className, ...props }: ComponentProps<"span">) {
   return (
     <span
       data-slot="context-menu-shortcut"
-      className={cn("ml-auto pl-6 font-yorha-mono text-yorha-xs tracking-yorha-wide text-current", className)}
+      className={cn("ml-auto pl-6 font-yorha-mono text-yorha-xs tracking-yorha-wide text-current yorha-tabular", className)}
       {...props}
     />
   );

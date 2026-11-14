@@ -13,6 +13,7 @@ import {
   MenuShortcut,
   MenuSub,
   MenuSubTrigger,
+  useMenuIsSub,
 } from "@/components/ui/menu";
 import { cnState } from "@/lib/utils";
 
@@ -43,11 +44,11 @@ function MenubarTrigger({ className, ...props }: ComponentProps<typeof MenuPrimi
       data-slot="menubar-trigger"
       className={cnState(
         [
-          "inline-flex h-8 cursor-default select-none items-center px-3 text-yorha-sm tracking-yorha-wide text-yorha-fg",
+          "inline-flex h-control-sm cursor-default select-none items-center px-pad-sm text-yorha-sm tracking-yorha-wide text-yorha-fg",
           "bg-linear-to-r from-yorha-ink to-yorha-ink bg-no-repeat bg-[position:left_center] bg-[length:0%_100%]",
           "yorha-wipe",
           "hover:bg-[length:100%_100%] hover:text-yorha-on-ink data-[popup-open]:bg-[length:100%_100%] data-[popup-open]:text-yorha-on-ink",
-          "focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:opacity-60",
+          "focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-disabled",
         ],
         className,
       )}
@@ -56,9 +57,13 @@ function MenubarTrigger({ className, ...props }: ComponentProps<typeof MenuPrimi
   );
 }
 
-/** Popup under its trigger; same rows as Menu. */
-function MenubarContent({ sideOffset = 4, ...props }: ComponentProps<typeof MenuContent>) {
-  return <MenuContent sideOffset={sideOffset} {...props} />;
+// The gap is measured from the bar, not from the trigger: bar padding (4) + border (1) + 8 = 13 from the trigger's bottom.
+const BAR_GAP = 13;
+
+/** Popup 8px under the bar; same rows as Menu. Submenus inside it open to the side like Menu's. */
+function MenubarContent({ sideOffset, ...props }: ComponentProps<typeof MenuContent>) {
+  const nested = useMenuIsSub();
+  return <MenuContent sideOffset={sideOffset ?? (nested ? undefined : BAR_GAP)} {...props} />;
 }
 
 export {
