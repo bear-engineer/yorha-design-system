@@ -1,4 +1,28 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "yorha-demo",
+      "type": "registry:block",
+      "title": "YorhaDemo settings page",
+      "description": "Route page for a settings screen: AppShell frame, PageHeader, SystemMenuLayout with a TextField and a reset Dialog. Copy the page to app/routes/yorha-demo.tsx in a react-router app and install the listed items first.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/app-shell",
+        "@yorha/page-header",
+        "@yorha/system-menu-layout",
+        "@yorha/text-field",
+        "@yorha/button",
+        "@yorha/dialog"
+      ],
+      "files": [
+        {
+          "path": "yorha-demo.tsx",
+          "type": "registry:page",
+          "target": "app/routes/yorha-demo.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+    }
+  ]
 }
