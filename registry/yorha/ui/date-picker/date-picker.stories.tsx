@@ -11,6 +11,7 @@ const THEME_LABEL: Record<(typeof THEMES)[number], string> = { light: "라이트
 const TODAY = new Date(2026, 10, 14);
 
 const cellOf = (key: string) => document.querySelector<HTMLElement>(`[data-slot=calendar-day][data-date="${key}"]`)!;
+const tdOf = (key: string) => cellOf(key).closest("td")!;
 const activeKey = () => (document.activeElement as HTMLElement | null)?.dataset.date;
 const ymd = (d: Date | null | undefined) => (d ? [d.getFullYear(), d.getMonth() + 1, d.getDate()] : null);
 const popup = () => screen.queryByRole("dialog");
@@ -150,7 +151,7 @@ export const PickerOpensAndFocusReturns: Story = {
     // reopen: the selected day is the focus target and selected
     await userEvent.click(trigger);
     await waitFor(() => expect(activeKey()).toBe("2026-11-20"));
-    await expect(cellOf("2026-11-20")).toHaveAttribute("aria-selected", "true");
+    await expect(tdOf("2026-11-20")).toHaveAttribute("aria-selected", "true");
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(popup()).toBeNull());
   },
@@ -189,43 +190,73 @@ export const Range: StoryObj<typeof DateRangePicker> = {
   args: { label: "체류 기간", today: TODAY, onValueChange: fn() },
   play: async ({ canvasElement, args }) => {
     const c = within(canvasElement);
-    const input = c.getByRole("textbox", { name: "체류 기간" });
+    const start = c.getByRole("textbox", { name: "시작일" });
+    const end = c.getByRole("textbox", { name: "종료일" });
     const trigger = c.getByRole("button", { name: "달력 열기" });
     await userEvent.click(trigger);
     await screen.findByRole("grid", { name: "2026년 11월" });
     await userEvent.click(cellOf("2026-11-10"));
-    // still open after the first click
+    // still open after the first click, nothing committed yet, and the hint says what is next
     await expect(popup()).not.toBeNull();
+    await expect(start).toHaveValue("");
+    await expect(screen.getByText("종료일 선택")).toBeInTheDocument();
+    // hovering a later day previews the span
+    await userEvent.hover(cellOf("2026-11-13"));
+    await expect(document.querySelectorAll("td[data-preview]")).toHaveLength(3);
     await userEvent.click(cellOf("2026-11-15"));
     await waitFor(() => expect(popup()).toBeNull());
-    await expect(input).toHaveValue("2026. 11. 10. – 2026. 11. 15.");
+    await expect(start).toHaveValue("2026. 11. 10.");
+    await expect(end).toHaveValue("2026. 11. 15.");
     await expect(trigger).toHaveFocus();
     const last = (args.onValueChange as ReturnType<typeof fn>).mock.calls.at(-1)![0] as { from: Date; to: Date };
     await expect([ymd(last.from), ymd(last.to)]).toEqual([[2026, 11, 10], [2026, 11, 15]]);
-    // typed range, either order, with ~ or hyphen
-    await userEvent.clear(input);
-    await userEvent.type(input, "2026-11-25 ~ 2026-11-20");
+    // typed ends parse on their own
+    await userEvent.clear(start);
+    await userEvent.type(start, "20261120");
+    await expect(start).toHaveValue("2026. 11. 20.");
+    await userEvent.clear(end);
+    await userEvent.type(end, "2026-11-25");
     await userEvent.tab();
-    await waitFor(() => expect(input).toHaveValue("2026. 11. 20. – 2026. 11. 25."));
+    await waitFor(() => expect(end).toHaveValue("2026. 11. 25."));
     // reopening shows the range
     await userEvent.click(trigger);
     await screen.findByRole("grid", { name: "2026년 11월" });
-    await expect(cellOf("2026-11-22")).toHaveAttribute("data-in-range");
+    await expect(tdOf("2026-11-22")).toHaveAttribute("data-in-range");
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(popup()).toBeNull());
   },
 };
 
-export const RangeInvalidText: StoryObj<typeof DateRangePicker> = {
+/** Escape with a pending start closes the popup and keeps the committed range. */
+export const RangeEscapeRestores: StoryObj<typeof DateRangePicker> = {
   render: (args) => <DateRangePicker {...args} />,
-  args: { label: "체류 기간", today: TODAY },
+  args: { label: "체류 기간", today: TODAY, defaultValue: { from: new Date(2026, 10, 3), to: new Date(2026, 10, 5) } },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
-    const input = c.getByRole("textbox", { name: "체류 기간" });
-    await userEvent.type(input, "2026. 11. 10.");
+    await userEvent.click(c.getByRole("button", { name: "달력 열기" }));
+    await screen.findByRole("grid", { name: "2026년 11월" });
+    await userEvent.click(cellOf("2026-11-20"));
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(popup()).toBeNull());
+    await expect(c.getByRole("textbox", { name: "시작일" })).toHaveValue("2026. 11. 03.");
+    await expect(c.getByRole("textbox", { name: "종료일" })).toHaveValue("2026. 11. 05.");
+  },
+};
+
+export const RangeInvalidText: StoryObj<typeof DateRangePicker> = {
+  render: (args) => <DateRangePicker {...args} />,
+  args: { label: "체류 기간", today: TODAY, defaultValue: { from: new Date(2026, 10, 14), to: new Date(2026, 10, 25) } },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const end = c.getByRole("textbox", { name: "종료일" });
+    await userEvent.clear(end);
+    await userEvent.type(end, "2026. 11. 10.");
     await userEvent.tab();
-    await waitFor(() => expect(c.getByRole("alert")).toBeInTheDocument());
-    await expect(input).toHaveAttribute("aria-invalid", "true");
+    await waitFor(() => expect(c.getByRole("alert")).toHaveTextContent("종료일이 시작일보다 빠릅니다"));
+    await expect(end).toHaveAttribute("aria-invalid", "true");
+    // the first edit clears the error
+    await userEvent.type(end, "1");
+    await waitFor(() => expect(c.queryByRole("alert")).toBeNull());
   },
 };
 
@@ -237,7 +268,7 @@ export const ReducedMotion: Story = {
       await waitFor(() => expect(getComputedStyle(dialog).transitionProperty).not.toBe("none"));
       await expect(Math.max(...durationsMs(dialog))).toBeLessThanOrEqual(120);
       await expect(getComputedStyle(dialog).transitionProperty).toContain("opacity");
-      const body = dialog.querySelector("[data-slot=calendar-month-body]")!;
+      const body = dialog.querySelector("[data-slot=calendar-months]")!;
       await expect(Math.max(...durationsMs(body))).toBeLessThanOrEqual(120);
       await userEvent.keyboard("{Escape}");
       await waitFor(() => expect(popup()).toBeNull());

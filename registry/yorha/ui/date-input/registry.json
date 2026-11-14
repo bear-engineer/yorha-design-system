@@ -11,7 +11,9 @@
         "@yorha/utils",
         "@yorha/field",
         "@yorha/popover",
-        "@yorha/calendar"
+        "@yorha/calendar",
+        "@yorha/icons",
+        "@yorha/input-group"
       ],
       "files": [
         {
@@ -20,7 +22,10 @@
           "target": "@ui/date-input.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Pick the control with `type` (date, datetime-local, month, week, time); values use the native formats. `picker` adds a calendar button for type=date only; Escape or picking a day closes the popup and returns focus to the button. min and max also disable days in the calendar. Set lang on the wrapper for CJK leading."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Pick the control with `type` (date, datetime-local, month, week, time); values use the native formats. `picker` adds a calendar button for type=date only; Escape or picking a day closes the popup and returns focus to the button. min and max also disable days in the calendar. Set lang on the wrapper for CJK leading. v3 BREAKING: the input and an end button share one InputGroup frame; the native picker indicator is hidden for every type and the end button shows CalendarIcon (ClockIcon for type=time) and calls showPicker(); with `picker` and type=date it opens the kit Calendar anchored below the field. The button now exists for every type (name `달력 열기`, `시간 선택` for time; pickerLabel overrides). The native control's segment order and month/weekday words follow the browser UI locale, not `lang`: use DatePicker when the text must be Korean.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ]
     }
   ]
 }

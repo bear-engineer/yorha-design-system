@@ -126,7 +126,9 @@ export const Picker: Story = {
 export const PickerOnlyForDate: Story = {
   render: () => <DateInput type="time" label="시각" picker />,
   play: async ({ canvasElement }) => {
+    // a time input has no kit calendar: its end button opens the native picker
     await expect(within(canvasElement).queryByRole("button", { name: "달력 열기" })).toBeNull();
+    await expect(within(canvasElement).getByRole("button", { name: "시간 선택" })).toBeInTheDocument();
   },
 };
 
@@ -143,7 +145,7 @@ export const InvalidAndDisabled: Story = {
     await expect(bad).toHaveAttribute("aria-invalid", "true");
     await expect(bad).toHaveAccessibleDescription(expect.stringContaining("날짜를 선택하세요"));
     await expect(c.getByLabelText("잠긴 날짜")).toBeDisabled();
-    await expect(c.getByRole("button", { name: "달력 열기" })).toBeDisabled();
+    await expect(c.getAllByRole("button", { name: "달력 열기" }).at(-1)).toBeDisabled();
   },
 };
 

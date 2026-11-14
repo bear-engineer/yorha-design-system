@@ -11,7 +11,9 @@
         "@yorha/base",
         "@yorha/popover",
         "@yorha/field",
-        "@yorha/calendar"
+        "@yorha/calendar",
+        "@yorha/icons",
+        "@yorha/input-group"
       ],
       "files": [
         {
@@ -20,7 +22,10 @@
           "target": "@ui/date-picker.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Text input in the locale format (default ko-KR, e.g. 2026. 11. 14.) plus a trigger button that opens the Calendar in the yorha Popover. Typed text is parsed on blur or Enter; text that is not a date, or a day that is disabled or outside minDate/maxDate, marks the Field invalid with an error message (invalidMessage, outOfRangeMessage). Label, description and error come from the yorha Field. Escape, picking a day (single) or the range end closes the popup and returns focus to the trigger. DateRangePicker accepts typed ranges separated by ~, – or ' - ' in either order. Pass name to submit ISO dates through hidden inputs (name, or name-from and name-to). Set lang on the wrapper for CJK leading."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Text input in the locale format (default ko-KR, e.g. 2026. 11. 14.) plus a trigger button that opens the Calendar in the yorha Popover. Typed text is parsed on blur or Enter; text that is not a date, or a day that is disabled or outside minDate/maxDate, marks the Field invalid with an error message (invalidMessage, outOfRangeMessage). Label, description and error come from the yorha Field. Escape, picking a day (single) or the range end closes the popup and returns focus to the trigger. DateRangePicker accepts typed ranges separated by ~, – or ' - ' in either order. Pass name to submit ISO dates through hidden inputs (name, or name-from and name-to). Set lang on the wrapper for CJK leading. v3 BREAKING: the field is one InputGroup frame (h-control-md) with the calendar button inside it; the popup anchors to the whole frame (bottom, start, 8px gap) and is content-wide. DateRangePicker now has two inputs, `시작일` and `종료일` (the end wraps to a second row under ~400px); the single `a ~ b` text box and the `placeholder` prop for the range are gone. Pure digits get separators while typed (20261114 becomes 2026. 11. 14.); the error clears on the first edit; the placeholder is `연도. 월. 일.` for ko, `YYYY. MM. DD.` order-aware otherwise. New prop rangeOrderMessage. The range popup holds the first pick as a draft: Escape restores the committed range. Range inputs are plain inputs (aria-label), not Field controls.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ]
     }
   ]
 }

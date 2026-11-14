@@ -219,9 +219,14 @@ function PickerImpl(props: PickerImplProps) {
   };
   const onTextChange = (side: Side, e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.currentTarget.value;
-    const grew = raw.length > text[side].length;
+    const prev = text[side];
+    // mask only digits typed onto an empty, pure-digit or already masked text, so hand-typed `2026. 1. 5.` is left alone
+    const masked =
+      raw.length > prev.length && /^[\d. ]*\d$/.test(raw) && (prev === "" || prev === maskDigits(prev.replace(/\D/g, ""), locale))
+        ? maskDigits(raw.replace(/\D/g, ""), locale)
+        : raw;
     setTypedError(null);
-    setText((t) => ({ ...t, [side]: grew ? maskDigits(raw, locale) : raw }));
+    setText((t) => ({ ...t, [side]: masked }));
   };
   const onTextKeyDown = (side: Side, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") commitText(side);
@@ -263,7 +268,11 @@ function PickerImpl(props: PickerImplProps) {
         <InputGroupButton
           aria-label={triggerLabel}
           disabled={disabled}
-          className="data-[popup-open]:bg-yorha-ink data-[popup-open]:text-yorha-on-ink"
+          className={cn(
+            "data-[popup-open]:bg-yorha-ink data-[popup-open]:text-yorha-on-ink",
+            // a wrap frame has no definite height for `h-full`: use the inner control height
+            isRange && "h-[calc(var(--yorha-control-md)-2px)]",
+          )}
         />
       }
     >
@@ -286,10 +295,13 @@ function PickerImpl(props: PickerImplProps) {
         >
           {isRange ? (
             <>
-              <FieldGroupControl
+              {/* plain inputs: Field would name the start by the group label and drop 시작일 */}
+              <InputGroupInput
                 id={fieldId}
                 data-slot="date-input"
                 aria-label="시작일"
+                aria-invalid={invalidSide === "from" || (!typedError && Boolean(error)) ? true : undefined}
+                disabled={disabled}
                 autoComplete="off"
                 inputMode="numeric"
                 required={required}
