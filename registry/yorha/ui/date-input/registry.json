@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "date-input",
+      "type": "registry:ui",
+      "title": "Date input",
+      "description": "Native date, datetime-local, month, week and time input in the YoRHa control surface (type prop, min/max/step) inside a Field, with an optional button that opens the Calendar in the Popover for type=date.",
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils",
+        "@yorha/field",
+        "@yorha/popover",
+        "@yorha/calendar"
+      ],
+      "files": [
+        {
+          "path": "date-input.tsx",
+          "type": "registry:ui",
+          "target": "@ui/date-input.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Pick the control with `type` (date, datetime-local, month, week, time); values use the native formats. `picker` adds a calendar button for type=date only; Escape or picking a day closes the popup and returns focus to the button. min and max also disable days in the calendar. Set lang on the wrapper for CJK leading."
+    }
+  ]
+}

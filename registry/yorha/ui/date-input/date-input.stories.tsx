@@ -95,6 +95,7 @@ export const MinMaxStep: Story = {
     await expect(cellOf("2026-11-21")).toHaveAttribute("aria-disabled", "true");
     await expect(cellOf("2026-11-15")).not.toHaveAttribute("aria-disabled", "true");
     await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
   },
 };
 
