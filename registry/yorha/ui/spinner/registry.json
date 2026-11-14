@@ -1,4 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "spinner",
+      "type": "registry:ui",
+      "title": "Spinner",
+      "description": "Loading dots: role=status with an accessible name (aria-label plus visually hidden text), decorative dots staggered over three cycles, then resting. Under reduced or off motion the dots never animate.",
+      "dependencies": [],
+      "registryDependencies": ["@yorha/utils", "@yorha/base"],
+      "files": [{ "path": "spinner.tsx", "type": "registry:ui" }],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The dots are CSS squares and a Web Animation; no original assets are used."
+    }
+  ]
 }
