@@ -1,4 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "menu",
+      "type": "registry:ui",
+      "title": "Menu",
+      "description": "Base UI dropdown menu with a left-to-right selected-row wipe, arrow cursor, rules, separators, submenus, checkbox and radio items, and shortcut text.",
+      "dependencies": ["@base-ui/react@^1.9.0"],
+      "registryDependencies": ["@yorha/utils", "@yorha/base", "@yorha/button"],
+      "files": [{ "path": "menu.tsx", "type": "registry:ui" }],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+    }
+  ]
 }

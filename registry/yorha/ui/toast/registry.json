@@ -1,4 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "toast",
+      "type": "registry:ui",
+      "title": "Toast",
+      "description": "Base UI toast provider and viewport with info, success and alert variants (shape cues), timers that pause on hover and focus, and a keyboard-closable button.",
+      "dependencies": ["@base-ui/react@^1.9.0"],
+      "registryDependencies": ["@yorha/utils", "@yorha/base", "@yorha/button"],
+      "files": [{ "path": "toast.tsx", "type": "registry:ui" }],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+    }
+  ]
 }
