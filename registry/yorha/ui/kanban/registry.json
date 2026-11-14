@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "kanban",
+      "type": "registry:ui",
+      "title": "Kanban",
+      "description": "Drag-and-drop kanban board (KanbanBoard, KanbanColumn, KanbanCard) on dnd-kit: controlled columns with onChange, WIP limit warning, empty state, add-button slot, one drag handle per card, pointer, touch and keyboard dragging, Korean screen-reader announcements.",
+      "dependencies": [
+        "@dnd-kit/core@^6.3.1",
+        "@dnd-kit/sortable@^10.0.0",
+        "@dnd-kit/utilities@^3.2.2"
+      ],
+      "registryDependencies": ["@yorha/utils", "@yorha/base", "@yorha/card"],
+      "files": [
+        {
+          "path": "kanban.tsx",
+          "type": "registry:ui",
+          "target": "@ui/kanban.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Card, column and handle ids must be unique across the board. Keyboard: Space/Enter lift, arrows move, Space drop, Esc cancel. Set lang=\"ko\" on the wrapper; announcements are Korean."
+    }
+  ]
+}
