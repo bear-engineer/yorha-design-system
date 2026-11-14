@@ -36,13 +36,29 @@ export function measureTargets(root: HTMLElement): TargetMeasure[] {
   return found;
 }
 
-/** Asserts every visible interactive target under `root` is at least `min` x `min` CSS px (SC 2.5.8). */
-export function expectTargetSize(root: HTMLElement, min = 24): TargetMeasure[] {
-  const targets = measureTargets(root);
-  expect(targets.length, "no interactive targets found").toBeGreaterThan(0);
-  const small = targets.filter((t) => t.width < min - 0.5 || t.height < min - 0.5);
-  expect(small, `targets under ${min}x${min}: ${JSON.stringify(small)}`).toEqual([]);
-  return targets;
+/**
+ * Asserts every visible interactive target under `root` is at least `min` x `min` CSS px (SC 2.5.8),
+ * at each density (spacing tokens scale with data-density). Restores the density afterwards.
+ */
+export async function expectTargetSize(root: HTMLElement, min = 24): Promise<TargetMeasure[]> {
+  const html = document.documentElement;
+  const previous = html.getAttribute("data-density");
+  const all: TargetMeasure[] = [];
+  try {
+    for (const density of DENSITIES) {
+      html.setAttribute("data-density", density);
+      await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const targets = measureTargets(root);
+      expect(targets.length, "no interactive targets found").toBeGreaterThan(0);
+      const small = targets.filter((t) => t.width < min - 0.5 || t.height < min - 0.5);
+      expect(small, `${density}: targets under ${min}x${min}: ${JSON.stringify(small)}`).toEqual([]);
+      all.push(...targets);
+    }
+  } finally {
+    if (previous === null) html.removeAttribute("data-density");
+    else html.setAttribute("data-density", previous);
+  }
+  return all;
 }
 
 const toolbar = (title: string, icon: "paintbrush" | "play" | "grow", items: readonly string[]) => ({

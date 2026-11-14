@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
 import { OTPFieldInput, OTPFieldRoot, OTPFieldSeparator } from "./otp-field";
 
+import { expectTargetSize } from "../../../../.storybook/preview";
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const THEME_LABEL: Record<(typeof THEMES)[number], string> = {
   light: "라이트",
@@ -211,5 +212,18 @@ export const Authentic: Story = {
     const c = within(canvasElement);
     await userEvent.click(c.getByText("오리지널 팔레트"));
     await expect(slots(c)[0]).toHaveFocus();
+  },
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <Demo label="기본" id="otp-a" />
+      <Demo label="비활성" id="otp-b" disabled />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getAllByRole("textbox").length).toBeGreaterThan(6);
+    await expectTargetSize(canvasElement);
   },
 };

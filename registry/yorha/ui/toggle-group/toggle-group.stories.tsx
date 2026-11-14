@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { ToggleGroup, ToggleGroupItem } from "./toggle-group";
 
+import { expectTargetSize } from "../../../../.storybook/preview";
 interface DemoProps {
   multiple?: boolean;
   orientation?: "horizontal" | "vertical";
@@ -129,3 +130,18 @@ export const Light: Story = { globals: { theme: "light" }, render: () => <Demo m
 export const Dark: Story = { ...Light, globals: { theme: "dark" } };
 export const HighContrast: Story = { ...Light, globals: { theme: "high-contrast" } };
 export const Authentic: Story = { ...Light, parameters: { a11y: { test: "todo" } }, globals: { theme: "authentic" } };
+
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <Demo />
+      <Demo disabled />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const buttons = within(canvasElement).getAllByRole("button");
+    await expect(buttons.some((b) => b.getAttribute("aria-pressed") === "true")).toBe(true);
+    await expect(buttons.some((b) => b.hasAttribute("disabled") || b.getAttribute("aria-disabled") === "true")).toBe(true);
+    await expectTargetSize(canvasElement);
+  },
+};

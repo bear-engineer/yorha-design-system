@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { Input } from "./input";
 
+import { expectTargetSize } from "../../../../.storybook/preview";
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const THEME_LABEL: Record<(typeof THEMES)[number], string> = {
   light: "라이트",
@@ -144,5 +145,26 @@ export const Authentic: Story = {
     const input = within(canvasElement).getByRole("textbox", { name: "오리지널 팔레트" });
     await userEvent.click(input);
     await expect(input).toHaveFocus();
+  },
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-col gap-3">
+      <Input aria-label="기본" placeholder="기본" />
+      <Input aria-label="읽기 전용" readOnly defaultValue="읽기 전용 값" />
+      <Input aria-label="잠김" disabled defaultValue="locked" />
+      <Input aria-label="오류" aria-invalid="true" aria-describedby="input-states-err" defaultValue="??" />
+      <p id="input-states-err" role="alert">형식이 올바르지 않습니다</p>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const bad = c.getByRole("textbox", { name: "오류" });
+    await expect(bad).toHaveAttribute("aria-invalid", "true");
+    await expect(bad.getAttribute("aria-describedby")).toBe(c.getByRole("alert").id);
+    await expect(c.getByRole("textbox", { name: "읽기 전용" })).toHaveAttribute("readonly");
+    await expect(c.getByRole("textbox", { name: "잠김" })).toBeDisabled();
+    await expectTargetSize(canvasElement);
   },
 };

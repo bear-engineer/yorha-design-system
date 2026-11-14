@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { Textarea } from "./textarea";
 
+import { expectTargetSize } from "../../../../.storybook/preview";
 const DESCRIPTION = "최대 500자";
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const THEME_LABEL: Record<(typeof THEMES)[number], string> = {
@@ -195,5 +196,25 @@ export const ReducedMotion: Story = {
     await inMotion("off", async () => {
       for (const el of els()) expect(Math.max(...durationsMs(el))).toBe(0);
     });
+  },
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="flex w-72 flex-col gap-4">
+      <Textarea label="기본" />
+      <Textarea label="읽기 전용" readOnly defaultValue="고정 값" />
+      <Textarea label="잠김" disabled defaultValue="locked" />
+      <Textarea label="오류" error="필수 입력 항목입니다" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const bad = c.getByRole("textbox", { name: "오류" });
+    await expect(bad).toHaveAttribute("aria-invalid", "true");
+    await expect(bad.getAttribute("aria-describedby") ?? "").toContain(c.getByRole("alert").id);
+    await expect(c.getByRole("textbox", { name: "읽기 전용" })).toHaveAttribute("readonly");
+    await expect(c.getByRole("textbox", { name: "잠김" })).toBeDisabled();
+    await expectTargetSize(canvasElement);
   },
 };

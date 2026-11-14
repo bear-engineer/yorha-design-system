@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "./button";
 
+import { expectTargetSize } from "../../../../.storybook/preview";
 /** Reduced motion: transitions collapse to <=120ms (opacity-only in practice); full keeps a real duration. */
 function motionSeconds(el: Element): number {
   return Math.max(0, ...getComputedStyle(el).transitionDuration.split(",").map((s) => parseFloat(s)));
@@ -200,5 +201,29 @@ export const PressFeedback: Story = {
     const btn = within(canvasElement).getByRole("button", { name: "확인" });
     await expect(getComputedStyle(btn).transitionProperty).toContain("scale");
     await expectReducedMotion(btn);
+  },
+};
+
+/** State matrix: default, disabled, loading (keeps focus, blocks activation). Targets stay >= 24px. */
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-wrap items-center gap-3">
+      {SIZES.map((s) => (
+        <Button key={s} size={s}>{`기본 ${s}`}</Button>
+      ))}
+      <Button disabled>비활성</Button>
+      <Button loading>로딩</Button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("button", { name: "비활성" })).toBeDisabled();
+    const busy = c.getByRole("button", { name: "로딩" });
+    busy.focus();
+    await expect(busy).toHaveAttribute("aria-busy", "true");
+    await expect(busy).not.toBeDisabled();
+    await userEvent.keyboard("{Enter}");
+    await expect(busy).toHaveFocus();
+    await expectTargetSize(canvasElement);
   },
 };

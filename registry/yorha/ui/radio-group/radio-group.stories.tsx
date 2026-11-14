@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { Radio, RadioGroup } from "./radio-group";
 
+import { expectTargetSize } from "../../../../.storybook/preview";
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
 // --- motion helpers (reduced: <=120ms; off: 0) ---
@@ -179,5 +180,26 @@ export const ReducedMotion: Story = {
     await inMotion("off", async () => {
       for (const el of els()) expect(Math.max(...durationsMs(el))).toBe(0);
     });
+  },
+};
+
+export const States: Story = {
+  args: { "aria-label": "상태", defaultValue: "alpha" },
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <RadioGroup aria-label="일부 비활성" defaultValue="alpha">
+        <Options disabledBravo />
+      </RadioGroup>
+      <RadioGroup aria-label="전체 비활성" defaultValue="bravo" disabled>
+        <Options />
+      </RadioGroup>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const radios = c.getAllByRole("radio");
+    await expect(radios.some((r) => r.getAttribute("aria-disabled") === "true")).toBe(true);
+    await expect(radios.some((r) => r.getAttribute("aria-checked") === "true")).toBe(true);
+    await expectTargetSize(canvasElement);
   },
 };

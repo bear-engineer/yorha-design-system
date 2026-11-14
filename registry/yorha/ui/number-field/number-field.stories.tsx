@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { NumberField } from "./number-field";
 
+import { expectTargetSize } from "../../../../.storybook/preview";
 /** Reduced motion: transitions collapse to <=120ms (opacity-only in practice); full keeps a real duration. */
 function motionSeconds(el: Element): number {
   return Math.max(0, ...getComputedStyle(el).transitionDuration.split(",").map((s) => parseFloat(s)));
@@ -130,5 +131,22 @@ export const ScrubArea: Story = {
     await expect(scrub).not.toBeNull();
     await expect(getComputedStyle(scrub!).cursor).toBe("ew-resize");
     await expectReducedMotion(c.getByRole("button", { name: "증가" }));
+  },
+};
+
+export const States: Story = {
+  args: { label: "기본", defaultValue: 3 },
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <NumberField label="기본" defaultValue={3} />
+      <NumberField label="읽기 전용" defaultValue={7} readOnly />
+      <NumberField label="잠금" defaultValue={3} disabled />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("textbox", { name: "읽기 전용" })).toHaveAttribute("readonly");
+    await expect(c.getByRole("textbox", { name: "잠금" })).toBeDisabled();
+    await expectTargetSize(canvasElement);
   },
 };

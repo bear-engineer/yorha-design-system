@@ -4,6 +4,7 @@ import { expect, fn, userEvent, within } from "storybook/test";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CheckboxGroup } from "./checkbox-group";
 
+import { expectTargetSize } from "../../../../.storybook/preview";
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const FRUITS = ["fuji", "gala", "granny"] as const;
 
@@ -147,5 +148,25 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("checkbox", { name: "갈라" })).toHaveAttribute("aria-checked", "true");
+  },
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <CheckboxGroup aria-label="기본" defaultValue={["gala"]}>
+        <Items />
+      </CheckboxGroup>
+      <CheckboxGroup aria-label="비활성" defaultValue={["fuji"]} disabled>
+        <Items />
+      </CheckboxGroup>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const boxes = c.getAllByRole("checkbox");
+    await expect(boxes.some((b) => b.getAttribute("aria-checked") === "true")).toBe(true);
+    await expect(boxes.some((b) => b.getAttribute("aria-disabled") === "true")).toBe(true);
+    await expectTargetSize(canvasElement);
   },
 };

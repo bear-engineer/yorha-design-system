@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { IconButton } from "./icon-button";
 
+import { expectTargetSize } from "../../../../.storybook/preview";
 const VARIANTS = ["default", "primary", "ghost", "danger"] as const;
 const SIZES = ["sm", "md", "lg"] as const;
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -130,5 +131,32 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getAllByRole("button")).toHaveLength(VARIANTS.length);
+  },
+};
+
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-wrap items-center gap-3">
+      {SIZES.map((s) => (
+        <IconButton key={s} size={s} aria-label={`닫기 ${s}`}>
+          <Glyph />
+        </IconButton>
+      ))}
+      <IconButton aria-label="비활성" disabled>
+        <Glyph />
+      </IconButton>
+      <IconButton aria-label="로딩" loading>
+        <Glyph />
+      </IconButton>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("button", { name: "비활성" })).toBeDisabled();
+    const busy = c.getByRole("button", { name: "로딩" });
+    busy.focus();
+    await userEvent.keyboard("{Enter}");
+    await expect(busy).toHaveFocus();
+    await expectTargetSize(canvasElement);
   },
 };

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Slider } from "./slider";
 
+import { expectTargetSize } from "../../../../.storybook/preview";
 /** Reduced motion: transitions collapse to <=120ms (opacity-only in practice); full keeps a real duration. */
 function motionSeconds(el: Element): number {
   return Math.max(0, ...getComputedStyle(el).transitionDuration.split(",").map((s) => parseFloat(s)));
@@ -131,5 +132,25 @@ export const ReducedMotion: Story = {
     await expect(thumb).not.toBeNull();
     await expectReducedMotion(thumb!);
     await expect(c.getByRole("slider", { name: "모션" })).toHaveAttribute("aria-valuenow", "50");
+  },
+};
+
+export const States: Story = {
+  args: { label: "기본", defaultValue: 40 },
+  render: () => (
+    <div className="flex w-72 flex-col gap-4">
+      <Slider label="기본" defaultValue={40} />
+      <Slider label="범위" defaultValue={[20, 70]} />
+      <Slider label="잠금" defaultValue={40} disabled />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("slider", { name: "잠금" })).toBeDisabled();
+    const thumb = c.getByRole("slider", { name: "기본" });
+    thumb.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(thumb).toHaveAttribute("aria-valuenow", "41");
+    await expectTargetSize(canvasElement);
   },
 };
