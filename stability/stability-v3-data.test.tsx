@@ -142,6 +142,33 @@ describe("FD-08/09/10/11 kanban", () => {
   });
 });
 
+describe("kanban overlay under a transformed ancestor (user report: card floats far from the pointer)", () => {
+  test("the overlay starts exactly over its source card even when an ancestor has a transform", async () => {
+    const root = await mountStory("kanban", "Default", { stage: "top" });
+    // Storybook docs, page transitions and animated panels put a transform on an ancestor; that makes the ancestor the
+    // containing block of a `position: fixed` overlay, so an un-portaled overlay is shifted by the ancestor's offset.
+    const host = root.parentElement!;
+    host.style.transform = "translateX(0)";
+    host.style.marginTop = "160px";
+    host.style.marginLeft = "120px";
+    await frames(2);
+    const handle = qa(root, "button").find((b) => b.getAttribute("aria-label")?.startsWith("통신 모듈 교체"))!;
+    const source = r(handle.closest("article")!);
+    handle.focus();
+    await userEvent.keyboard(" ");
+    await frames(4);
+    const overlay = document.querySelector<HTMLElement>("[data-slot=kanban-overlay]")!;
+    expect(overlay, "overlay").toBeTruthy();
+    const o = r(overlay);
+    expect(Math.abs(o.left - source.left), "overlay x").toBeLessThanOrEqual(1);
+    expect(Math.abs(o.top - source.top), "overlay y").toBeLessThanOrEqual(1);
+    expect(host.contains(overlay), "overlay is portaled out of the transformed subtree").toBe(false);
+    await userEvent.keyboard("{Escape}");
+    await frames(4);
+    host.style.transform = host.style.marginTop = host.style.marginLeft = "";
+  });
+});
+
 describe("FD-12/13 timeline", () => {
   test("no dependency connector crosses a milestone label (FD-12)", async () => {
     const root = await mountStory("timeline", "Default");
