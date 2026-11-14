@@ -123,12 +123,18 @@ function ComboboxValue(props: ComponentProps<typeof ComboboxPrimitive.Value>) {
   return <ComboboxPrimitive.Value data-slot="combobox-value" {...props} />;
 }
 
+// Popup scrims fade with the popover tokens (not the 400ms panel ones); `pointer-events-none` while ending so a click
+// right after Esc reaches what is underneath instead of the fading scrim.
+const SCRIM =
+  "fixed inset-0 z-(--yorha-z-popover) bg-yorha-overlay " +
+  "[transition-property:opacity] [transition-duration:max(var(--motion-popover),var(--motion-reduced-fade))] [transition-timing-function:var(--yorha-ease-decelerate)] data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 data-[ending-style]:pointer-events-none data-[ending-style]:[transition-duration:max(var(--motion-popover-exit),var(--motion-reduced-fade))] data-[ending-style]:[transition-timing-function:var(--yorha-ease-in)]";
+
 /** Optional dim layer behind a modal popup. */
 function ComboboxBackdrop({ className, ...props }: ComponentProps<typeof ComboboxPrimitive.Backdrop>) {
   return (
     <ComboboxPrimitive.Backdrop
       data-slot="combobox-backdrop"
-      className={cnState("yorha-fade fixed inset-0 z-(--yorha-z-popover) bg-yorha-overlay", className)}
+      className={cnState(SCRIM, className)}
       {...props}
     />
   );

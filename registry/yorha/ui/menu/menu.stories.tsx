@@ -361,12 +361,18 @@ function SharedDemo() {
 export const SharedMenu: Story = {
   render: () => <SharedDemo />,
   play: async ({ canvasElement }) => {
-    await userEvent.click(within(canvasElement).getByRole("button", { name: "편집" }));
+    const trigger = within(canvasElement).getByRole("button", { name: "편집" });
+    await userEvent.click(trigger);
     const menu = await body(canvasElement).findByRole("menu");
     await waitFor(() => expect(within(menu).getByRole("menuitem", { name: "편집 항목 1" })).toBeVisible());
     await expect(menu.querySelector("[data-slot=menu-arrow]")).not.toBeNull();
     await expect(document.querySelector("[data-slot=menu-backdrop]")).not.toBeNull();
     await userEvent.keyboard("{Escape}");
+    // The fading scrim must not keep eating clicks: 50ms after Esc the trigger is the hit target again.
+    await new Promise((r) => setTimeout(r, 50));
+    const box = trigger.getBoundingClientRect();
+    const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(hit === trigger || trigger.contains(hit)).toBe(true);
     await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull());
   },
 };

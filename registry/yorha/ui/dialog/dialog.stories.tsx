@@ -117,6 +117,11 @@ export const Default: Story = {
 
     // Escape closes, focus returns to trigger
     await userEvent.keyboard("{Escape}");
+    // The fading backdrop and popup must not keep eating clicks: 50ms after Esc the trigger is the hit target again.
+    await new Promise((r) => setTimeout(r, 50));
+    const box = trigger.getBoundingClientRect();
+    const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(hit === trigger || trigger.contains(hit)).toBe(true);
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     await waitFor(() => expect(trigger).toHaveFocus());
   },

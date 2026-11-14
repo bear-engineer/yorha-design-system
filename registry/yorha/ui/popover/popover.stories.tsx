@@ -246,10 +246,16 @@ export const SharedPopup: Story = {
 export const ModalBackdrop: Story = {
   render: () => <SharedDemo modal />,
   play: async () => {
-    await userEvent.click(body().getByRole("button", { name: "알림" }));
+    const trigger = body().getByRole("button", { name: "알림" });
+    await userEvent.click(trigger);
     await body().findByRole("dialog", { name: "공유 팝오버" });
     await waitFor(() => expect(document.querySelector("[data-slot=popover-backdrop]")).not.toBeNull());
     await userEvent.keyboard("{Escape}");
+    // The fading scrim must not keep eating clicks: 50ms after Esc the trigger is the hit target again.
+    await new Promise((r) => setTimeout(r, 50));
+    const box = trigger.getBoundingClientRect();
+    const hit = document.elementFromPoint(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(hit === trigger || trigger.contains(hit)).toBe(true);
     await waitFor(() => expect(body().queryByRole("dialog")).toBeNull());
   },
 };

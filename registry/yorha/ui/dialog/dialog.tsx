@@ -10,10 +10,10 @@ import { useSound } from "@/lib/sound";
  */
 export const dialogStyles = {
   backdrop:
-    "yorha-fade fixed inset-0 z-(--yorha-z-overlay) bg-yorha-scrim",
+    "yorha-fade fixed inset-0 z-(--yorha-z-overlay) bg-yorha-scrim data-[ending-style]:pointer-events-none",
   viewport: "pointer-events-none fixed inset-0 z-(--yorha-z-modal) grid place-items-center p-4",
   popup:
-    "yorha-panel pointer-events-auto relative flex max-h-full w-full max-w-md flex-col overflow-auto " +
+    "yorha-panel pointer-events-auto data-[ending-style]:pointer-events-none relative flex max-h-full w-full max-w-md flex-col overflow-auto " +
     "rounded-yorha border border-yorha-border bg-yorha-panel text-yorha-fg shadow-yorha-lg",
   // dark header strip; the dot and trailing rule are decorative pseudo elements
   title:
