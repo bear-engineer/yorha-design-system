@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "search-input",
+      "type": "registry:ui",
+      "title": "Search input",
+      "description": "type=search input (role searchbox) with a clear button, Escape to clear and Enter to search, inside a Field.",
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils",
+        "@yorha/field",
+        "@yorha/button"
+      ],
+      "files": [
+        {
+          "path": "search-input.tsx",
+          "type": "registry:ui",
+          "target": "@ui/search-input.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Escape clears a non-empty value and stops propagation so a surrounding Dialog stays open; with an empty value it passes through. Clearing returns focus to the input."
+    }
+  ]
+}
