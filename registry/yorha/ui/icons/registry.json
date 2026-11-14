@@ -1,0 +1,24 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "icons",
+      "type": "registry:ui",
+      "title": "Icons",
+      "description": "YoRHa icon set: ChevronIcon, CheckIcon, CrossIcon, PlusIcon, MinusIcon, TriangleIcon, SortIcon, GripIcon, CalendarIcon, ClockIcon, EyeIcon, EyeOffIcon, SearchIcon. Sizes 12/16/20, viewBox equals render size, 2px square-cap strokes on whole pixels.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "icons.tsx",
+          "type": "registry:ui",
+          "target": "@ui/icons.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Icons are decorative (aria-hidden); put them in a `grid place-items-center` box and label the control, not the icon."
+    }
+  ]
+}
