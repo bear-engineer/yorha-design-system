@@ -1,4 +1,5 @@
 import * as React from "react";
+import { MinusIcon, PlusIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
 
 export type TimelineDate = Date | string | number;
@@ -59,7 +60,8 @@ const PX_PER_UNIT: Record<TimelineScale, number> = { hour: 64, day: 96, week: 12
 /** Zoomed out to in. */
 const SCALES: TimelineScale[] = ["week", "day", "hour"];
 
-const AXIS_H = 40;
+const AXIS_H = 56;
+const TAG_H = 16;
 const ROW_H = 44;
 const BAR_H = 22;
 const MARKER_R = 9;
@@ -86,7 +88,7 @@ function alignedTicks(startMs: number, endMs: number, scale: TimelineScale): num
 }
 
 const btn =
-  "yorha-press inline-flex h-8 min-w-8 items-center justify-center border border-yorha-border bg-yorha-bg px-2 font-yorha text-yorha-sm text-yorha-fg hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus disabled:opacity-50 aria-pressed:bg-yorha-ink aria-pressed:text-yorha-on-ink";
+  "yorha-press yorha-disabled inline-flex h-control-sm min-w-control-sm items-center justify-center border border-yorha-border bg-yorha-bg px-pad-sm font-yorha text-yorha-sm text-yorha-fg hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus aria-pressed:bg-yorha-ink aria-pressed:text-yorha-on-ink";
 
 export interface TimelineGraphProps extends Omit<React.ComponentProps<"div">, "children" | "onSelect"> {
   /** Accessible name of the whole timeline. */
@@ -223,19 +225,30 @@ export function TimelineGraph({
   const nowX = xOf(nowMs);
 
   const arrows = items.flatMap((target) =>
-    (target.dependsOn ?? []).flatMap((id) => {
+    (target.dependsOn ?? []).flatMap((id, dep) => {
       const src = items.find((i) => i.id === id);
-      return src ? [{ key: `${id}>${target.id}`, src, target }] : [];
+      return src ? [{ key: `${id}>${target.id}`, src, target, dep }] : [];
     }),
   );
-  const arrowPath = (src: TimelineGraphItem, target: TimelineGraphItem) => {
+  // Dependency connectors stay out of the labels: a milestone source leaves from its bottom/top vertex (its label is to the
+  // right), a bar leaves from its right edge; stubs step 6px per dependency index so parallel connectors never overlap.
+  const arrowPath = (src: TimelineGraphItem, target: TimelineGraphItem, dep: number) => {
     const a = geometry(src);
     const b = geometry(target);
-    const x1 = a.right;
+    const step = dep * 6;
     const x2 = b.left;
-    if (x2 >= x1 + 16) return `M${x1},${a.cy} H${x1 + 8} V${b.cy} H${x2}`;
-    const detour = a.cy === b.cy ? a.cy + ROW_H / 2 - 4 : (a.cy + b.cy) / 2;
-    return `M${x1},${a.cy} H${x1 + 8} V${detour} H${x2 - 8} V${b.cy} H${x2}`;
+    if (a.instant) {
+      const dir = b.cy >= a.cy ? 1 : -1;
+      const sy = a.cy + dir * MARKER_R;
+      const sx = a.x + step;
+      if (x2 >= sx + 8) return `M${a.x},${sy} V${b.cy} H${x2}`;
+      const mid = sy + dir * 8;
+      return `M${a.x},${sy} V${mid} H${x2 - 8 - step} V${b.cy} H${x2}`;
+    }
+    const x1 = a.right;
+    if (x2 >= x1 + 16 + step) return `M${x1},${a.cy} H${x1 + 8 + step} V${b.cy} H${x2}`;
+    const detour = a.cy === b.cy ? a.cy + ROW_H / 2 - 4 - (step ? 2 : 0) : (a.cy + b.cy) / 2;
+    return `M${x1},${a.cy} V${detour} H${x2 - 8 - step} V${b.cy} H${x2}`;
   };
 
   return (
@@ -261,12 +274,12 @@ export function TimelineGraph({
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-yorha-border pb-2">
         <div className="flex items-center gap-1">
           <button type="button" className={btn} aria-label={t.zoomOut} disabled={scale === "week"} onClick={() => zoom(-1)}>
-            <span aria-hidden="true">−</span>
+            <MinusIcon />
           </button>
           <button type="button" className={btn} aria-label={t.zoomIn} disabled={scale === "hour"} onClick={() => zoom(1)}>
-            <span aria-hidden="true">+</span>
+            <PlusIcon />
           </button>
-          <span className="inline-block min-w-[3.5em] px-2 text-yorha-sm tracking-yorha-wide text-yorha-fg-soft" data-part="scale-label">
+          <span className="inline-block min-w-14 px-2 text-yorha-sm tracking-yorha-wide text-yorha-fg-soft" data-part="scale-label">
             {t.scale[scale]}
           </span>
         </div>
@@ -288,13 +301,13 @@ export function TimelineGraph({
         </div>
       </div>
       {view === "table" ? (
-        <div className="overflow-x-auto">
+        <div className="yorha-scroll yorha-scroll-cue-x overflow-y-hidden">
           <table className="w-full border-collapse text-left text-yorha-sm">
             <caption className="sr-only">{label}</caption>
-            <thead>
-              <tr className="border-b border-yorha-border text-yorha-fg-soft">
+            <thead className="bg-yorha-ink text-yorha-on-ink">
+              <tr>
                 {[t.lane, t.title, t.start, t.end, t.dependsOn].map((h) => (
-                  <th key={h} scope="col" className="px-2 py-2 font-yorha-medium tracking-yorha-wide">
+                  <th key={h} scope="col" className="px-3 py-2 font-yorha-bold text-yorha-sm uppercase tracking-yorha-wide">
                     {h}
                   </th>
                 ))}
@@ -303,8 +316,8 @@ export function TimelineGraph({
             <tbody>
               {ordered.map((item) => (
                 <tr key={item.id} className="border-b border-yorha-border" data-item-id={item.id}>
-                  <td className="px-2 py-2">{laneLabel(item.lane)}</td>
-                  <td className="px-2 py-2">
+                  <td className="px-3 py-2">{laneLabel(item.lane)}</td>
+                  <td className="px-3 py-2">
                     {onItemSelect ? (
                       <button
                         type="button"
@@ -317,9 +330,9 @@ export function TimelineGraph({
                       item.title
                     )}
                   </td>
-                  <td className="yorha-tabular px-2 py-2">{fmtCell.format(toMs(item.start))}</td>
-                  <td className="yorha-tabular px-2 py-2">{item.end === undefined ? "—" : fmtCell.format(toMs(item.end))}</td>
-                  <td className="px-2 py-2">
+                  <td className="yorha-tabular px-3 py-2">{fmtCell.format(toMs(item.start))}</td>
+                  <td className="yorha-tabular px-3 py-2">{item.end === undefined ? "—" : fmtCell.format(toMs(item.end))}</td>
+                  <td className="px-3 py-2">
                     {(item.dependsOn ?? []).map((id) => items.find((i) => i.id === id)?.title ?? id).join(", ") || "—"}
                   </td>
                 </tr>
@@ -333,7 +346,9 @@ export function TimelineGraph({
             data-part="lane-labels"
             className="sticky left-0 z-10 w-24 shrink-0 border-r border-yorha-border bg-yorha-panel @md:w-36"
           >
-            <div style={{ height: AXIS_H }} />
+            <div style={{ height: AXIS_H }} className="flex items-end px-2 pb-2 text-yorha-xs tracking-yorha-wide text-yorha-fg-soft">
+              {t.lane}
+            </div>
             {lanes.map((lane) => (
               <div
                 key={lane.id}
@@ -372,24 +387,24 @@ export function TimelineGraph({
               const [l1, l2] = tickLines(ms, i);
               return (
                 <g key={ms} data-part="tick" aria-hidden="true">
-                  <line x1={x} x2={x} y1={AXIS_H - 8} y2={height} className="stroke-yorha-border" strokeWidth={1} strokeDasharray="2 4" />
-                  <text x={x + 4} y={16} className="fill-yorha-fg-soft text-yorha-xs">
+                  <line x1={x} x2={x} y1={TAG_H + 4} y2={height} className="stroke-yorha-border" strokeWidth={1} strokeDasharray="2 4" />
+                  <text x={x + 6} y={AXIS_H - 24} className="fill-yorha-fg-soft text-yorha-xs">
                     {l1}
                   </text>
                   {l2 ? (
-                    <text x={x + 4} y={32} className="fill-yorha-fg-soft text-yorha-xs">
+                    <text x={x + 6} y={AXIS_H - 8} className="fill-yorha-fg-soft text-yorha-xs">
                       {l2}
                     </text>
                   ) : null}
                 </g>
               );
             })}
-            {arrows.map(({ key, src, target }) => (
+            {arrows.map(({ key, src, target, dep }) => (
               <path
                 key={key}
                 data-part="dependency"
                 aria-hidden="true"
-                d={arrowPath(src, target)}
+                d={arrowPath(src, target, dep)}
                 fill="none"
                 className="stroke-yorha-fg-soft"
                 strokeWidth={1.5}
@@ -451,7 +466,14 @@ export function TimelineGraph({
                         className="fill-yorha-ink stroke-yorha-bg"
                         strokeWidth={1.5}
                       />
-                      <text aria-hidden="true" x={g.x + MARKER_R + 6} y={g.cy + 4} className="fill-yorha-fg text-yorha-xs">
+                      <text
+                        aria-hidden="true"
+                        data-slot="timeline-label"
+                        x={g.x + MARKER_R + 8}
+                        y={g.cy + 4}
+                        strokeWidth={3}
+                        className="fill-yorha-fg stroke-yorha-bg text-yorha-xs [paint-order:stroke]"
+                      >
                         {item.title}
                       </text>
                     </>
@@ -471,9 +493,12 @@ export function TimelineGraph({
             {showNow ? (
               <g aria-hidden="true">
                 <line data-part="now" x1={nowX} x2={nowX} y1={0} y2={height} className="stroke-yorha-alert-ui" strokeWidth={2} />
-                <text x={nowX + 4} y={AXIS_H - 14} className="fill-yorha-fg-strong text-yorha-xs font-yorha-bold">
-                  {t.now}
-                </text>
+                <g data-part="now-tag">
+                  <rect x={nowX} y={0} width={Math.max(32, t.now.length * 13 + 12)} height={TAG_H} className="fill-yorha-ink" />
+                  <text x={nowX + 6} y={TAG_H - 4} className="fill-yorha-on-ink text-yorha-xs font-yorha-bold">
+                    {t.now}
+                  </text>
+                </g>
               </g>
             ) : null}
           </svg>

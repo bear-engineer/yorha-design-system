@@ -8,7 +8,8 @@
       "description": "Item timeline in SVG + CSS without chart dependencies: TimelineGraph (time axis, lanes, bars and instant markers, dependency arrows, now line, zoom, keyboard navigation in time order, real table view) and a vertical Timeline event list with info/success/warn/danger status.",
       "registryDependencies": [
         "@yorha/utils",
-        "@yorha/base"
+        "@yorha/base",
+        "@yorha/icons"
       ],
       "files": [
         {

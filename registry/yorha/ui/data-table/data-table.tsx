@@ -1,4 +1,5 @@
 import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import { SortIcon, TriangleIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
 
 export type SortDirection = "none" | "ascending" | "descending";
@@ -21,7 +22,7 @@ export function DataTable({
   hideCaption?: boolean;
 }) {
   return (
-    <div data-slot="data-table-wrapper" className="w-full overflow-x-auto">
+    <div data-slot="data-table-wrapper" className="yorha-scroll yorha-scroll-cue-x w-full overflow-y-hidden">
       <table
         data-slot="data-table"
         data-density={density}
@@ -48,7 +49,7 @@ export function DataTableBody({ className, ...props }: ComponentPropsWithoutRef<
     <tbody
       className={cn(
         "[&>tr]:border-b [&>tr]:border-yorha-border",
-        "group-data-[zebra=true]/table:[&>tr:nth-child(even)]:[background-image:repeating-linear-gradient(135deg,var(--yorha-grid)_0_1px,transparent_1px_6px)]",
+        "group-data-[zebra=true]/table:[&>tr:nth-child(even)]:[background-image:repeating-linear-gradient(135deg,var(--yorha-grid)_0_1px,transparent_1px_8px)]",
         className,
       )}
       {...props}
@@ -56,13 +57,27 @@ export function DataTableBody({ className, ...props }: ComponentPropsWithoutRef<
   );
 }
 
+/**
+ * Body row. Hover tints (fine pointers); `aria-selected="true"` or `data-selected` inverts the row to ink. Colour only,
+ * so a row never changes size.
+ */
 export function DataTableRow({ className, ...props }: ComponentPropsWithoutRef<"tr">) {
-  return <tr className={cn(className)} {...props} />;
+  return (
+    <tr
+      className={cn(
+        "transition-colors duration-(--motion-select) ease-yorha-out",
+        "[tbody>&]:yorha-tint [tbody>&]:aria-selected:bg-yorha-ink [tbody>&]:aria-selected:text-yorha-on-ink [tbody>&]:data-[selected]:bg-yorha-ink [tbody>&]:data-[selected]:text-yorha-on-ink",
+        "[tbody>&[aria-selected=true]>td]:text-yorha-on-ink [tbody>&[data-selected]>td]:text-yorha-on-ink",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 // Sort indicator layer: always mounted in a fixed cell; only opacity and rotate animate (reduced: opacity only).
 const SORT_GLYPH =
-  "col-start-1 row-start-1 size-3 opacity-0 transition-[opacity,rotate] [transition-duration:max(var(--motion-select),var(--motion-reduced-fade)),calc(var(--motion-select)*var(--motion-spatial))] ease-yorha";
+  "col-start-1 row-start-1 opacity-0 transition-[opacity,rotate] [transition-duration:max(var(--motion-select),var(--motion-reduced-fade)),calc(var(--motion-select)*var(--motion-spatial))] ease-yorha";
 
 /**
  * Header cell with scope="col". When `sortable`, the label is a button and `aria-sort` reflects `sortDirection`.
@@ -72,10 +87,13 @@ export function DataTableHeadCell({
   sortable = false,
   sortDirection = "none",
   onSortChange,
+  numeric = false,
   className,
   children,
   ...props
 }: ComponentPropsWithoutRef<"th"> & {
+  /** Right-aligns the header over a numeric column (pair with `<DataTableCell numeric>`); tabular figures. */
+  numeric?: boolean;
   sortable?: boolean;
   sortDirection?: SortDirection;
   onSortChange?: (next: SortDirection) => void;
@@ -85,7 +103,8 @@ export function DataTableHeadCell({
       scope="col"
       aria-sort={sortable ? sortDirection : undefined}
       className={cn(
-        "px-3 py-2 text-left font-yorha-bold text-yorha-sm uppercase tracking-yorha-wide",
+        "px-3 py-2 font-yorha-bold text-yorha-sm uppercase tracking-yorha-wide",
+        numeric ? "yorha-tabular text-right" : "text-left",
         className,
       )}
       {...props}
@@ -93,29 +112,29 @@ export function DataTableHeadCell({
       {sortable ? (
         <button
           type="button"
+          data-sorted={sortDirection !== "none"}
           onClick={() => onSortChange?.(sortDirection === "ascending" ? "descending" : "ascending")}
-          className="inline-flex min-h-[24px] items-center gap-2 rounded-yorha font-inherit text-inherit focus-visible:yorha-focus"
+          className={cn(
+            "group/sortbtn inline-flex min-h-6 cursor-pointer items-center gap-2 rounded-yorha font-inherit text-inherit",
+            "transition-[color,background-color,border-color] duration-(--motion-select) ease-yorha-out hover:bg-yorha-on-ink/10 focus-visible:yorha-focus-inset",
+            numeric && "flex-row-reverse",
+          )}
         >
           {children}
           <span
             aria-hidden="true"
             data-sort-indicator={sortDirection}
-            className="group/sort grid size-3 shrink-0 place-items-center text-yorha-alert-ui"
+            className="group/sort grid size-3 shrink-0 place-items-center text-yorha-on-ink group-data-[sorted=true]/sortbtn:text-yorha-alert-on-ink"
           >
-            {/* Fixed slot: the diamond (unsorted) and the triangle (sorted) share one cell and cross-fade; the triangle flips by rotate. */}
-            <svg viewBox="0 0 12 12" className={cn(SORT_GLYPH, "group-data-[sort-indicator=none]/sort:opacity-100")} fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M6 1.5 10.5 6 6 10.5 1.5 6Z" />
-            </svg>
-            <svg
-              viewBox="0 0 12 12"
+            {/* Fixed slot: the unsorted pair and the sorted triangle share one cell and cross-fade; the triangle flips by rotate. */}
+            <SortIcon className={cn(SORT_GLYPH, "group-data-[sort-indicator=none]/sort:opacity-60")} />
+            <TriangleIcon
+              dir="up"
               className={cn(
                 SORT_GLYPH,
                 "group-data-[sort-indicator=ascending]/sort:opacity-100 group-data-[sort-indicator=descending]/sort:opacity-100 group-data-[sort-indicator=descending]/sort:rotate-180",
               )}
-              fill="currentColor"
-            >
-              <path d="M6 2 11 10H1Z" />
-            </svg>
+            />
           </span>
         </button>
       ) : (
@@ -131,7 +150,7 @@ export function DataTableCell({ numeric = false, className, ...props }: Componen
       className={cn(
         "px-3 align-top text-yorha-fg",
         "group-data-[density=dense]/table:py-1 group-data-[density=comfortable]/table:py-3",
-        numeric ? "text-right tabular-nums" : "text-left",
+        numeric ? "yorha-tabular text-right" : "text-left",
         className,
       )}
       {...props}

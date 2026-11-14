@@ -31,7 +31,7 @@ function Demo({ density = "comfortable", zebra = true }: { density?: "dense" | "
           <DataTableRow>
             <DataTableHeadCell>유닛</DataTableHeadCell>
             <DataTableHeadCell>유형</DataTableHeadCell>
-            <DataTableHeadCell sortable sortDirection={sort} onSortChange={setSort}>
+            <DataTableHeadCell numeric sortable sortDirection={sort} onSortChange={setSort}>
               레벨
             </DataTableHeadCell>
           </DataTableRow>

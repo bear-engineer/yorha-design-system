@@ -2,13 +2,20 @@ import type { ComponentProps } from "react";
 import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar";
 import { cnState } from "@/lib/utils";
 
-/** Root: square YoRHa frame (no radius), hairline border, panel background. */
-function Avatar({ className, ...props }: ComponentProps<typeof AvatarPrimitive.Root>) {
+export type AvatarSize = "sm" | "md" | "lg";
+const SIZES: Record<AvatarSize, string> = { sm: "size-8", md: "size-12", lg: "size-16" };
+
+/** Root: square YoRHa frame (no radius), hairline border, panel background. `size` sm 32 / md 48 / lg 64 (text follows). */
+function Avatar({ size = "md", className, ...props }: ComponentProps<typeof AvatarPrimitive.Root> & { size?: AvatarSize }) {
   return (
     <AvatarPrimitive.Root
       data-slot="avatar"
+      data-size={size}
       className={cnState(
-        "relative inline-flex size-12 shrink-0 select-none items-center justify-center overflow-hidden border border-yorha-border bg-yorha-panel align-middle text-yorha-fg",
+        [
+          "group/avatar relative inline-flex shrink-0 select-none items-center justify-center overflow-hidden border border-yorha-border bg-yorha-panel align-middle text-yorha-fg",
+          SIZES[size],
+        ],
         className,
       )}
       {...props}
@@ -29,7 +36,7 @@ function AvatarFallback({ className, ...props }: ComponentProps<typeof AvatarPri
     <AvatarPrimitive.Fallback
       data-slot="avatar-fallback"
       className={cnState(
-        "flex size-full items-center justify-center font-yorha text-yorha-sm font-yorha-bold tracking-yorha-heading uppercase",
+        "flex size-full items-center justify-center font-yorha text-yorha-sm font-yorha-bold tracking-normal uppercase group-data-[size=sm]/avatar:text-yorha-xs group-data-[size=lg]/avatar:text-yorha-base",
         className,
       )}
       {...props}

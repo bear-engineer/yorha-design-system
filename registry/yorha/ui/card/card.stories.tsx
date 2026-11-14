@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
+import { Button } from "@/components/ui/button";
 import { Card } from "./card";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -13,9 +14,9 @@ const meta = {
     meta: "상태: 대기",
     media: <div className="h-16 w-full bg-yorha-grid" />,
     actions: (
-      <button type="button" className="border border-yorha-border px-2 py-1 text-yorha-sm" onClick={fn()}>
+      <Button size="sm" onClick={fn()}>
         상세
-      </button>
+      </Button>
     ),
   },
   decorators: [

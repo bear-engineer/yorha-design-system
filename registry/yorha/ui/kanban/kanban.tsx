@@ -1,5 +1,6 @@
 import {
   useCallback,
+  useEffect,
   useId,
   useMemo,
   useRef,
@@ -35,6 +36,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Card } from "@/components/ui/card";
+import { GripIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
 
 export interface KanbanCardData {
@@ -146,15 +148,10 @@ export interface KanbanCardViewProps {
 }
 
 function KanbanCardView({ card, handle, className }: KanbanCardViewProps) {
-  return (
-    <Card
-      title={card.title}
-      meta={card.meta}
-      actions={handle}
-      className={className}
-    />
-  );
+  return <Card title={card.title} meta={card.meta} titleAction={handle} className={cn("shadow-none", className)} />;
 }
+
+const HANDLE_BOX = "grid size-6 shrink-0 place-items-center text-yorha-fg-soft";
 
 export interface KanbanCardProps {
   card: KanbanCardData;
@@ -162,7 +159,11 @@ export interface KanbanCardProps {
   handleLabel?: string;
 }
 
-/** Sortable card. The handle button is the only drag activator and the only extra tab stop. */
+/**
+ * Sortable card. The grip handle (24px, in the title row) is the only drag activator and the only extra tab stop.
+ * While dragged, the source stays mounted (so the handle keeps focus) but its content is transparent: an empty dashed
+ * slot of the same height, with a 2px insertion line on its top edge.
+ */
 export function KanbanCard({ card, handleLabel }: KanbanCardProps) {
   const {
     attributes,
@@ -188,13 +189,11 @@ export function KanbanCard({ card, handleLabel }: KanbanCardProps) {
       ref={setNodeRef}
       style={style}
       data-dragging={isDragging ? "" : undefined}
-      className="list-none"
+      className="relative list-none snap-start"
     >
       <KanbanCardView
         card={card}
-        className={
-          isDragging ? "border-dashed opacity-40 shadow-none" : undefined
-        }
+        className={isDragging ? "border-dashed bg-yorha-ink/5 [&>*]:opacity-0" : undefined}
         handle={
           <button
             type="button"
@@ -202,12 +201,16 @@ export function KanbanCard({ card, handleLabel }: KanbanCardProps) {
             {...attributes}
             {...listeners}
             aria-label={handleLabel ?? `${cardLabel(card)} 카드 이동`}
-            className="yorha-press inline-flex h-8 min-w-8 cursor-grab touch-none items-center justify-center border border-yorha-border bg-yorha-bg px-2 text-yorha-sm text-yorha-fg hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus active:cursor-grabbing"
+            className={cn(
+              HANDLE_BOX,
+              "yorha-tint cursor-grab touch-none transition-[color,background-color,border-color] duration-(--motion-select) hover:text-yorha-fg focus-visible:yorha-focus active:cursor-grabbing",
+            )}
           >
-            <span aria-hidden="true">⠿</span>
+            <GripIcon />
           </button>
         }
       />
+      {isDragging ? <span data-slot="kanban-drop-indicator" aria-hidden="true" className="absolute inset-x-0 -top-px h-0.5 bg-yorha-ink" /> : null}
     </li>
   );
 }
@@ -223,6 +226,8 @@ export interface KanbanColumnProps {
   /** `KanbanCard` elements. */
   children?: ReactNode;
   cardIds: string[];
+  /** True while a dragged card sits in this column (the drop target), even over a card rather than the empty column area. */
+  receiving?: boolean;
 }
 
 export function KanbanColumn({
@@ -234,6 +239,7 @@ export function KanbanColumn({
   addSlot,
   children,
   cardIds,
+  receiving = false,
 }: KanbanColumnProps) {
   const headingId = useId();
   const { setNodeRef, isOver } = useDroppable({ id, data: { type: "column" } });
@@ -242,10 +248,10 @@ export function KanbanColumn({
     <div
       role="group"
       aria-labelledby={headingId}
-      data-over={isOver ? "" : undefined}
+      data-over={isOver || receiving ? "" : undefined}
       className={cn(
-        "flex w-72 shrink-0 flex-col gap-3 border border-yorha-border bg-yorha-panel p-3 font-yorha text-yorha-fg",
-        isOver &&
+        "flex w-72 shrink-0 snap-start flex-col gap-3 border border-yorha-border bg-yorha-panel p-3 font-yorha text-yorha-fg",
+        (isOver || receiving) &&
           "outline-2 -outline-offset-2 outline-dashed outline-yorha-ring",
       )}
     >
@@ -428,6 +434,19 @@ export function KanbanBoard({
   const onDragCancel = (_event: DragCancelEvent) => finish();
 
   const activeCard = activeId ? findCard(view, activeId)?.card : undefined;
+  const receivingId = activeId ? findColumnOf(view, activeId)?.id : undefined;
+
+  // Direct manipulation: the whole page shows the grabbing cursor and does not select text while a card is held.
+  useEffect(() => {
+    if (!activeId) return;
+    const { cursor, userSelect } = document.body.style;
+    document.body.style.cursor = "grabbing";
+    document.body.style.userSelect = "none";
+    return () => {
+      document.body.style.cursor = cursor;
+      document.body.style.userSelect = userSelect;
+    };
+  }, [activeId]);
 
   return (
     <DndContext
@@ -443,7 +462,7 @@ export function KanbanBoard({
       <div
         role="region"
         aria-label={label}
-        className={cn("flex items-start gap-4 overflow-x-auto p-1", className)}
+        className={cn("flex snap-x snap-proximity scroll-px-1 items-start gap-4 overflow-x-auto overscroll-x-contain p-1", className)}
       >
         {view.map((column) => (
           <KanbanColumn
@@ -455,6 +474,7 @@ export function KanbanBoard({
             emptyText={emptyText}
             addSlot={renderAdd?.(column)}
             cardIds={column.cards.map((c) => c.id)}
+            receiving={receivingId === column.id}
           >
             {column.cards.map((card) => (
               <KanbanCard key={card.id} card={card} />
@@ -464,7 +484,17 @@ export function KanbanBoard({
       </div>
       <DragOverlay dropAnimation={dropAnimation}>
         {activeCard ? (
-          <KanbanCardView card={activeCard} className="shadow-yorha-lg" />
+          <div data-slot="kanban-overlay" className="cursor-grabbing">
+            <KanbanCardView
+              card={activeCard}
+              className="shadow-yorha-lg"
+              handle={
+                <span aria-hidden="true" className={cn(HANDLE_BOX, "text-yorha-fg")}>
+                  <GripIcon />
+                </span>
+              }
+            />
+          </div>
         ) : null}
       </DragOverlay>
     </DndContext>

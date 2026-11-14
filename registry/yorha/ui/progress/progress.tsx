@@ -81,10 +81,10 @@ export function Progress({ value = null, max = 100, label, segments = 10, classN
       {...props}
     >
       <div className="flex items-baseline justify-between gap-3">
-        <BaseProgress.Label className="text-yorha-sm uppercase tracking-yorha-wide text-yorha-fg-soft">
+        <BaseProgress.Label title={label} className="min-w-0 truncate text-yorha-sm uppercase tracking-yorha-wide text-yorha-fg-soft">
           {label}
         </BaseProgress.Label>
-        <BaseProgress.Value className="text-yorha-sm tabular-nums text-yorha-fg">
+        <BaseProgress.Value className="yorha-tabular shrink-0 whitespace-nowrap text-yorha-sm text-yorha-fg">
           {(_formatted, v) => (v === null || v === undefined ? "진행 중" : `${v}%`)}
         </BaseProgress.Value>
       </div>

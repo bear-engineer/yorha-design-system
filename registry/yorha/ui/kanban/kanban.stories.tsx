@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { expectTargetSize } from "../../../../.storybook/preview";
+import { Button } from "@/components/ui/button";
 import { KanbanBoard, type KanbanColumnData } from "./kanban";
 
 const THEMES = [
@@ -63,12 +64,7 @@ function Interactive({
         onChange?.(next);
       }}
       renderAdd={(column) => (
-        <button
-          type="button"
-          className="border border-yorha-border px-2 py-1 text-yorha-sm text-yorha-fg focus-visible:yorha-focus"
-        >
-          {column.title}에 카드 추가
-        </button>
+        <Button size="sm">{column.title}에 카드 추가</Button>
       )}
     />
   );

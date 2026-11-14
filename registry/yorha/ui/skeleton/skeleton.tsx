@@ -48,7 +48,7 @@ function useScan(ref: RefObject<HTMLSpanElement | null>) {
   }, [ref]);
 }
 
-/** Loading placeholder: faint 0.3rem grid scan inside a live region named by `label`. */
+/** Loading placeholder: faint grid scan (`--yorha-grid-size` cells, faded at both ends) inside a live region named by `label`. */
 function Skeleton({ label = "로딩 중", className, ...props }: SkeletonProps) {
   const scanRef = useRef<HTMLSpanElement>(null);
   useScan(scanRef);
@@ -58,14 +58,14 @@ function Skeleton({ label = "로딩 중", className, ...props }: SkeletonProps) 
       role="status"
       aria-label={label}
       aria-busy="true"
-      className={cn("relative overflow-hidden rounded-yorha bg-yorha-separator/25", className)}
+      className={cn("relative overflow-hidden rounded-yorha bg-yorha-separator/35", className)}
       {...props}
     >
       <span
         ref={scanRef}
         aria-hidden="true"
         data-yorha-shimmer=""
-        className="pointer-events-none absolute inset-x-0 -top-full bottom-0 bg-[linear-gradient(to_right,var(--yorha-grid)_1px,transparent_1px),linear-gradient(to_bottom,var(--yorha-grid)_1px,transparent_1px)] [background-size:0.3rem_0.3rem]"
+        className="pointer-events-none absolute inset-x-0 -top-full bottom-0 bg-[linear-gradient(to_right,var(--yorha-grid)_1px,transparent_1px),linear-gradient(to_bottom,var(--yorha-grid)_1px,transparent_1px)] [background-size:var(--yorha-grid-size)_var(--yorha-grid-size)] [mask-image:linear-gradient(transparent,#000_30%,#000_70%,transparent)]"
       />
     </div>
   );

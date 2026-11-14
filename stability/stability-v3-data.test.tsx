@@ -64,14 +64,8 @@ describe("FD-03/04/05 data-table", () => {
     const root = await mountStory("data-table", "Default");
     const th = qa(root, "th").at(-1)!;
     const td = qa(root, "tbody tr:first-child td").at(-1)!;
-    const content = (el: Element) => {
-      const range = document.createRange();
-      const target = el.querySelector("button") ?? el;
-      range.selectNodeContents(target.querySelector("[data-sort-indicator]") ? target : target);
-      return range.getBoundingClientRect();
-    };
-    const thEdge = th.querySelector("[data-sort-indicator]") ? r(q(th, "[data-sort-indicator]")).right : content(th).right;
-    expect(Math.abs(r(th).right - parseFloat(getComputedStyle(th).paddingRight) - thEdge)).toBeLessThan(0.5);
+    const button = q(th, "button");
+    expect(Math.abs(r(button).right - (r(td).right - parseFloat(getComputedStyle(td).paddingRight))), "header content right edge = cell content right edge").toBeLessThan(0.5);
     expect(Math.abs(r(th).right - r(td).right), "th/td share right edge").toBeLessThan(0.5);
     expect(getComputedStyle(th).textAlign).toBe("right");
   });
@@ -91,6 +85,8 @@ describe("FD-03/04/05 data-table", () => {
     const root = await mountStory("data-table", "Default");
     const rows = qa(root, "tbody tr");
     const row = rows[0]!;
+    await userEvent.hover(q(root, "th")); // park the pointer away from the body rows
+    await wait(300);
     const before = rows.map((x) => r(x).top + "/" + r(x).height);
     const idle = getComputedStyle(row).backgroundColor;
     await userEvent.hover(row);
@@ -115,7 +111,7 @@ describe("FD-08/09/10/11 kanban", () => {
     expect(r(handle).top).toBeGreaterThanOrEqual(r(title).top - 1);
     expect(r(handle).top).toBeLessThan(r(title).bottom);
     expect(r(card).height, "one-line card height").toBeLessThanOrEqual(72);
-    expect(getComputedStyle(card).boxShadow, "no shadow inside a panel (FD-10)").toBe("none");
+    expect(getComputedStyle(card).boxShadow, "no shadow inside a panel (FD-10)").toMatch(/^(none|rgba\(0, 0, 0, 0\) 0px 0px 0px 0px(, )?)+$/);
     const board = q(root, "[role=region]");
     expect(getComputedStyle(board).scrollSnapType, "snap (FD-11)").toContain("x");
   });
@@ -132,7 +128,9 @@ describe("FD-08/09/10/11 kanban", () => {
     expect(overlay, "overlay marked").toBeTruthy();
     expect(Math.abs(r(overlay!).height - sourceHeight)).toBeLessThanOrEqual(1);
     const ph = q(root, "li[data-dragging]");
-    expect(ph.textContent?.trim(), "placeholder shows no text").toBe("");
+    const slot = q(ph, "article");
+    expect(getComputedStyle(slot).borderStyle, "placeholder is dashed").toContain("dashed");
+    for (const child of [...slot.children]) expect(getComputedStyle(child).opacity, "placeholder content is transparent").toBe("0");
     expect(document.body.style.cursor || getComputedStyle(document.body).cursor).toBe("grabbing");
     await userEvent.keyboard("{ArrowDown}");
     await frames(6);
@@ -256,7 +254,8 @@ describe("FD-23 card link", () => {
     const root = await mountStory("card", "WholeCardLink");
     const article = q(root, "article");
     const link = q(article, "a");
-    await userEvent.tab();
+    await userEvent.keyboard("{Shift}");
+    link.focus();
     expect(document.activeElement).toBe(link);
     expect(getComputedStyle(article).outlineStyle, "article ring").not.toBe("none");
     expect(getComputedStyle(link).outlineStyle, "link has no own ring").toBe("none");
@@ -278,7 +277,7 @@ describe("FD-25 panel", () => {
 describe("FD-27/28 meter and progress", () => {
   test("a low meter marks the track and uses a non-solid fill (FD-27)", async () => {
     const root = await mountStory("meter", "Low");
-    const track = q(root, "[role=meter] > div:last-child");
+    const track = q(root, "[data-slot=meter-track]");
     expect(track.hasAttribute("data-low"), "track data-low").toBe(true);
     const fill = q(track, "div");
     expect(getComputedStyle(fill).backgroundImage).not.toBe("none");

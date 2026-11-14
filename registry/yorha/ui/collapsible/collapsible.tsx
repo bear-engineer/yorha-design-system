@@ -9,7 +9,7 @@ function Collapsible({ className, ...props }: ComponentProps<typeof CollapsibleP
 
 /**
  * Toggle button. Hollow square bullet when closed, filled when open; open rows invert over a dark fill.
- * Pressing uses yorha-press, focus uses the shared focus ring.
+ * Hover tints a closed trigger, focus is an inset ring (the trigger shares its border with the panel).
  */
 function CollapsibleTrigger({ className, children, ...props }: ComponentProps<typeof CollapsiblePrimitive.Trigger>) {
   return (
@@ -17,11 +17,12 @@ function CollapsibleTrigger({ className, children, ...props }: ComponentProps<ty
       data-slot="collapsible-trigger"
       className={cnState(
         [
-          "group/trigger yorha-press flex w-full items-center gap-3 border border-yorha-border px-3 py-2 text-left",
+          "group/trigger yorha-tint flex min-h-row w-full cursor-pointer items-center gap-3 border border-yorha-border px-3 py-2 text-left",
           "font-yorha text-yorha-sm font-yorha-bold tracking-yorha-heading text-yorha-fg uppercase",
+          "transition-colors duration-(--motion-select) ease-yorha-out",
           "data-[panel-open]:bg-yorha-ink data-[panel-open]:text-yorha-on-ink",
-          "focus-visible:yorha-focus",
-          "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
+          "focus-visible:yorha-focus-inset",
+          "yorha-disabled",
         ],
         className,
       )}
@@ -30,7 +31,7 @@ function CollapsibleTrigger({ className, children, ...props }: ComponentProps<ty
       <span
         aria-hidden="true"
         data-yorha-bullet=""
-        className="inline-block size-2 shrink-0 border border-current group-data-[panel-open]/trigger:bg-current"
+        className="inline-block size-bullet shrink-0 border border-current group-data-[panel-open]/trigger:bg-current"
       />
       <span className="flex-1">{children}</span>
     </CollapsiblePrimitive.Trigger>
@@ -38,13 +39,16 @@ function CollapsibleTrigger({ className, children, ...props }: ComponentProps<ty
 }
 
 /** Panel body; height and opacity animate with yorha-collapse (--motion-collapse, reduced ≤120ms, off = 0). */
-function CollapsiblePanel({ className, ...props }: ComponentProps<typeof CollapsiblePrimitive.Panel>) {
+function CollapsiblePanel({ className, children, ...props }: ComponentProps<typeof CollapsiblePrimitive.Panel>) {
   return (
     <CollapsiblePrimitive.Panel
       data-slot="collapsible-panel"
-      className={cnState("yorha-collapse px-7 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg", className)}
+      className={cnState("yorha-collapse font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg", className)}
       {...props}
-    />
+    >
+      {/* joined to the trigger: side and bottom rules, text under the label (1 border + 12 + bullet 8 + gap 12 = 33; the panel's own border takes the first px) */}
+      <div className="border-x border-b border-yorha-border py-3 pr-3 pl-8">{children}</div>
+    </CollapsiblePrimitive.Panel>
   );
 }
 

@@ -34,7 +34,7 @@ export const Default: Story = {
 };
 
 export const Low: Story = {
-  args: { label: "HP 위험", value: 15, min: 0, max: 150 },
+  args: { label: "HP 위험", value: 15, min: 0, max: 150, low: 30, critical: 10 },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const meter = c.getByRole("meter", { name: "HP 위험" });

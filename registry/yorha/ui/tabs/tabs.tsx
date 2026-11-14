@@ -22,26 +22,27 @@ function TabsList({ className, children, activateOnFocus = true, ...props }: Com
       <TabsPrimitive.Indicator
         data-slot="tabs-indicator"
         aria-hidden="true"
-        className="absolute inset-y-0 left-0 w-px origin-left bg-yorha-ink [translate:var(--active-tab-left)_0] [scale:calc(var(--active-tab-width)_/_1px)_1] transition-[translate,scale] duration-(--motion-tab-indicator) ease-yorha-emphasized"
+        className="absolute top-0 -bottom-px left-0 w-px origin-left bg-yorha-ink [translate:var(--active-tab-left)_0] [scale:calc(var(--active-tab-width)_/_1px)_1] transition-[translate,scale] duration-(--motion-tab-indicator) ease-yorha-emphasized"
       />
       {children}
     </TabsPrimitive.List>
   );
 }
 
-/** Uppercase, widely tracked tab label; selected tab inverts (data-active). */
+/** Uppercase, widely tracked tab label; selected tab inverts (data-active), inactive tabs tint on hover. */
 function TabsTab({ className, ...props }: ComponentProps<typeof TabsPrimitive.Tab>) {
   return (
     <TabsPrimitive.Tab
       data-slot="tabs-tab"
       className={cnState(
         [
-          "relative z-10 flex-1 px-4 py-2 text-center",
+          "relative z-10 flex h-control-sm flex-1 cursor-pointer items-center justify-center px-pad-md text-center",
           "font-yorha text-yorha-sm font-yorha-medium tracking-yorha-wide text-yorha-fg uppercase",
-          "transition-[color,background-color,border-color] duration-(--motion-select) ease-yorha-out",
+          // label colour travels with the indicator (same duration and easing), so the label never flips ahead of the bar
+          "yorha-tint transition-[color] duration-(--motion-tab-indicator) ease-yorha-emphasized",
           "data-[active]:text-yorha-on-ink",
-          "focus-visible:yorha-focus",
-          "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
+          "focus-visible:yorha-focus-inset",
+          "yorha-disabled",
         ],
         className,
       )}

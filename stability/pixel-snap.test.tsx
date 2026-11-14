@@ -124,8 +124,6 @@ const SIZE_EXEMPT_ITEMS: Record<string, string> = {
  * that already passes is listed in the console as stale.
  */
 const PENDING_FAMILY_SWEEP = new Set<string>([
-  "accordion / Default",
-  "accordion / States",
   "app-shell / States",
   "autocomplete / Default",
   "autocomplete / States",
@@ -134,11 +132,8 @@ const PENDING_FAMILY_SWEEP = new Set<string>([
   "button / States",
   "calendar / Default",
   "calendar / States",
-  "card / Default",
   "checkbox / Default",
   "chip / States",
-  "collapsible / Default",
-  "collapsible / States",
   "combobox / Default",
   "combobox / States",
   "field / States",
@@ -147,8 +142,6 @@ const PENDING_FAMILY_SWEEP = new Set<string>([
   "form / States",
   "icon-button / States",
   "input-types / States",
-  "kanban / Default",
-  "kanban / States",
   "menubar / Default",
   "menubar / States",
   "navigation-menu / Default",

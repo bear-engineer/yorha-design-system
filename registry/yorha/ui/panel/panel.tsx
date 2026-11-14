@@ -38,7 +38,7 @@ export function Panel({
       {...rest}
       aria-labelledby={titled ? titleId : undefined}
       role={as === "div" && titled ? "group" : undefined}
-      className={cn(SURFACE, className)}
+      className={cn(SURFACE, showTop && "border-t-0", showBottom && "border-b-0", className)}
     >
       {showTop && <Ornament variant="band" />}
       {titled && (

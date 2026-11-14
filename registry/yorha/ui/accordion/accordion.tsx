@@ -31,13 +31,13 @@ function AccordionTrigger({ className, children, ...props }: ComponentProps<type
       data-slot="accordion-trigger"
       className={cnState(
         [
-          "group/trigger flex w-full items-center gap-3 px-3 py-3 text-left",
+          "group/trigger flex min-h-control-md w-full cursor-pointer items-center gap-3 px-3 py-2 text-left",
           "font-yorha text-yorha-sm font-yorha-bold tracking-yorha-heading text-yorha-fg uppercase",
           "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-left bg-no-repeat [background-size:0%_100%]",
-          "yorha-wipe",
+          "yorha-wipe yorha-tint",
           "data-[panel-open]:text-yorha-on-ink data-[panel-open]:[background-size:100%_100%]",
-          "focus-visible:yorha-focus",
-          "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
+          "focus-visible:yorha-focus-inset",
+          "yorha-disabled",
         ],
         className,
       )}
@@ -46,7 +46,7 @@ function AccordionTrigger({ className, children, ...props }: ComponentProps<type
       <span
         aria-hidden="true"
         data-yorha-bullet=""
-        className="inline-block size-2 shrink-0 border border-current group-data-[panel-open]/trigger:bg-current"
+        className="inline-block size-bullet shrink-0 border border-current group-data-[panel-open]/trigger:bg-current"
       />
       <span className="flex-1">{children}</span>
     </AccordionPrimitive.Trigger>
@@ -54,13 +54,16 @@ function AccordionTrigger({ className, children, ...props }: ComponentProps<type
 }
 
 /** Body; height animates with --motion-collapse (exit --motion-select) via yorha-collapse and is instant under reduced/off motion. */
-function AccordionPanel({ className, ...props }: ComponentProps<typeof AccordionPrimitive.Panel>) {
+function AccordionPanel({ className, children, ...props }: ComponentProps<typeof AccordionPrimitive.Panel>) {
   return (
     <AccordionPrimitive.Panel
       data-slot="accordion-panel"
-      className={cnState("yorha-collapse px-7 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg", className)}
+      className={cnState("yorha-collapse font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg", className)}
       {...props}
-    />
+    >
+      {/* padding lives inside the measured content: text starts under the label (12 + bullet 8 + gap 12 = 32) with 12px of air */}
+      <div className="py-3 pr-3 pl-8">{children}</div>
+    </AccordionPrimitive.Panel>
   );
 }
 

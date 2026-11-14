@@ -17,7 +17,7 @@ function ScrollAreaViewport({ className, ...props }: ComponentProps<typeof Scrol
       data-slot="scroll-area-viewport"
       role="region"
       tabIndex={0}
-      className={cnState("size-full outline-none focus-visible:yorha-focus", className)}
+      className={cnState("group/viewport size-full overscroll-contain outline-none focus-visible:yorha-focus-inset", className)}
       {...props}
     />
   );
@@ -25,19 +25,19 @@ function ScrollAreaViewport({ className, ...props }: ComponentProps<typeof Scrol
 
 /** Content wrapper inside the viewport; Base UI measures it for overflow. */
 function ScrollAreaContent({ className, ...props }: ComponentProps<typeof ScrollAreaPrimitive.Content>) {
-  return <ScrollAreaPrimitive.Content data-slot="scroll-area-content" className={cnState("min-w-full", className)} {...props} />;
+  return <ScrollAreaPrimitive.Content data-slot="scroll-area-content" className={cnState("min-w-full group-data-[has-overflow-y]/viewport:pe-2.5 group-data-[has-overflow-x]/viewport:pb-2.5", className)} {...props} />;
 }
 
-/** Thin track (8px) with a hairline border on its inner edge; orientation picks the axis. */
+/** Thin track (10px: 1px rule, 1px inset, 8px thumb lane) with a hairline on its inner edge; orientation picks the axis. */
 function ScrollAreaScrollbar({ className, ...props }: ComponentProps<typeof ScrollAreaPrimitive.Scrollbar>) {
   return (
     <ScrollAreaPrimitive.Scrollbar
       data-slot="scroll-area-scrollbar"
       className={cnState(
         [
-          "flex touch-none select-none bg-yorha-panel",
-          "data-[orientation=vertical]:w-2 data-[orientation=vertical]:border-l data-[orientation=vertical]:border-yorha-border",
-          "data-[orientation=horizontal]:h-2 data-[orientation=horizontal]:border-t data-[orientation=horizontal]:border-yorha-border",
+          "group/bar flex touch-none select-none bg-yorha-panel p-px",
+          "data-[orientation=vertical]:w-2.5 data-[orientation=vertical]:border-l data-[orientation=vertical]:border-yorha-border",
+          "data-[orientation=horizontal]:h-2.5 data-[orientation=horizontal]:border-t data-[orientation=horizontal]:border-yorha-border",
         ],
         className,
       )}
@@ -46,10 +46,20 @@ function ScrollAreaScrollbar({ className, ...props }: ComponentProps<typeof Scro
   );
 }
 
-/** Square thumb in the muted foreground colour; no rounding. */
+/** Square thumb, muted at rest and full foreground while hovering or scrolling; Base UI sizes the scroll axis. */
 function ScrollAreaThumb({ className, ...props }: ComponentProps<typeof ScrollAreaPrimitive.Thumb>) {
   return (
-    <ScrollAreaPrimitive.Thumb data-slot="scroll-area-thumb" className={cnState("relative flex-1 bg-yorha-fg-muted", className)} {...props} />
+    <ScrollAreaPrimitive.Thumb
+      data-slot="scroll-area-thumb"
+      className={cnState(
+        [
+          "relative bg-yorha-fg-muted transition-colors duration-(--motion-select) ease-yorha-out group-data-[hovering]/bar:bg-yorha-fg group-data-[scrolling]/bar:bg-yorha-fg",
+          "data-[orientation=vertical]:w-full data-[orientation=horizontal]:h-full",
+        ],
+        className,
+      )}
+      {...props}
+    />
   );
 }
 
