@@ -58,6 +58,8 @@
     "registry/yorha/layout/hud-layout/registry.json",
     "registry/yorha/router/nav-link/registry.json",
     "registry/yorha/router/route-transition/registry.json",
-    "registry/yorha/blocks/yorha-demo/registry.json"
+    "registry/yorha/blocks/yorha-demo/registry.json",
+    "registry/yorha/ui/prose/registry.json",
+    "registry/yorha/ui/text/registry.json"
   ]
 }
