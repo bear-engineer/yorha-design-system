@@ -1,7 +1,8 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 
-const routes = ["/", "/yorha-demo"];
+const routes = ["/", "/yorha-demo", "/bento-dashboard", "/settings-form"];
+const widths = [360, 1280];
 
 test("SSR HTML carries yorha classes", async ({ request }) => {
   for (const route of routes) {
@@ -34,12 +35,15 @@ for (const route of routes) {
       expect(family.indexOf("Pretendard Variable")).toBeLessThan(family.indexOf("Noto Sans KR Variable"));
     });
 
-    test("axe finds no violations", async ({ page }) => {
-      await page.goto(route);
-      await page.waitForLoadState("networkidle");
-      const { violations } = await new AxeBuilder({ page }).analyze();
-      expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
-    });
+    for (const width of widths) {
+      test(`axe finds no violations at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 800 });
+        await page.goto(route);
+        await page.waitForLoadState("networkidle");
+        const { violations } = await new AxeBuilder({ page }).analyze();
+        expect(violations.map((v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`)).toEqual([]);
+      });
+    }
   });
 }
 
@@ -53,4 +57,22 @@ test("Dialog opens and closes by keyboard", async ({ page }) => {
   await page.keyboard.press("Escape");
   await expect(dialog).toBeHidden();
   await expect(trigger).toBeFocused();
+});
+
+test("bento-dashboard route renders its tiles and state switch", async ({ page }) => {
+  await page.goto("/bento-dashboard");
+  await expect(page.getByRole("group", { name: "표시 상태" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "대시보드 내용" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "정상" })).toHaveAttribute("aria-pressed", "true");
+  await page.getByRole("button", { name: "오류" }).click();
+  await expect(page.getByRole("alert")).toBeVisible();
+});
+
+test("settings-form invalid submit moves focus to the error summary", async ({ page }) => {
+  await page.goto("/settings-form");
+  await page.waitForLoadState("networkidle");
+  await page.getByRole("button", { name: /저장/ }).click();
+  const summary = page.getByRole("group", { name: /입력을 확인하세요/ });
+  await expect(summary).toBeVisible();
+  await expect(summary).toBeFocused();
 });

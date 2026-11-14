@@ -1,9 +1,11 @@
 // Prepares the generated React Router fixture: removes template body CSS (per @yorha/init docs),
 // sets <html> theme attributes, registers the routes. Usage: node fixture-setup.mjs <fixtureDir> <gallerySrc>
 import { existsSync, mkdirSync, rmSync, readFileSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const [dir, gallery] = process.argv.slice(2);
+const srcDir = dirname(fileURLToPath(import.meta.url));
 const cssPath = join(dir, "app/app.css");
 let css = readFileSync(cssPath, "utf8");
 // Remove every unlayered top-level `html, body { ... }` rule of the template (brace matching).
@@ -33,8 +35,10 @@ if (!root.includes("<Meta />")) throw new Error("root.tsx has no <Meta />");
 // Pages need a <title> (axe document-title); the yorha-demo block ships no meta export, so set it in the root layout.
 writeFileSync(
   rootPath,
-  root
-    .replace('<html lang="en">', '<html lang="ko" data-theme="light" data-motion="full">')
+  // route-transition registers a popstate listener at import: it must load before the router is created.
+  `import "~/components/route-transition";\n` +
+    root
+    .replace('<html lang="en">', '<html lang="ko" data-theme="light">')
     .replace("<Meta />", "<title>YoRHa e2e</title>\n        <Meta />"),
 );
 
@@ -44,15 +48,28 @@ writeFileSync(
   join(dir, "app/routes/gallery.tsx"),
   readFileSync(gallery, "utf8"),
 );
-const demo = "routes/yorha-demo.tsx";
-if (!existsSync(join(dir, "app", demo))) throw new Error("yorha-demo route file not found");
+// Block routes are installed by `shadcn add` at app/routes/<name>.tsx; every one must exist before it is registered.
+const blockRoutes = ["yorha-demo", "bento-dashboard", "settings-form"];
+for (const name of blockRoutes) {
+  if (!existsSync(join(dir, "app/routes", `${name}.tsx`))) throw new Error(`block route file not found: app/routes/${name}.tsx`);
+}
+// Transitions fixture routes (e2e/transitions.spec.ts runs against the installed route-transition component).
+const tdir = join(dir, "app/routes/transitions");
+mkdirSync(tdir, { recursive: true });
+for (const [from, to] of [["layout.tsx", "layout.tsx"], ["list.tsx", "transitions-list.tsx"], ["detail.tsx", "detail.tsx"]]) {
+  writeFileSync(join(tdir, to), readFileSync(join(srcDir, "transitions", from), "utf8"));
+}
 writeFileSync(
   join(dir, "app/routes.ts"),
   `import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export default [
   index("routes/gallery.tsx"),
-  route("yorha-demo", "${demo}"),
+${blockRoutes.map((n) => `  route("${n}", "routes/${n}.tsx"),`).join("\n")}
+  route("transitions", "routes/transitions/layout.tsx", [
+    index("routes/transitions/transitions-list.tsx"),
+    route(":id", "routes/transitions/detail.tsx"),
+  ]),
 ] satisfies RouteConfig;
 `,
 );

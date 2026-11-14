@@ -71,6 +71,15 @@ while read -r type name; do
   if [ "$type" = "registry:block" ]; then BLOCKS+=("$name"); else NON_BLOCK+=("$name"); fi
 done < <(node -e 'for (const i of JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"))) console.log(i.type+" "+i.name)' "$ROOT/registry/items.json")
 echo "items: ${#NON_BLOCK[@]} + ${#BLOCKS[@]} block(s)"
+# v2 + A1 items and both blocks must be part of the install set (a registry that silently drops one fails here).
+REQUIRED_ITEMS="calendar date-picker timeline kanban date-input color-input file-input password-input search-input input-types route-transition bento-dashboard settings-form"
+for n in $REQUIRED_ITEMS; do
+  node -e 'const n=process.argv[1];if(!JSON.parse(require("fs").readFileSync(process.argv[2],"utf8")).some((i)=>i.name===n))process.exit(1)' "$n" "$ROOT/registry/items.json" \
+    || { echo "required item missing from registry/items.json: $n" >&2; exit 1; }
+done
+TOTAL=$(( ${#NON_BLOCK[@]} + ${#BLOCKS[@]} ))
+[ "$TOTAL" -ge 89 ] || { echo "expected at least 89 registry items, found $TOTAL" >&2; exit 1; }
+[ "${#BLOCKS[@]}" -ge 3 ] || { echo "expected yorha-demo + bento-dashboard + settings-form blocks" >&2; exit 1; }
 
 add_items() {
   local label="$1"; shift
@@ -105,6 +114,7 @@ curl -fsS "http://127.0.0.1:$APP_PORT/" -o /dev/null || { echo "app server not r
 E2E_LIGHT_BG="$(node -e 'const b=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.stdout.write(b.cssVars.light["yorha-bg"])' "$ROOT/public/r/base.json")"
 export E2E_LIGHT_BG
 export E2E_APP_URL="http://127.0.0.1:$APP_PORT"
+export E2E_TRANSITIONS_BASE="/transitions"
 cd "$ROOT"
 echo "==> playwright ($E2E_APP_URL, bg $E2E_LIGHT_BG)"
 rc=0

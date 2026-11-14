@@ -1,5 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
 
+// Installed fixture: E2E_APP_URL + E2E_TRANSITIONS_BASE (set by install.sh). Standalone Vite fixture: both unset.
+const BASE = process.env.E2E_TRANSITIONS_BASE ?? "";
+const APP_URL = process.env.E2E_APP_URL ?? "http://127.0.0.1:5199";
+const home = (query = "") => (BASE ? `${BASE}${query}` : `/${query}`);
+
 type Seen = { pseudo: string; name: string; duration: number };
 
 /** Records every ::view-transition pseudo-element animation seen until stopped. */
@@ -38,7 +43,7 @@ const names = (seen: Seen[]) => seen.map((s) => s.name);
 const pseudoName = (pseudo: string) => /\((.*)\)/.exec(pseudo)?.[1] ?? "";
 
 test("push animates with the forward class, POP with the back class", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(home());
   await expect(page.getByRole("heading", { name: "Units" })).toBeVisible();
 
   await startRecording(page);
@@ -69,7 +74,7 @@ test("push animates with the forward class, POP with the back class", async ({ p
 });
 
 test("replace navigation uses the replace class", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(home());
   await page.getByRole("link", { name: "Unit 2B" }).click();
   await expect(page.getByRole("article", { name: "detail" })).toBeVisible();
   await startRecording(page);
@@ -81,7 +86,7 @@ test("replace navigation uses the replace class", async ({ page }) => {
 });
 
 test("shared element names pair up between list and detail", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(home());
   await startRecording(page);
   await page.getByRole("link", { name: "Unit A2" }).click();
   await expect(page.getByRole("article", { name: "detail" })).toBeVisible();
@@ -100,7 +105,7 @@ test("shared element names pair up between list and detail", async ({ page }) =>
 });
 
 test("route durations come from the motion tokens", async ({ page }) => {
-  await page.goto("/");
+  await page.goto(home());
   await startRecording(page);
   await page.getByRole("link", { name: "Unit 2B" }).click();
   const seen = await stopRecording(page);
@@ -109,9 +114,9 @@ test("route durations come from the motion tokens", async ({ page }) => {
 });
 
 test("reduced motion crossfades in 120ms without movement", async ({ browser }) => {
-  const context = await browser.newContext({ reducedMotion: "reduce" });
+  const context = await browser.newContext({ reducedMotion: "reduce", baseURL: APP_URL, locale: "ko-KR" });
   const page = await context.newPage();
-  await page.goto("http://127.0.0.1:5199/");
+  await page.goto(home());
   await expect(page.locator("[data-route-transition]")).toHaveAttribute("data-route-transition", "reduced");
   await startRecording(page);
   await page.getByRole("link", { name: "Unit 9S" }).click();
@@ -125,7 +130,7 @@ test("reduced motion crossfades in 120ms without movement", async ({ browser }) 
 });
 
 test("motion off renders no view transition", async ({ page }) => {
-  await page.goto("/?motion=off");
+  await page.goto(home("?motion=off"));
   await expect(page.locator("[data-route-transition]")).toHaveAttribute("data-route-transition", "off");
   await startRecording(page);
   await page.getByRole("link", { name: "Unit 9S" }).click();
@@ -137,7 +142,7 @@ test("without document.startViewTransition the route changes with no animation",
   await page.addInitScript(() => {
     Object.defineProperty(document, "startViewTransition", { value: undefined, configurable: true });
   });
-  await page.goto("/");
+  await page.goto(home());
   await expect(page.locator("[data-route-transition]")).toHaveAttribute("data-route-transition", "unsupported");
   await startRecording(page);
   await page.getByRole("link", { name: "Unit 9S" }).click();
