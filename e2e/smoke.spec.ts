@@ -29,9 +29,12 @@ for (const route of routes) {
 
     test("Korean text resolves to the Pretendard stack", async ({ page }) => {
       await page.goto(route);
-      const ko = page.locator("body :text-matches('[가-힣]')").first();
+      // Wait for a rendered Korean text node: right after navigation the element can be swapped (hydration / state switch) and report "".
+      const ko = page.locator("body :text-matches('[가-힣]'):visible").first();
+      await ko.waitFor();
+      const info = await ko.evaluate((el) => `${el.tagName}|${el.textContent?.slice(0, 30)}`);
+      await expect.poll(() => ko.evaluate((el) => getComputedStyle(el).fontFamily), { message: info }).toContain("Pretendard Variable");
       const family = await ko.evaluate((el) => getComputedStyle(el).fontFamily);
-      expect(family).toContain("Pretendard Variable");
       expect(family.indexOf("Pretendard Variable")).toBeLessThan(family.indexOf("Noto Sans KR Variable"));
     });
 
