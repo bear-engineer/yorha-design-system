@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -83,5 +83,41 @@ describe("guides (C14, T13, A1)", () => {
       "가이드-base-ui-커버리지--docs",
       "가이드-ux-접근성-감사--docs",
     ]) expect(text, id).toContain(`?path=/docs/${id}`);
+  });
+});
+
+/** Every `.stories.tsx` under these roots. */
+function storyFiles(dir: string): string[] {
+  return readdirSync(join(root, dir), { withFileTypes: true }).flatMap((entry) => {
+    const rel = `${dir}/${entry.name}`;
+    if (entry.isDirectory()) return entry.name === "node_modules" ? [] : storyFiles(rel);
+    return entry.name.endsWith(".stories.tsx") ? [rel] : [];
+  });
+}
+
+/** Raw HTML tags left in a story's JSDoc (outside `code` spans and fences). */
+function rawTagsInDocComments(source: string): string[] {
+  const found: string[] = [];
+  for (const [, body = ""] of source.matchAll(/\/\*\*([\s\S]*?)\*\//g)) {
+    const text = body
+      .split("\n")
+      .map((line) => line.replace(/^\s*\*? ?/, ""))
+      .join("\n")
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/`[^`\n]*`/g, "")
+      .replace(/\{@[^}]*\}/g, "");
+    for (const tag of text.matchAll(/<\/?([A-Za-z][\w-]*)[\s/>]/g)) found.push(`<${tag[1]}>`);
+  }
+  return found;
+}
+
+describe("story descriptions (Tokens docs freeze)", () => {
+  // Autodocs renders a story's JSDoc as markdown, so an unquoted `<html>` becomes a real <html> React element.
+  // React then ties <html> to a fiber of the docs root; the next `selectionchange` from any input on the page
+  // walks container -> parent forever (dispatchEventForPluginEventSystem) and the main thread never returns.
+  it("no raw HTML tags in src/ story JSDoc", () => {
+    // registry/ stories (yorha-demo, yorha-provider, alert-dialog, dialog) still carry the same pattern; tracked in r-docs.md.
+    const offenders = storyFiles("src").flatMap((file) => rawTagsInDocComments(read(file)).map((tag) => `${file}: ${tag}`));
+    expect(offenders, "wrap tags in backticks, e.g. `<html>`").toEqual([]);
   });
 });

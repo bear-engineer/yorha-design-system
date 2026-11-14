@@ -498,7 +498,7 @@ export const PointerOpenAnimates: Story = {
   },
 };
 
-/** The toolbar default is `system`: no data-motion on <html>, so the OS reduced-motion preference decides. */
+/** The toolbar default is `system`: no data-motion on `<html>`, so the OS reduced-motion preference decides. */
 export const SystemMotion: Story = {
   globals: { motion: "system" },
   render: () => <p>system</p>,
