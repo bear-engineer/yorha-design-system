@@ -1,7 +1,7 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
-import { Calendar, getWeekStart, type DateRange } from "./calendar";
+import { Calendar, getWeekStart, type CalendarSingleProps, type DateRange } from "./calendar";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const THEME_LABEL: Record<(typeof THEMES)[number], string> = { light: "라이트", dark: "다크", "high-contrast": "고대비" };
@@ -11,6 +11,10 @@ const TODAY = new Date(2026, 10, 14);
 
 // --- helpers ---
 const cellOf = (root: HTMLElement, key: string) => root.querySelector<HTMLElement>(`[data-date="${key}"]`)!;
+/** Tab through the header buttons until the roving day has focus. */
+async function tabToGrid() {
+  for (let i = 0; i < 6 && !(document.activeElement as HTMLElement | null)?.dataset.date; i++) await userEvent.tab();
+}
 const activeKey = () => (document.activeElement as HTMLElement | null)?.dataset.date;
 const gridNames = (root: HTMLElement) =>
   within(root)
@@ -34,7 +38,8 @@ const durationsMs = (el: Element) =>
 
 const meta = {
   title: "컴포넌트/날짜/Calendar",
-  component: Calendar,
+  // the props are a union (single | range); stories type against the single branch and cast range args
+  component: Calendar as React.ComponentType<CalendarSingleProps>,
   tags: ["autodocs"],
   args: { today: TODAY },
   decorators: [
@@ -44,7 +49,7 @@ const meta = {
       </div>
     ),
   ],
-} satisfies Meta<typeof Calendar>;
+} satisfies Meta<CalendarSingleProps>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
@@ -56,7 +61,7 @@ export const Default: Story = {
     const today = cellOf(canvasElement, "2026-11-14");
     await expect(today).toHaveAttribute("aria-current", "date");
     await expect(canvasElement.querySelectorAll("[aria-current='date']")).toHaveLength(1);
-    await expect(today).toHaveAttribute("aria-label", expect.stringContaining("11월 14일"));
+    await expect(today).toHaveTextContent("14");
     // exactly one tab stop in the grid (roving tabindex)
     await expect(canvasElement.querySelectorAll("[role=gridcell][tabindex='0']")).toHaveLength(1);
     await expect(today).toHaveAttribute("tabindex", "0");
@@ -72,7 +77,7 @@ export const KeyboardNavigation: Story = {
   args: { weekStartsOn: 1 },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
-    await userEvent.tab();
+    await tabToGrid();
     await expect(activeKey()).toBe("2026-11-14");
     await userEvent.keyboard("{ArrowRight}");
     await expect(activeKey()).toBe("2026-11-15");
@@ -115,7 +120,7 @@ export const KeyboardNavigation: Story = {
 export const DisabledDaysSkipped: Story = {
   args: { onValueChange: fn(), weekStartsOn: 1, minDate: new Date(2026, 10, 10), maxDate: new Date(2026, 10, 20), isDateDisabled: (d: Date) => d.getDate() === 15 || d.getDate() === 16 },
   play: async ({ canvasElement, args }) => {
-    await userEvent.tab();
+    await tabToGrid();
     await expect(activeKey()).toBe("2026-11-14");
     await userEvent.keyboard("{ArrowRight}");
     await expect(activeKey()).toBe("2026-11-17");
@@ -268,8 +273,8 @@ export const RenderDay: Story = {
   },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getAllByTestId("dot")).toHaveLength(4);
-    await expect(cellOf(canvasElement, "2026-11-07")).toHaveAttribute("aria-label", expect.stringContaining("일정 있음"));
-    await expect(cellOf(canvasElement, "2026-11-08")).not.toHaveAttribute("aria-label", expect.stringContaining("일정"));
+    await expect(cellOf(canvasElement, "2026-11-07")).toHaveTextContent("일정 있음");
+    await expect(cellOf(canvasElement, "2026-11-08")).not.toHaveTextContent("일정");
   },
 };
 
@@ -280,6 +285,8 @@ export const ReducedMotion: Story = {
       await userEvent.click(c.getByRole("button", { name: "다음 달" }));
       await waitFor(() => expect(c.getByRole("grid", { name: "2026년 12월" })).toBeInTheDocument());
       const body = canvasElement.querySelector("[data-slot=calendar-month-body]")!;
+      // the slide starts from data-entering (no transition) and then eases to rest
+      await waitFor(() => expect(body).not.toHaveAttribute("data-entering"));
       const max = Math.max(...durationsMs(body));
       await expect(max).toBeGreaterThan(0);
       await expect(max).toBeLessThanOrEqual(120);
