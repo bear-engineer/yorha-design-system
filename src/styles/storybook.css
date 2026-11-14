@@ -1,0 +1,4 @@
+@import "tailwindcss";
+@import "./tokens.generated.css";
+@source "../../registry";
+@source "../../src";

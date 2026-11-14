@@ -1,0 +1,200 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "resolveJsonModule": true,
+    "types": [
+      "node",
+      "vite/client"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@/lib/utils": [
+        "./registry/yorha/lib/utils/utils.ts"
+      ],
+      "@/components/yorha-provider": [
+        "./registry/yorha/providers/yorha-provider/yorha-provider.tsx"
+      ],
+      "@/lib/sound": [
+        "./registry/yorha/sound/sound/sound.ts"
+      ],
+      "@/components/ui/button": [
+        "./registry/yorha/ui/button/button.tsx"
+      ],
+      "@/components/ui/icon-button": [
+        "./registry/yorha/ui/icon-button/icon-button.tsx"
+      ],
+      "@/components/ui/toggle": [
+        "./registry/yorha/ui/toggle/toggle.tsx"
+      ],
+      "@/components/ui/checkbox": [
+        "./registry/yorha/ui/checkbox/checkbox.tsx"
+      ],
+      "@/components/ui/radio-group": [
+        "./registry/yorha/ui/radio-group/radio-group.tsx"
+      ],
+      "@/components/ui/switch": [
+        "./registry/yorha/ui/switch/switch.tsx"
+      ],
+      "@/components/ui/slider": [
+        "./registry/yorha/ui/slider/slider.tsx"
+      ],
+      "@/components/ui/text-field": [
+        "./registry/yorha/ui/text-field/text-field.tsx"
+      ],
+      "@/components/ui/textarea": [
+        "./registry/yorha/ui/textarea/textarea.tsx"
+      ],
+      "@/components/ui/select": [
+        "./registry/yorha/ui/select/select.tsx"
+      ],
+      "@/components/ui/number-field": [
+        "./registry/yorha/ui/number-field/number-field.tsx"
+      ],
+      "@/components/ui/field": [
+        "./registry/yorha/ui/field/field.tsx"
+      ],
+      "@/components/ui/kbd": [
+        "./registry/yorha/ui/kbd/kbd.tsx"
+      ],
+      "@/components/ui/dialog": [
+        "./registry/yorha/ui/dialog/dialog.tsx"
+      ],
+      "@/components/ui/alert-dialog": [
+        "./registry/yorha/ui/alert-dialog/alert-dialog.tsx"
+      ],
+      "@/components/ui/popover": [
+        "./registry/yorha/ui/popover/popover.tsx"
+      ],
+      "@/components/ui/tooltip": [
+        "./registry/yorha/ui/tooltip/tooltip.tsx"
+      ],
+      "@/components/ui/menu": [
+        "./registry/yorha/ui/menu/menu.tsx"
+      ],
+      "@/components/ui/toast": [
+        "./registry/yorha/ui/toast/toast.tsx"
+      ],
+      "@/components/ui/progress": [
+        "./registry/yorha/ui/progress/progress.tsx"
+      ],
+      "@/components/ui/meter": [
+        "./registry/yorha/ui/meter/meter.tsx"
+      ],
+      "@/components/ui/spinner": [
+        "./registry/yorha/ui/spinner/spinner.tsx"
+      ],
+      "@/components/ui/skeleton": [
+        "./registry/yorha/ui/skeleton/skeleton.tsx"
+      ],
+      "@/components/ui/accordion": [
+        "./registry/yorha/ui/accordion/accordion.tsx"
+      ],
+      "@/components/ui/tabs": [
+        "./registry/yorha/ui/tabs/tabs.tsx"
+      ],
+      "@/components/ui/menu-list": [
+        "./registry/yorha/ui/menu-list/menu-list.tsx"
+      ],
+      "@/components/ui/panel": [
+        "./registry/yorha/ui/panel/panel.tsx"
+      ],
+      "@/components/ui/ornament": [
+        "./registry/yorha/ui/ornament/ornament.tsx"
+      ],
+      "@/components/ui/chip": [
+        "./registry/yorha/ui/chip/chip.tsx"
+      ],
+      "@/components/ui/badge": [
+        "./registry/yorha/ui/badge/badge.tsx"
+      ],
+      "@/components/ui/decipher": [
+        "./registry/yorha/ui/decipher/decipher.tsx"
+      ],
+      "@/components/ui/typer": [
+        "./registry/yorha/ui/typer/typer.tsx"
+      ],
+      "@/components/ui/boot-log": [
+        "./registry/yorha/ui/boot-log/boot-log.tsx"
+      ],
+      "@/components/ui/grid-background": [
+        "./registry/yorha/ui/grid-background/grid-background.tsx"
+      ],
+      "@/components/ui/vignette": [
+        "./registry/yorha/ui/vignette/vignette.tsx"
+      ],
+      "@/components/ui/heading": [
+        "./registry/yorha/ui/heading/heading.tsx"
+      ],
+      "@/components/ui/data-table": [
+        "./registry/yorha/ui/data-table/data-table.tsx"
+      ],
+      "@/components/ui/card": [
+        "./registry/yorha/ui/card/card.tsx"
+      ],
+      "@/components/stack": [
+        "./registry/yorha/layout/stack/stack.tsx"
+      ],
+      "@/components/grid": [
+        "./registry/yorha/layout/grid/grid.tsx"
+      ],
+      "@/components/container": [
+        "./registry/yorha/layout/container/container.tsx"
+      ],
+      "@/components/split": [
+        "./registry/yorha/layout/split/split.tsx"
+      ],
+      "@/components/app-shell": [
+        "./registry/yorha/layout/app-shell/app-shell.tsx"
+      ],
+      "@/components/sidebar": [
+        "./registry/yorha/layout/sidebar/sidebar.tsx"
+      ],
+      "@/components/page-header": [
+        "./registry/yorha/layout/page-header/page-header.tsx"
+      ],
+      "@/components/breadcrumb": [
+        "./registry/yorha/layout/breadcrumb/breadcrumb.tsx"
+      ],
+      "@/components/system-menu-layout": [
+        "./registry/yorha/layout/system-menu-layout/system-menu-layout.tsx"
+      ],
+      "@/components/hud-layout": [
+        "./registry/yorha/layout/hud-layout/hud-layout.tsx"
+      ],
+      "@/components/nav-link": [
+        "./registry/yorha/router/nav-link/nav-link.tsx"
+      ],
+      "@/components/route-transition": [
+        "./registry/yorha/router/route-transition/route-transition.tsx"
+      ]
+    }
+  },
+  "include": [
+    "registry",
+    "src",
+    ".storybook",
+    "scripts",
+    "vrt",
+    "*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "storybook-static",
+    "public",
+    "e2e/.fixture"
+  ]
+}

@@ -1,0 +1,13 @@
+node_modules/
+storybook-static/
+public/r/
+e2e/.fixture/
+e2e/.out/
+vrt/__screenshots__/**/*-actual.png
+vrt/__screenshots__/**/*-diff.png
+.vitest-attachments/
+*.log
+.DS_Store
+coverage/
+test-results/
+playwright-report/

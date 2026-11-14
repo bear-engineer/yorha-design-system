@@ -1,0 +1,394 @@
+[
+  {
+    "group": "base",
+    "name": "base",
+    "type": "registry:base",
+    "alias": null,
+    "file": null
+  },
+  {
+    "group": "base",
+    "name": "init",
+    "type": "registry:item",
+    "alias": null,
+    "file": null
+  },
+  {
+    "group": "lib",
+    "name": "utils",
+    "type": "registry:lib",
+    "alias": "@/lib/utils",
+    "file": "utils.ts"
+  },
+  {
+    "group": "providers",
+    "name": "yorha-provider",
+    "type": "registry:component",
+    "alias": "@/components/yorha-provider",
+    "file": "yorha-provider.tsx"
+  },
+  {
+    "group": "sound",
+    "name": "sound",
+    "type": "registry:lib",
+    "alias": "@/lib/sound",
+    "file": "sound.ts"
+  },
+  {
+    "group": "ui",
+    "name": "button",
+    "type": "registry:ui",
+    "alias": "@/components/ui/button",
+    "file": "button.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "icon-button",
+    "type": "registry:ui",
+    "alias": "@/components/ui/icon-button",
+    "file": "icon-button.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "toggle",
+    "type": "registry:ui",
+    "alias": "@/components/ui/toggle",
+    "file": "toggle.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "checkbox",
+    "type": "registry:ui",
+    "alias": "@/components/ui/checkbox",
+    "file": "checkbox.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "radio-group",
+    "type": "registry:ui",
+    "alias": "@/components/ui/radio-group",
+    "file": "radio-group.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "switch",
+    "type": "registry:ui",
+    "alias": "@/components/ui/switch",
+    "file": "switch.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "slider",
+    "type": "registry:ui",
+    "alias": "@/components/ui/slider",
+    "file": "slider.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "text-field",
+    "type": "registry:ui",
+    "alias": "@/components/ui/text-field",
+    "file": "text-field.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "textarea",
+    "type": "registry:ui",
+    "alias": "@/components/ui/textarea",
+    "file": "textarea.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "select",
+    "type": "registry:ui",
+    "alias": "@/components/ui/select",
+    "file": "select.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "number-field",
+    "type": "registry:ui",
+    "alias": "@/components/ui/number-field",
+    "file": "number-field.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "field",
+    "type": "registry:ui",
+    "alias": "@/components/ui/field",
+    "file": "field.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "kbd",
+    "type": "registry:ui",
+    "alias": "@/components/ui/kbd",
+    "file": "kbd.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "dialog",
+    "type": "registry:ui",
+    "alias": "@/components/ui/dialog",
+    "file": "dialog.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "alert-dialog",
+    "type": "registry:ui",
+    "alias": "@/components/ui/alert-dialog",
+    "file": "alert-dialog.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "popover",
+    "type": "registry:ui",
+    "alias": "@/components/ui/popover",
+    "file": "popover.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "tooltip",
+    "type": "registry:ui",
+    "alias": "@/components/ui/tooltip",
+    "file": "tooltip.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "menu",
+    "type": "registry:ui",
+    "alias": "@/components/ui/menu",
+    "file": "menu.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "toast",
+    "type": "registry:ui",
+    "alias": "@/components/ui/toast",
+    "file": "toast.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "progress",
+    "type": "registry:ui",
+    "alias": "@/components/ui/progress",
+    "file": "progress.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "meter",
+    "type": "registry:ui",
+    "alias": "@/components/ui/meter",
+    "file": "meter.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "spinner",
+    "type": "registry:ui",
+    "alias": "@/components/ui/spinner",
+    "file": "spinner.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "skeleton",
+    "type": "registry:ui",
+    "alias": "@/components/ui/skeleton",
+    "file": "skeleton.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "accordion",
+    "type": "registry:ui",
+    "alias": "@/components/ui/accordion",
+    "file": "accordion.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "tabs",
+    "type": "registry:ui",
+    "alias": "@/components/ui/tabs",
+    "file": "tabs.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "menu-list",
+    "type": "registry:ui",
+    "alias": "@/components/ui/menu-list",
+    "file": "menu-list.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "panel",
+    "type": "registry:ui",
+    "alias": "@/components/ui/panel",
+    "file": "panel.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "ornament",
+    "type": "registry:ui",
+    "alias": "@/components/ui/ornament",
+    "file": "ornament.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "chip",
+    "type": "registry:ui",
+    "alias": "@/components/ui/chip",
+    "file": "chip.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "badge",
+    "type": "registry:ui",
+    "alias": "@/components/ui/badge",
+    "file": "badge.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "decipher",
+    "type": "registry:ui",
+    "alias": "@/components/ui/decipher",
+    "file": "decipher.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "typer",
+    "type": "registry:ui",
+    "alias": "@/components/ui/typer",
+    "file": "typer.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "boot-log",
+    "type": "registry:ui",
+    "alias": "@/components/ui/boot-log",
+    "file": "boot-log.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "grid-background",
+    "type": "registry:ui",
+    "alias": "@/components/ui/grid-background",
+    "file": "grid-background.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "vignette",
+    "type": "registry:ui",
+    "alias": "@/components/ui/vignette",
+    "file": "vignette.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "heading",
+    "type": "registry:ui",
+    "alias": "@/components/ui/heading",
+    "file": "heading.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "data-table",
+    "type": "registry:ui",
+    "alias": "@/components/ui/data-table",
+    "file": "data-table.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "card",
+    "type": "registry:ui",
+    "alias": "@/components/ui/card",
+    "file": "card.tsx"
+  },
+  {
+    "group": "layout",
+    "name": "stack",
+    "type": "registry:component",
+    "alias": "@/components/stack",
+    "file": "stack.tsx"
+  },
+  {
+    "group": "layout",
+    "name": "grid",
+    "type": "registry:component",
+    "alias": "@/components/grid",
+    "file": "grid.tsx"
+  },
+  {
+    "group": "layout",
+    "name": "container",
+    "type": "registry:component",
+    "alias": "@/components/container",
+    "file": "container.tsx"
+  },
+  {
+    "group": "layout",
+    "name": "split",
+    "type": "registry:component",
+    "alias": "@/components/split",
+    "file": "split.tsx"
+  },
+  {
+    "group": "layout",
+    "name": "app-shell",
+    "type": "registry:component",
+    "alias": "@/components/app-shell",
+    "file": "app-shell.tsx"
+  },
+  {
+    "group": "layout",
+    "name": "sidebar",
+    "type": "registry:component",
+    "alias": "@/components/sidebar",
+    "file": "sidebar.tsx"
+  },
+  {
+    "group": "layout",
+    "name": "page-header",
+    "type": "registry:component",
+    "alias": "@/components/page-header",
+    "file": "page-header.tsx"
+  },
+  {
+    "group": "layout",
+    "name": "breadcrumb",
+    "type": "registry:component",
+    "alias": "@/components/breadcrumb",
+    "file": "breadcrumb.tsx"
+  },
+  {
+    "group": "layout",
+    "name": "system-menu-layout",
+    "type": "registry:component",
+    "alias": "@/components/system-menu-layout",
+    "file": "system-menu-layout.tsx"
+  },
+  {
+    "group": "layout",
+    "name": "hud-layout",
+    "type": "registry:component",
+    "alias": "@/components/hud-layout",
+    "file": "hud-layout.tsx"
+  },
+  {
+    "group": "router",
+    "name": "nav-link",
+    "type": "registry:component",
+    "alias": "@/components/nav-link",
+    "file": "nav-link.tsx"
+  },
+  {
+    "group": "router",
+    "name": "route-transition",
+    "type": "registry:component",
+    "alias": "@/components/route-transition",
+    "file": "route-transition.tsx"
+  },
+  {
+    "group": "blocks",
+    "name": "yorha-demo",
+    "type": "registry:block",
+    "alias": null,
+    "file": null
+  }
+]
