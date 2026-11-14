@@ -1,4 +1,15 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "skeleton",
+      "type": "registry:ui",
+      "title": "Skeleton",
+      "description": "Loading placeholder: a live region (role=status, aria-busy) with a faint 0.3rem grid scan that runs three passes and then stays still. Under reduced or off motion the scan never starts.",
+      "dependencies": [],
+      "registryDependencies": ["@yorha/utils", "@yorha/base"],
+      "files": [{ "path": "skeleton.tsx", "type": "registry:ui" }],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The grid scan is a CSS gradient and a Web Animation; no original assets are used."
+    }
+  ]
 }

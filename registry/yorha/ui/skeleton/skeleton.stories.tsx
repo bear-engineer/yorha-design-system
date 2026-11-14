@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, within } from "storybook/test";
+import { expect, waitFor, within } from "storybook/test";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -45,13 +45,14 @@ export const ReducedMotion: Story = {
     const c = within(canvasElement);
     const shimmer = shimmerOf(c.getByRole("status"));
     await expect(shimmer).not.toBeNull();
+    // shimmer is a Web Animation (no keyframes in kit CSS): count running animations
     try {
       html.dataset.motion = "full";
-      await expect(getComputedStyle(shimmer!).animationName).not.toBe("none");
+      await waitFor(() => expect(shimmer!.getAnimations().length).toBeGreaterThan(0));
       html.dataset.motion = "reduced";
-      await expect(getComputedStyle(shimmer!).animationName).toBe("none");
+      await waitFor(() => expect(shimmer!.getAnimations().length).toBe(0));
       html.dataset.motion = "off";
-      await expect(getComputedStyle(shimmer!).animationName).toBe("none");
+      await expect(shimmer!.getAnimations().length).toBe(0);
     } finally {
       html.dataset.motion = previous ?? "full";
     }
