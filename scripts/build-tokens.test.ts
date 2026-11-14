@@ -77,11 +77,11 @@ describe("token generator", () => {
       return css().slice(start, css().indexOf("\n}\n", start));
     };
 
-    it("CJK body leading is at least 1.7 and Latin stays 1.6", () => {
-      expect(Number(rootVar("yorha-leading-body-cjk"))).toBeGreaterThanOrEqual(1.7);
-      expect(Number(rootVar("yorha-leading-body"))).toBe(1.6);
+    it("CJK body leading is at least 1.7 and Latin at least 1.6 (whole px), switched by :lang()", () => {
+      expect(rootVar("yorha-leading-body-cjk")).toBe("1.75rem");
+      expect(rootVar("yorha-leading-latin")).toBe("1.625rem");
       expect(block(":lang(ko), :lang(ja)")).toContain("--yorha-leading-body: var(--yorha-leading-body-cjk);");
-      expect(block(":lang(en)")).toContain("--yorha-leading-body: 1.6;");
+      expect(block(":root, [data-density], :lang(en)")).toContain("--yorha-leading-body: var(--yorha-leading-latin);");
     });
 
     it("has a measure token of about 40em and a paragraph spacing token", () => {
@@ -349,5 +349,143 @@ describe("token generator", () => {
     expect(css).toMatch(/-webkit-text-size-adjust: 100%/);
     expect(css).toMatch(/-webkit-tap-highlight-color: transparent/);
     expect(css).toMatch(/touch-action: manipulation/);
+  });
+
+  describe("craft v3 tokens (G1, G2, G4, G11-G14)", () => {
+    const css = () => read("src/styles/tokens.generated.css");
+    const find = (selector: string, marker = "") => {
+      const all = css();
+      for (let start = all.indexOf(`\n${selector} {\n`); start >= 0; start = all.indexOf(`\n${selector} {\n`, start + 1)) {
+        const text = all.slice(start, all.indexOf("\n}\n", start));
+        if (text.includes(marker)) return text;
+      }
+      return expect.fail(`no "${selector}" block containing "${marker}"`);
+    };
+    const tokenRoot = () => find(":root", "--yorha-motion-select:");
+    const varIn = (block: string, name: string) => new RegExp(`\\n\\s+--${name}: ([^;]+);`).exec(block)?.[1];
+    const px = (value: string | undefined) => {
+      expect(value).toBeDefined();
+      const n = parseFloat(value ?? "");
+      return (value ?? "").endsWith("rem") ? n * 16 : n;
+    };
+    const utility = (name: string) => find(`@utility ${name}`);
+    const CONTEXTS = { compact: 'data-density=compact', default: "", comfortable: "data-density=comfortable" } as const;
+    const SIZES: Record<string, [number, number, number]> = {
+      "control-sm": [24, 32, 40], "control-md": [32, 40, 48], "control-lg": [40, 48, 56], row: [28, 32, 40],
+      "pad-sm": [8, 12, 12], "pad-md": [12, 16, 20], "pad-lg": [16, 24, 28],
+    };
+
+    it("G1: spacing stays 0.25rem in every density, the grid cell is 0.5rem", () => {
+      expect(varIn(tokenRoot(), "yorha-spacing")).toBe("0.25rem");
+      expect(varIn(tokenRoot(), "yorha-grid-size")).toBe("0.5rem");
+      for (const density of ["compact", "comfortable"]) {
+        const block = find(`[data-density=${density}]`);
+        expect(block).not.toMatch(/--yorha-spacing|\n\s+--spacing:/);
+      }
+    });
+
+    it.each(Object.entries(SIZES))("G2: size token %s per density", (name, [compact, normal, comfortable]) => {
+      expect(px(varIn(tokenRoot(), `yorha-${name}`))).toBe(normal);
+      expect(px(varIn(find("[data-density=compact]"), `yorha-${name}`))).toBe(compact);
+      expect(px(varIn(find("[data-density=comfortable]"), `yorha-${name}`))).toBe(comfortable);
+    });
+
+    it("G2: density-fixed indicator, bullet and icon sizes", () => {
+      const root = tokenRoot();
+      expect(px(varIn(root, "yorha-indicator"))).toBe(20);
+      expect(px(varIn(root, "yorha-bullet"))).toBe(8);
+      expect([12, 16, 20]).toEqual(["sm", "md", "lg"].map((k) => px(varIn(root, `yorha-icon-${k}`))));
+      expect(find("[data-density=compact]")).not.toContain("--yorha-icon-");
+    });
+
+    it("G2: Tailwind emits the canonical utility names from the generated @theme block", async () => {
+      const { compile } = await import("tailwindcss");
+      const theme = /@theme inline \{[\s\S]*?\n\}/.exec(css())?.[0] ?? "";
+      const classes = ["h-control-md", "size-control-sm", "w-control-lg", "min-h-row", "h-row", "px-pad-md", "px-pad-sm", "size-icon-md", "size-indicator", "size-bullet"];
+      const built = (await compile(`${theme}\n@tailwind utilities;`)).build(classes);
+      for (const name of classes) expect(built, name).toContain(`.${name.replace(/^(\w+)-/, "$1-")}`);
+      expect(built).toMatch(/\.h-control-md \{\s*height: var\(--yorha-control-md\)/);
+      expect(built).toMatch(/\.px-pad-md \{\s*padding-inline: var\(--yorha-pad-md\)/);
+    });
+
+    it("G2: docs data lists the size tokens", () => {
+      const names = (docsTokens as unknown as { sizes: { name: string }[] }).sizes.map((size) => size.name);
+      expect(names).toEqual(expect.arrayContaining(["control.sm", "control.md", "control.lg", "row", "pad.sm", "pad.md", "pad.lg", "indicator", "bullet", "icon.sm", "icon.md", "icon.lg"]));
+    });
+
+    it("G4: every type pair is a whole px at a 16px root in both densities; CJK >= 1.7, Latin >= 1.6", () => {
+      const sizePx = { xs: 12, sm: 14, lg: 18, xl: 22, "2xl": 28, "3xl": 36, display: 48 } as const;
+      const pairs = { xs: 16, sm: 20, lg: 28, xl: 30, "2xl": 36, "3xl": 44, display: 56 } as const;
+      for (const [k, size] of Object.entries(sizePx)) {
+        const line = px(varIn(tokenRoot(), `yorha-line-height-${k}`));
+        expect(line, k).toBe(pairs[k as keyof typeof pairs]);
+        expect(Number.isInteger(line) && line > size, k).toBe(true);
+      }
+      for (const [density, base, latin, cjk] of [["default", 16, 26, 28], ["comfortable", 17, 28, 30]] as const) {
+        const block = density === "default" ? tokenRoot() : find(`[data-density=${density}]`);
+        expect(px(varIn(block, "yorha-text-base"))).toBe(base);
+        const l = px(varIn(block, "yorha-leading-latin"));
+        const c = px(varIn(block, "yorha-leading-body-cjk"));
+        expect([l, c]).toEqual([latin, cjk]);
+        expect(c / base).toBeGreaterThanOrEqual(1.7);
+        expect(l / base).toBeGreaterThanOrEqual(1.6);
+      }
+      const theme = /@theme inline \{[\s\S]*?\n\}/.exec(css())?.[0] ?? "";
+      expect(theme).toContain("--text-yorha-sm--line-height: var(--yorha-line-height-sm);");
+      expect(theme).toContain("--text-yorha-base--line-height: var(--yorha-leading-body);");
+      expect(theme).toContain("--text-yorha-display--line-height: var(--yorha-line-height-display);");
+    });
+
+    it("G11: modal and drawer-exit durations, 0 when reduced or off", () => {
+      for (const [name, value] of Object.entries({ modal: "280ms", "modal-exit": "200ms", "drawer-exit": "280ms" })) {
+        expect(varIn(tokenRoot(), `yorha-motion-${name}`), name).toBe(value);
+        expect(varIn(tokenRoot(), `motion-${name}`), name).toBe(value);
+        expect(varIn(find("[data-motion=reduced]"), `yorha-motion-${name}`), name).toBe("0ms");
+        expect(varIn(find("[data-motion=off]"), `yorha-motion-${name}`), name).toBe("0ms");
+      }
+    });
+
+    it("G11: yorha-press guards disabled and loading, delays the colour flip by 0.35 of the select duration", () => {
+      const press = utility("yorha-press");
+      expect(press).toContain("&:active:not(:disabled, [data-disabled], [aria-disabled=true], [data-loading], [aria-busy=true])");
+      expect(press).toMatch(/transition-delay: 0s, calc\(var\(--motion-select\) \* 0\.35\), 0s, 0s, 0s;/);
+      expect(press).toMatch(/transition-property: scale, color, /);
+      expect(press).toMatch(/transition-duration: var\(--motion-press\), var\(--motion-press\), /);
+    });
+
+    it("G11: yorha-wipe colours at press speed with the same delay; exit reads --yorha-wipe-exit", () => {
+      const wipe = utility("yorha-wipe");
+      expect(wipe).toContain("var(--yorha-wipe-exit, var(--motion-select-exit))");
+      expect(wipe).toContain("calc(var(--motion-select) * 0.35)");
+      expect(wipe).toMatch(/var\(--motion-press\)/);
+    });
+
+    it("G11: slide exit reads the drawer-exit token, swipe strength and the standard ease", () => {
+      const slide = utility("yorha-slide-up");
+      expect(slide).toContain("calc(max(var(--motion-drawer-exit), var(--motion-reduced-fade)) * var(--drawer-swipe-strength, 1))");
+      expect(slide).toMatch(/&\[data-ending-style\] \{[^}]*transition-timing-function: var\(--yorha-ease\);/);
+    });
+
+    it("G12: caret, selection, autofill and no-select base rules", () => {
+      const base = find("@layer base");
+      expect(base).toMatch(/input, textarea \{\n\s+caret-color: var\(--yorha-ink\);/);
+      expect(base).toMatch(/::selection \{\n\s+background-color: var\(--yorha-ink\);\n\s+color: var\(--yorha-on-ink\);/);
+      expect(base).toMatch(/:is\(input, textarea, select\):-webkit-autofill \{[^}]*-webkit-text-fill-color: var\(--yorha-fg-strong\);[^}]*inset 0 0 0 100vmax var\(--yorha-bg\)/);
+      expect(base).toMatch(/:where\(button, summary, \[role=button\][^{]*\) \{\n\s+user-select: none;\n\s+-webkit-user-select: none;/);
+      expect(css()).toMatch(/@media \(forced-colors: active\) \{[\s\S]*::selection \{[^}]*Highlight[^}]*HighlightText/);
+    });
+
+    it("G13: decor sits behind content (z -1)", () => {
+      expect(varIn(tokenRoot(), "yorha-z-decor")).toBe("-1");
+    });
+
+    it("G14: yorha-segments draws the 8px pitch, 2px gap gauge on whole segments", () => {
+      const seg = utility("yorha-segments");
+      expect(seg).toContain("--yorha-seg-pitch: 8px;");
+      expect(seg).toContain("--yorha-seg-gap: 2px;");
+      expect(seg).toMatch(/repeating-linear-gradient\(to right, currentColor 0 calc\(var\(--yorha-seg-pitch\) - var\(--yorha-seg-gap\)\), transparent 0 var\(--yorha-seg-pitch\)\)/);
+      expect(seg).toContain("background-repeat: repeat-x;");
+      expect(Object.keys(baseItem().css)).toContain("@utility yorha-segments");
+    });
   });
 });
