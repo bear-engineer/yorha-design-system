@@ -1,4 +1,17 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "decipher",
+      "type": "registry:ui",
+      "title": "Decipher",
+      "description": "Text scramble/reveal effect. Final text stays in the accessibility tree; the glyph layer is aria-hidden, per-script glyph pools, flicker capped at MAX_FLASH_HZ, instant under reduced/off motion.",
+      "dependencies": [],
+      "registryDependencies": ["@yorha/base", "@yorha/utils", "@yorha/yorha-provider"],
+      "files": [
+        { "path": "decipher.tsx", "type": "registry:ui" }
+      ],
+      "docs": "Unofficial fan project. Runs once on mount and whenever `text` changes. Reads data-motion on <html>: reduced/off renders the final text synchronously."
+    }
+  ]
 }
