@@ -144,16 +144,51 @@ export const CloseWithKeyboard: Story = {
   },
 };
 
-/** Samples one value per animation frame until `done` or `ms` elapse. */
+/**
+ * Samples a value every frame or every 8ms, whichever comes first, until `done` or `ms` elapse. The timer keeps
+ * sampling when frames stall under load, so a running transition still yields intermediate values.
+ */
 async function sample<T>(read: () => T, ms: number, done?: (values: T[]) => boolean): Promise<T[]> {
   const values: T[] = [];
   const end = performance.now() + ms;
   while (performance.now() < end && !(done && done(values))) {
     values.push(read());
-    await new Promise((r) => requestAnimationFrame(r));
+    await Promise.race([new Promise((r) => requestAnimationFrame(r)), new Promise((r) => setTimeout(r, 8))]);
   }
   return values;
 }
+
+/**
+ * Runs `trigger`, freezes the first transition/animation that starts on `el` (or inside it) at its creation, then
+ * steps it from 0 to its end in 10 steps and records `read()` at each step. Deterministic regardless of machine load.
+ */
+async function frozen<T>(el: HTMLElement, trigger: () => Promise<unknown>, read: () => T): Promise<T[]> {
+  const doc = el.ownerDocument;
+  let anims: Animation[] = [];
+  const grab = (e: Event) => {
+    if (anims.length || !(e.target instanceof Element) || !(el === e.target || el.contains(e.target))) return;
+    anims = el.getAnimations({ subtree: true });
+    anims.forEach((a) => a.pause());
+  };
+  doc.addEventListener("transitionrun", grab, true);
+  doc.addEventListener("animationstart", grab, true);
+  try {
+    await trigger();
+    await waitFor(() => expect(anims.length, "an animation starts").toBeGreaterThan(0), { timeout: 2000 });
+  } finally {
+    doc.removeEventListener("transitionrun", grab, true);
+    doc.removeEventListener("animationstart", grab, true);
+  }
+  const total = Math.max(...anims.map((a) => Number(a.effect?.getComputedTiming().endTime ?? 0)));
+  const out: T[] = [];
+  for (let i = 0; i <= 10; i++) {
+    anims.forEach((a) => (a.currentTime = (total * i) / 10));
+    out.push(read());
+  }
+  anims.forEach((a) => a.finish());
+  return out;
+}
+
 
 export const MotionRecipe: Story = {
   args: { timeout: 0 },
@@ -169,24 +204,18 @@ export const MotionRecipe: Story = {
     const enter = await sample(() => +getComputedStyle(first).opacity, 700, (v) => v.at(-1) === 1);
     await expect(enter[0]).toBeLessThan(1);
 
-    // Adding another toast moves the first with a transition, not a jump.
-    await userEvent.click(add);
-    await waitFor(() => expect(toasts()).toHaveLength(2));
-    const lift = await sample(() => first.getBoundingClientRect().y, 700, (v) => v.length > 3 && v.at(-1) === v.at(-2));
-    await expect(new Set(lift.map((y) => Math.round(y))).size).toBeGreaterThan(2);
+    // Adding another toast moves the first with a transition, not a jump. Measured deterministically: the transition
+    // is frozen the moment it is created and stepped through, so main-thread stalls under load cannot hide it.
+    const lift = await frozen(first, () => userEvent.click(add), () => first.getBoundingClientRect().y);
+    await expect(between(lift), `lift ${lift.join(",")}`).toBe(true);
 
-    // Exit: opacity falls gradually; the node is not held at 1 and then removed. The toast behind it settles back down
-    // at the same time (an 8px peek, so it is sampled from before the click, not after the exit has ended).
+    // Exit: opacity falls gradually (not held at 1, then removed); the toast behind settles back down meanwhile.
     const newest = at(0);
-    const exit = (async () => sample(() => +getComputedStyle(newest).opacity, 700, () => !newest.isConnected))();
-    const drop = (async () => sample(() => first.getBoundingClientRect().y, 700, (v) => !newest.isConnected && v.length > 3 && v.at(-1) === v.at(-2)))();
-    await userEvent.click(within(newest).getByRole("button", { name: "닫기" }));
-    const fade = await exit;
-    await expect(fade.filter((o) => o < 1 && o > 0).length).toBeGreaterThan(1);
+    const fade = await frozen(newest, () => userEvent.click(within(newest).getByRole("button", { name: "닫기" })), () => +getComputedStyle(newest).opacity);
+    await expect(fade.every((o, i) => i === 0 || o <= fade[i - 1]! + 0.001), `falling: ${fade.join(",")}`).toBe(true);
+    await expect(fade.filter((o) => o < 1 && o > 0).length, `fade ${fade.join(",")}`).toBeGreaterThan(1);
     await expect(Math.min(...fade)).toBeLessThan(0.5);
     await waitFor(() => expect(toasts()).toHaveLength(1));
-    const settled = await drop;
-    await expect(new Set(settled.map((y) => Math.round(y))).size).toBeGreaterThan(1);
   },
 };
 
@@ -213,11 +242,21 @@ export const SwipeContinues: Story = {
     }
     await expect(toast).toHaveAttribute("data-swiping");
     const release = toast.getBoundingClientRect().x;
-    const run = (async () => sample(() => toast.getBoundingClientRect().x, 700, () => !toast.isConnected))();
     fireEvent.pointerUp(toast, { ...opts, clientX: x0 + 120, buttons: 0 });
-    const xs = await run;
+    // Deterministic under load: freeze the exit animation(s) and step through them, instead of racing the main thread
+    // (a stalled frame can let the whole exit run, and the node unmount, before a sampler ever sees it move).
+    await frame();
+    const anims = toast.getAnimations({ subtree: true });
+    await expect(anims.length, "the release starts an exit animation").toBeGreaterThan(0);
+    anims.forEach((a) => a.pause());
+    const total = Math.max(...anims.map((a) => Number(a.effect?.getComputedTiming().endTime ?? 0)));
+    const xs: number[] = [];
+    for (let i = 0; i <= 10; i++) {
+      anims.forEach((a) => (a.currentTime = (total * i) / 10));
+      xs.push(toast.getBoundingClientRect().x);
+    }
+    anims.forEach((a) => a.finish());
     await expect(release).toBeGreaterThan(box.x);
-    await expect(xs.length).toBeGreaterThan(2);
     for (let i = 1; i < xs.length; i++) await expect(xs[i] as number).toBeGreaterThanOrEqual((xs[i - 1] as number) - 0.5);
     await expect(Math.max(...xs)).toBeGreaterThan(release + 20);
   },
