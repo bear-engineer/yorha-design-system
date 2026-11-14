@@ -250,3 +250,6 @@ export async function checkControl(el: HTMLElement, options: { rowCheck?: boolea
 }
 
 export const fmt = (s: Shift[]) => s.map((x) => `${x.phase}/${x.which}: dx${x.dx.toFixed(2)} dy${x.dy.toFixed(2)} dw${x.dw.toFixed(2)} dh${x.dh.toFixed(2)}`).join("; ");
+
+// G15 geometry assertions live in .storybook/geometry.ts (shared with story play functions); re-exported for stability suites.
+export * from "../.storybook/geometry";
