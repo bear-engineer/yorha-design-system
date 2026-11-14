@@ -1,15 +1,47 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent, waitFor, within } from "storybook/test";
+import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import {
   Select,
   SelectContent,
   SelectGroup,
   SelectGroupLabel,
   SelectItem,
+  SelectLabel,
   SelectSeparator,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+
+// --- motion helpers (reduced: opacity-only, <=120ms; off: 0) ---
+async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
+  const root = document.documentElement;
+  const prev = root.getAttribute("data-motion");
+  root.setAttribute("data-motion", mode);
+  try {
+    await run();
+  } finally {
+    if (prev === null) root.removeAttribute("data-motion");
+    else root.setAttribute("data-motion", prev);
+  }
+}
+function durationsMs(el: Element): number[] {
+  return getComputedStyle(el)
+    .transitionDuration.split(",")
+    .map((v) => (v.trim().endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000));
+}
+/** Reduced: a fade of at most 120ms and no spatial travel (--motion-spatial is 0). */
+async function expectReduced(el: Element) {
+  // Base UI sets an inline `transition: none` for the first frame of some popups.
+  await waitFor(() => expect(getComputedStyle(el).transitionProperty).not.toBe("none"));
+  const max = Math.max(...durationsMs(el));
+  expect(max).toBeGreaterThan(0);
+  expect(max).toBeLessThanOrEqual(120);
+  expect(getComputedStyle(el).transitionProperty).toContain("opacity");
+  expect(getComputedStyle(document.documentElement).getPropertyValue("--motion-spatial").trim()).toBe("0");
+}
+async function expectOff(el: Element) {
+  expect(Math.max(...durationsMs(el))).toBe(0);
+}
 
 const UNITS = [
   { value: "archive", label: "Archive" },
@@ -276,5 +308,65 @@ export const Authentic: Story = {
   play: async () => {
     await userEvent.click(trigger());
     await listbox();
+  },
+};
+
+const MANY = Array.from({ length: 40 }, (_, i) => ({ value: `u${i + 1}`, label: `Unit ${String(i + 1).padStart(2, "0")}` }));
+
+/** Label, Arrow, Backdrop, scroll arrows (40 rows) and the item indicator of the selected row. */
+function PartsDemo() {
+  return (
+    <div className="w-72 bg-yorha-panel p-6 text-yorha-fg">
+      <Select items={MANY} defaultValue="u3">
+        <SelectLabel className="mb-1 block">유닛 목록</SelectLabel>
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent backdrop arrow className="max-h-48">
+          {MANY.map((u) => (
+            <SelectItem key={u.value} value={u.value}>
+              {u.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+  );
+}
+
+export const AllParts: Story = {
+  render: () => <PartsDemo />,
+  play: async () => {
+    await userEvent.click(body().getByRole("combobox", { name: "유닛 목록" }));
+    const list = await listbox();
+    await waitFor(() => expect(document.querySelector("[data-slot=select-backdrop]")).not.toBeNull());
+    await expect(document.querySelector("[data-slot=select-arrow]")).not.toBeNull();
+    await expect(document.querySelector("[data-slot=select-label]")).not.toBeNull();
+    // selected row shows its indicator, others do not
+    const selected = within(list).getByRole("option", { name: /Unit 03/ });
+    await expect(selected.querySelector("[data-slot=select-item-indicator]")).not.toBeNull();
+    await expect(within(list).getByRole("option", { name: /Unit 04/ }).querySelector("[data-slot=select-item-indicator]")).toBeNull();
+    // 40 rows overflow the popup: the down arrow appears
+    await waitFor(() => expect(document.querySelector("[data-slot=select-scroll-down-arrow][data-visible]")).not.toBeNull());
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body().queryByRole("listbox")).toBeNull());
+  },
+};
+
+export const ReducedMotion: Story = {
+  render: () => <PartsDemo />,
+  play: async () => {
+    for (const mode of ["reduced", "off"] as const) {
+      await inMotion(mode, async () => {
+        await userEvent.click(body().getByRole("combobox", { name: "유닛 목록" }));
+        const list = await screen.findByRole("listbox");
+        const popup = list.closest("[data-yorha-select-popup]")!;
+        await waitFor(() => expect(document.querySelector("[data-slot=select-backdrop]")).not.toBeNull());
+        const backdrop = document.querySelector("[data-slot=select-backdrop]")!;
+        for (const el of [popup, backdrop]) await (mode === "reduced" ? expectReduced : expectOff)(el);
+        await userEvent.keyboard("{Escape}");
+        await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull(), { timeout: 600 });
+      });
+    }
   },
 };

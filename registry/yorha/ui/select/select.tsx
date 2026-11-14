@@ -50,6 +50,10 @@ type ContentProps = ComponentProps<typeof SelectPrimitive.Popup> &
   Pick<PositionerProps, "side" | "align" | "sideOffset" | "alignOffset" | "alignItemWithTrigger"> & {
     /** Portal mount node; defaults to document.body. */
     container?: ComponentProps<typeof SelectPrimitive.Portal>["container"];
+    /** Render a SelectBackdrop (scrim) behind the popup. */
+    backdrop?: boolean;
+    /** Render a SelectArrow pointing at the trigger (not shown while `alignItemWithTrigger` overlaps it). */
+    arrow?: boolean;
   };
 
 /** Popup in a portal. Panel with thin border; rows wipe in dark on highlight. */
@@ -62,10 +66,13 @@ function SelectContent({
   alignOffset,
   alignItemWithTrigger = false,
   container,
+  backdrop = false,
+  arrow = false,
   ...props
 }: ContentProps) {
   return (
     <SelectPrimitive.Portal container={container}>
+      {backdrop ? <SelectBackdrop /> : null}
       <SelectPrimitive.Positioner
         side={side}
         align={align}
@@ -79,18 +86,21 @@ function SelectContent({
           data-yorha-select-popup=""
           className={cnState(
             [
-              "max-h-(--available-height) min-w-(--anchor-width) overflow-y-auto rounded-yorha border border-yorha-border bg-yorha-panel py-1 shadow-yorha-md",
+              "relative flex max-h-(--available-height) min-w-(--anchor-width) flex-col overflow-hidden rounded-yorha border border-yorha-border bg-yorha-panel py-1 shadow-yorha-md",
               "font-yorha text-yorha-sm text-yorha-fg",
-              "origin-top transition-[opacity,translate] duration-(--motion-select) ease-yorha-out",
-              "data-[starting-style]:-translate-y-1 data-[starting-style]:opacity-0",
-              "data-[ending-style]:translate-y-0 data-[ending-style]:opacity-0 data-[ending-style]:duration-(--motion-select-exit) data-[ending-style]:ease-yorha-in",
+              "yorha-pop",
             ],
             className,
           )}
           {...props}
         >
-          <SelectPrimitive.List data-slot="select-list">{children}</SelectPrimitive.List>
+          <SelectScrollUpArrow />
+          <SelectPrimitive.List data-slot="select-list" className="min-h-0 flex-1 overflow-y-auto">
+            {children}
+          </SelectPrimitive.List>
+          <SelectScrollDownArrow />
         </SelectPrimitive.Popup>
+        {arrow ? <SelectArrow /> : null}
       </SelectPrimitive.Positioner>
     </SelectPrimitive.Portal>
   );
@@ -133,10 +143,74 @@ function SelectItem({ className, children, ...props }: ItemProps) {
       <span
         aria-hidden="true"
         data-yorha-bullet=""
-        className="inline-block size-2 shrink-0 border border-current group-data-[selected]/item:bg-current"
-      />
+        className="inline-block size-2 shrink-0 border border-current"
+      >
+        <SelectItemIndicator className="m-0 block size-full bg-current" />
+      </span>
       <SelectPrimitive.ItemText className="flex-1 truncate">{children}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
+  );
+}
+
+const ARROW =
+  "relative block h-1.5 w-3 overflow-clip " +
+  "data-[side=bottom]:top-[-6px] data-[side=top]:bottom-[-6px] data-[side=top]:rotate-180 " +
+  "data-[side=left]:right-[-9px] data-[side=left]:rotate-90 data-[side=right]:left-[-9px] data-[side=right]:-rotate-90 " +
+  "before:absolute before:bottom-0 before:left-1/2 before:size-[calc(6px*1.4142)] before:border before:border-yorha-border " +
+  "before:bg-yorha-panel before:content-[''] before:[transform:translate(-50%,50%)_rotate(45deg)]";
+
+/** Pointer from the popup to the trigger. Not shown while the popup aligns over the trigger (`alignItemWithTrigger`). */
+function SelectArrow({ className, ...props }: ComponentProps<typeof SelectPrimitive.Arrow>) {
+  return <SelectPrimitive.Arrow data-slot="select-arrow" className={cnState(ARROW, className)} {...props} />;
+}
+
+/** Scrim behind the popup. Fades with `yorha-fade`. */
+function SelectBackdrop({ className, ...props }: ComponentProps<typeof SelectPrimitive.Backdrop>) {
+  return (
+    <SelectPrimitive.Backdrop
+      data-slot="select-backdrop"
+      className={cnState("yorha-fade fixed inset-0 z-(--yorha-z-overlay) bg-yorha-scrim", className)}
+      {...props}
+    />
+  );
+}
+
+/** Label for the whole select (names the trigger). Pair with `<Select>`; not the same as a group label. */
+function SelectLabel({ className, ...props }: ComponentProps<typeof SelectPrimitive.Label>) {
+  return (
+    <SelectPrimitive.Label
+      data-slot="select-label"
+      className={cnState("font-yorha-bold text-yorha-xs tracking-yorha-heading text-yorha-fg-soft uppercase", className)}
+      {...props}
+    />
+  );
+}
+
+const SCROLL_ARROW =
+  "absolute inset-x-0 z-1 flex h-5 w-full cursor-default items-center justify-center bg-yorha-panel text-yorha-fg " +
+  "before:size-1.5 before:border-r-2 before:border-b-2 before:border-current before:content-[''] " +
+  "data-[direction=up]:top-0 data-[direction=up]:before:translate-y-0.5 data-[direction=up]:before:rotate-[225deg] " +
+  "data-[direction=down]:bottom-0 data-[direction=down]:before:-translate-y-0.5 data-[direction=down]:before:rotate-45 " +
+  "[&:not([data-visible])]:hidden";
+
+/** Appears at the top of a clipped list; hovering scrolls up. Decorative, keyboard navigation scrolls too. */
+function SelectScrollUpArrow({ className, ...props }: ComponentProps<typeof SelectPrimitive.ScrollUpArrow>) {
+  return <SelectPrimitive.ScrollUpArrow aria-hidden="true" data-slot="select-scroll-up-arrow" className={cnState(SCROLL_ARROW, className)} {...props} />;
+}
+
+/** Appears at the bottom of a clipped list; hovering scrolls down. */
+function SelectScrollDownArrow({ className, ...props }: ComponentProps<typeof SelectPrimitive.ScrollDownArrow>) {
+  return <SelectPrimitive.ScrollDownArrow aria-hidden="true" data-slot="select-scroll-down-arrow" className={cnState(SCROLL_ARROW, className)} {...props} />;
+}
+
+/** Check mark slot of the selected item. SelectItem renders it itself; exported for custom rows. */
+function SelectItemIndicator({ className, ...props }: ComponentProps<typeof SelectPrimitive.ItemIndicator>) {
+  return (
+    <SelectPrimitive.ItemIndicator
+      data-slot="select-item-indicator"
+      className={cnState("ml-auto text-current", className)}
+      {...props}
+    />
   );
 }
 
@@ -167,4 +241,12 @@ function SelectSeparator({ className, ...props }: ComponentProps<typeof SelectPr
   );
 }
 
-export { Select, SelectContent, SelectGroup, SelectGroupLabel, SelectItem, SelectSeparator, SelectTrigger, SelectValue };
+export {
+  Select,
+  SelectArrow,
+  SelectBackdrop,
+  SelectItemIndicator,
+  SelectLabel,
+  SelectScrollDownArrow,
+  SelectScrollUpArrow,
+  SelectContent, SelectGroup, SelectGroupLabel, SelectItem, SelectSeparator, SelectTrigger, SelectValue };
