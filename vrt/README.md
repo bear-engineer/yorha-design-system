@@ -31,3 +31,4 @@ The image tag must match the `playwright` version pinned in `package.json` (1.65
 
 - Not covered: other stories per item, the authentic theme, overlays in dark/high-contrast.
 - Update baselines: `pnpm vitest run --project vrt --update`.
+- Rebaseline with `--update=all` (vitest 5: plain `--update` does not rewrite PNGs; `pnpm test:vrt -- --update=all` also drops the flag, so call vitest directly).
