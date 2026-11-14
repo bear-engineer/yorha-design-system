@@ -180,6 +180,63 @@
       ],
       "@/components/route-transition": [
         "./registry/yorha/router/route-transition/route-transition.tsx"
+      ],
+      "@/components/ui/prose": [
+        "./registry/yorha/ui/prose/prose.tsx"
+      ],
+      "@/components/ui/text": [
+        "./registry/yorha/ui/text/text.tsx"
+      ],
+      "@/components/ui/navigation-menu": [
+        "./registry/yorha/ui/navigation-menu/navigation-menu.tsx"
+      ],
+      "@/components/ui/menubar": [
+        "./registry/yorha/ui/menubar/menubar.tsx"
+      ],
+      "@/components/ui/toolbar": [
+        "./registry/yorha/ui/toolbar/toolbar.tsx"
+      ],
+      "@/components/ui/input": [
+        "./registry/yorha/ui/input/input.tsx"
+      ],
+      "@/components/ui/otp-field": [
+        "./registry/yorha/ui/otp-field/otp-field.tsx"
+      ],
+      "@/components/ui/checkbox-group": [
+        "./registry/yorha/ui/checkbox-group/checkbox-group.tsx"
+      ],
+      "@/components/ui/form": [
+        "./registry/yorha/ui/form/form.tsx"
+      ],
+      "@/components/ui/fieldset": [
+        "./registry/yorha/ui/fieldset/fieldset.tsx"
+      ],
+      "@/components/ui/autocomplete": [
+        "./registry/yorha/ui/autocomplete/autocomplete.tsx"
+      ],
+      "@/components/ui/combobox": [
+        "./registry/yorha/ui/combobox/combobox.tsx"
+      ],
+      "@/components/ui/toggle-group": [
+        "./registry/yorha/ui/toggle-group/toggle-group.tsx"
+      ],
+      "@/components/ui/avatar": [
+        "./registry/yorha/ui/avatar/avatar.tsx"
+      ],
+      "@/components/ui/collapsible": [
+        "./registry/yorha/ui/collapsible/collapsible.tsx"
+      ],
+      "@/components/ui/scroll-area": [
+        "./registry/yorha/ui/scroll-area/scroll-area.tsx"
+      ],
+      "@/components/ui/separator": [
+        "./registry/yorha/ui/separator/separator.tsx"
+      ],
+      "@/components/ui/timeline": [
+        "./registry/yorha/ui/timeline/timeline.tsx"
+      ],
+      "@/components/bento": [
+        "./registry/yorha/layout/bento/bento.tsx"
       ]
     }
   },

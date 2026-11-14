@@ -390,5 +390,138 @@
     "type": "registry:block",
     "alias": null,
     "file": null
+  },
+  {
+    "group": "ui",
+    "name": "prose",
+    "type": "registry:ui",
+    "alias": "@/components/ui/prose",
+    "file": "prose.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "text",
+    "type": "registry:ui",
+    "alias": "@/components/ui/text",
+    "file": "text.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "navigation-menu",
+    "type": "registry:ui",
+    "alias": "@/components/ui/navigation-menu",
+    "file": "navigation-menu.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "menubar",
+    "type": "registry:ui",
+    "alias": "@/components/ui/menubar",
+    "file": "menubar.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "toolbar",
+    "type": "registry:ui",
+    "alias": "@/components/ui/toolbar",
+    "file": "toolbar.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "input",
+    "type": "registry:ui",
+    "alias": "@/components/ui/input",
+    "file": "input.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "otp-field",
+    "type": "registry:ui",
+    "alias": "@/components/ui/otp-field",
+    "file": "otp-field.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "checkbox-group",
+    "type": "registry:ui",
+    "alias": "@/components/ui/checkbox-group",
+    "file": "checkbox-group.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "form",
+    "type": "registry:ui",
+    "alias": "@/components/ui/form",
+    "file": "form.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "fieldset",
+    "type": "registry:ui",
+    "alias": "@/components/ui/fieldset",
+    "file": "fieldset.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "autocomplete",
+    "type": "registry:ui",
+    "alias": "@/components/ui/autocomplete",
+    "file": "autocomplete.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "combobox",
+    "type": "registry:ui",
+    "alias": "@/components/ui/combobox",
+    "file": "combobox.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "toggle-group",
+    "type": "registry:ui",
+    "alias": "@/components/ui/toggle-group",
+    "file": "toggle-group.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "avatar",
+    "type": "registry:ui",
+    "alias": "@/components/ui/avatar",
+    "file": "avatar.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "collapsible",
+    "type": "registry:ui",
+    "alias": "@/components/ui/collapsible",
+    "file": "collapsible.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "scroll-area",
+    "type": "registry:ui",
+    "alias": "@/components/ui/scroll-area",
+    "file": "scroll-area.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "separator",
+    "type": "registry:ui",
+    "alias": "@/components/ui/separator",
+    "file": "separator.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "timeline",
+    "type": "registry:ui",
+    "alias": "@/components/ui/timeline",
+    "file": "timeline.tsx"
+  },
+  {
+    "group": "layout",
+    "name": "bento",
+    "type": "registry:component",
+    "alias": "@/components/bento",
+    "file": "bento.tsx"
   }
 ]
