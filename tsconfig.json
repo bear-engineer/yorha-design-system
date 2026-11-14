@@ -70,6 +70,12 @@
       "@/components/ui/kbd": [
         "./registry/yorha/ui/kbd/kbd.tsx"
       ],
+      "@/components/ui/icons": [
+        "./registry/yorha/ui/icons/icons.tsx"
+      ],
+      "@/components/ui/input-group": [
+        "./registry/yorha/ui/input-group/input-group.tsx"
+      ],
       "@/components/ui/dialog": [
         "./registry/yorha/ui/dialog/dialog.tsx"
       ],
