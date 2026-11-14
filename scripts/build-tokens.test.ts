@@ -584,4 +584,39 @@ describe("craft v3 recipes (G5-G10)", () => {
       expect(Object.keys(baseItem().css)).toContain("@utility yorha-focus-inset");
     });
   });
+
+  describe("G8 row recipe", () => {
+    it("yorha-row: full-bleed box on the row token, one ink layer, wipe only on the highlighted state", () => {
+      const row = utility("yorha-row");
+      for (const rule of ["position: relative;", "display: flex;", "align-items: center;", "gap: 8px;", "min-height: var(--yorha-row);", "padding: 4px 8px;", "user-select: none;", "outline: none;", "color: var(--yorha-fg);", "background-image: linear-gradient(var(--yorha-ink), var(--yorha-ink));", "background-size: 0% 100%;", "background-position: left;", "background-repeat: no-repeat;"]) expect(row, rule).toContain(rule);
+      // base state leaves at once (0s); only the highlighted state transitions, over the press token
+      expect(row).toMatch(/transition-property: background-size, color;\n\s+transition-duration: 0s;/);
+      expect(row).toMatch(/&\[data-highlighted\]:not\(\[data-disabled\]\) \{[^}]*background-size: 100% 100%;[^}]*color: var\(--yorha-on-ink\);[^}]*transition-duration: var\(--motion-press\);[^}]*transition-timing-function: var\(--yorha-ease-out\);/);
+      expect(row).toMatch(/&\[data-disabled\] \{[^}]*color: var\(--yorha-disabled\);[^}]*cursor: not-allowed;/);
+      expect(row).toMatch(/@media \(forced-colors: active\) \{[\s\S]*outline: 2px solid Highlight;[\s\S]*outline-offset: -2px;/);
+      expect(row).not.toContain("duration-");
+    });
+
+    it("the indicator slot is hidden in popups with no check, radio or option rows (no bullet on plain action rows)", () => {
+      expect(find("@layer base")).toMatch(/\[data-slot\$=-content\]:not\(:has\(\[role=menuitemcheckbox\], \[role=menuitemradio\], \[role=option\]\)\) \[data-slot=row-indicator\] \{\n\s+display: none;/);
+      expect(Object.keys(baseItem().css)).toContain("@utility yorha-row");
+    });
+  });
+
+  describe("G10 overlay surface", () => {
+    it("yorha-surface: panel ground, hairline border, no radius, hard offset shadow", () => {
+      const surface = utility("yorha-surface");
+      for (const rule of ["background-color: var(--yorha-panel);", "color: var(--yorha-fg);", "border: var(--yorha-border-width) solid var(--yorha-border);", "border-radius: var(--yorha-radius);", "box-shadow: 4px 4px 0 0 var(--yorha-shadow);"]) expect(surface, rule).toContain(rule);
+    });
+
+    it("yorha-scroll: contained thin scrollbar; yorha-scroll-cue-x: edge hairlines that show only when scrolled away", () => {
+      const scroll = utility("yorha-scroll");
+      for (const rule of ["overflow: auto;", "overscroll-behavior: contain;", "scrollbar-width: thin;", "scrollbar-color: var(--yorha-border) transparent;"]) expect(scroll, rule).toContain(rule);
+      const cue = utility("yorha-scroll-cue-x");
+      expect(cue).toMatch(/background-attachment: local, local, scroll, scroll;/);
+      expect(cue).toContain("var(--yorha-scroll-ground, var(--yorha-bg))");
+      expect(cue).toContain("var(--yorha-border)");
+      for (const name of ["yorha-surface", "yorha-scroll", "yorha-scroll-cue-x"]) expect(Object.keys(baseItem().css)).toContain(`@utility ${name}`);
+    });
+  });
 });
