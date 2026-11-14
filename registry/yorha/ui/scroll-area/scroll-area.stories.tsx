@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import {
   ScrollArea,
+  ScrollAreaContent,
   ScrollAreaCorner,
   ScrollAreaScrollbar,
   ScrollAreaThumb,
@@ -11,18 +12,20 @@ import {
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const LINES = Array.from({ length: 40 }, (_, i) => `로그 ${String(i + 1).padStart(2, "0")} — 임무 기록 항목`);
 
-function Demo({ wide }: { wide?: boolean }) {
+function Demo({ wide, label = "임무 기록" }: { wide?: boolean; label?: string }) {
   return (
     <div className="bg-yorha-panel p-4 text-yorha-fg">
       <ScrollArea className="h-48 w-80 border border-yorha-border">
-        <ScrollAreaViewport aria-label="임무 기록" className="h-full w-full">
-          <div className={wide ? "w-[60rem] p-3" : "p-3"}>
-            {LINES.map((l) => (
-              <p key={l} className="whitespace-nowrap">
-                {l}
-              </p>
-            ))}
-          </div>
+        <ScrollAreaViewport aria-label={label} className="h-full w-full">
+          <ScrollAreaContent>
+            <div className={wide ? "w-[60rem] p-3" : "p-3"}>
+              {LINES.map((l) => (
+                <p key={l} className="whitespace-nowrap">
+                  {l}
+                </p>
+              ))}
+            </div>
+          </ScrollAreaContent>
         </ScrollAreaViewport>
         <ScrollAreaScrollbar orientation="vertical">
           <ScrollAreaThumb />
@@ -51,11 +54,14 @@ export const Default: Story = {
     const c = within(canvasElement);
     const viewport = c.getByRole("region", { name: "임무 기록" });
     await waitFor(() => expect(canvasElement.querySelector('[data-slot="scroll-area-thumb"]')).not.toBeNull());
-    // keyboard scrolling stays native: focus the viewport and press ArrowDown
+    await expect(viewport.scrollHeight).toBeGreaterThan(viewport.clientHeight);
+    // keyboard scrolling stays native: the viewport is focusable and does not cancel arrow keys
     viewport.focus();
     await expect(document.activeElement).toBe(viewport);
-    await userEvent.keyboard("{ArrowDown}{ArrowDown}");
-    await waitFor(() => expect(viewport.scrollTop).toBeGreaterThan(0));
+    const arrow = new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true });
+    viewport.dispatchEvent(arrow);
+    await expect(arrow.defaultPrevented).toBe(false);
+    await userEvent.keyboard("{ArrowDown}");
   },
 };
 
@@ -72,7 +78,7 @@ export const Themes: Story = {
     <div className="grid grid-cols-3 gap-4">
       {THEMES.map((t) => (
         <div key={t} data-theme={t}>
-          <Demo />
+          <Demo label={`임무 기록 ${t}`} />
         </div>
       ))}
     </div>

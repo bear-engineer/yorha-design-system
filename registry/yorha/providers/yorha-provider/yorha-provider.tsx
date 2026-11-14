@@ -1,5 +1,7 @@
 "use client";
 
+import { CSPProvider } from "@base-ui/react/csp-provider";
+import { DirectionProvider } from "@base-ui/react/direction-provider";
 import {
   createContext,
   useCallback,
@@ -87,7 +89,15 @@ function useRootAttribute(name: string, value: string) {
   }, [name, value]);
 }
 
-export function YorhaProvider({ theme: themeProp, motion: motionProp, density: densityProp, sound, children }: YorhaProviderProps) {
+export function YorhaProvider({
+  theme: themeProp,
+  motion: motionProp,
+  density: densityProp,
+  sound,
+  direction = "ltr",
+  nonce,
+  children,
+}: YorhaProviderProps) {
   const [theme, setTheme] = useState<Theme>(themeProp ?? "light");
   const [density, setDensity] = useState<Density>(densityProp ?? "default");
   // Initial state is server-safe ("full"); the real preference is resolved in an effect.
@@ -135,7 +145,13 @@ export function YorhaProvider({ theme: themeProp, motion: motionProp, density: d
     () => ({ theme, setTheme, motion, setMotion, density, setDensity, soundEnabled, setSoundEnabled, soundVolume, setSoundVolume }),
     [theme, motion, setMotion, density, soundEnabled, soundVolume, setSoundVolume],
   );
-  return <YorhaContext.Provider value={value}>{children}</YorhaContext.Provider>;
+  return (
+    <CSPProvider nonce={nonce}>
+      <DirectionProvider direction={direction}>
+        <YorhaContext.Provider value={value}>{children}</YorhaContext.Provider>
+      </DirectionProvider>
+    </CSPProvider>
+  );
 }
 
 function useYorha(): YorhaContextValue {

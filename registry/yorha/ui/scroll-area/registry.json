@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "scroll-area",
+      "type": "registry:ui",
+      "title": "ScrollArea",
+      "description": "Thin YoRHa scroll region on Base UI ScrollArea: 8px square thumb and track, corner patch, focusable viewport for native keyboard scrolling.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "scroll-area.tsx",
+          "type": "registry:ui",
+          "target": "@ui/scroll-area.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Compose ScrollArea, ScrollAreaViewport (give it aria-label), ScrollAreaScrollbar (orientation), ScrollAreaThumb, ScrollAreaCorner."
+    }
+  ]
+}

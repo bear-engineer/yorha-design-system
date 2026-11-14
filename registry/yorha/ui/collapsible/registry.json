@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "collapsible",
+      "type": "registry:ui",
+      "title": "Collapsible",
+      "description": "Single disclosure row on Base UI Collapsible: the same bullet and inverted open state as Accordion, panel height animated with yorha-collapse.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "collapsible.tsx",
+          "type": "registry:ui",
+          "target": "@ui/collapsible.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Compose Collapsible, CollapsibleTrigger, CollapsiblePanel."
+    }
+  ]
+}
