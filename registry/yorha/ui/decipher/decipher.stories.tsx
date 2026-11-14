@@ -114,6 +114,39 @@ export const ReducedMotion: Story = {
   },
 };
 
+/** Stubs matchMedia for the reduced-motion query and clears data-motion (no provider). Returns cleanup. */
+function stubOsReducedMotion(reduce: boolean) {
+  const root = document.documentElement;
+  const prev = root.getAttribute("data-motion");
+  root.removeAttribute("data-motion");
+  const original = window.matchMedia;
+  window.matchMedia = (query: string) =>
+    ({
+      matches: reduce && query.includes("prefers-reduced-motion"),
+      media: query,
+      onchange: null,
+      addListener() {},
+      removeListener() {},
+      addEventListener() {},
+      removeEventListener() {},
+      dispatchEvent: () => false,
+    }) as MediaQueryList;
+  return () => {
+    window.matchMedia = original;
+    if (prev !== null) root.setAttribute("data-motion", prev);
+  };
+}
+
+/** FTXT-04: with no provider, the OS reduced-motion preference alone makes the final text show at once. */
+export const OsReducedMotion: Story = {
+  beforeEach: () => stubOsReducedMotion(true),
+  render: (args) => <Heading text={args.text} />,
+  play: async ({ canvasElement, args }) => {
+    const heading = within(canvasElement).getByRole("heading", { name: args.text });
+    expect(glyphLayer(heading).textContent).toBe(args.text);
+  },
+};
+
 export const MotionOff: Story = {
   beforeEach: () => setMotion("off"),
   render: (args) => <Heading text={args.text} />,

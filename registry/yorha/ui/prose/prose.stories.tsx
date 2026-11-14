@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
+import { Heading } from "../heading/heading";
 import { Prose, ProseTable } from "./prose";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -148,6 +149,50 @@ const ROWS = Array.from({ length: 3 }, (_, i) => ({
   cells: ["12", "08", "41", "07", "33", "19", "02", "66"],
 }));
 
+/** FTXT-03: a prose h3 has the same case and tracking as Heading level 3 (Latin). */
+export const HeadingParity: Story = {
+  render: () => (
+    <div lang="en">
+      <Prose>
+        <h3>Parity check</h3>
+      </Prose>
+      <Heading level={3}>Parity check</Heading>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const [proseH3, headingH3] = Array.from(canvasElement.querySelectorAll<HTMLElement>("h3"));
+    const p = getComputedStyle(proseH3!);
+    const h = getComputedStyle(headingH3!);
+    await expect(p.textTransform).toBe("uppercase");
+    await expect(p.textTransform).toBe(h.textTransform);
+    await expect(p.letterSpacing).toBe(h.letterSpacing);
+  },
+};
+
+/** FTXT-10: nested lists keep a 4px rhythm; only the outer list takes the 16px block margin. */
+export const NestedLists: Story = {
+  render: () => (
+    <div lang="en">
+      <Prose>
+        <ul>
+          <li>
+            Outer item
+            <ul>
+              <li>Inner item</li>
+            </ul>
+          </li>
+        </ul>
+      </Prose>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const outer = canvasElement.querySelector<HTMLElement>("ul")!;
+    const inner = canvasElement.querySelector<HTMLElement>("li ul")!;
+    await expect(parseFloat(getComputedStyle(outer).marginTop)).toBeGreaterThanOrEqual(16);
+    await expect(parseFloat(getComputedStyle(inner).marginTop)).toBeLessThanOrEqual(4);
+  },
+};
+
 export const WideTable: Story = {
   render: () => (
     <div lang="en">
@@ -155,6 +200,7 @@ export const WideTable: Story = {
         <ProseTable
           label="Unit load by channel"
           caption="Channel load"
+          className="min-w-[720px]"
         >
           <thead>
             <tr>
@@ -185,6 +231,9 @@ export const WideTable: Story = {
     await expect(region.getAttribute("tabindex")).toBe("0");
     const table = region.querySelector("table") as HTMLElement;
     await expect(getComputedStyle(table).fontVariantNumeric).toContain("tabular-nums");
+    // FTXT-07: the table is wider than the 360 frame, so the region scrolls and shows the edge cue.
+    await expect(region.scrollWidth > region.clientWidth).toBe(true);
+    await expect(getComputedStyle(region).backgroundImage).toContain("linear-gradient");
   },
 };
 

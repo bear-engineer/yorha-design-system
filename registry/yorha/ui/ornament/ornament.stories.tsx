@@ -31,6 +31,9 @@ export const Band: Story = {
     await expect(band!).toHaveAttribute("aria-hidden", "true");
     await expect(getComputedStyle(band!).pointerEvents).toBe("none");
     await expect(c.queryByRole("separator")).toBeNull();
+    // FTXT-01: fixed 12px box; the 1px rule sits at an integer offset, not `center` (which lands on y=6.695).
+    await expect(getComputedStyle(band!).height).toBe("12px");
+    await expect(getComputedStyle(band!).backgroundPosition.split(",")[0].trim()).toBe("0px 6px");
   },
 };
 
@@ -40,6 +43,8 @@ export const RuleSeparatorVariant: Story = {
     const deco = canvasElement.querySelector<HTMLElement>('[data-slot="ornament"]');
     await expect(deco).not.toBeNull();
     await expect(deco!).toHaveAttribute("aria-hidden", "true");
+    await expect(getComputedStyle(deco!).height).toBe("12px");
+    await expect(getComputedStyle(deco!).backgroundPosition.split(",")[0].trim()).toBe("0px 6px");
     await expect(within(canvasElement).queryByRole("separator")).toBeNull();
   },
 };

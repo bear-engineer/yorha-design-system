@@ -85,6 +85,22 @@ export const Skip: Story = {
   },
 };
 
+/** FTXT-09: a finished run disables the controls with the designed disabled recipe, not opacity alone. */
+export const FinishedControls: Story = {
+  render: (args) => (
+    <div className="w-[36rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
+      <BootLog {...args} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "건너뛰기" }));
+    const skip = c.getByRole("button", { name: "건너뛰기" });
+    await waitFor(() => expect(skip).toBeDisabled());
+    await expect(getComputedStyle(skip).opacity).toBe("1");
+  },
+};
+
 export const ReducedMotion: Story = {
   render: (args) => (
     <div className="w-[36rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
