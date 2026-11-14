@@ -23,10 +23,17 @@ function durationsMs(el: Element): number[] {
     .map((v) => (v.trim().endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000));
 }
 
+const BOOL = { control: "inline-radio", options: [false, true] } as const;
+
 const meta = {
   title: "컴포넌트/폼/Switch",
   component: Switch,
   tags: ["autodocs"],
+  // Radio instead of the default boolean switch: Storybook greys its inactive "True"/"False" label below 4.5:1 (docs axe).
+  argTypes: {
+    defaultChecked: BOOL,
+    disabled: BOOL,
+  },
   decorators: [
     (Story) => (
       <div className="bg-yorha-panel p-6 text-yorha-fg">
