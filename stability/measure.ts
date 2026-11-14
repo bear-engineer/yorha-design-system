@@ -157,8 +157,8 @@ export async function measure(
   action: () => Promise<void> | void,
   ms = SAMPLE_MS,
 ): Promise<Shift[]> {
-  const base = { control: rectOf(targets.control), row: rectOf(targets.row) };
   if (targets.rowCheck === false) targets = { ...targets, row: targets.control };
+  const base = { control: rectOf(targets.control), row: rectOf(targets.row) };
   const worst: Record<"control" | "row", Shift> = {
     control: { phase, which: "control", dx: 0, dy: 0, dw: 0, dh: 0 },
     row: { phase, which: "row", dx: 0, dy: 0, dw: 0, dh: 0 },

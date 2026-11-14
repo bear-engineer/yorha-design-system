@@ -16,7 +16,7 @@ stabilitySuite("actions, overlays and expanders: state changes never move the co
   { item: "context-menu", selector: '[aria-label="유닛 카드"]' },
   { item: "menubar" },
   { item: "navigation-menu" },
-  { item: "accordion", rowCheck: false, stage: "top" },
+  { item: "accordion", rowCheck: false, stage: "top", exclude: "[data-slot=accordion-trigger]:not([data-panel-open])" } /* a closed row sits below the open panel that collapses (single mode), so it moves by design; the open row and panel height are covered in stability-accordion */,
   { item: "collapsible", rowCheck: false, stage: "top" },
   { item: "data-table" },
   { item: "kanban" },
