@@ -245,12 +245,16 @@ describe("token generator", () => {
       expect(stagger).toMatch(/animation-delay: calc\(var\(--motion-stagger\) \* [^;]*var\(--yorha-stagger-index, 0\)/);
       expect(stagger).toContain("animation-name: yorha-stagger-in;");
       expect(stagger).toContain("var(--motion-reduced-fade)");
-      expect(block("@keyframes yorha-stagger-in")).toMatch(/from \{\n\s+opacity: 0;/);
+      // Inside @layer base, not top level: the shadcn CLI moves a top-level @keyframes into @theme, where Tailwind drops it.
+      expect(block("@layer base")).toMatch(/\n  @keyframes yorha-stagger-in \{\n\s+from \{\n\s+opacity: 0;/);
+      expect(css()).not.toMatch(/^@keyframes /m);
     });
 
     it("registry base item carries the same utilities, keyframes and motion variables", () => {
       const item = baseItem();
-      expect(Object.keys(item.css)).toEqual(expect.arrayContaining([...MOTION_UTILITIES.map((name) => `@utility ${name}`), "@keyframes yorha-stagger-in"]));
+      expect(Object.keys(item.css)).toEqual(expect.arrayContaining(MOTION_UTILITIES.map((name) => `@utility ${name}`)));
+      expect(Object.keys(item.css).filter((key) => key.startsWith("@keyframes"))).toEqual([]);
+      expect(Object.keys(item.css["@layer base"] as Record<string, unknown>)).toContain("@keyframes yorha-stagger-in");
       const root = item.css[":root"] as Record<string, string>;
       for (const [name, value] of Object.entries(DURATIONS)) expect(root[`--motion-${name}`], name).toBe(value);
       expect((item.css["[data-motion=reduced]"] as Record<string, string>)["--motion-spatial"]).toBe("0");

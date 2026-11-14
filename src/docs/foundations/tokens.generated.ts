@@ -1109,6 +1109,105 @@ export const tokens = {
         "full": "70ms",
         "reduced": "0ms",
         "off": "0ms"
+      },
+      {
+        "name": "popover",
+        "cssVar": "--yorha-motion-popover",
+        "alias": "--motion-popover",
+        "utility": "",
+        "value": "160ms",
+        "description": "Popover, tooltip, menu and select popup, enter (yorha-pop).",
+        "full": "160ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "popover-exit",
+        "cssVar": "--yorha-motion-popover-exit",
+        "alias": "--motion-popover-exit",
+        "utility": "",
+        "value": "120ms",
+        "description": "Popup exit (faster than enter).",
+        "full": "120ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "drawer",
+        "cssVar": "--yorha-motion-drawer",
+        "alias": "--motion-drawer",
+        "utility": "",
+        "value": "450ms",
+        "description": "Drawer and sheet slide, enter and exit (yorha-slide-*). A swipe release scales it by --drawer-swipe-strength.",
+        "full": "450ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "collapse",
+        "cssVar": "--yorha-motion-collapse",
+        "alias": "--motion-collapse",
+        "utility": "",
+        "value": "240ms",
+        "description": "Height change of accordion and collapsible panels (yorha-collapse).",
+        "full": "240ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "tab-indicator",
+        "cssVar": "--yorha-motion-tab-indicator",
+        "alias": "--motion-tab-indicator",
+        "utility": "",
+        "value": "240ms",
+        "description": "Active tab indicator travelling between tabs.",
+        "full": "240ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "route",
+        "cssVar": "--yorha-motion-route",
+        "alias": "--motion-route",
+        "utility": "",
+        "value": "320ms",
+        "description": "Route (page) transition, entering view.",
+        "full": "320ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "route-exit",
+        "cssVar": "--yorha-motion-route-exit",
+        "alias": "--motion-route-exit",
+        "utility": "",
+        "value": "200ms",
+        "description": "Route transition, leaving view (faster than enter).",
+        "full": "200ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "shared-element",
+        "cssVar": "--yorha-motion-shared-element",
+        "alias": "--motion-shared-element",
+        "utility": "",
+        "value": "360ms",
+        "description": "Shared element morph between two routes (view-transition-name).",
+        "full": "360ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "press",
+        "cssVar": "--yorha-motion-press",
+        "alias": "--motion-press",
+        "utility": "",
+        "value": "90ms",
+        "description": "Press feedback on buttons and other pressable controls (yorha-press).",
+        "full": "90ms",
+        "reduced": "0ms",
+        "off": "0ms"
       }
     ],
     "easings": [
@@ -1135,7 +1234,103 @@ export const tokens = {
         "utility": "ease-yorha-in",
         "value": "cubic-bezier(0.4, 0, 1, 1)",
         "description": "Exit."
+      },
+      {
+        "name": "emphasized",
+        "cssVar": "--yorha-ease-emphasized",
+        "alias": "",
+        "utility": "ease-yorha-emphasized",
+        "value": "cubic-bezier(0.32, 0.72, 0, 1)",
+        "description": "Large surfaces that travel far: drawer, route, shared element, collapse, tab indicator."
+      },
+      {
+        "name": "decelerate",
+        "cssVar": "--yorha-ease-decelerate",
+        "alias": "",
+        "utility": "ease-yorha-decelerate",
+        "value": "cubic-bezier(0, 0, 0.2, 1)",
+        "description": "Small popups entering from their anchor (yorha-pop)."
       }
+    ],
+    "parameters": [
+      {
+        "name": "reduced-fade",
+        "cssVar": "--yorha-motion-reduced-fade",
+        "alias": "--motion-reduced-fade",
+        "utility": "",
+        "value": "0ms",
+        "description": "Opacity fade that replaces spatial motion when data-motion=reduced (120ms there, 0 in full and off). Use max(<duration token>, this) for opacity.",
+        "full": "0ms",
+        "reduced": "120ms",
+        "off": "0ms"
+      },
+      {
+        "name": "spatial",
+        "cssVar": "--yorha-motion-spatial",
+        "alias": "--motion-spatial",
+        "utility": "",
+        "value": "1",
+        "description": "1 while scale / translate / height movement is allowed, 0 when data-motion is reduced or off. Multiply distances by it.",
+        "full": "1",
+        "reduced": "0",
+        "off": "0"
+      },
+      {
+        "name": "scale.pop",
+        "cssVar": "--yorha-motion-scale-pop",
+        "alias": "--motion-scale-pop",
+        "utility": "",
+        "value": "0.96",
+        "description": "Scale a popup starts from and ends at (yorha-pop).",
+        "full": "0.96",
+        "reduced": "0.96",
+        "off": "0.96"
+      },
+      {
+        "name": "scale.press",
+        "cssVar": "--yorha-motion-scale-press",
+        "alias": "--motion-scale-press",
+        "utility": "",
+        "value": "0.97",
+        "description": "Scale of a pressed control (yorha-press).",
+        "full": "0.97",
+        "reduced": "0.97",
+        "off": "0.97"
+      },
+      {
+        "name": "shift",
+        "cssVar": "--yorha-motion-shift",
+        "alias": "--motion-shift",
+        "utility": "",
+        "value": "0.5rem",
+        "description": "Offset a panel or a staggered row starts from (yorha-panel, yorha-stagger).",
+        "full": "0.5rem",
+        "reduced": "0.5rem",
+        "off": "0.5rem"
+      },
+      {
+        "name": "stagger-max",
+        "cssVar": "--yorha-motion-stagger-max",
+        "alias": "--motion-stagger-max",
+        "utility": "",
+        "value": "12",
+        "description": "Highest row index that still adds stagger delay; later rows enter together (yorha-stagger).",
+        "full": "12",
+        "reduced": "12",
+        "off": "12"
+      }
+    ],
+    "utilities": [
+      "yorha-pop",
+      "yorha-panel",
+      "yorha-fade",
+      "yorha-slide-up",
+      "yorha-slide-down",
+      "yorha-slide-left",
+      "yorha-slide-right",
+      "yorha-collapse",
+      "yorha-press",
+      "yorha-stagger"
     ]
   },
   "zIndex": [

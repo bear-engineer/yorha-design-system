@@ -37,7 +37,65 @@
           "value": 0,
           "unit": "ms"
         }
+      },
+      "popover": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "popover-exit": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "drawer": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "collapse": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "tab-indicator": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "route": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "route-exit": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "shared-element": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "press": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
       }
+    },
+    "spatial": {
+      "$type": "number",
+      "$value": 0
     }
   }
 }

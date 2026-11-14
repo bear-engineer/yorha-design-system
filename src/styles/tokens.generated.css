@@ -119,6 +119,8 @@
   --ease-yorha: var(--yorha-ease);
   --ease-yorha-out: var(--yorha-ease-out);
   --ease-yorha-in: var(--yorha-ease-in);
+  --ease-yorha-emphasized: var(--yorha-ease-emphasized);
+  --ease-yorha-decelerate: var(--yorha-ease-decelerate);
 }
 
 :root {
@@ -168,9 +170,41 @@
   --motion-stagger: 100ms;
   --yorha-motion-scramble-char: 70ms;
   --motion-scramble-char: 70ms;
+  --yorha-motion-popover: 160ms;
+  --motion-popover: 160ms;
+  --yorha-motion-popover-exit: 120ms;
+  --motion-popover-exit: 120ms;
+  --yorha-motion-drawer: 450ms;
+  --motion-drawer: 450ms;
+  --yorha-motion-collapse: 240ms;
+  --motion-collapse: 240ms;
+  --yorha-motion-tab-indicator: 240ms;
+  --motion-tab-indicator: 240ms;
+  --yorha-motion-route: 320ms;
+  --motion-route: 320ms;
+  --yorha-motion-route-exit: 200ms;
+  --motion-route-exit: 200ms;
+  --yorha-motion-shared-element: 360ms;
+  --motion-shared-element: 360ms;
+  --yorha-motion-press: 90ms;
+  --motion-press: 90ms;
   --yorha-ease: cubic-bezier(0.2, 0, 0, 1);
   --yorha-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --yorha-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --yorha-ease-emphasized: cubic-bezier(0.32, 0.72, 0, 1);
+  --yorha-ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --yorha-motion-reduced-fade: 0ms;
+  --motion-reduced-fade: 0ms;
+  --yorha-motion-spatial: 1;
+  --motion-spatial: 1;
+  --yorha-motion-scale-pop: 0.96;
+  --motion-scale-pop: 0.96;
+  --yorha-motion-scale-press: 0.97;
+  --motion-scale-press: 0.97;
+  --yorha-motion-shift: 0.5rem;
+  --motion-shift: 0.5rem;
+  --yorha-motion-stagger-max: 12;
+  --motion-stagger-max: 12;
   --yorha-z-base: 0;
   --yorha-z-decor: 1;
   --yorha-z-raised: 10;
@@ -330,6 +364,28 @@
     --motion-stagger: 0ms;
     --yorha-motion-scramble-char: 0ms;
     --motion-scramble-char: 0ms;
+    --yorha-motion-popover: 0ms;
+    --motion-popover: 0ms;
+    --yorha-motion-popover-exit: 0ms;
+    --motion-popover-exit: 0ms;
+    --yorha-motion-drawer: 0ms;
+    --motion-drawer: 0ms;
+    --yorha-motion-collapse: 0ms;
+    --motion-collapse: 0ms;
+    --yorha-motion-tab-indicator: 0ms;
+    --motion-tab-indicator: 0ms;
+    --yorha-motion-route: 0ms;
+    --motion-route: 0ms;
+    --yorha-motion-route-exit: 0ms;
+    --motion-route-exit: 0ms;
+    --yorha-motion-shared-element: 0ms;
+    --motion-shared-element: 0ms;
+    --yorha-motion-press: 0ms;
+    --motion-press: 0ms;
+    --yorha-motion-reduced-fade: 120ms;
+    --motion-reduced-fade: 120ms;
+    --yorha-motion-spatial: 0;
+    --motion-spatial: 0;
   }
 }
 
@@ -346,6 +402,28 @@
   --motion-stagger: 100ms;
   --yorha-motion-scramble-char: 70ms;
   --motion-scramble-char: 70ms;
+  --yorha-motion-popover: 160ms;
+  --motion-popover: 160ms;
+  --yorha-motion-popover-exit: 120ms;
+  --motion-popover-exit: 120ms;
+  --yorha-motion-drawer: 450ms;
+  --motion-drawer: 450ms;
+  --yorha-motion-collapse: 240ms;
+  --motion-collapse: 240ms;
+  --yorha-motion-tab-indicator: 240ms;
+  --motion-tab-indicator: 240ms;
+  --yorha-motion-route: 320ms;
+  --motion-route: 320ms;
+  --yorha-motion-route-exit: 200ms;
+  --motion-route-exit: 200ms;
+  --yorha-motion-shared-element: 360ms;
+  --motion-shared-element: 360ms;
+  --yorha-motion-press: 90ms;
+  --motion-press: 90ms;
+  --yorha-motion-reduced-fade: 0ms;
+  --motion-reduced-fade: 0ms;
+  --yorha-motion-spatial: 1;
+  --motion-spatial: 1;
 }
 
 [data-motion=reduced] {
@@ -361,6 +439,28 @@
   --motion-stagger: 0ms;
   --yorha-motion-scramble-char: 0ms;
   --motion-scramble-char: 0ms;
+  --yorha-motion-popover: 0ms;
+  --motion-popover: 0ms;
+  --yorha-motion-popover-exit: 0ms;
+  --motion-popover-exit: 0ms;
+  --yorha-motion-drawer: 0ms;
+  --motion-drawer: 0ms;
+  --yorha-motion-collapse: 0ms;
+  --motion-collapse: 0ms;
+  --yorha-motion-tab-indicator: 0ms;
+  --motion-tab-indicator: 0ms;
+  --yorha-motion-route: 0ms;
+  --motion-route: 0ms;
+  --yorha-motion-route-exit: 0ms;
+  --motion-route-exit: 0ms;
+  --yorha-motion-shared-element: 0ms;
+  --motion-shared-element: 0ms;
+  --yorha-motion-press: 0ms;
+  --motion-press: 0ms;
+  --yorha-motion-reduced-fade: 120ms;
+  --motion-reduced-fade: 120ms;
+  --yorha-motion-spatial: 0;
+  --motion-spatial: 0;
 }
 
 [data-motion=off] {
@@ -376,6 +476,28 @@
   --motion-stagger: 0ms;
   --yorha-motion-scramble-char: 0ms;
   --motion-scramble-char: 0ms;
+  --yorha-motion-popover: 0ms;
+  --motion-popover: 0ms;
+  --yorha-motion-popover-exit: 0ms;
+  --motion-popover-exit: 0ms;
+  --yorha-motion-drawer: 0ms;
+  --motion-drawer: 0ms;
+  --yorha-motion-collapse: 0ms;
+  --motion-collapse: 0ms;
+  --yorha-motion-tab-indicator: 0ms;
+  --motion-tab-indicator: 0ms;
+  --yorha-motion-route: 0ms;
+  --motion-route: 0ms;
+  --yorha-motion-route-exit: 0ms;
+  --motion-route-exit: 0ms;
+  --yorha-motion-shared-element: 0ms;
+  --motion-shared-element: 0ms;
+  --yorha-motion-press: 0ms;
+  --motion-press: 0ms;
+  --yorha-motion-reduced-fade: 0ms;
+  --motion-reduced-fade: 0ms;
+  --yorha-motion-spatial: 0;
+  --motion-spatial: 0;
 }
 
 @utility yorha-focus {
@@ -390,6 +512,148 @@
 @utility yorha-break {
   overflow-wrap: anywhere;
   word-break: normal;
+}
+
+@utility yorha-pop {
+  transform-origin: var(--transform-origin, center);
+  transition-property: opacity, scale;
+  transition-duration: max(var(--motion-popover), var(--motion-reduced-fade));
+  transition-timing-function: var(--yorha-ease-decelerate);
+  &[data-starting-style], &[data-ending-style] {
+    opacity: 0;
+    scale: calc(1 - (1 - var(--motion-scale-pop)) * var(--motion-spatial));
+  }
+  &[data-ending-style] {
+    transition-duration: max(var(--motion-popover-exit), var(--motion-reduced-fade));
+    transition-timing-function: var(--yorha-ease-in);
+  }
+}
+
+@utility yorha-panel {
+  transition-property: opacity, translate;
+  transition-duration: max(var(--motion-panel), var(--motion-reduced-fade));
+  transition-timing-function: var(--yorha-ease-out);
+  &[data-starting-style], &[data-ending-style] {
+    opacity: 0;
+    translate: 0 calc(var(--motion-shift) * var(--motion-spatial));
+  }
+  &[data-ending-style] {
+    transition-duration: max(var(--motion-panel-exit), var(--motion-reduced-fade));
+    transition-timing-function: var(--yorha-ease-in);
+  }
+}
+
+@utility yorha-fade {
+  transition-property: opacity;
+  transition-duration: max(var(--motion-panel), var(--motion-reduced-fade));
+  transition-timing-function: var(--yorha-ease-out);
+  &[data-starting-style], &[data-ending-style] {
+    opacity: 0;
+  }
+  &[data-ending-style] {
+    transition-duration: max(var(--motion-panel-exit), var(--motion-reduced-fade));
+    transition-timing-function: var(--yorha-ease-in);
+  }
+}
+
+@utility yorha-slide-up {
+  translate: var(--drawer-swipe-movement-x, 0px) calc(var(--drawer-snap-point-offset, 0px) + var(--drawer-swipe-movement-y, 0px));
+  transition-property: opacity, translate;
+  transition-duration: max(var(--motion-drawer), var(--motion-reduced-fade));
+  transition-timing-function: var(--yorha-ease-emphasized);
+  &[data-starting-style], &[data-ending-style] {
+    opacity: var(--motion-spatial);
+    translate: 0 calc(var(--yorha-slide-distance, 100%) * var(--motion-spatial));
+  }
+  &[data-swiping] {
+    transition-duration: 0s;
+  }
+  &[data-ending-style] {
+    transition-duration: calc(max(var(--motion-drawer), var(--motion-reduced-fade)) * var(--drawer-swipe-strength, 1));
+  }
+}
+
+@utility yorha-slide-down {
+  translate: var(--drawer-swipe-movement-x, 0px) calc(var(--drawer-snap-point-offset, 0px) + var(--drawer-swipe-movement-y, 0px));
+  transition-property: opacity, translate;
+  transition-duration: max(var(--motion-drawer), var(--motion-reduced-fade));
+  transition-timing-function: var(--yorha-ease-emphasized);
+  &[data-starting-style], &[data-ending-style] {
+    opacity: var(--motion-spatial);
+    translate: 0 calc(var(--yorha-slide-distance, 100%) * -1 * var(--motion-spatial));
+  }
+  &[data-swiping] {
+    transition-duration: 0s;
+  }
+  &[data-ending-style] {
+    transition-duration: calc(max(var(--motion-drawer), var(--motion-reduced-fade)) * var(--drawer-swipe-strength, 1));
+  }
+}
+
+@utility yorha-slide-left {
+  translate: var(--drawer-swipe-movement-x, 0px) calc(var(--drawer-snap-point-offset, 0px) + var(--drawer-swipe-movement-y, 0px));
+  transition-property: opacity, translate;
+  transition-duration: max(var(--motion-drawer), var(--motion-reduced-fade));
+  transition-timing-function: var(--yorha-ease-emphasized);
+  &[data-starting-style], &[data-ending-style] {
+    opacity: var(--motion-spatial);
+    translate: calc(var(--yorha-slide-distance, 100%) * var(--motion-spatial)) 0;
+  }
+  &[data-swiping] {
+    transition-duration: 0s;
+  }
+  &[data-ending-style] {
+    transition-duration: calc(max(var(--motion-drawer), var(--motion-reduced-fade)) * var(--drawer-swipe-strength, 1));
+  }
+}
+
+@utility yorha-slide-right {
+  translate: var(--drawer-swipe-movement-x, 0px) calc(var(--drawer-snap-point-offset, 0px) + var(--drawer-swipe-movement-y, 0px));
+  transition-property: opacity, translate;
+  transition-duration: max(var(--motion-drawer), var(--motion-reduced-fade));
+  transition-timing-function: var(--yorha-ease-emphasized);
+  &[data-starting-style], &[data-ending-style] {
+    opacity: var(--motion-spatial);
+    translate: calc(var(--yorha-slide-distance, 100%) * -1 * var(--motion-spatial)) 0;
+  }
+  &[data-swiping] {
+    transition-duration: 0s;
+  }
+  &[data-ending-style] {
+    transition-duration: calc(max(var(--motion-drawer), var(--motion-reduced-fade)) * var(--drawer-swipe-strength, 1));
+  }
+}
+
+@utility yorha-collapse {
+  height: var(--collapsible-panel-height, auto);
+  overflow: hidden;
+  transition-property: height, opacity;
+  transition-duration: var(--motion-collapse), max(var(--motion-collapse), var(--motion-reduced-fade));
+  transition-timing-function: var(--yorha-ease-emphasized);
+  &[data-index] {
+    height: var(--accordion-panel-height, auto);
+  }
+  &[data-starting-style], &[data-ending-style] {
+    height: 0;
+    opacity: 0;
+  }
+}
+
+@utility yorha-press {
+  transition-property: scale, color, background-color, border-color, background-size;
+  transition-duration: var(--motion-press), var(--motion-select), var(--motion-select), var(--motion-select), var(--motion-select);
+  transition-timing-function: var(--yorha-ease-out);
+  &:active:not(:disabled, [data-disabled], [aria-disabled=true]) {
+    scale: calc(1 - (1 - var(--motion-scale-press)) * var(--motion-spatial));
+  }
+}
+
+@utility yorha-stagger {
+  animation-name: yorha-stagger-in;
+  animation-duration: max(var(--motion-panel), var(--motion-reduced-fade));
+  animation-timing-function: var(--yorha-ease-out);
+  animation-fill-mode: backwards;
+  animation-delay: calc(var(--motion-stagger) * min(var(--yorha-stagger-index, 0), var(--motion-stagger-max)));
 }
 
 @layer base {
@@ -428,5 +692,11 @@
   :focus-visible {
     outline: var(--yorha-ring-width) solid var(--yorha-ring);
     outline-offset: var(--yorha-ring-offset);
+  }
+  @keyframes yorha-stagger-in {
+    from {
+      opacity: 0;
+      translate: 0 calc(var(--motion-shift) * var(--motion-spatial));
+    }
   }
 }

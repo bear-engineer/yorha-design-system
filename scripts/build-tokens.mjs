@@ -104,6 +104,7 @@ const RULES = [
   [/^shadow\.(.+)$/, (k) => ({ theme: `shadow-yorha-${k}` })],
   [/^motion\.duration\.(.+)$/, (k) => ({ cssVar: `yorha-motion-${k}`, alias: `motion-${k}` })],
   [/^motion\.easing\.(.+)$/, (k) => ({ cssVar: k === "standard" ? "yorha-ease" : `yorha-ease-${k}`, theme: k === "standard" ? "ease-yorha" : `ease-yorha-${k}` })],
+  [/^motion\.(.+)$/, (k) => ({ cssVar: `yorha-motion-${k.replaceAll(".", "-")}`, alias: `motion-${k.replaceAll(".", "-")}` })],
   [/^z\.(.+)$/, (k) => ({ cssVar: `yorha-z-${k}` })],
 ];
 
@@ -155,6 +156,96 @@ function cssValue(path, token) {
       throw new Error(`${path}: unsupported $type "${type}"`);
   }
 }
+
+/* ---------------------------------------------------------------- motion */
+
+// Base motion utilities (spec: src/docs/foundations/Motion.mdx, which lists exactly these names).
+// Every duration token is 0 when data-motion is reduced or off. `fade()` keeps a short opacity fade in reduced
+// (--motion-reduced-fade is 120ms there, 0 otherwise) and `spatial()` removes scale / translate movement in both.
+const fade = (token) => `max(var(--motion-${token}), var(--motion-reduced-fade))`;
+const spatial = (amount) => `calc(${amount} * var(--motion-spatial))`;
+const scaleTo = (token) => `calc(1 - (1 - var(--motion-scale-${token})) * var(--motion-spatial))`;
+/** Base UI sets these while a component mounts / unmounts; transitions between them can be cancelled midway. */
+const HIDDEN = "&[data-starting-style], &[data-ending-style]";
+const EXIT = "&[data-ending-style]";
+
+/** Edge-attached surface. `enter` is the direction it moves while opening: [x, y] in units of its own size. */
+function slide([x, y]) {
+  const distance = (sign) => (sign === 0 ? "0" : spatial(`var(--yorha-slide-distance, 100%)${sign < 0 ? " * -1" : ""}`));
+  return {
+    // Open position follows a Base UI Drawer swipe and snap point; both variables are absent (0) elsewhere.
+    translate: "var(--drawer-swipe-movement-x, 0px) calc(var(--drawer-snap-point-offset, 0px) + var(--drawer-swipe-movement-y, 0px))",
+    "transition-property": "opacity, translate",
+    "transition-duration": fade("drawer"),
+    "transition-timing-function": "var(--yorha-ease-emphasized)",
+    // Full motion slides without fading; reduced fades in place.
+    [HIDDEN]: { opacity: "var(--motion-spatial)", translate: `${distance(-x)} ${distance(-y)}` },
+    "&[data-swiping]": { "transition-duration": "0s" },
+    [EXIT]: { "transition-duration": `calc(${fade("drawer")} * var(--drawer-swipe-strength, 1))` },
+  };
+}
+
+const MOTION_CSS = {
+  "@utility yorha-pop": {
+    "transform-origin": "var(--transform-origin, center)",
+    "transition-property": "opacity, scale",
+    "transition-duration": fade("popover"),
+    "transition-timing-function": "var(--yorha-ease-decelerate)",
+    [HIDDEN]: { opacity: "0", scale: scaleTo("pop") },
+    [EXIT]: { "transition-duration": fade("popover-exit"), "transition-timing-function": "var(--yorha-ease-in)" },
+  },
+  "@utility yorha-panel": {
+    "transition-property": "opacity, translate",
+    "transition-duration": fade("panel"),
+    "transition-timing-function": "var(--yorha-ease-out)",
+    [HIDDEN]: { opacity: "0", translate: `0 ${spatial("var(--motion-shift)")}` },
+    [EXIT]: { "transition-duration": fade("panel-exit"), "transition-timing-function": "var(--yorha-ease-in)" },
+  },
+  "@utility yorha-fade": {
+    "transition-property": "opacity",
+    "transition-duration": fade("panel"),
+    "transition-timing-function": "var(--yorha-ease-out)",
+    [HIDDEN]: { opacity: "0" },
+    [EXIT]: { "transition-duration": fade("panel-exit"), "transition-timing-function": "var(--yorha-ease-in)" },
+  },
+  "@utility yorha-slide-up": slide([0, -1]),
+  "@utility yorha-slide-down": slide([0, 1]),
+  "@utility yorha-slide-left": slide([-1, 0]),
+  "@utility yorha-slide-right": slide([1, 0]),
+  "@utility yorha-collapse": {
+    height: "var(--collapsible-panel-height, auto)",
+    overflow: "hidden",
+    "transition-property": "height, opacity",
+    // Height does not animate when reduced; the content still fades in.
+    "transition-duration": `var(--motion-collapse), ${fade("collapse")}`,
+    "transition-timing-function": "var(--yorha-ease-emphasized)",
+    // Accordion.Panel carries data-index: it reads its own variable, not one inherited from a Collapsible around it.
+    "&[data-index]": { height: "var(--accordion-panel-height, auto)" },
+    [HIDDEN]: { height: "0", opacity: "0" },
+  },
+  // Owns the control's whole transition: scale at the press speed, the selection wipe properties at the select speed.
+  "@utility yorha-press": {
+    "transition-property": "scale, color, background-color, border-color, background-size",
+    "transition-duration": ["press", "select", "select", "select", "select"].map((token) => `var(--motion-${token})`).join(", "),
+    "transition-timing-function": "var(--yorha-ease-out)",
+    "&:active:not(:disabled, [data-disabled], [aria-disabled=true])": { scale: scaleTo("press") },
+  },
+  "@utility yorha-stagger": {
+    "animation-name": "yorha-stagger-in",
+    "animation-duration": fade("panel"),
+    "animation-timing-function": "var(--yorha-ease-out)",
+    "animation-fill-mode": "backwards",
+    "animation-delay": "calc(var(--motion-stagger) * min(var(--yorha-stagger-index, 0), var(--motion-stagger-max)))",
+  },
+};
+// Emitted inside `@layer base`: the shadcn CLI moves a top-level @keyframes into `@theme inline`, where Tailwind
+// drops it unless an --animate-* variable uses it, and the consumer's yorha-stagger would silently not animate.
+const MOTION_KEYFRAMES = {
+  "@keyframes yorha-stagger-in": {
+    from: { opacity: "0", translate: `0 ${spatial("var(--motion-shift)")}` },
+  },
+};
+const MOTION_UTILITIES = Object.keys(MOTION_CSS).map((key) => key.slice("@utility ".length));
 
 /* ----------------------------------------------------------------- model */
 
@@ -232,6 +323,7 @@ function buildModel(tokens) {
   css["@utility yorha-focus"] = focusRing;
   css["@utility yorha-tabular"] = { "font-variant-numeric": "tabular-nums" };
   css["@utility yorha-break"] = { "overflow-wrap": "anywhere", "word-break": "normal" };
+  Object.assign(css, MOTION_CSS);
   css["@layer base"] = {
     body: {
       "background-color": "var(--yorha-bg)",
@@ -253,6 +345,7 @@ function buildModel(tokens) {
     ".yorha-prose p + p": { "margin-top": "var(--yorha-paragraph-gap)" },
     "[data-theme]": { color: "var(--yorha-fg)" },
     ":focus-visible": focusRing,
+    ...MOTION_KEYFRAMES,
   };
 
   return {
@@ -343,6 +436,11 @@ function renderDocs({ tokens, themeNames, hexByTheme, colorPaths, modifierBlocks
       return [theme, { enforced: Boolean(thresholds), rows: rows.map((row) => ({ ...row, ratio: Math.floor(row.ratio * 100) / 100 })) }];
     }),
   );
+  /** Adds the token's value in each data-motion mode (full / reduced / off). */
+  const withMotionModes = (token) => ({
+    ...token,
+    ...Object.fromEntries(Object.entries(modifierBlocks.motion).map(([context, vars]) => [context, vars[token.cssVar.slice(2)] ?? token.value])),
+  });
   const docs = {
     themes: themeNames,
     defaultTheme: modifiers.theme.default,
@@ -359,11 +457,12 @@ function renderDocs({ tokens, themeNames, hexByTheme, colorPaths, modifierBlocks
     borders: list("border."),
     shadows: list("shadow."),
     motion: {
-      durations: list("motion.duration.").map((duration) => ({
-        ...duration,
-        ...Object.fromEntries(Object.entries(modifierBlocks.motion).map(([context, vars]) => [context, vars[duration.cssVar.slice(2)]])),
-      })),
+      durations: list("motion.duration.").map(withMotionModes),
       easings: list("motion.easing."),
+      parameters: list("motion.")
+        .filter((token) => !/^(duration|easing)\./.test(token.name))
+        .map(withMotionModes),
+      utilities: MOTION_UTILITIES,
     },
     zIndex: list("z."),
     contrast,

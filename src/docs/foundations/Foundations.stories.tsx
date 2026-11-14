@@ -59,6 +59,8 @@ function MotionUtilityDemo() {
             </div>
           ))}
           <div data-testid={`slide-up-swiping-${mode}`} data-swiping="" style={SWIPED} className={`yorha-slide-up ${box}`} />
+          {/* The short fading slide the Motion page documents for toasts. */}
+          <div data-testid={`slide-short-${mode}`} data-starting-style="" className={`yorha-slide-left [--yorha-slide-distance:1rem] data-[starting-style]:opacity-0 ${box}`} />
           <div data-testid={`collapse-open-${mode}`} style={{ "--collapsible-panel-height": "40px" } as CSSProperties} className="yorha-collapse bg-yorha-grid">
             {/* An accordion panel nested in a collapsible must read its own height variable, not the inherited one. */}
             <div data-testid={`collapse-accordion-${mode}`} data-index="0" style={{ "--accordion-panel-height": "24px" } as CSSProperties} className="yorha-collapse bg-yorha-ink" />
@@ -189,19 +191,23 @@ export const MotionUtilities: Story = {
     };
     const OPEN_CLOSE = ["pop", "panel", "fade", "slide-up", "slide-down", "slide-left", "slide-right"] as const;
 
+    // The entrance keyframes exist: a running CSS animation is only created when @keyframes resolved.
+    const running = canvasElement.getAnimations({ subtree: true }).map((animation) => (animation instanceof CSSAnimation ? animation.animationName : ""));
+    await expect(running).toContain("yorha-stagger-in");
+
     // The spec table and the stylesheet agree: every listed utility resolves to a real class.
     await expect(tokens.motion.utilities).toHaveLength(10);
     for (const name of tokens.motion.utilities) await expect(findStyleRule(`.${name}`, () => true), name).toBeDefined();
 
     // full: token durations, exit faster than enter, spatial start values.
     await expect(style("pop-open", "full").transitionProperty).toBe("opacity, scale");
-    await expect(durations("pop-open", "full")).toEqual([token("popover"), token("popover")]);
-    await expect(durations("pop-end", "full")).toEqual([token("popover-exit"), token("popover-exit")]);
+    await expect(durations("pop-open", "full")).toEqual([token("popover")]);
+    await expect(durations("pop-end", "full")).toEqual([token("popover-exit")]);
     await expect(style("pop-start", "full").opacity).toBe("0");
     await expect(parseFloat(style("pop-start", "full").scale)).toBeCloseTo(0.96, 3);
     await expect(style("pop-open", "full").opacity).toBe("1");
-    await expect(durations("panel-open", "full")).toEqual([token("panel"), token("panel")]);
-    await expect(durations("panel-end", "full")).toEqual([token("panel-exit"), token("panel-exit")]);
+    await expect(durations("panel-open", "full")).toEqual([token("panel")]);
+    await expect(durations("panel-end", "full")).toEqual([token("panel-exit")]);
     await expect(translate("panel-start", "full")).toEqual([0, 0.5 * rootFontSize()]);
     await expect(style("fade-open", "full").transitionProperty).toBe("opacity");
     await expect(durations("fade-open", "full")).toEqual([token("panel")]);
@@ -211,11 +217,13 @@ export const MotionUtilities: Story = {
     await expect(translate("slide-down-start", "full")).toEqual([0, -100]);
     await expect(translate("slide-left-start", "full")).toEqual([100, 0]);
     await expect(translate("slide-right-start", "full")).toEqual([-100, 0]);
-    await expect(durations("slide-up-open", "full")).toEqual([token("drawer"), token("drawer")]);
+    await expect(durations("slide-up-open", "full")).toEqual([token("drawer")]);
     // A full-size slide does not fade; a dragged drawer follows the finger with no transition.
     await expect(style("slide-up-start", "full").opacity).toBe("1");
     await expect(translate("slide-up-swiping", "full")).toEqual([0, 24]);
-    await expect(durations("slide-up-swiping", "full")).toEqual([0, 0]);
+    await expect(durations("slide-up-swiping", "full")).toEqual([0]);
+    await expect(translate("slide-short", "full")).toEqual([rootFontSize(), 0]);
+    await expect(style("slide-short", "full").opacity).toBe("0");
     await expect(style("collapse-open", "full").height).toBe("40px");
     await expect(style("collapse-accordion", "full").height).toBe("24px");
     await expect(style("collapse-start", "full").height).toBe("0px");

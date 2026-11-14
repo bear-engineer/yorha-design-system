@@ -1,9 +1,11 @@
-// Registry lint. Pure `lintRegistry(rootDir)` returns error strings; the CLI prints them and sets the exit code.
+// Registry lint. Pure `lintRegistry(rootDir, options)` returns error and warning strings; the CLI prints them and sets the exit code.
 // Rules: @yorha/ registryDependencies only; files exist; every item with files has <name>.stories.tsx
 // (registry:lib items are exempt, they are specified by unit tests); ui/component items list @yorha/base + @yorha/utils;
 // every ui/lib/hook/component file has target @ui|@lib|@hooks|@components/<basename> (flat install);
 // registry:ui items import only other items' primary files; no hex colors in .tsx; no outline removal without
 // focus-visible in the same file; no audio/font binaries under registry/.
+// Rule `motion` (warning; error with env YORHA_MOTION_STRICT=1 or options.motionStrict): no raw `NNNms`, no raw
+// cubic-bezier(), no `transition-all` in registry .tsx. Use --motion-* tokens, ease-yorha-* and the yorha-* motion utilities.
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, basename, extname, resolve, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,6 +15,12 @@ const HEX = /#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})\b/g;
 const OUTLINE_OFF = /outline\s*:\s*(?:none|0)\b|(?<![\w-])outline-none\b|outline-0\b/;
 const TARGET_ALIAS = { "registry:ui": "@ui", "registry:lib": "@lib", "registry:hook": "@hooks", "registry:component": "@components" };
 const IMPORT = /(?:from|import)\s*\(?\s*["']([^"']+)["']/g;
+const MOTION_HINT = "use a --motion-* token or a yorha-* motion utility";
+const MOTION_RULES = [
+  [/(?<![\w.])\d+(?:\.\d+)?ms\b/g, (match) => `raw duration "${match}"`],
+  [/cubic-bezier\s*\(/g, () => "raw cubic-bezier()"],
+  [/(?<![\w-])transition-all\b/g, () => "transition-all"],
+];
 
 function walk(dir) {
   if (!existsSync(dir)) return [];
@@ -22,10 +30,24 @@ function walk(dir) {
   });
 }
 
-const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+// Block comments keep their line breaks so findings can name the source line.
+const stripComments = (s) => s.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, "")).replace(/(^|[^:])\/\/.*$/gm, "$1");
 
-export function lintRegistry(rootDir = process.cwd()) {
+/** `motion` rule findings for one file's comment-free source, as "<line> motion: <what>" strings. */
+function motionFindings(code) {
+  const findings = [];
+  code.split("\n").forEach((line, index) => {
+    for (const [pattern, describe] of MOTION_RULES) {
+      for (const match of line.matchAll(pattern)) findings.push(`${index + 1} motion: ${describe(match[0])} (${MOTION_HINT})`);
+    }
+  });
+  return findings;
+}
+
+export function lintRegistry(rootDir = process.cwd(), { motionStrict = process.env.YORHA_MOTION_STRICT === "1" } = {}) {
   const errors = [];
+  const warnings = [];
+  const motion = motionStrict ? errors : warnings;
   const root = JSON.parse(readFileSync(join(rootDir, "registry.json"), "utf8"));
   const entries = []; // { item, dir }
   for (const inc of root.include ?? []) {
@@ -84,6 +106,7 @@ export function lintRegistry(rootDir = process.cwd()) {
       const hex = code.match(HEX);
       if (hex) errors.push(`${item.name}: ${f.path} hard-codes hex color ${[...new Set(hex)].join(", ")} (use tokens)`);
       if (OUTLINE_OFF.test(code) && !/focus-visible/.test(code)) errors.push(`${item.name}: ${f.path} removes outline without focus-visible replacement`);
+      for (const finding of motionFindings(code)) motion.push(`${item.name}: ${f.path}:${finding}`);
       if (item.type === "registry:ui") {
         for (const m of src.matchAll(IMPORT)) {
           const spec = m[1];
@@ -109,11 +132,12 @@ export function lintRegistry(rootDir = process.cwd()) {
   for (const p of walk(regDir)) {
     if (BINARY_EXT.has(extname(p).toLowerCase())) errors.push(`binary audio/font not allowed in registry: ${relative(rootDir, p).split(sep).join("/")}`);
   }
-  return { errors, includes: (root.include ?? []).length };
+  return { errors, warnings, includes: (root.include ?? []).length };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const { errors, includes } = lintRegistry(process.cwd());
+  const { errors, warnings, includes } = lintRegistry(process.cwd());
+  if (warnings.length) console.warn(warnings.map((warning) => `warning: ${warning}`).join("\n"));
   if (errors.length) { console.error(errors.join("\n")); process.exit(1); }
-  console.log(`registry lint ok (${includes} includes)`);
+  console.log(`registry lint ok (${includes} includes${warnings.length ? `, ${warnings.length} motion warnings` : ""})`);
 }

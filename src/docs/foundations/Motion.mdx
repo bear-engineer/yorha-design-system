@@ -5,13 +5,66 @@ import { tokens } from "./tokens.generated";
 
 # 모션
 
-모션은 `<html>`의 `data-motion`(`full`, `reduced`, `off`)을 따릅니다. `reduced`와 `off`에서는 모든 지속 시간 변수가 0이 되어 최종 상태가 바로 나타납니다. 프로바이더가 없어도 OS의 "동작 줄이기" 설정이 켜져 있으면 같은 값이 적용됩니다(`data-motion="full"`로 명시한 경우 제외).
+모션은 `<html>`(또는 하위 트리)의 `data-motion`(`full`, `reduced`, `off`)을 따릅니다. 프로바이더가 없어도 OS의 "동작 줄이기" 설정이 켜져 있으면 `reduced`와 같은 값이 적용됩니다(`data-motion="full"`로 명시한 경우 제외).
 
-- 지속 시간은 `var(--motion-*)`로만 씁니다. Tailwind에서는 `duration-(--motion-select)`, `delay-(--motion-stagger)`.
+이 문서가 모션 사양의 정본입니다. 아래 표의 토큰과 유틸리티만 사용합니다.
+
+## 규칙
+
+- 열림/닫힘은 Base UI의 `data-starting-style` / `data-ending-style` 사이의 CSS 트랜지션으로 만듭니다. 트랜지션은 도중에 취소되어도 끊기지 않습니다.
+- 지속 시간은 `var(--motion-*)` 토큰, 이징은 `ease-yorha-*`로만 씁니다. 레지스트리 `.tsx`에 `180ms` 같은 숫자, `cubic-bezier(...)`, `transition-all`을 직접 쓰지 않습니다(`pnpm registry:lint`의 `motion` 규칙).
 - 나가는 동작은 들어오는 동작보다 빠릅니다.
+- 팝업은 `--transform-origin`(Base UI Positioner가 설정)에서 커집니다.
 - 깜빡임은 초당 3회 이하, 5초를 넘는 자동 동작에는 일시정지 수단을 둡니다.
 
+## 모드
+
+<table>
+  <thead>
+    <tr><th>data-motion</th><th>움직임</th><th>지속 시간</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>full</code></td><td>크기·위치·높이 변화와 불투명도</td><td>토큰 값 그대로</td></tr>
+    <tr><td><code>reduced</code></td><td>불투명도만. 크기·위치·높이는 바로 최종 상태</td><td>120ms 이하(<code>--motion-reduced-fade</code>)</td></tr>
+    <tr><td><code>off</code></td><td>없음. 최종 상태가 바로 나타남</td><td>0</td></tr>
+  </tbody>
+</table>
+
+구현 방식: 모든 지속 시간 토큰은 `reduced`와 `off`에서 0입니다. 유틸리티는 불투명도에 `max(토큰, var(--motion-reduced-fade))`를 써서 `reduced`에서만 짧은 페이드를 남기고, 이동 거리와 배율에 `var(--motion-spatial)`(1 또는 0)을 곱해 공간 이동을 없앱니다. 토큰을 직접 쓰는 코드(`duration-(--motion-select)`)는 `reduced`에서 자동으로 즉시 전환됩니다.
+
+## 유틸리티
+
+`@yorha/base`가 제공하는 Tailwind 유틸리티입니다. 변형과 함께 쓸 수 있습니다(예: `data-[side=bottom]:yorha-slide-up`).
+
+<table>
+  <thead>
+    <tr><th>클래스</th><th>동작</th><th>토큰</th><th>언제 쓰는가</th><th>예시</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><code>yorha-pop</code></td><td>기준점(<code>--transform-origin</code>)에서 배율 0.96 → 1, 불투명도 0 → 1</td><td><code>--motion-popover</code> / <code>--motion-popover-exit</code>, <code>ease-yorha-decelerate</code></td><td>기준 요소에 붙는 작은 팝업: 팝오버, 툴팁, 메뉴, 셀렉트, 콤보박스, 미리보기 카드</td><td><code>{'<Popover.Popup className="yorha-pop" />'}</code></td></tr>
+    <tr><td><code>yorha-panel</code></td><td>아래 0.5rem에서 올라오며 불투명도 0 → 1</td><td><code>--motion-panel</code> / <code>--motion-panel-exit</code>, <code>ease-yorha-out</code></td><td>화면 가운데 뜨는 큰 면: 다이얼로그, 경고 다이얼로그</td><td><code>{'<Dialog.Popup className="yorha-panel" />'}</code></td></tr>
+    <tr><td><code>yorha-fade</code></td><td>불투명도만 0 → 1</td><td><code>--motion-panel</code> / <code>--motion-panel-exit</code>, <code>ease-yorha-out</code></td><td>움직이지 않는 면: 백드롭(스크림), 탭 패널 내용 교체</td><td><code>{'<Dialog.Backdrop className="yorha-fade" />'}</code></td></tr>
+    <tr><td><code>yorha-slide-up</code></td><td>아래 가장자리에서 위로 밀려 들어옴(자기 높이만큼). 스와이프 중에는 손가락을 따라감</td><td><code>--motion-drawer</code>, <code>ease-yorha-emphasized</code></td><td>하단 시트(<code>swipeDirection="down"</code>)</td><td><code>{'<Drawer.Popup className="yorha-slide-up" />'}</code></td></tr>
+    <tr><td><code>yorha-slide-down</code></td><td>위 가장자리에서 아래로 밀려 들어옴</td><td><code>--motion-drawer</code>, <code>ease-yorha-emphasized</code></td><td>상단 시트, 상단 알림 띠(<code>swipeDirection="up"</code>)</td><td><code>{'<Drawer.Popup className="yorha-slide-down" />'}</code></td></tr>
+    <tr><td><code>yorha-slide-left</code></td><td>오른쪽 가장자리에서 왼쪽으로 밀려 들어옴</td><td><code>--motion-drawer</code>, <code>ease-yorha-emphasized</code></td><td>오른쪽 드로어(<code>swipeDirection="right"</code>), 오른쪽에서 나오는 토스트</td><td><code>{'<Drawer.Popup className="yorha-slide-left" />'}</code></td></tr>
+    <tr><td><code>yorha-slide-right</code></td><td>왼쪽 가장자리에서 오른쪽으로 밀려 들어옴</td><td><code>--motion-drawer</code>, <code>ease-yorha-emphasized</code></td><td>왼쪽 드로어, 모바일 내비게이션(<code>swipeDirection="left"</code>)</td><td><code>{'<Drawer.Popup className="yorha-slide-right" />'}</code></td></tr>
+    <tr><td><code>yorha-collapse</code></td><td>높이 0 ↔ 패널 높이(<code>--collapsible-panel-height</code>, 아코디언은 <code>--accordion-panel-height</code>), 불투명도 0 ↔ 1. <code>overflow: hidden</code> 포함</td><td><code>--motion-collapse</code>, <code>ease-yorha-emphasized</code></td><td>접히는 영역: 아코디언 패널, 콜랩서블 패널</td><td><code>{'<Accordion.Panel className="yorha-collapse" />'}</code></td></tr>
+    <tr><td><code>yorha-press</code></td><td>누르는 동안(<code>:active</code>) 배율 0.97. 색·배경·테두리·선택 와이프 전환도 함께 정의</td><td><code>--motion-press</code>(배율), <code>--motion-select</code>(색), <code>ease-yorha-out</code></td><td>누를 수 있는 컨트롤: 버튼, 토글, 칩, 메뉴 행</td><td><code>{'<button className="yorha-press" />'}</code></td></tr>
+    <tr><td><code>yorha-stagger</code></td><td>마운트될 때 아래 0.5rem에서 올라오며 나타남. 지연 = <code>--motion-stagger</code> × <code>--yorha-stagger-index</code>(12까지)</td><td><code>--motion-panel</code>, <code>--motion-stagger</code>, <code>ease-yorha-out</code></td><td>목록 행·벤토 타일의 순차 진입</td><td><code>{'<li className="yorha-stagger" style={{ "--yorha-stagger-index": index }} />'}</code></td></tr>
+  </tbody>
+</table>
+
+### 조합할 때
+
+- 열림/닫힘 유틸리티(`yorha-pop`, `yorha-panel`, `yorha-fade`, `yorha-slide-*`, `yorha-collapse`)와 `yorha-press`는 요소의 `transition`을 통째로 정합니다. 같은 요소에 `transition-*`, `duration-*` 클래스를 함께 쓰지 않습니다. 한 요소에는 이 유틸리티 중 하나만 씁니다.
+- `yorha-slide-*`의 이동 거리는 `--yorha-slide-distance`(기본 `100%`, 자기 크기)로 바꿉니다. 짧게 미끄러지며 나타나는 토스트는 `yorha-slide-left [--yorha-slide-distance:1rem] data-[starting-style]:opacity-0 data-[ending-style]:opacity-0`.
+- `yorha-slide-*`는 Base UI Drawer의 `--drawer-swipe-movement-x/y`, `--drawer-snap-point-offset`, `--drawer-swipe-strength`, `data-swiping`을 읽습니다. Drawer가 아닌 요소에서는 이 값들이 없으므로 영향이 없습니다.
+- `yorha-stagger`는 CSS 애니메이션이라 Base UI 속성 없이 마운트 시 한 번 재생됩니다. 인덱스를 주지 않으면 지연 없이 나타납니다.
+- 유틸리티가 없는 전환(탭 표시선, 라우트 전환, 공유 요소)은 토큰을 직접 씁니다: `transition-[left,width] duration-(--motion-tab-indicator) ease-yorha-emphasized`. `reduced`에서 페이드를 남기려면 불투명도에만 `max(var(--motion-route), var(--motion-reduced-fade))`를 쓰고 이동 거리에 `var(--motion-spatial)`을 곱합니다.
+
 ## 지속 시간
+
+Tailwind에서는 `duration-(--motion-popover)`, `delay-(--motion-stagger)`처럼 씁니다.
 
 <table>
   <thead>
@@ -36,3 +89,33 @@ import { tokens } from "./tokens.generated";
     ))}
   </tbody>
 </table>
+
+## 모드 값과 거리
+
+<table>
+  <thead>
+    <tr><th>토큰</th><th>CSS 변수</th><th>full</th><th>reduced</th><th>off</th><th>용도</th></tr>
+  </thead>
+  <tbody>
+    {tokens.motion.parameters.map((parameter) => (
+      <tr key={parameter.name}><td>{parameter.name}</td><td><code>{parameter.alias}</code>, <code>{parameter.cssVar}</code></td><td>{parameter.full}</td><td>{parameter.reduced}</td><td>{parameter.off}</td><td>{parameter.description}</td></tr>
+    ))}
+  </tbody>
+</table>
+
+## lint
+
+`pnpm registry:lint`의 `motion` 규칙은 레지스트리 `.tsx`(주석 제외)에서 다음을 찾습니다.
+
+<table>
+  <thead>
+    <tr><th>금지</th><th>대신</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>숫자 지속 시간(<code>250ms</code>, <code>duration-[250ms]</code>)</td><td><code>duration-(--motion-*)</code> 또는 위 유틸리티</td></tr>
+    <tr><td><code>cubic-bezier(...)</code></td><td><code>ease-yorha</code>, <code>ease-yorha-out</code>, <code>ease-yorha-in</code>, <code>ease-yorha-emphasized</code>, <code>ease-yorha-decelerate</code></td></tr>
+    <tr><td><code>transition-all</code></td><td><code>transition-[opacity,scale]</code>처럼 속성을 지정하거나 위 유틸리티</td></tr>
+  </tbody>
+</table>
+
+기본은 경고이고 `YORHA_MOTION_STRICT=1`에서는 오류(종료 코드 1)입니다.

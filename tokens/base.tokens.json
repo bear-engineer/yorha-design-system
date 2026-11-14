@@ -412,6 +412,69 @@
           "unit": "ms"
         },
         "$description": "Decipher interval per character."
+      },
+      "popover": {
+        "$value": {
+          "value": 160,
+          "unit": "ms"
+        },
+        "$description": "Popover, tooltip, menu and select popup, enter (yorha-pop)."
+      },
+      "popover-exit": {
+        "$value": {
+          "value": 120,
+          "unit": "ms"
+        },
+        "$description": "Popup exit (faster than enter)."
+      },
+      "drawer": {
+        "$value": {
+          "value": 450,
+          "unit": "ms"
+        },
+        "$description": "Drawer and sheet slide, enter and exit (yorha-slide-*). A swipe release scales it by --drawer-swipe-strength."
+      },
+      "collapse": {
+        "$value": {
+          "value": 240,
+          "unit": "ms"
+        },
+        "$description": "Height change of accordion and collapsible panels (yorha-collapse)."
+      },
+      "tab-indicator": {
+        "$value": {
+          "value": 240,
+          "unit": "ms"
+        },
+        "$description": "Active tab indicator travelling between tabs."
+      },
+      "route": {
+        "$value": {
+          "value": 320,
+          "unit": "ms"
+        },
+        "$description": "Route (page) transition, entering view."
+      },
+      "route-exit": {
+        "$value": {
+          "value": 200,
+          "unit": "ms"
+        },
+        "$description": "Route transition, leaving view (faster than enter)."
+      },
+      "shared-element": {
+        "$value": {
+          "value": 360,
+          "unit": "ms"
+        },
+        "$description": "Shared element morph between two routes (view-transition-name)."
+      },
+      "press": {
+        "$value": {
+          "value": 90,
+          "unit": "ms"
+        },
+        "$description": "Press feedback on buttons and other pressable controls (yorha-press)."
       }
     },
     "easing": {
@@ -442,7 +505,62 @@
           1
         ],
         "$description": "Exit."
+      },
+      "emphasized": {
+        "$value": [
+          0.32,
+          0.72,
+          0,
+          1
+        ],
+        "$description": "Large surfaces that travel far: drawer, route, shared element, collapse, tab indicator."
+      },
+      "decelerate": {
+        "$value": [
+          0,
+          0,
+          0.2,
+          1
+        ],
+        "$description": "Small popups entering from their anchor (yorha-pop)."
       }
+    },
+    "reduced-fade": {
+      "$type": "duration",
+      "$value": {
+        "value": 0,
+        "unit": "ms"
+      },
+      "$description": "Opacity fade that replaces spatial motion when data-motion=reduced (120ms there, 0 in full and off). Use max(<duration token>, this) for opacity."
+    },
+    "spatial": {
+      "$type": "number",
+      "$value": 1,
+      "$description": "1 while scale / translate / height movement is allowed, 0 when data-motion is reduced or off. Multiply distances by it."
+    },
+    "scale": {
+      "$type": "number",
+      "pop": {
+        "$value": 0.96,
+        "$description": "Scale a popup starts from and ends at (yorha-pop)."
+      },
+      "press": {
+        "$value": 0.97,
+        "$description": "Scale of a pressed control (yorha-press)."
+      }
+    },
+    "shift": {
+      "$type": "dimension",
+      "$value": {
+        "value": 0.5,
+        "unit": "rem"
+      },
+      "$description": "Offset a panel or a staggered row starts from (yorha-panel, yorha-stagger)."
+    },
+    "stagger-max": {
+      "$type": "number",
+      "$value": 12,
+      "$description": "Highest row index that still adds stagger delay; later rows enter together (yorha-stagger)."
     }
   },
   "z": {
