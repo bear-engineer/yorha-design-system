@@ -2,12 +2,9 @@ import type { ComponentProps } from "react";
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs";
 import { cnState } from "@/lib/utils";
 
-/**
- * Root: Base UI Tabs root (value, defaultValue, onValueChange). Positioned so the outgoing panel can
- * leave the flow while it fades, which keeps the content height (and anything centred on it) fixed.
- */
+/** Root: Base UI Tabs root (value, defaultValue, onValueChange). */
 function Tabs({ className, ...props }: ComponentProps<typeof TabsPrimitive.Root>) {
-  return <TabsPrimitive.Root data-slot="tabs" className={cnState("relative", className)} {...props} />;
+  return <TabsPrimitive.Root data-slot="tabs" className={className} {...props} />;
 }
 
 /**
@@ -41,7 +38,7 @@ function TabsTab({ className, ...props }: ComponentProps<typeof TabsPrimitive.Ta
         [
           "relative z-10 flex-1 px-4 py-2 text-center",
           "font-yorha text-yorha-sm font-yorha-medium tracking-yorha-wide text-yorha-fg uppercase",
-          "transition-colors duration-(--motion-select) ease-yorha-out",
+          "transition-[color,background-color,border-color] duration-(--motion-select) ease-yorha-out",
           "data-[active]:text-yorha-on-ink",
           "focus-visible:yorha-focus",
           "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",
@@ -61,15 +58,9 @@ function TabsPanel({ className, ...props }: ComponentProps<typeof TabsPrimitive.
       className={cnState(
         [
           "pt-4 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
-          "transition-[opacity,translate] duration-(--motion-panel) ease-yorha-out",
-          "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
-          // new panel enters from the side it sits on; the outgoing one leaves the opposite way; spatial=0 in reduced/off
-          "data-[starting-style]:data-[activation-direction=left]:-translate-x-[calc(var(--motion-shift)*var(--motion-spatial))]",
-          "data-[starting-style]:data-[activation-direction=right]:translate-x-[calc(var(--motion-shift)*var(--motion-spatial))]",
-          "data-[ending-style]:data-[activation-direction=left]:translate-x-[calc(var(--motion-shift)*var(--motion-spatial))]",
-          "data-[ending-style]:data-[activation-direction=right]:-translate-x-[calc(var(--motion-shift)*var(--motion-spatial))]",
-          // outgoing panel overlays the incoming one instead of stacking below it (no height jump mid-swap)
-          "data-[ending-style]:absolute data-[ending-style]:inset-x-0",
+          // enter = opacity only over --motion-select; exit = 0 (the leaving panel is display:none at once: never stacked above the new one, so no row growth and no overlap)
+          "transition-opacity duration-(--motion-select) ease-yorha-out",
+          "data-[starting-style]:opacity-0 data-[ending-style]:hidden",
           "focus-visible:yorha-focus",
         ],
         className,

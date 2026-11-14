@@ -12,7 +12,7 @@ const THEMES = ["light", "dark", "high-contrast"] as const;
 
 function Demo() {
   return (
-    <div className="w-[28rem] max-w-full bg-yorha-panel p-4 text-yorha-fg">
+    <div className="w-[28rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <Tabs defaultValue="status">
         <TabsList aria-label="시스템 메뉴">
           {TABS.map((t) => (
@@ -147,10 +147,38 @@ export const MotionTokens: Story = {
   },
 };
 
+/** Panel enter is opacity only over --motion-select, exit is 0: rapid arrows never leave overlapping or near-invisible panels (M04). */
+export const RapidArrows: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await withMotion("full", async () => {
+      c.getByRole("tab", { name: "상태" }).focus();
+      for (let i = 0; i < 2; i++) {
+        await userEvent.keyboard("{ArrowRight}");
+        await new Promise((r) => setTimeout(r, 30));
+      }
+      await userEvent.keyboard("{ArrowLeft}");
+      await userEvent.keyboard("{ArrowRight}");
+      await new Promise((r) => setTimeout(r, 100));
+      const shown = [...canvasElement.querySelectorAll<HTMLElement>('[role="tabpanel"]')].filter(
+        (p) => !p.hidden && getComputedStyle(p).display !== "none",
+      );
+      await expect(shown).toHaveLength(1);
+      await expect(parseFloat(getComputedStyle(shown[0]).opacity)).toBeGreaterThanOrEqual(0.5);
+      const cs = getComputedStyle(shown[0]);
+      await expect(cs.position).not.toBe("absolute");
+      await expect(cs.transitionProperty).toBe("opacity");
+      await expect(parseFloat(cs.transitionDuration)).toBeCloseTo(0.18, 2);
+      await expect(cs.translate).toBe("none");
+    });
+  },
+};
+
 /** State matrix: selected, unselected, disabled tab, keyboard focus. Targets >= 24px in both densities. */
 export const States: Story = {
   render: () => (
-    <div className="w-[28rem] max-w-full bg-yorha-panel p-4 text-yorha-fg">
+    <div className="w-[28rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <Tabs defaultValue="status">
         <TabsList aria-label="상태 메뉴">
           <TabsTab value="status">상태</TabsTab>
