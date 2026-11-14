@@ -86,7 +86,8 @@ export const Disabled: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await expect(c.getByRole("searchbox", { name: "검색" })).toBeDisabled();
-    await expect(c.getByRole("button", { name: "검색어 지우기" })).toBeDisabled();
+    // A disabled search renders no clear button at all (nothing to click, nothing to dim).
+    await expect(c.queryByRole("button", { name: "검색어 지우기" })).toBeNull();
   },
 };
 

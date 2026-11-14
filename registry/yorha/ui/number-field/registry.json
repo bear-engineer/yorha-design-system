@@ -11,7 +11,10 @@
       ],
       "registryDependencies": [
         "@yorha/base",
-        "@yorha/utils"
+        "@yorha/utils",
+        "@yorha/field",
+        "@yorha/icons",
+        "@yorha/input-group"
       ],
       "files": [
         {

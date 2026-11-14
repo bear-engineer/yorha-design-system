@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Form as BaseForm } from "@base-ui/react/form";
+import { Button, type ButtonProps } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export interface FormProps extends Omit<React.ComponentProps<typeof BaseForm>, "className"> {
@@ -23,25 +24,9 @@ export const Form = React.forwardRef<HTMLFormElement, FormProps>(function Form({
   );
 });
 
-export interface FormSubmitProps extends React.ComponentProps<"button"> {}
+export type FormSubmitProps = Omit<ButtonProps, "variant" | "type" | "className"> & { className?: string };
 
-/** Primary submit button in the YoRHa ink style. Disabled state keeps the focus ring reachable. */
-export const FormSubmit = React.forwardRef<HTMLButtonElement, FormSubmitProps>(function FormSubmit(
-  { className, type = "submit", ...props },
-  ref,
-) {
-  return (
-    <button
-      ref={ref}
-      type={type}
-      className={cn(
-        "inline-flex h-9 items-center justify-center gap-2 rounded-yorha border border-current bg-yorha-ink px-4",
-        "font-yorha-bold text-yorha-base text-yorha-on-ink",
-        "transition-[color,background-color,border-color] duration-(--motion-press) ease-yorha",
-        "focus-visible:yorha-focus disabled:cursor-not-allowed disabled:opacity-60",
-        className,
-      )}
-      {...props}
-    />
-  );
+/** Primary submit button: the shared Button (control scale, press, busy), `type="submit"`. */
+export const FormSubmit = React.forwardRef<HTMLButtonElement, FormSubmitProps>(function FormSubmit({ className, ...props }, ref) {
+  return <Button ref={ref} type="submit" variant="primary" className={cn("h-control-md", className)} {...props} />;
 });

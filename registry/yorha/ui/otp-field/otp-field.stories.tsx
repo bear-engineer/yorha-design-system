@@ -1,6 +1,7 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
+import { Field } from "@/components/ui/field";
 import { OTPFieldInput, OTPFieldRoot, OTPFieldSeparator } from "./otp-field";
 
 import { expectTargetSize } from "../../../../.storybook/preview";
@@ -25,10 +26,9 @@ const Demo = ({ label = "인증 코드", separatorAt, id = "otp-demo", ...rootPr
       <OTPFieldRoot id={id} length={LENGTH} aria-describedby={descId} className="flex items-center gap-2" {...rootProps}>
         {Array.from({ length: LENGTH }, (_, i) => (
           <React.Fragment key={i}>
-            {separatorAt === i ? <OTPFieldSeparator className="mx-1 h-px w-3 bg-yorha-border" /> : null}
+            {separatorAt === i ? <OTPFieldSeparator /> : null}
             <OTPFieldInput
               aria-label={i === 0 ? undefined : `${i + 1}번째 자리 (총 ${LENGTH})`}
-              className="size-10 text-center"
             />
           </React.Fragment>
         ))}
@@ -220,6 +220,11 @@ export const States: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
       <Demo label="기본" id="otp-a" />
+      <Demo label="입력 중" id="otp-c" defaultValue="12" />
+      <Demo label="완료" id="otp-d" defaultValue="123456" />
+      <Field invalid>
+        <Demo label="오류" id="otp-e" defaultValue="12" />
+      </Field>
       <Demo label="비활성" id="otp-b" disabled />
     </div>
   ),

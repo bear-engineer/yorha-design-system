@@ -173,7 +173,10 @@ describe("FINP-18/19/20: file input", () => {
     await new Promise((r) => setTimeout(r, 400));
     expect(cs(zone).borderTopStyle).toBe("solid");
     expect(zone.getBoundingClientRect().height).toBe(h);
-    expect(zone.textContent).toContain("여기에 놓으세요");
+    const active = zone.querySelector<HTMLElement>("[data-slot=file-drop-active]")!;
+    expect(cs(active).visibility).toBe("visible");
+    expect(active.textContent).toContain("여기에 놓으세요");
+    expect(cs(zone.querySelector("[data-slot=file-drop-idle]")!).visibility).toBe("hidden");
     expect(cs(zone).cursor).toBe("copy");
   });
   test("size has a non-breaking space; rejections are field errors with an icon", async () => {
@@ -215,7 +218,7 @@ describe("FINP-22/23/24/25: textarea, form, input types, fieldset", () => {
   });
   test("fieldset: legend sits on a rule", async () => {
     const host = await top("fieldset", "Default");
-    const legend = host.querySelector("legend")!;
+    const legend = host.querySelector("[data-slot=fieldset-legend]")!;
     expect(px(cs(legend).borderBottomWidth)).toBe(1);
     expect(px(cs(legend).marginBottom)).toBe(0);
   });

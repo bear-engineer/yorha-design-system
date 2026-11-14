@@ -35,8 +35,9 @@ export const FieldsetLegend = React.forwardRef<HTMLLegendElement, FieldsetLegend
   return (
     <BaseFieldset.Legend
       ref={ref}
+      data-slot="fieldset-legend"
       className={cn(
-        "mb-2 font-yorha-bold text-yorha-lg uppercase tracking-yorha-heading text-yorha-fg-strong",
+        "mb-0 w-full border-b border-yorha-border pb-1 font-yorha-bold text-yorha-lg uppercase tracking-yorha-heading text-yorha-fg-strong",
         className,
       )}
       {...props}

@@ -116,6 +116,7 @@ export function InputGroupButton({ align = "end", type = "button", className, ..
       className={cn(
         "grid aspect-square h-full shrink-0 cursor-pointer place-items-center border-yorha-border bg-transparent text-yorha-fg-strong",
         align === "end" ? "border-l" : "border-r",
+        "transition-[color,background-color] duration-(--motion-select) ease-yorha",
         "yorha-tint outline-none focus-visible:yorha-focus-inset yorha-disabled",
         className,
       )}

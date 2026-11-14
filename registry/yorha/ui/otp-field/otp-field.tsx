@@ -15,7 +15,7 @@ export const OTPFieldRoot = React.forwardRef<HTMLDivElement, OTPFieldRootProps>(
   { className, ...props },
   ref,
 ) {
-  return <BaseOTPField.Root ref={ref} className={cn("inline-flex max-w-full items-center gap-2 font-yorha [&>input]:min-w-0", className)} {...props} />;
+  return <BaseOTPField.Root ref={ref} className={cn("inline-flex max-w-full items-center gap-2 font-yorha", className)} {...props} />;
 });
 
 export interface OTPFieldInputProps extends Omit<React.ComponentProps<typeof BaseOTPField.Input>, "className"> {
@@ -31,11 +31,12 @@ export const OTPFieldInput = React.forwardRef<HTMLInputElement, OTPFieldInputPro
     <BaseOTPField.Input
       ref={ref}
       className={cn(
-        "m-0 size-10 min-w-0 rounded-yorha border border-yorha-border bg-yorha-bg p-0 text-center",
-        "font-yorha text-yorha-base text-yorha-fg-strong",
-        "transition-[color,background-color,border-color] duration-(--motion-press) ease-yorha",
-        "focus-visible:yorha-focus disabled:cursor-not-allowed disabled:opacity-60",
-        "data-[invalid]:border-(length:--yorha-border-width-strong) data-[invalid]:border-yorha-alert-ui",
+        // Square at every width: the width shrinks with the row, the height follows through aspect-ratio.
+        "m-0 aspect-square h-auto w-control-md min-w-0 shrink rounded-yorha border border-yorha-border bg-yorha-bg p-0 text-center",
+        "font-yorha-mono text-yorha-xl text-yorha-fg-strong yorha-tabular",
+        "transition-[color,background-color,border-color] duration-(--motion-select) ease-yorha",
+        "data-[filled]:border-yorha-fg-strong hover:enabled:not-focus:not-data-[filled]:not-data-[invalid]:border-yorha-fg",
+        "focus-visible:yorha-focus yorha-invalid yorha-disabled",
         className,
       )}
       {...props}
@@ -52,5 +53,5 @@ export const OTPFieldSeparator = React.forwardRef<HTMLDivElement, OTPFieldSepara
   { className, ...props },
   ref,
 ) {
-  return <BaseOTPField.Separator ref={ref} className={cn("block h-0.5 w-3 bg-yorha-fg-soft", className)} {...props} />;
+  return <BaseOTPField.Separator ref={ref} className={cn("block h-0.5 w-3 shrink-0 bg-yorha-fg", className)} {...props} />;
 });

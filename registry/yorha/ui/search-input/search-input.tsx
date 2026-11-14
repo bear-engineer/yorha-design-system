@@ -1,6 +1,7 @@
 import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Field, FieldControl, FieldDescription, FieldError, FieldLabel, type FieldControlProps } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroupControl, FieldLabel, type FieldControlProps } from "@/components/ui/field";
+import { CrossIcon, SearchIcon } from "@/components/ui/icons";
+import { InputGroup, InputGroupAddon, InputGroupButton } from "@/components/ui/input-group";
 
 export interface SearchInputProps
   extends Omit<FieldControlProps, "type" | "children" | "className" | "value" | "defaultValue" | "onChange"> {
@@ -43,8 +44,11 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
   return (
     <Field invalid={Boolean(error)} disabled={disabled} className={className}>
       <FieldLabel>{label}</FieldLabel>
-      <div className="relative flex items-center">
-        <FieldControl
+      <InputGroup>
+        <InputGroupAddon align="start">
+          <SearchIcon />
+        </InputGroupAddon>
+        <FieldGroupControl
           ref={setRefs}
           type="search"
           autoComplete="off"
@@ -61,19 +65,21 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
               onSearch?.(e.currentTarget.value);
             }
           }}
-          className="pr-11! [&::-webkit-search-cancel-button]:appearance-none"
+          className="[&::-webkit-search-cancel-button]:appearance-none"
           {...props}
         />
-        <span
-          className={`absolute right-1 inline-flex transition-[opacity,visibility] duration-(--motion-select) ease-yorha ${text ? "visible opacity-100" : "invisible opacity-0"}`}
-        >
-          <Button variant="ghost" size="sm" square aria-label={clearLabel} disabled={disabled} onClick={clear} tabIndex={text ? undefined : -1}>
-            <svg aria-hidden="true" viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="square">
-              <path d="M5 5l14 14M19 5L5 19" />
-            </svg>
-          </Button>
-        </span>
-      </div>
+        {/* Stays mounted while the field is editable so showing it never resizes the group; absent when disabled or read-only. */}
+        {disabled || props.readOnly ? null : (
+          <InputGroupButton
+            aria-label={clearLabel}
+            onClick={clear}
+            tabIndex={text ? undefined : -1}
+            className={text ? undefined : "invisible"}
+          >
+            <CrossIcon />
+          </InputGroupButton>
+        )}
+      </InputGroup>
       {description ? <FieldDescription>{description}</FieldDescription> : null}
       {error ? <FieldError>{error}</FieldError> : null}
     </Field>

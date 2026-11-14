@@ -9,7 +9,8 @@
       "registryDependencies": [
         "@yorha/base",
         "@yorha/utils",
-        "@yorha/field"
+        "@yorha/field",
+        "@yorha/input-group"
       ],
       "files": [
         {

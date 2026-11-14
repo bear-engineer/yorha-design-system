@@ -13,9 +13,6 @@ const THEME_LABEL: Record<(typeof THEMES)[number], string> = {
 };
 const REQUIRED = "필수 입력 항목입니다";
 
-const controlClass =
-  "h-9 w-full rounded-yorha border border-yorha-border bg-yorha-bg px-3 font-yorha text-yorha-base text-yorha-fg-strong focus-visible:yorha-focus data-[invalid]:border-yorha-alert-ui";
-
 /** Two required fields. `serverErrors` is the error map returned by a server. */
 const UnitForm = ({
   serverErrors,
@@ -27,15 +24,15 @@ const UnitForm = ({
   id?: string;
 }) => (
   <Form id={id} errors={serverErrors} onFormSubmit={onFormSubmit} className="flex w-full flex-col gap-4">
-    <Field name="unitName" className="flex flex-col gap-1">
+    <Field name="unitName">
       <FieldLabel>유닛 이름</FieldLabel>
-      <FieldControl required placeholder="예: 2B" className={controlClass} />
+      <FieldControl required placeholder="예: 2B" />
       <FieldDescription>영문 대문자와 숫자 8자 이내</FieldDescription>
       <FieldError>{serverErrors?.unitName ?? REQUIRED}</FieldError>
     </Field>
-    <Field name="unitClass" className="flex flex-col gap-1">
+    <Field name="unitClass">
       <FieldLabel>소속</FieldLabel>
-      <FieldControl required placeholder="예: 전투형" className={controlClass} />
+      <FieldControl required placeholder="예: 전투형" />
       <FieldError>{serverErrors?.unitClass ?? REQUIRED}</FieldError>
     </Field>
     <FormSubmit>등록</FormSubmit>

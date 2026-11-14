@@ -36,9 +36,12 @@ async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
 }
 const seconds = (el: Element) => parseFloat(getComputedStyle(el).transitionDuration) || 0;
 
+// Labelled placeholder: an outlined frame with a cross, drawn in mid grey so it reads on light and dark surfaces.
 const IMAGE_SRC =
   "data:image/svg+xml;utf8," +
-  encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"><rect x="4" y="4" width="16" height="16" fill="black"/></svg>');
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#8a8a80" stroke-width="2"><rect x="3" y="3" width="18" height="18"/><path d="M3 3l18 18M21 3L3 21"/></svg>',
+  );
 
 /** One control per HTML input type, each rendered by the yorha item that owns it. */
 function InputTypesGallery({ formLabel = "모든 입력 유형" }: { formLabel?: string }) {
@@ -102,7 +105,7 @@ function InputTypesGallery({ formLabel = "모든 입력 유형" }: { formLabel?:
         </Field>
         <Field>
           <FieldLabel>초기화 (input type=reset)</FieldLabel>
-          <input type="reset" value="초기화" className={buttonVariants({ variant: "ghost" })} />
+          <input type="reset" value="초기화" className={buttonVariants()} />
         </Field>
         <Field>
           <FieldLabel>이미지 버튼 (input type=image)</FieldLabel>

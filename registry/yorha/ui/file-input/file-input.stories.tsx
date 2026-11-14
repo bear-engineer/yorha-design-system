@@ -76,7 +76,7 @@ export const AddAndRemoveFiles: Story = {
     const list = await c.findByRole("list", { name: "선택한 파일" });
     await expect(within(list).getAllByRole("listitem")).toHaveLength(2);
     await expect(within(list).getByText("a.txt")).toBeInTheDocument();
-    await expect(within(list).getByText(formatFileSize(1536, "ko-KR"))).toBeInTheDocument();
+    await expect(within(list).getByText(formatFileSize(1536, "ko-KR").replace(/\u00a0/g, " "))).toBeInTheDocument();
     await expect(args.onFilesChange).toHaveBeenLastCalledWith(expect.arrayContaining([files[0], files[1]]));
     await expect(native.files).toHaveLength(2);
     // remove one

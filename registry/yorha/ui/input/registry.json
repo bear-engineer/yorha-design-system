@@ -11,7 +11,8 @@
       ],
       "registryDependencies": [
         "@yorha/base",
-        "@yorha/utils"
+        "@yorha/utils",
+        "@yorha/field"
       ],
       "files": [
         {

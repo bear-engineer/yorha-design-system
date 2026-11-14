@@ -142,6 +142,7 @@ export const States: Story = {
       <NumberField label="기본" defaultValue={3} />
       <NumberField label="읽기 전용" defaultValue={7} readOnly />
       <NumberField label="잠금" defaultValue={3} disabled />
+      <NumberField label="오류" defaultValue={120} max={99} error="99 이하여야 합니다" description="최대 99" />
     </div>
   ),
   play: async ({ canvasElement }) => {

@@ -10,7 +10,8 @@
         "@yorha/base",
         "@yorha/utils",
         "@yorha/field",
-        "@yorha/button"
+        "@yorha/icons",
+        "@yorha/input-group"
       ],
       "files": [
         {

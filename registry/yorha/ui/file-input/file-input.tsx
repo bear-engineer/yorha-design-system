@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
-import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { Field, FieldError, FieldLabel } from "@/components/ui/field";
 import { cn } from "@/lib/utils";
 
 const UNITS = ["byte", "kilobyte", "megabyte", "gigabyte"] as const;
@@ -13,12 +13,14 @@ export function formatFileSize(bytes: number, locale = "ko-KR"): string {
     value /= 1024;
     unit += 1;
   }
-  return new Intl.NumberFormat(locale, {
+  const parts = new Intl.NumberFormat(locale, {
     style: "unit",
     unit: UNITS[unit],
-    unitDisplay: "short",
+    unitDisplay: "narrow",
     maximumFractionDigits: unit === 0 ? 0 : 1,
-  }).format(value);
+  }).formatToParts(value);
+  // Narrow units glue to the number (`1,000B`); a non-breaking space keeps number and unit on one line.
+  return parts.map((p) => (p.type === "unit" ? `\u00a0${p.value}` : p.value)).join("");
 }
 
 function matchesAccept(file: File, accept: string | undefined): boolean {
@@ -47,6 +49,8 @@ export interface FileInputProps {
   locale?: string;
   selectLabel?: string;
   dropLabel?: string;
+  /** Hint shown while files are dragged over the zone. */
+  dropActiveLabel?: string;
   className?: string;
 }
 
@@ -67,6 +71,7 @@ export function FileInput({
   locale = "ko-KR",
   selectLabel = "파일 선택",
   dropLabel = "파일을 여기에 끌어다 놓거나 버튼으로 선택하세요",
+  dropActiveLabel = "여기에 놓으세요",
   className,
 }: FileInputProps) {
   const uid = React.useId();
@@ -185,13 +190,18 @@ export function FileInput({
       <div
         role="group"
         aria-labelledby={labelId}
-        aria-describedby={rejected.length ? `${hintId} ${alertId}` : hintId}
+        aria-describedby={rejected.length ? [hintId, ...rejected.map((_, i) => `${alertId}-${i}`)].join(" ") : hintId}
         data-slot="file-drop-zone"
         data-dragging={dragging ? "true" : undefined}
+        data-disabled={disabled ? "" : undefined}
+        aria-disabled={disabled || undefined}
         className={cn(
           "flex flex-col items-start gap-3 rounded-yorha border border-dashed border-yorha-border bg-yorha-bg p-4",
           "transition-[color,background-color,border-color] duration-(--motion-select) ease-yorha",
-          "data-[dragging=true]:border-solid data-[dragging=true]:border-yorha-ink data-[dragging=true]:bg-yorha-control data-[dragging=true]:text-yorha-on-control",
+          // Dragging: the dashed edge turns solid ink on the panel surface; the Button keeps its own fill so it never dissolves.
+          "data-[dragging=true]:cursor-copy data-[dragging=true]:border-solid data-[dragging=true]:border-yorha-ink data-[dragging=true]:bg-yorha-panel",
+          // Disabled cascades from the zone: edge and text share the disabled colour with the Button.
+          "data-[disabled]:cursor-not-allowed data-[disabled]:border-yorha-disabled data-[disabled]:text-yorha-disabled",
         )}
         {...dragProps}
       >
@@ -204,17 +214,23 @@ export function FileInput({
         >
           {selectLabel}
         </Button>
-        <p id={hintId} className="text-yorha-sm">
-          {dropLabel}
-          {hints.length ? ` (${hints.join(" · ")})` : ""}
+        {/* Both lines occupy one grid cell, so swapping them while dragging never changes the zone height. */}
+        <p id={hintId} className="grid text-pretty text-yorha-sm">
+          <span data-slot="file-drop-idle" aria-hidden={dragging || undefined} className={cn("col-start-1 row-start-1", dragging && "invisible")}>
+            {dropLabel}
+            {hints.length ? <span className="block text-yorha-fg-soft in-data-[disabled]:text-yorha-disabled">{hints.join(" · ")}</span> : null}
+          </span>
+          <span data-slot="file-drop-active" aria-hidden="true" className={cn("col-start-1 row-start-1 font-yorha-medium", !dragging && "invisible")}>
+            {dropActiveLabel}
+          </span>
         </p>
       </div>
       {files.length ? (
-        <ul aria-label="선택한 파일" className="grid gap-1">
+        <ul aria-label="선택한 파일" className="grid gap-3">
           {files.map((file, i) => (
             <li
               key={`${file.name}-${file.size}-${file.lastModified}-${i}`}
-              className="flex items-center justify-between gap-3 border border-yorha-border px-3 py-1"
+              className="flex min-h-row items-baseline justify-between gap-3 border border-yorha-border px-pad-sm py-1"
             >
               <span className="min-w-0 truncate">{file.name}</span>
               <span className="shrink-0 text-yorha-sm tabular-nums text-yorha-fg-soft">{formatFileSize(file.size, locale)}</span>
@@ -235,9 +251,11 @@ export function FileInput({
         </ul>
       ) : null}
       {rejected.length ? (
-        <div id={alertId} role="alert" className="grid gap-1 text-yorha-sm text-yorha-alert">
-          {rejected.map((m) => (
-            <p key={m}>{m}</p>
+        <div className="grid gap-1">
+          {rejected.map((m, i) => (
+            <FieldError key={m} id={`${alertId}-${i}`} className="mt-0">
+              {m}
+            </FieldError>
           ))}
         </div>
       ) : null}

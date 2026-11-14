@@ -13,6 +13,8 @@ export interface TextareaProps extends Omit<ComponentProps<"textarea">, "classNa
    * Browsers without field-sizing keep the `rows` height.
    */
   autoSize?: boolean;
+  /** Restore the native vertical resize grip (off by default: the browser grip is a UA square). */
+  resize?: boolean;
   /** Class for the wrapper (layout). */
   className?: string;
 }
@@ -24,6 +26,7 @@ export function Textarea({
   error,
   invalid,
   autoSize = false,
+  resize = false,
   className,
   rows = 3,
   ...props
@@ -40,7 +43,12 @@ export function Textarea({
     >
       <FieldControl
         render={<textarea rows={rows} />}
-        className={cn("min-h-24 resize-y", autoSize && "resize-none [field-sizing:content]")}
+        className={cn(
+          // Auto height (the control token is a single-line height); rows set the floor, max-h keeps it scrollable.
+          "h-auto max-h-64 min-h-24 resize-none py-2 yorha-scroll",
+          autoSize && "[field-sizing:content]",
+          resize && "resize-y",
+        )}
         {...(props as FieldControlProps)}
       />
     </FieldFrame>

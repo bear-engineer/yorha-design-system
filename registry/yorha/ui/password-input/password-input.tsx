@@ -1,6 +1,7 @@
 import * as React from "react";
-import { Button } from "@/components/ui/button";
-import { Field, FieldControl, FieldDescription, FieldError, FieldLabel, type FieldControlProps } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroupControl, FieldLabel, type FieldControlProps } from "@/components/ui/field";
+import { EyeIcon, EyeOffIcon } from "@/components/ui/icons";
+import { InputGroup, InputGroupButton } from "@/components/ui/input-group";
 
 export interface PasswordInputProps extends Omit<FieldControlProps, "type" | "children" | "className"> {
   /** Visible label and accessible name of the input. */
@@ -14,16 +15,6 @@ export interface PasswordInputProps extends Omit<FieldControlProps, "type" | "ch
   capsLockMessage?: string;
   /** Class for the Field wrapper. */
   className?: string;
-}
-
-function EyeGlyph({ off }: { off: boolean }) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className="size-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square">
-      <path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12Z" />
-      <circle cx="12" cy="12" r="3" />
-      {off ? <path d="M3 3l18 18" /> : null}
-    </svg>
-  );
 }
 
 /**
@@ -54,8 +45,8 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
   return (
     <Field invalid={Boolean(error)} disabled={disabled} className={className}>
       <FieldLabel>{label}</FieldLabel>
-      <div className="flex items-stretch gap-2">
-        <FieldControl
+      <InputGroup>
+        <FieldGroupControl
           ref={ref}
           type={revealed ? "text" : "password"}
           autoComplete={autoComplete}
@@ -75,17 +66,16 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
           }}
           {...props}
         />
-        <Button
-          variant={revealed ? "primary" : "default"}
-          square
+        <InputGroupButton
           aria-label={revealLabel}
           aria-pressed={revealed}
           disabled={disabled}
           onClick={() => setRevealed((v) => !v)}
+          className={revealed ? "bg-yorha-ink text-yorha-on-ink" : undefined}
         >
-          <EyeGlyph off={revealed} />
-        </Button>
-      </div>
+          {revealed ? <EyeOffIcon /> : <EyeIcon />}
+        </InputGroupButton>
+      </InputGroup>
       <div role="status" className="empty:hidden">
         {caps ? <FieldDescription>{capsLockMessage}</FieldDescription> : null}
       </div>

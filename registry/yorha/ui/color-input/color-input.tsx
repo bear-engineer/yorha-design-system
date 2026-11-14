@@ -1,5 +1,6 @@
 import * as React from "react";
-import { Field, FieldControl, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldGroupControl, FieldLabel } from "@/components/ui/field";
+import { InputGroup } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
 
 // Built from parts so the registry source carries no literal colour.
@@ -63,14 +64,21 @@ export function ColorInput({
   return (
     <Field invalid={invalid || Boolean(error)} disabled={disabled} className={className}>
       <FieldLabel>{label}</FieldLabel>
-      <div className="flex items-stretch gap-2">
+      <InputGroup className="w-fit">
         <span
+          data-slot="input-group-button"
           className={cn(
-            "relative size-10 shrink-0 rounded-yorha border border-yorha-border",
-            "has-[:focus-visible]:yorha-focus has-[:disabled]:opacity-60",
+            "relative grid aspect-square h-full shrink-0 place-items-center border-r border-yorha-border",
+            "yorha-tint has-[:focus-visible]:yorha-focus-inset has-[:disabled]:cursor-not-allowed has-[:disabled]:border-yorha-disabled",
           )}
         >
-          <span data-slot="color-swatch" aria-hidden="true" className="absolute inset-1 block" style={{ backgroundColor: color }} />
+          {/* 3px mat around the fill and a 1px edge on the fill, so a white swatch still reads on the beige surface. */}
+          <span
+            data-slot="color-swatch"
+            aria-hidden="true"
+            className="absolute inset-[3px] block border border-inherit"
+            style={{ backgroundColor: color }}
+          />
           <input
             type="color"
             name={name}
@@ -81,7 +89,7 @@ export function ColorInput({
             className="absolute inset-0 size-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
           />
         </span>
-        <FieldControl
+        <FieldGroupControl
           type="text"
           inputMode="text"
           autoComplete="off"
@@ -101,9 +109,9 @@ export function ColorInput({
               setText(hex);
             } else setText(color);
           }}
-          className="w-32! font-yorha-mono uppercase"
+          className="w-32 flex-none font-yorha-mono uppercase"
         />
-      </div>
+      </InputGroup>
       {description ? <FieldDescription>{description}</FieldDescription> : null}
       {error || invalid ? <FieldError>{error ?? "색상은 #RRGGBB 형식이어야 합니다"}</FieldError> : null}
     </Field>
