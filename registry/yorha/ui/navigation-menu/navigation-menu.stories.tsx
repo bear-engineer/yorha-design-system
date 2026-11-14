@@ -148,7 +148,7 @@ export const KeyboardNavigation: Story = {
   },
 };
 
-/** 다른 트리거로 옮기면 같은 팝업이 새 패널 크기로 이어서 바뀝니다(`--popup-width`, `--popup-height`). */
+/** 다른 트리거로 옮기면 같은 팝업이 새 패널 크기(`--popup-width`, `--popup-height`)를 따르고, 레이아웃 속성은 전환하지 않습니다. */
 export const MorphsBetweenPanels: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -163,12 +163,11 @@ export const MorphsBetweenPanels: Story = {
     await expect(second.closest('[data-slot="navigation-menu-popup"]')).toBe(popup);
     await waitFor(() => expect(body(canvasElement).queryByRole("link", { name: "유닛 목록" })).toBeNull());
     await expect(c.getByRole("button", { name: "기록 보관소" })).toHaveAttribute("aria-expanded", "true");
-    // Size animates in full motion (Base UI disables the transition only while it measures).
-    await waitFor(() => expect(getComputedStyle(popup).transitionProperty).toContain("height"));
-    await expect(parseFloat(getComputedStyle(popup).transitionDuration)).toBeGreaterThan(0);
+    // Size vars follow the new panel; the popup transitions opacity/scale only, never a layout property.
     await waitFor(() => expect(popup.style.getPropertyValue("--popup-height")).not.toBe(sized));
-    // Position animates between triggers unless Base UI marks the move instant.
-    await waitFor(() => expect(getComputedStyle(positioner).transitionProperty).toContain("left"));
+    await expect(getComputedStyle(popup).transitionProperty).not.toMatch(/width|height|top|left|right|bottom/);
+    await expect(getComputedStyle(popup).transitionProperty).toContain("opacity");
+    await expect(getComputedStyle(positioner).transitionProperty).not.toMatch(/top|left|right|bottom|width|height/);
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(body(canvasElement).queryByRole("link", { name: "검색" })).toBeNull());
   },

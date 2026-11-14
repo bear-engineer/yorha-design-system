@@ -137,7 +137,7 @@ function NavigationMenuLink({ className, closeOnClick = true, ...props }: Compon
   );
 }
 
-/** Shared popup. Position and size animate between panels (`--positioner-*`, `--popup-*`). */
+/** Shared popup. Size follows the active panel through `--positioner-*` / `--popup-*` (no layout transition); panels slide and fade, the popup itself fades and scales. */
 function NavigationMenuViewport({
   side = "bottom",
   align = "start",
@@ -160,7 +160,7 @@ function NavigationMenuViewport({
         collisionAvoidance={{ side: "none" }}
         className={cn(
           "z-(--yorha-z-popover) h-(--positioner-height) w-(--positioner-width) max-w-(--available-width)",
-          "transition-[top,left,right,bottom] duration-(--motion-shared-element) ease-yorha-emphasized data-[instant]:transition-none",
+          // No transition on top/left/width/height: they are layout properties. The positioner jumps to the new anchor and the panel content slides/fades.
           // hover bridge so the pointer can cross the gap to the popup
           "before:absolute before:content-[''] data-[side=bottom]:before:inset-x-0 data-[side=bottom]:before:-top-2.5 data-[side=bottom]:before:h-2.5",
           "data-[side=top]:before:inset-x-0 data-[side=top]:before:-bottom-2.5 data-[side=top]:before:h-2.5",
@@ -171,7 +171,7 @@ function NavigationMenuViewport({
           aria-label={label}
           className={cn(
             "relative h-(--popup-height) w-(--popup-width) origin-(--transform-origin) border border-yorha-border bg-yorha-panel text-yorha-fg shadow-yorha-md rounded-yorha outline-none",
-            "transition-[opacity,scale,width,height] duration-(--motion-shared-element) ease-yorha-emphasized",
+            "transition-[opacity,scale] [transition-duration:max(var(--motion-shared-element),var(--motion-reduced-fade))] ease-yorha-emphasized",
             "data-[starting-style]:opacity-0 data-[starting-style]:scale-(--pop-scale)",
             "data-[ending-style]:opacity-0 data-[ending-style]:scale-(--pop-scale) data-[ending-style]:duration-(--motion-popover-exit) data-[ending-style]:ease-yorha-in",
             "[--pop-scale:calc(1_-_(1_-_var(--motion-scale-pop))_*_var(--motion-spatial))]",
@@ -192,7 +192,7 @@ function NavigationMenuArrow({ className, ...props }: ComponentProps<typeof Navi
       data-slot="navigation-menu-arrow"
       className={cnState(
         [
-          "relative block h-1.5 w-3 overflow-clip transition-[left,right] duration-(--motion-shared-element) ease-yorha-emphasized",
+          "relative block h-1.5 w-3 overflow-clip",
           "before:absolute before:bottom-0 before:left-1/2 before:block before:size-[calc(6px*1.4142)] before:-translate-x-1/2 before:translate-y-1/2 before:rotate-45",
           "before:border before:border-yorha-border before:bg-yorha-panel before:content-['']",
           "data-[side=bottom]:-top-1.5 data-[side=top]:-bottom-1.5 data-[side=top]:rotate-180",

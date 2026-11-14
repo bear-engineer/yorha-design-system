@@ -266,7 +266,7 @@ export function TimelineGraph({
           <button type="button" className={btn} aria-label={t.zoomIn} disabled={scale === "hour"} onClick={() => zoom(1)}>
             <span aria-hidden="true">+</span>
           </button>
-          <span className="px-2 text-yorha-sm tracking-yorha-wide text-yorha-fg-soft" data-part="scale-label">
+          <span className="inline-block min-w-[3.5em] px-2 text-yorha-sm tracking-yorha-wide text-yorha-fg-soft" data-part="scale-label">
             {t.scale[scale]}
           </span>
         </div>

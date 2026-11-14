@@ -57,6 +57,10 @@ export function DataTableRow({ className, ...props }: ComponentPropsWithoutRef<"
   return <tr className={cn(className)} {...props} />;
 }
 
+// Sort indicator layer: always mounted in a fixed cell; only opacity and rotate animate (reduced: opacity only).
+const SORT_GLYPH =
+  "col-start-1 row-start-1 size-3 opacity-0 transition-[opacity,rotate] [transition-duration:max(var(--motion-select),var(--motion-reduced-fade)),calc(var(--motion-select)*var(--motion-spatial))] ease-yorha";
+
 /**
  * Header cell with scope="col". When `sortable`, the label is a button and `aria-sort` reflects `sortDirection`.
  * Each activation toggles ascending <-> descending (from "none" it goes ascending).
@@ -73,7 +77,6 @@ export function DataTableHeadCell({
   sortDirection?: SortDirection;
   onSortChange?: (next: SortDirection) => void;
 }) {
-  const glyph = sortDirection === "ascending" ? "▲" : sortDirection === "descending" ? "▼" : "◇";
   return (
     <th
       scope="col"
@@ -91,8 +94,25 @@ export function DataTableHeadCell({
           className="inline-flex min-h-[24px] items-center gap-2 rounded-yorha font-inherit text-inherit focus-visible:yorha-focus"
         >
           {children}
-          <span aria-hidden="true" className="text-yorha-alert-ui">
-            {glyph}
+          <span
+            aria-hidden="true"
+            data-sort-indicator={sortDirection}
+            className="group/sort grid size-3 shrink-0 place-items-center text-yorha-alert-ui"
+          >
+            {/* Fixed slot: the diamond (unsorted) and the triangle (sorted) share one cell and cross-fade; the triangle flips by rotate. */}
+            <svg viewBox="0 0 12 12" className={cn(SORT_GLYPH, "group-data-[sort-indicator=none]/sort:opacity-100")} fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M6 1.5 10.5 6 6 10.5 1.5 6Z" />
+            </svg>
+            <svg
+              viewBox="0 0 12 12"
+              className={cn(
+                SORT_GLYPH,
+                "group-data-[sort-indicator=ascending]/sort:opacity-100 group-data-[sort-indicator=descending]/sort:opacity-100 group-data-[sort-indicator=descending]/sort:rotate-180",
+              )}
+              fill="currentColor"
+            >
+              <path d="M6 2 11 10H1Z" />
+            </svg>
           </span>
         </button>
       ) : (
