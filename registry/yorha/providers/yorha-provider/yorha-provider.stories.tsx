@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
+import { useDirection } from "@base-ui/react/direction-provider";
+import { ScrollArea as ScrollAreaPrimitive } from "@base-ui/react/scroll-area";
 import {
   MAX_FLASH_HZ,
   YorhaProvider,
@@ -135,5 +137,55 @@ export const SoundDisabledByDefault: Story = {
     expect(volume).toBeGreaterThanOrEqual(0);
     expect(volume).toBeLessThanOrEqual(1);
     expect(c.getByTestId("flash")).toHaveTextContent("3");
+  },
+};
+
+function DirectionProbe() {
+  const dir = useDirection();
+  return <output data-testid="direction">{dir}</output>;
+}
+
+export const DirectionDefault: Story = {
+  name: "방향 기본 ltr",
+  render: (args) => (
+    <YorhaProvider {...args}>
+      <DirectionProbe />
+    </YorhaProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByTestId("direction")).toHaveTextContent("ltr");
+  },
+};
+
+export const DirectionRtl: Story = {
+  name: "방향 rtl",
+  args: { direction: "rtl" },
+  render: (args) => (
+    <YorhaProvider {...args}>
+      <DirectionProbe />
+    </YorhaProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByTestId("direction")).toHaveTextContent("rtl");
+  },
+};
+
+const NONCE = "yorha-test-nonce";
+
+/** CSPProvider: Base UI ScrollArea emits its inline <style> with the nonce. */
+export const CspNonce: Story = {
+  name: "CSP nonce",
+  args: { nonce: NONCE },
+  render: (args) => (
+    <YorhaProvider {...args}>
+      <ScrollAreaPrimitive.Root className="h-16 w-40">
+        <ScrollAreaPrimitive.Viewport className="h-full w-full">
+          <div className="h-64">긴 내용</div>
+        </ScrollAreaPrimitive.Viewport>
+      </ScrollAreaPrimitive.Root>
+    </YorhaProvider>
+  ),
+  play: async () => {
+    await waitFor(() => expect(document.querySelector(`style[nonce="${NONCE}"]`)).not.toBeNull());
   },
 };

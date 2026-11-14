@@ -36,6 +36,10 @@ export interface YorhaProviderProps {
   density?: Density;
   /** Initial sound preference (state only; the sound engine reads it). Default off. */
   sound?: SoundPreferenceDefaults;
+  /** Reading direction for Base UI components (DirectionProvider). Default `ltr`. */
+  direction?: "ltr" | "rtl";
+  /** CSP nonce for inline <style>/<script> that Base UI emits (CSPProvider). */
+  nonce?: string;
   children?: ReactNode;
 }
 
