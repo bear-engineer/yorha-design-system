@@ -1,0 +1,38 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+import { tokens } from "./tokens.generated";
+
+<Meta title="파운데이션/Motion" />
+
+# 모션
+
+모션은 `<html>`의 `data-motion`(`full`, `reduced`, `off`)을 따릅니다. `reduced`와 `off`에서는 모든 지속 시간 변수가 0이 되어 최종 상태가 바로 나타납니다. 프로바이더가 없어도 OS의 "동작 줄이기" 설정이 켜져 있으면 같은 값이 적용됩니다(`data-motion="full"`로 명시한 경우 제외).
+
+- 지속 시간은 `var(--motion-*)`로만 씁니다. Tailwind에서는 `duration-(--motion-select)`, `delay-(--motion-stagger)`.
+- 나가는 동작은 들어오는 동작보다 빠릅니다.
+- 깜빡임은 초당 3회 이하, 5초를 넘는 자동 동작에는 일시정지 수단을 둡니다.
+
+## 지속 시간
+
+<table>
+  <thead>
+    <tr><th>토큰</th><th>CSS 변수</th><th>full</th><th>reduced</th><th>off</th><th>용도</th></tr>
+  </thead>
+  <tbody>
+    {tokens.motion.durations.map((duration) => (
+      <tr key={duration.name}><td>{duration.name}</td><td><code>{duration.alias}</code>, <code>{duration.cssVar}</code></td><td>{duration.full}</td><td>{duration.reduced}</td><td>{duration.off}</td><td>{duration.description}</td></tr>
+    ))}
+  </tbody>
+</table>
+
+## 이징
+
+<table>
+  <thead>
+    <tr><th>유틸리티</th><th>CSS 변수</th><th>값</th><th>용도</th></tr>
+  </thead>
+  <tbody>
+    {tokens.motion.easings.map((easing) => (
+      <tr key={easing.name}><td><code>{easing.utility}</code></td><td><code>{easing.cssVar}</code></td><td>{easing.value}</td><td>{easing.description}</td></tr>
+    ))}
+  </tbody>
+</table>

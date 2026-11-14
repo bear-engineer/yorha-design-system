@@ -1,0 +1,56 @@
+import { Meta, Typeset } from "@storybook/addon-docs/blocks";
+import { tokens } from "./tokens.generated";
+
+<Meta title="파운데이션/Typography" />
+
+# 타이포그래피
+
+원작 서체는 쓰지 않습니다. OFL 서체만 npm 의존성으로 받아 `unicode-range` 조각 단위로 내려받습니다(Pretendard dynamic subset, Fontsource). 한국어는 `word-break: keep-all`, 일본어는 `:lang(ja)`에서 일본어 자형 스택으로 바뀝니다.
+
+제목은 대문자, 넓은 자간(`tracking-yorha-heading`), 단단한 오프셋 그림자(`text-shadow-yorha`)를 씁니다.
+
+## 서체
+
+<table>
+  <thead>
+    <tr><th>토큰</th><th>유틸리티</th><th>CSS 변수</th><th>스택</th></tr>
+  </thead>
+  <tbody>
+    {tokens.fontFamilies.map((font) => (
+      <tr key={font.name}><td>{font.name}</td><td><code>{font.utility}</code></td><td><code>{font.cssVar}</code></td><td>{font.value}</td></tr>
+    ))}
+  </tbody>
+</table>
+
+## 크기
+
+<Typeset
+  fontSizes={tokens.fontSizes.map((size) => size.value)}
+  fontWeight={400}
+  fontFamily={tokens.fontFamilies[0].value}
+  sampleText="기록 보관소 접속 SYSTEM LOG 0123"
+/>
+
+<table>
+  <thead>
+    <tr><th>토큰</th><th>유틸리티</th><th>크기</th><th>줄 높이</th></tr>
+  </thead>
+  <tbody>
+    {tokens.fontSizes.map((size) => (
+      <tr key={size.name}><td>{size.name}</td><td><code>{size.utility}</code></td><td>{size.value}</td><td>{size.lineHeight}</td></tr>
+    ))}
+  </tbody>
+</table>
+
+## 굵기 · 줄 높이 · 자간
+
+<table>
+  <thead>
+    <tr><th>유틸리티</th><th>CSS 변수</th><th>값</th><th>용도</th></tr>
+  </thead>
+  <tbody>
+    {[...tokens.fontWeights, ...tokens.leading, ...tokens.tracking].map((token) => (
+      <tr key={token.cssVar}><td><code>{token.utility}</code></td><td><code>{token.cssVar}</code></td><td>{token.value}</td><td>{token.description}</td></tr>
+    ))}
+  </tbody>
+</table>

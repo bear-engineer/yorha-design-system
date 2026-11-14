@@ -1,0 +1,460 @@
+{
+  "$description": "YoRHa design tokens (unofficial fan project). Theme-independent set: typography, spacing, radius, border, shadow, motion, z-index.",
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "sans": {
+        "$value": [
+          "Pretendard Variable",
+          "Noto Sans KR Variable",
+          "Zen Kaku Gothic New",
+          "Noto Sans JP Variable",
+          "system-ui",
+          "sans-serif"
+        ],
+        "$description": "Default UI stack, Korean first. OFL fonts only."
+      },
+      "sans-ja": {
+        "$value": [
+          "Pretendard Variable",
+          "Zen Kaku Gothic New",
+          "Noto Sans JP Variable",
+          "Noto Sans KR Variable",
+          "system-ui",
+          "sans-serif"
+        ],
+        "$description": "Applied under :lang(ja) for Japanese glyph forms."
+      },
+      "mono": {
+        "$value": [
+          "M PLUS 1 Code",
+          "ui-monospace",
+          "SFMono-Regular",
+          "Menlo",
+          "monospace"
+        ],
+        "$description": "Fixed width: Decipher, BootLog, Kbd, numerals."
+      }
+    },
+    "weight": {
+      "$type": "fontWeight",
+      "light": {
+        "$value": 300
+      },
+      "regular": {
+        "$value": 400
+      },
+      "medium": {
+        "$value": 500
+      },
+      "bold": {
+        "$value": 700
+      }
+    },
+    "size": {
+      "$type": "dimension",
+      "xs": {
+        "$value": {
+          "value": 0.75,
+          "unit": "rem"
+        },
+        "$extensions": {
+          "dev.yorha": {
+            "leading": "snug"
+          }
+        }
+      },
+      "sm": {
+        "$value": {
+          "value": 0.875,
+          "unit": "rem"
+        },
+        "$extensions": {
+          "dev.yorha": {
+            "leading": "body"
+          }
+        }
+      },
+      "base": {
+        "$value": {
+          "value": 1,
+          "unit": "rem"
+        },
+        "$extensions": {
+          "dev.yorha": {
+            "leading": "body"
+          }
+        }
+      },
+      "lg": {
+        "$value": {
+          "value": 1.125,
+          "unit": "rem"
+        },
+        "$extensions": {
+          "dev.yorha": {
+            "leading": "body"
+          }
+        }
+      },
+      "xl": {
+        "$value": {
+          "value": 1.375,
+          "unit": "rem"
+        },
+        "$extensions": {
+          "dev.yorha": {
+            "leading": "snug"
+          }
+        }
+      },
+      "2xl": {
+        "$value": {
+          "value": 1.75,
+          "unit": "rem"
+        },
+        "$extensions": {
+          "dev.yorha": {
+            "leading": "tight"
+          }
+        }
+      },
+      "3xl": {
+        "$value": {
+          "value": 2.25,
+          "unit": "rem"
+        },
+        "$extensions": {
+          "dev.yorha": {
+            "leading": "tight"
+          }
+        }
+      },
+      "display": {
+        "$value": {
+          "value": 3,
+          "unit": "rem"
+        },
+        "$extensions": {
+          "dev.yorha": {
+            "leading": "tight"
+          }
+        }
+      }
+    },
+    "leading": {
+      "$type": "number",
+      "tight": {
+        "$value": 1.2,
+        "$description": "Headings."
+      },
+      "snug": {
+        "$value": 1.4,
+        "$description": "Labels, dense UI."
+      },
+      "body": {
+        "$value": 1.6,
+        "$description": "Body copy (Korean / Japanese)."
+      }
+    },
+    "tracking": {
+      "$type": "number",
+      "body": {
+        "$value": 0.03,
+        "$description": "Body copy.",
+        "$extensions": {
+          "dev.yorha": {
+            "unit": "em"
+          }
+        }
+      },
+      "wide": {
+        "$value": 0.08,
+        "$description": "Labels, buttons, menu rows.",
+        "$extensions": {
+          "dev.yorha": {
+            "unit": "em"
+          }
+        }
+      },
+      "heading": {
+        "$value": 0.16,
+        "$description": "Uppercase headings.",
+        "$extensions": {
+          "dev.yorha": {
+            "unit": "em"
+          }
+        }
+      }
+    }
+  },
+  "spacing": {
+    "$type": "dimension",
+    "base": {
+      "$value": {
+        "value": 0.25,
+        "unit": "rem"
+      },
+      "$description": "Tailwind --spacing multiplier. [data-density] overrides it per subtree."
+    },
+    "grid": {
+      "$value": {
+        "value": 0.3,
+        "unit": "rem"
+      },
+      "$description": "Cell size of the decorative background grid."
+    }
+  },
+  "radius": {
+    "$type": "dimension",
+    "none": {
+      "$value": {
+        "value": 0,
+        "unit": "px"
+      },
+      "$description": "Zero radius everywhere."
+    }
+  },
+  "border": {
+    "$type": "dimension",
+    "width": {
+      "thin": {
+        "$value": {
+          "value": 1,
+          "unit": "px"
+        },
+        "$description": "Hairline borders and rules."
+      },
+      "strong": {
+        "$value": {
+          "value": 2,
+          "unit": "px"
+        },
+        "$description": "Emphasised borders."
+      }
+    },
+    "ring": {
+      "width": {
+        "$value": {
+          "value": 2,
+          "unit": "px"
+        },
+        "$description": "Focus-visible outline width."
+      },
+      "offset": {
+        "$value": {
+          "value": 2,
+          "unit": "px"
+        },
+        "$description": "Focus-visible outline offset."
+      }
+    },
+    "menu-rule": {
+      "$value": {
+        "value": 1,
+        "unit": "px"
+      },
+      "$description": "Thin rules above and below the selected menu row. Set to 0 to turn off."
+    }
+  },
+  "shadow": {
+    "$type": "shadow",
+    "sm": {
+      "$value": {
+        "color": "{color.shadow}",
+        "offsetX": {
+          "value": 2,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 2,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 0,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        }
+      },
+      "$description": "Hard offset shadow, small (chips, buttons)."
+    },
+    "md": {
+      "$value": {
+        "color": "{color.shadow}",
+        "offsetX": {
+          "value": 4,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 4,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 0,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        }
+      },
+      "$description": "Hard offset shadow, medium (panels)."
+    },
+    "lg": {
+      "$value": {
+        "color": "{color.shadow}",
+        "offsetX": {
+          "value": 6,
+          "unit": "px"
+        },
+        "offsetY": {
+          "value": 6,
+          "unit": "px"
+        },
+        "blur": {
+          "value": 0,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        }
+      },
+      "$description": "Hard offset shadow, large (dialogs)."
+    },
+    "text": {
+      "$value": {
+        "color": "{color.shadow}",
+        "offsetX": {
+          "value": 0.125,
+          "unit": "rem"
+        },
+        "offsetY": {
+          "value": 0.125,
+          "unit": "rem"
+        },
+        "blur": {
+          "value": 0,
+          "unit": "px"
+        },
+        "spread": {
+          "value": 0,
+          "unit": "px"
+        }
+      },
+      "$description": "Hard offset text shadow for uppercase headings."
+    }
+  },
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "select": {
+        "$value": {
+          "value": 180,
+          "unit": "ms"
+        },
+        "$description": "Selection fill wipe, enter."
+      },
+      "select-exit": {
+        "$value": {
+          "value": 120,
+          "unit": "ms"
+        },
+        "$description": "Selection fill, exit (faster than enter)."
+      },
+      "panel": {
+        "$value": {
+          "value": 400,
+          "unit": "ms"
+        },
+        "$description": "Panel / dialog enter."
+      },
+      "panel-exit": {
+        "$value": {
+          "value": 240,
+          "unit": "ms"
+        },
+        "$description": "Panel / dialog exit (faster than enter)."
+      },
+      "stagger": {
+        "$value": {
+          "value": 100,
+          "unit": "ms"
+        },
+        "$description": "Delay per row in staggered lists."
+      },
+      "scramble-char": {
+        "$value": {
+          "value": 70,
+          "unit": "ms"
+        },
+        "$description": "Decipher interval per character."
+      }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "standard": {
+        "$value": [
+          0.2,
+          0,
+          0,
+          1
+        ],
+        "$description": "Default easing for wipes and panels."
+      },
+      "out": {
+        "$value": [
+          0.16,
+          1,
+          0.3,
+          1
+        ],
+        "$description": "Enter."
+      },
+      "in": {
+        "$value": [
+          0.4,
+          0,
+          1,
+          1
+        ],
+        "$description": "Exit."
+      }
+    }
+  },
+  "z": {
+    "$type": "number",
+    "base": {
+      "$value": 0
+    },
+    "decor": {
+      "$value": 1,
+      "$description": "Grid, vignette, ornaments."
+    },
+    "raised": {
+      "$value": 10
+    },
+    "sticky": {
+      "$value": 100
+    },
+    "overlay": {
+      "$value": 1000,
+      "$description": "Scrim."
+    },
+    "modal": {
+      "$value": 1100
+    },
+    "popover": {
+      "$value": 1200
+    },
+    "toast": {
+      "$value": 1300
+    },
+    "tooltip": {
+      "$value": 1400
+    }
+  }
+}

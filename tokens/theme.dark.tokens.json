@@ -1,0 +1,271 @@
+{
+  "color": {
+    "$type": "color",
+    "$description": "Dark theme: inverted palette, same roles (WCAG 2.x AA).",
+    "bg": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.3015,
+          0.0092,
+          88.76
+        ],
+        "hex": "#302e29"
+      },
+      "$description": "Page background."
+    },
+    "panel": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.3597,
+          0.0121,
+          93.78
+        ],
+        "hex": "#3f3d36"
+      },
+      "$description": "Panel / surface background."
+    },
+    "grid": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.3325,
+          0.0123,
+          93.81
+        ],
+        "hex": "#38362f"
+      },
+      "$description": "Decorative grid lines (aria-hidden layers only)."
+    },
+    "line-deco": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.4456,
+          0.0164,
+          93.17
+        ],
+        "hex": "#57544a"
+      },
+      "$description": "Decorative rules and ornaments only; never carries meaning."
+    },
+    "fg-ink": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.9265,
+          0.0271,
+          95.35
+        ],
+        "hex": "#ece7d3"
+      },
+      "$description": "Strongest text: headings, key values."
+    },
+    "fg-strong": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.8681,
+          0.0342,
+          95.91
+        ],
+        "hex": "#dad4bb"
+      },
+      "$description": "Emphasised body text."
+    },
+    "fg": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.8335,
+          0.033,
+          97.36
+        ],
+        "hex": "#cec9b1"
+      },
+      "$description": "Default body text."
+    },
+    "fg-soft": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.7933,
+          0.0307,
+          96.48
+        ],
+        "hex": "#c1bca6"
+      },
+      "$description": "Secondary text; safe on bg and panel."
+    },
+    "fg-muted": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.7524,
+          0.0298,
+          96
+        ],
+        "hex": "#b4af9a"
+      },
+      "$description": "Muted text. Light theme: panel only (4.20:1 on bg); use fg-soft on bg."
+    },
+    "border": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.6256,
+          0.0238,
+          95.44
+        ],
+        "hex": "#8c8878"
+      },
+      "$description": "Control and panel borders (>= 3:1 on bg and panel)."
+    },
+    "separator": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.6256,
+          0.0238,
+          95.44
+        ],
+        "hex": "#8c8878"
+      },
+      "$description": "Meaningful separators on panel."
+    },
+    "ink": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.8681,
+          0.0342,
+          95.91
+        ],
+        "hex": "#dad4bb"
+      },
+      "$description": "Dark fill: selection wipe, header strip, inverse surfaces."
+    },
+    "on-ink": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.3597,
+          0.0121,
+          93.78
+        ],
+        "hex": "#3f3d36"
+      },
+      "$description": "Text on ink."
+    },
+    "on-ink-soft": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.4456,
+          0.0164,
+          93.17
+        ],
+        "hex": "#57544a"
+      },
+      "$description": "Secondary text on ink."
+    },
+    "control": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.4456,
+          0.0164,
+          93.17
+        ],
+        "hex": "#57544a"
+      },
+      "$description": "Button / control face."
+    },
+    "on-control": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.8681,
+          0.0342,
+          95.91
+        ],
+        "hex": "#dad4bb"
+      },
+      "$description": "Label on control."
+    },
+    "alert": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.739,
+          0.0902,
+          34.84
+        ],
+        "hex": "#dd9684"
+      },
+      "$description": "Alert text on bg and panel (the single drab red-orange accent)."
+    },
+    "alert-ui": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.6375,
+          0.1312,
+          35.22
+        ],
+        "hex": "#ce6b52"
+      },
+      "$description": "Alert icons and borders (>= 3:1)."
+    },
+    "alert-on-ink": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.4695,
+          0.1187,
+          34.7
+        ],
+        "hex": "#913d29"
+      },
+      "$description": "Alert text on ink."
+    },
+    "ring": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.8681,
+          0.0342,
+          95.91
+        ],
+        "hex": "#dad4bb"
+      },
+      "$description": "Focus-visible outline."
+    },
+    "shadow": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.2217,
+          0.0077,
+          95.41
+        ],
+        "hex": "#1c1b17"
+      },
+      "$description": "Hard offset shadow colour."
+    },
+    "scrim": {
+      "$value": {
+        "colorSpace": "oklch",
+        "components": [
+          0.1864,
+          0.008,
+          95.48
+        ],
+        "alpha": 0.7,
+        "hex": "#14130f"
+      },
+      "$description": "Backdrop behind dialogs and overlays."
+    }
+  }
+}

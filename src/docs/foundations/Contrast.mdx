@@ -1,0 +1,34 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+import { tokens } from "./tokens.generated";
+
+<Meta title="파운데이션/Contrast" />
+
+# 대비
+
+아래 표는 `scripts/contrast.mjs`(WCAG 2.x 상대 휘도)가 토큰에서 계산한 값입니다. 같은 계산을 `scripts/contrast.test.ts`가 검사하므로, 기준에 못 미치는 색을 넣으면 `pnpm test`가 실패합니다.
+
+- `light`, `dark`: 텍스트 4.5:1 이상, UI 3:1 이상.
+- `high-contrast`: 텍스트 7:1 이상, UI 4.5:1 이상.
+- `authentic`: 검사에서 제외한 장식 모드입니다. 비교를 위해 기본 테마 기준으로 계산한 값을 보여 줍니다.
+
+{tokens.themes.map((theme) => (
+  <section key={theme}>
+    <h2>{theme}{tokens.contrast[theme].enforced ? "" : " (검사 제외)"}</h2>
+    <table>
+      <thead>
+        <tr><th>전경 / 배경</th><th>종류</th><th>대비</th><th>기준</th><th>결과</th></tr>
+      </thead>
+      <tbody>
+        {tokens.contrast[theme].rows.map((row) => (
+          <tr key={`${row.fg}/${row.bg}`}>
+            <td><code>{row.fg}</code> / <code>{row.bg}</code></td>
+            <td>{row.kind === "text" ? "텍스트" : "UI"}</td>
+            <td>{row.ratio.toFixed(2)}:1</td>
+            <td>{row.min}:1</td>
+            <td>{row.pass ? "통과" : "미달"}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+))}

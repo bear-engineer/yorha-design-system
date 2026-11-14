@@ -1,0 +1,11 @@
+{
+  "spacing": {
+    "$type": "dimension",
+    "base": {
+      "$value": {
+        "value": 0.3,
+        "unit": "rem"
+      }
+    }
+  }
+}

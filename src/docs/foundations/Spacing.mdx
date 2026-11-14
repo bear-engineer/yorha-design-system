@@ -1,0 +1,74 @@
+import { Meta, Unstyled } from "@storybook/addon-docs/blocks";
+import { tokens } from "./tokens.generated";
+
+<Meta title="파운데이션/Spacing" />
+
+# 간격과 밀도
+
+간격은 Tailwind의 `--spacing` 한 값에서 나옵니다(`p-4` = `--spacing` × 4). `data-density` 속성이 그 값을 하위 트리 단위로 바꾸므로, 컴포넌트는 숫자 간격 유틸리티(`p-4`, `gap-2`, `h-9`)만 쓰면 밀도를 따라갑니다.
+
+<table>
+  <thead>
+    <tr><th>data-density</th><th>--spacing</th></tr>
+  </thead>
+  <tbody>
+    {Object.entries(tokens.density).map(([density, value]) => (
+      <tr key={density}><td><code>{density}</code></td><td>{value}</td></tr>
+    ))}
+  </tbody>
+</table>
+
+<Unstyled>
+  <div style={{ display: "flex", flexWrap: "wrap", alignItems: "flex-start", gap: "1rem", margin: "1rem 0" }}>
+    {Object.keys(tokens.density).map((density) => (
+      <div key={density} data-density={density} className="border border-yorha-border bg-yorha-panel font-yorha text-yorha-fg">
+        <div className="p-4 text-yorha-sm">{density}</div>
+      </div>
+    ))}
+  </div>
+</Unstyled>
+
+## 간격 · 모서리 · 테두리
+
+모서리 반경은 항상 0입니다. 포커스 표시는 `focus-visible:yorha-focus`(2px 잉크 외곽선 + 2px 오프셋)를 씁니다. `--menu-rule`은 선택된 메뉴 행 위아래의 얇은 선이며 0으로 두면 꺼집니다.
+
+<table>
+  <thead>
+    <tr><th>토큰</th><th>CSS 변수</th><th>값</th><th>용도</th></tr>
+  </thead>
+  <tbody>
+    {[...tokens.spacing, ...tokens.radius, ...tokens.borders].map((token) => (
+      <tr key={token.cssVar}><td>{token.name}</td><td><code>{[token.cssVar, token.alias].filter(Boolean).join(", ")}</code></td><td>{token.value}</td><td>{token.description}</td></tr>
+    ))}
+  </tbody>
+</table>
+
+## 그림자
+
+흐림이 없는 단단한 오프셋 그림자만 씁니다. 색은 `--yorha-shadow`를 따라 테마마다 바뀝니다.
+
+<table>
+  <thead>
+    <tr><th>유틸리티</th><th>값</th><th>용도</th></tr>
+  </thead>
+  <tbody>
+    {tokens.shadows.map((shadow) => (
+      <tr key={shadow.utility}><td><code>{shadow.utility}</code></td><td>{shadow.value}</td><td>{shadow.description}</td></tr>
+    ))}
+  </tbody>
+</table>
+
+## 쌓임 순서
+
+`z-(--yorha-z-modal)`처럼 변수로 씁니다.
+
+<table>
+  <thead>
+    <tr><th>CSS 변수</th><th>값</th><th>용도</th></tr>
+  </thead>
+  <tbody>
+    {tokens.zIndex.map((z) => (
+      <tr key={z.cssVar}><td><code>{z.cssVar}</code></td><td>{z.value}</td><td>{z.description}</td></tr>
+    ))}
+  </tbody>
+</table>

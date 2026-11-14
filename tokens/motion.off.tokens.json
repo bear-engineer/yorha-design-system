@@ -1,0 +1,43 @@
+{
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "select": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "select-exit": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "panel": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "panel-exit": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "stagger": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "scramble-char": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      }
+    }
+  }
+}

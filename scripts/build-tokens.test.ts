@@ -40,7 +40,7 @@ describe("token generator", () => {
     const block = (selector: string) => {
       const start = css.indexOf(`\n${selector} {\n`);
       expect(start, selector).toBeGreaterThanOrEqual(0);
-      return css.slice(start, css.indexOf("\n}\n", start));
+      return css.slice(start, css.indexOf("\n}\n", start) + 1);
     };
     for (const [scope, selector] of [["light", ":root"], ["dark", ".dark"], ["theme", "@theme inline"]] as const) {
       const vars = Object.entries(item?.cssVars[scope] ?? {});
