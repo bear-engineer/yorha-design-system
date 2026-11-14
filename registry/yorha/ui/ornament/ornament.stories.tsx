@@ -14,7 +14,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="w-96 max-w-full bg-yorha-panel p-6 text-yorha-fg">
+      <div className="w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -63,7 +63,7 @@ export const ThemeGallery: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <Ornament variant="band" />
         </div>
       ))}
@@ -81,7 +81,7 @@ export const Authentic: Story = {
   // Authentic fails 11 of 24 token pairs by design (tokens.md); this story is the only one that renders it.
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-bg p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
       <Ornament variant="separator" />
     </div>
   ),

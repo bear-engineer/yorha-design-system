@@ -27,7 +27,7 @@ const meta = {
   title: "컴포넌트/폼/Slider",
   component: Slider,
   tags: ["autodocs"],
-  decorators: [(Story) => <div className="w-80 max-w-full max-w-full"><Story /></div>],
+  decorators: [(Story) => <div className="w-80 max-w-[calc(100vw-2rem)] max-w-full"><Story /></div>],
 } satisfies Meta<typeof Slider>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -95,7 +95,7 @@ export const Themes: Story = {
   render: (args) => (
     <div className="grid gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-panel p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
           <Slider {...args} label={`테마 ${t}`} />
         </div>
       ))}
@@ -113,7 +113,7 @@ export const Authentic: Story = {
   args: { label: "테마 authentic", defaultValue: 60 },
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <Slider label="테마 authentic" defaultValue={60} />
     </div>
   ),
@@ -150,7 +150,7 @@ export const ReducedMotion: Story = {
 export const States: Story = {
   args: { label: "기본", defaultValue: 40 },
   render: () => (
-    <div className="flex w-72 max-w-full flex-col gap-4">
+    <div className="flex w-72 max-w-[calc(100vw-2rem)] flex-col gap-4">
       <Slider label="기본" defaultValue={40} />
       <Slider label="범위" defaultValue={[20, 70]} />
       <Slider label="잠금" defaultValue={40} disabled />

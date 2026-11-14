@@ -47,7 +47,7 @@ const meta = {
   args: { length: LENGTH, onValueChange: fn(), onValueComplete: fn() },
   decorators: [
     (Story) => (
-      <div className="bg-yorha-panel p-6 text-yorha-fg">
+      <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -186,7 +186,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid gap-6">
       {THEMES.map((theme) => (
-        <div key={theme} data-theme={theme} className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={theme} data-theme={theme} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <Demo id={`otp-${theme}`} label={`인증 코드 (${THEME_LABEL[theme]})`} />
         </div>
       ))}
@@ -205,7 +205,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <Demo id="otp-authentic" label="오리지널 팔레트" />
     </div>
   ),

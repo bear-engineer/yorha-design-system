@@ -194,7 +194,7 @@ export const Themes: Story = {
   render: (args) => (
     <div className="flex flex-col gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-panel p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
           <TimelineGraph {...args} label={`출시 일정 ${t}`} />
         </div>
       ))}
@@ -207,7 +207,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: (args) => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <TimelineGraph {...args} label="출시 일정 authentic" />
     </div>
   ),
@@ -288,7 +288,7 @@ export const VerticalThemes: StoryObj<typeof Timeline> = {
   render: () => (
     <div lang="ko" className="grid grid-cols-3 gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-panel p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
           <Timeline label={`배포 이력 ${t}`} items={events} />
         </div>
       ))}

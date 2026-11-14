@@ -71,7 +71,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="w-72 max-w-full bg-yorha-panel p-6 text-yorha-fg">
+      <div className="w-72 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -140,7 +140,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid gap-6">
       {THEMES.map((theme) => (
-        <div key={theme} data-theme={theme} className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={theme} data-theme={theme} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <TextField
             label={`유닛 이름 (${THEME_LABEL[theme]})`}
             description={DESCRIPTION}
@@ -172,7 +172,7 @@ export const Authentic: Story = {
   // so this single story renders that theme alone and skips the a11y gate.
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-bg p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
       <TextField label="유닛 이름" description={DESCRIPTION} placeholder="예: 2B" />
     </div>
   ),
@@ -204,7 +204,7 @@ export const ReducedMotion: Story = {
 
 export const States: Story = {
   render: () => (
-    <div className="flex w-72 max-w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       <TextField label="기본" />
       <TextField label="읽기 전용" readOnly defaultValue="고정 값" />
       <TextField label="잠김" disabled defaultValue="locked" />

@@ -349,7 +349,7 @@ export const Themes: Story = {
   render: () => (
     <div lang="ko" className="grid grid-cols-3 gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-panel p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
           <StaticPreview side="bottom" />
         </div>
       ))}
@@ -365,7 +365,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div lang="ko" data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div lang="ko" data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <StaticPreview side="bottom" />
     </div>
   ),

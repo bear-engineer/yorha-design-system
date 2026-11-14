@@ -26,7 +26,7 @@ const UnitForm = ({
   onFormSubmit?: React.ComponentProps<typeof Form>["onFormSubmit"];
   id?: string;
 }) => (
-  <Form id={id} errors={serverErrors} onFormSubmit={onFormSubmit} className="flex w-72 max-w-full flex-col gap-4">
+  <Form id={id} errors={serverErrors} onFormSubmit={onFormSubmit} className="flex w-full flex-col gap-4">
     <Field name="unitName" className="flex flex-col gap-1">
       <FieldLabel>유닛 이름</FieldLabel>
       <FieldControl required placeholder="예: 2B" className={controlClass} />
@@ -48,7 +48,7 @@ const meta = {
   tags: ["autodocs"],
   decorators: [
     (Story) => (
-      <div className="bg-yorha-panel p-6 text-yorha-fg">
+      <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -132,7 +132,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid gap-6">
       {THEMES.map((theme) => (
-        <div key={theme} data-theme={theme} className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={theme} data-theme={theme} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <UnitForm id={`form-${theme}`} serverErrors={{ unitName: `${THEME_LABEL[theme]} 오류` }} />
         </div>
       ))}
@@ -149,7 +149,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <UnitForm id="form-authentic" />
     </div>
   ),

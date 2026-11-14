@@ -89,7 +89,7 @@ export const ThemeGallery: Story = {
   render: (args) => (
     <div className="flex flex-col gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <PageHeader {...args} title={`테마 ${t}`} />
         </div>
       ))}
@@ -111,7 +111,7 @@ export const Authentic: Story = {
   parameters: { a11y: { test: "todo" }, yorha: { manageRoot: false } },
   args: { actions: undefined },
   render: (args) => (
-    <div data-theme="authentic" className="bg-yorha-bg p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
       <PageHeader {...args} title="권위 테마" />
     </div>
   ),

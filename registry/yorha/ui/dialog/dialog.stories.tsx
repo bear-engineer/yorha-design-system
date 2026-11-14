@@ -224,7 +224,7 @@ export const WithSound: Story = {
 
 function Preview({ theme }: { theme?: string }) {
   return (
-    <div data-theme={theme} className="bg-yorha-bg p-6 text-yorha-fg">
+    <div data-theme={theme} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-6 text-yorha-fg">
       <div className={`${dialogStyles.popup} w-80`}>
         <div className={dialogStyles.title}>유닛 정보</div>
         <div className={dialogStyles.body}>

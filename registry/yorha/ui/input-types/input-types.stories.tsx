@@ -19,7 +19,7 @@ import { INPUT_TYPES, INPUT_TYPE_TABLE, inputPresets } from "./input-types";
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const THEME_LABEL: Record<(typeof THEMES)[number], string> = { light: "라이트", dark: "다크", "high-contrast": "고대비" };
 const wrapper = (Story: React.ComponentType) => (
-  <div lang="ko" className="w-[56rem] max-w-full bg-yorha-panel p-6 text-yorha-fg">
+  <div lang="ko" className="w-[56rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
     <Story />
   </div>
 );
@@ -45,12 +45,12 @@ function InputTypesGallery({ formLabel = "모든 입력 유형" }: { formLabel?:
   return (
     <form
       lang="ko"
-      className="grid gap-8"
+      className="grid grid-cols-[minmax(0,1fr)] gap-8"
       onSubmit={(e) => e.preventDefault()}
       onReset={(e) => e.preventDefault()}
       aria-label={formLabel}
     >
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-6 sm:grid-cols-2">
         <Field>
           <FieldLabel>텍스트</FieldLabel>
           <Input {...inputPresets.text} />
@@ -113,6 +113,7 @@ function InputTypesGallery({ formLabel = "모든 입력 유형" }: { formLabel?:
           <input type="hidden" name="csrf" value="demo-token" />
         </div>
       </div>
+      <div className="overflow-x-auto">
       <table aria-label="입력 유형과 담당 아이템" className="w-full border-collapse text-left text-yorha-sm">
         <thead>
           <tr>
@@ -131,6 +132,7 @@ function InputTypesGallery({ formLabel = "모든 입력 유형" }: { formLabel?:
           ))}
         </tbody>
       </table>
+      </div>
     </form>
   );
 }
@@ -202,7 +204,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <InputTypesGallery formLabel={`모든 입력 유형 (${THEME_LABEL[t]})`} />
         </div>
       ))}
@@ -217,7 +219,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <InputTypesGallery />
     </div>
   ),

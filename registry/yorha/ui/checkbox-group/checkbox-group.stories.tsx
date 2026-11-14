@@ -14,7 +14,7 @@ const meta = {
   tags: ["autodocs"],
   decorators: [
     (Story) => (
-      <div className="bg-yorha-panel p-6 text-yorha-fg">
+      <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -122,7 +122,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid gap-4 sm:grid-cols-3">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-panel p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
           <CheckboxGroup aria-label={`테마 ${t}`} defaultValue={["fuji"]} className="flex flex-col gap-2">
             <Items />
           </CheckboxGroup>
@@ -141,7 +141,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <CheckboxGroup aria-label="오리지널 팔레트" defaultValue={["gala"]} className="flex flex-col gap-2">
         <Items />
       </CheckboxGroup>

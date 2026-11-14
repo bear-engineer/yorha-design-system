@@ -208,8 +208,8 @@ export const WithSound: Story = {
 
 function Preview({ theme }: { theme?: string }) {
   return (
-    <div data-theme={theme} className="bg-yorha-bg p-6 text-yorha-fg">
-      <div className={`${dialogStyles.popup} w-80 max-w-full border-yorha-alert-ui`}>
+    <div data-theme={theme} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-6 text-yorha-fg">
+      <div className={`${dialogStyles.popup} w-80 max-w-[calc(100vw-2rem)] border-yorha-alert-ui`}>
         <div className={dialogStyles.title}>기록을 삭제할까?</div>
         <div className={dialogStyles.body}>
           <p className={dialogStyles.description}>삭제한 기록은 복구할 수 없다.</p>

@@ -7,7 +7,7 @@ import { DateInput } from "./date-input";
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const THEME_LABEL: Record<(typeof THEMES)[number], string> = { light: "라이트", dark: "다크", "high-contrast": "고대비" };
 const wrapper = (Story: React.ComponentType) => (
-  <div lang="ko" className="w-96 max-w-full bg-yorha-panel p-6 text-yorha-fg">
+  <div lang="ko" className="w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
     <Story />
   </div>
 );
@@ -159,7 +159,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <DateInput label={`출발일 (${THEME_LABEL[t]})`} picker />
         </div>
       ))}
@@ -176,7 +176,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <DateInput label="오리지널 팔레트" picker />
     </div>
   ),
@@ -188,7 +188,7 @@ export const Authentic: Story = {
 
 export const States: Story = {
   render: () => (
-    <div className="flex w-96 max-w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       <DateInput label="기본" today={TODAY} />
       <DateInput label="달력 포함" picker today={TODAY} />
       <DateInput label="오류" error="날짜를 선택하세요" />

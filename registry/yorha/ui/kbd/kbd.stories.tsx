@@ -11,7 +11,7 @@ const meta = {
   args: { children: "Enter" },
   decorators: [
     (Story) => (
-      <div className="bg-yorha-panel p-6 text-yorha-fg">
+      <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -43,7 +43,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid grid-cols-2 gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-panel p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
           {t} <Kbd>Esc</Kbd> <Kbd>Space</Kbd>
         </div>
       ))}
@@ -60,7 +60,7 @@ export const Authentic: Story = {
   name: "Authentic (원작 팔레트)",
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       authentic <Kbd>Esc</Kbd> <Kbd>Space</Kbd>
     </div>
   ),

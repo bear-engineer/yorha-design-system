@@ -25,7 +25,7 @@ function Demo({ density = "comfortable", zebra = true }: { density?: "dense" | "
     return sort === "ascending" ? a.level - b.level : b.level - a.level;
   });
   return (
-    <div className="w-[32rem] max-w-full bg-yorha-panel p-4 text-yorha-fg">
+    <div className="w-[32rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <DataTable caption="유닛 목록" density={density} zebra={zebra}>
         <DataTableHeader>
           <DataTableRow>
@@ -119,7 +119,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid gap-4">
       {(["light", "dark", "high-contrast"] as const).map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-bg p-4 text-yorha-fg" data-testid={`theme-${t}`}>
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg" data-testid={`theme-${t}`}>
           <Demo />
         </div>
       ))}
@@ -141,7 +141,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-bg p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
       <Demo />
     </div>
   ),

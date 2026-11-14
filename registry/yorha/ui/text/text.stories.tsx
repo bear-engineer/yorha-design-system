@@ -13,7 +13,7 @@ const meta = {
   args: { children: "장비 상태 요약" },
   decorators: [
     (Story) => (
-      <div className="bg-yorha-panel p-6 text-yorha-fg">
+      <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -102,7 +102,7 @@ export const ThemeGallery: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <Text>{`테마 ${t}`}</Text>
         </div>
       ))}
@@ -121,7 +121,7 @@ export const Authentic: Story = {
   // Authentic fails 11 of 24 token pairs by design (tokens.md); this story is the only one that renders it.
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-bg p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
       <Text>권위 테마 본문</Text>
     </div>
   ),

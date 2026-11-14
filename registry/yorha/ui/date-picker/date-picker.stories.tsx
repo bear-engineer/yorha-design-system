@@ -37,7 +37,7 @@ const meta = {
   args: { label: "출발일", today: TODAY },
   decorators: [
     (Story) => (
-      <div lang="ko" className="min-h-[28rem] w-96 max-w-full bg-yorha-panel p-6 text-yorha-fg">
+      <div lang="ko" className="min-h-[28rem] w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -250,7 +250,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid gap-4">
       {THEMES.map((theme) => (
-        <div key={theme} data-theme={theme} lang="ko" className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={theme} data-theme={theme} lang="ko" className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <DatePicker label={`출발일 (${THEME_LABEL[theme]})`} today={TODAY} defaultValue={new Date(2026, 10, 9)} description="달력 또는 직접 입력" />
         </div>
       ))}
@@ -268,7 +268,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" lang="ko" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" lang="ko" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <DatePicker label="출발일 (오리지널)" today={TODAY} error="날짜를 확인하라." />
     </div>
   ),

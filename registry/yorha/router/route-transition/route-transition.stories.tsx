@@ -24,7 +24,7 @@ type Story = StoryObj<typeof meta>;
 
 function Layout() {
   return (
-    <div className="flex w-96 max-w-full flex-col gap-2 bg-yorha-panel p-2">
+    <div className="flex w-96 max-w-[calc(100vw-2rem)] flex-col gap-2 bg-yorha-panel p-2">
       <nav aria-label="주 메뉴" className="flex">
         <NavLink to="/" end>홈</NavLink>
         <NavLink to="/units">유닛</NavLink>
@@ -106,7 +106,7 @@ function BackButton() {
 
 function PageShell() {
   return (
-    <div className="flex w-96 max-w-full flex-col gap-2 bg-yorha-panel p-2 text-yorha-fg-ink">
+    <div className="flex w-96 max-w-[calc(100vw-2rem)] flex-col gap-2 bg-yorha-panel p-2 text-yorha-fg-ink">
       <nav aria-label="이동" className="flex gap-2">
         <Link to="/">목록</Link>
         <Link to="/unit/2b">2B</Link>
@@ -190,7 +190,7 @@ const sharedRoutes = [
   {
     path: "/",
     element: (
-      <div className="flex w-96 max-w-full flex-col gap-2 bg-yorha-panel p-2 text-yorha-fg-ink">
+      <div className="flex w-96 max-w-[calc(100vw-2rem)] flex-col gap-2 bg-yorha-panel p-2 text-yorha-fg-ink">
         <RouteTransition />
       </div>
     ),
@@ -241,7 +241,7 @@ const labels: Record<string, string> = { overview: "개요", logs: "로그", set
 function SegmentsDemo() {
   const [value, setValue] = useState("overview");
   return (
-    <div className="flex w-96 max-w-full flex-col gap-2 bg-yorha-panel p-2 text-yorha-fg-ink">
+    <div className="flex w-96 max-w-[calc(100vw-2rem)] flex-col gap-2 bg-yorha-panel p-2 text-yorha-fg-ink">
       <div role="group" aria-label="구역" className="flex gap-2">
         {order.map((id) => (
           <button

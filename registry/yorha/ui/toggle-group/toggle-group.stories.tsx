@@ -13,7 +13,7 @@ interface DemoProps {
 
 function Demo({ multiple, orientation, disabled, defaultValue = ["left"], onValueChange }: DemoProps) {
   return (
-    <div lang="ko" className="bg-yorha-panel p-6 text-yorha-fg">
+    <div lang="ko" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
       <ToggleGroup
         aria-label="텍스트 정렬"
         multiple={multiple}

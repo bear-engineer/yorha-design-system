@@ -23,7 +23,7 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: (args) => (
-    <div className="w-96 max-w-full bg-yorha-panel p-6 font-yorha-mono text-yorha-base text-yorha-fg">
+    <div className="w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 font-yorha-mono text-yorha-base text-yorha-fg">
       <Typer {...args} />
     </div>
   ),
@@ -40,7 +40,7 @@ export const Default: Story = {
 function PausableTyper() {
   const [paused, setPaused] = useState(false);
   return (
-    <div className="flex w-96 max-w-full flex-col gap-3 bg-yorha-panel p-6 font-yorha-mono text-yorha-base text-yorha-fg">
+    <div className="flex w-96 max-w-[calc(100vw-2rem)] flex-col gap-3 bg-yorha-panel p-6 font-yorha-mono text-yorha-base text-yorha-fg">
       <button type="button" onClick={() => setPaused((p) => !p)} className="self-start border border-yorha-border px-3 py-1">
         {paused ? "재개" : "일시정지"}
       </button>
@@ -66,7 +66,7 @@ export const PauseResume: Story = {
 function SkippableTyper() {
   const [all, setAll] = useState(false);
   return (
-    <div className="flex w-96 max-w-full flex-col gap-3 bg-yorha-panel p-6 font-yorha-mono text-yorha-base text-yorha-fg">
+    <div className="flex w-96 max-w-[calc(100vw-2rem)] flex-col gap-3 bg-yorha-panel p-6 font-yorha-mono text-yorha-base text-yorha-fg">
       <button type="button" onClick={() => setAll(true)} className="self-start border border-yorha-border px-3 py-1">
         전부 표시
       </button>
@@ -87,7 +87,7 @@ export const Skip: Story = {
 
 export const ReducedMotion: Story = {
   render: (args) => (
-    <div className="w-96 max-w-full bg-yorha-panel p-6 font-yorha-mono text-yorha-base text-yorha-fg">
+    <div className="w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 font-yorha-mono text-yorha-base text-yorha-fg">
       <Typer {...args} speed={200} />
     </div>
   ),
@@ -107,7 +107,7 @@ export const ReducedMotion: Story = {
 export const SoundOffByDefault: Story = {
   render: (args) => (
     <YorhaProvider>
-      <div className="w-96 max-w-full bg-yorha-panel p-6 font-yorha-mono text-yorha-base text-yorha-fg">
+      <div className="w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 font-yorha-mono text-yorha-base text-yorha-fg">
         <Typer {...args} sound />
       </div>
     </YorhaProvider>
@@ -136,7 +136,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: (args) => (
-    <div data-theme="authentic" className="w-96 max-w-full bg-yorha-panel p-6 font-yorha-mono text-yorha-base text-yorha-fg">
+    <div data-theme="authentic" className="w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 font-yorha-mono text-yorha-base text-yorha-fg">
       <Typer {...args} speed={1} />
     </div>
   ),

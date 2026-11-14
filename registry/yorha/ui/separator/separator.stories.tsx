@@ -6,7 +6,7 @@ const THEMES = ["light", "dark", "high-contrast"] as const;
 
 function Demo() {
   return (
-    <div className="flex w-72 max-w-full flex-col gap-3 bg-yorha-panel p-4 text-yorha-fg">
+    <div className="flex w-72 max-w-[calc(100vw-2rem)] flex-col gap-3 bg-yorha-panel p-4 text-yorha-fg">
       <p>상단 항목</p>
       <Separator />
       <div className="flex h-8 items-center gap-3">

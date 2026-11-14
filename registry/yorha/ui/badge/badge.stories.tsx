@@ -12,7 +12,7 @@ const meta = {
   argTypes: { variant: { control: "inline-radio", options: ["neutral", "alert"] } },
   decorators: [
     (Story) => (
-      <div className="bg-yorha-panel p-6 text-yorha-fg">
+      <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -72,7 +72,7 @@ export const Authentic: Story = {
   // authentic palette is intentionally low-contrast (decorative mode): only this story skips a11y.
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-panel p-6 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
       <Badge variant="alert">경고</Badge>
     </div>
   ),

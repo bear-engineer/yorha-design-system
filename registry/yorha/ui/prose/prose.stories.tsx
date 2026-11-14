@@ -47,7 +47,7 @@ const meta = {
   tags: ["autodocs"],
   decorators: [
     (Story) => (
-      <div className="bg-yorha-panel p-6 text-yorha-fg">
+      <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -192,7 +192,7 @@ export const ThemeGallery: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} lang="en" className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={t} data-theme={t} lang="en" className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <Prose>
             <p>{`Theme ${t}: ${EN_PARAS[0]}`}</p>
           </Prose>
@@ -213,7 +213,7 @@ export const Authentic: Story = {
   // Authentic fails 11 of 24 token pairs by design (tokens.md); this story is the only one that renders it.
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" lang="en" className="bg-yorha-bg p-4 text-yorha-fg">
+    <div data-theme="authentic" lang="en" className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
       <Prose>
         <p>{EN_PARAS[1]}</p>
       </Prose>

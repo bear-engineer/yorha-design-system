@@ -277,7 +277,7 @@ export const Authentic: Story = {
   parameters: { a11y: { test: "todo" } },
   render: () => {
     return (
-      <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+      <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
         <MenuDemo />
       </div>
     );

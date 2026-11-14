@@ -81,7 +81,7 @@ const meta = {
   args: { columns: initial, onChange: fn() },
   decorators: [
     (Story) => (
-      <div lang="ko" className="bg-yorha-bg p-6 text-yorha-fg">
+      <div lang="ko" className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -260,7 +260,7 @@ export const Themes: Story = {
         <div
           key={theme}
           data-theme={theme}
-          className="bg-yorha-panel p-4 text-yorha-fg"
+          className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg"
         >
           <span className="text-yorha-sm">{label}</span>
           <KanbanBoard
@@ -279,7 +279,7 @@ export const Authentic: Story = {
   // authentic palette is intentionally low-contrast (decorative mode): only this story skips a11y.
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <Interactive />
     </div>
   ),

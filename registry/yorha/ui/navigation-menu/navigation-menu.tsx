@@ -27,7 +27,7 @@ function NavigationMenu({
   return (
     <NavigationMenuPrimitive.Root
       data-slot="navigation-menu"
-      className={cnState("min-w-max font-yorha text-yorha-fg", className)}
+      className={cnState("max-w-full font-yorha text-yorha-fg", className)}
       {...props}
     >
       {children}
@@ -41,7 +41,7 @@ function NavigationMenuList({ className, ...props }: ComponentProps<typeof Navig
   return (
     <NavigationMenuPrimitive.List
       data-slot="navigation-menu-list"
-      className={cnState("relative m-0 flex list-none items-center gap-1 p-0", className)}
+      className={cnState("relative m-0 flex list-none flex-wrap items-center gap-1 p-0", className)}
       {...props}
     />
   );

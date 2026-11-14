@@ -97,7 +97,7 @@ export const Themes: Story = {
   render: (args) => (
     <div className="grid gap-4 sm:grid-cols-2">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-panel p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
           <NumberField {...args} label={`테마 ${t}`} />
         </div>
       ))}
@@ -115,7 +115,7 @@ export const Authentic: Story = {
   args: { label: "테마 authentic", defaultValue: 3 },
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <NumberField label="테마 authentic" defaultValue={3} />
     </div>
   ),

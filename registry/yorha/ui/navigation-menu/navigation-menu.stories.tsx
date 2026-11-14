@@ -75,7 +75,7 @@ const meta = {
   decorators: [
     withRouter,
     (Story) => (
-      <div className="min-h-80 bg-yorha-panel p-6 text-yorha-fg">
+      <div className="min-h-80 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),

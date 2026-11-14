@@ -20,7 +20,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="w-72 max-w-full bg-yorha-panel p-6 text-yorha-fg">
+      <div className="w-72 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),
@@ -75,7 +75,7 @@ export const Authentic: Story = {
   // authentic palette is intentionally low-contrast (decorative mode): only this story skips a11y.
   parameters: { a11y: { test: "todo" } },
   render: (args) => (
-    <div data-theme="authentic" className="w-72 max-w-full bg-yorha-panel p-6 text-yorha-fg">
+    <div data-theme="authentic" className="w-72 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
       <Card {...args} />
     </div>
   ),

@@ -7,7 +7,7 @@ import { FileInput, formatFileSize } from "./file-input";
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const THEME_LABEL: Record<(typeof THEMES)[number], string> = { light: "라이트", dark: "다크", "high-contrast": "고대비" };
 const wrapper = (Story: React.ComponentType) => (
-  <div lang="ko" className="w-[28rem] max-w-full bg-yorha-panel p-6 text-yorha-fg">
+  <div lang="ko" className="w-[28rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
     <Story />
   </div>
 );
@@ -201,7 +201,7 @@ export const Themes: Story = {
   render: () => (
     <div className="grid gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="bg-yorha-bg p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
           <FileInput label={`첨부 파일 (${THEME_LABEL[t]})`} multiple />
         </div>
       ))}
@@ -217,7 +217,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-panel p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <FileInput label="오리지널 팔레트" />
     </div>
   ),
@@ -228,7 +228,7 @@ export const Authentic: Story = {
 
 export const States: Story = {
   render: () => (
-    <div className="flex w-96 max-w-full flex-col gap-4">
+    <div className="flex w-full flex-col gap-4">
       <FileInput label="기본" multiple maxSize={1000} />
       <FileInput label="잠김" disabled />
     </div>

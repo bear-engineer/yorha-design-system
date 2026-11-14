@@ -15,7 +15,7 @@ export const OTPFieldRoot = React.forwardRef<HTMLDivElement, OTPFieldRootProps>(
   { className, ...props },
   ref,
 ) {
-  return <BaseOTPField.Root ref={ref} className={cn("inline-flex items-center gap-2 font-yorha", className)} {...props} />;
+  return <BaseOTPField.Root ref={ref} className={cn("inline-flex max-w-full items-center gap-2 font-yorha [&>input]:min-w-0", className)} {...props} />;
 });
 
 export interface OTPFieldInputProps extends Omit<React.ComponentProps<typeof BaseOTPField.Input>, "className"> {

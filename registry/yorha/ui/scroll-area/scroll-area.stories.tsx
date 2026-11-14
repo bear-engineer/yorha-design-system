@@ -14,11 +14,11 @@ const LINES = Array.from({ length: 40 }, (_, i) => `로그 ${String(i + 1).padSt
 
 function Demo({ wide, label = "임무 기록" }: { wide?: boolean; label?: string }) {
   return (
-    <div className="bg-yorha-panel p-4 text-yorha-fg">
-      <ScrollArea className="h-48 w-80 max-w-full border border-yorha-border">
+    <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
+      <ScrollArea className="h-48 w-80 max-w-[calc(100vw-4rem)] border border-yorha-border">
         <ScrollAreaViewport aria-label={label} className="h-full w-full">
           <ScrollAreaContent>
-            <div className={wide ? "w-[60rem] max-w-full p-3" : "p-3"}>
+            <div className={wide ? "w-[60rem] p-3" : "p-3"}>
               {LINES.map((l) => (
                 <p key={l} className="whitespace-nowrap">
                   {l}
