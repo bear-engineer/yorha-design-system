@@ -36,7 +36,7 @@ function TabsTab({ className, ...props }: ComponentProps<typeof TabsPrimitive.Ta
       data-slot="tabs-tab"
       className={cnState(
         [
-          "relative z-10 flex h-control-sm flex-1 cursor-pointer items-center justify-center px-pad-md text-center",
+          "relative z-10 flex h-control-sm min-w-0 flex-1 cursor-pointer items-center justify-center px-pad-sm text-center",
           "font-yorha text-yorha-sm font-yorha-medium tracking-yorha-wide text-yorha-fg uppercase",
           // label colour travels with the indicator (same duration and easing), so the label never flips ahead of the bar
           "yorha-tint transition-[color] duration-(--motion-tab-indicator) ease-yorha-emphasized",
