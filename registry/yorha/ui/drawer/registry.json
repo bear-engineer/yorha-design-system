@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "drawer",
+      "type": "registry:ui",
+      "title": "Drawer",
+      "description": "Edge drawer on Base UI Drawer: slides from any side with the base yorha-slide-* utilities, swipe to dismiss, snap points, nested stacking, indent effect, swipe-to-open area and software-keyboard inset. Focus trap and focus return.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base",
+        "@yorha/button"
+      ],
+      "files": [
+        {
+          "path": "drawer.tsx",
+          "type": "registry:ui",
+          "target": "@ui/drawer.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Drawer (side=top|right|bottom|left), DrawerTrigger, DrawerContent, DrawerTitle, DrawerDescription, DrawerBody, DrawerFooter, DrawerClose; optional DrawerGrip, DrawerSwipeArea, DrawerProvider/DrawerIndent/DrawerIndentBackground, DrawerVirtualKeyboardProvider, createDrawerHandle. Pass snapPoints to a side=\"bottom\" Drawer. Pass keyboardAware to DrawerContent for sheets with fields. Motion: backdrop yorha-fade, popup yorha-slide-*; instant under data-motion off, opacity-only under reduced."
+    }
+  ]
+}

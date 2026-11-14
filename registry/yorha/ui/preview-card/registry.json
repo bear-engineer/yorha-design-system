@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "preview-card",
+      "type": "registry:ui",
+      "title": "Preview Card",
+      "description": "Hover/focus preview on Base UI PreviewCard: a link opens a card after a hover delay or on keyboard focus, closes on Escape or after a close delay. Arrow, optional backdrop and content viewport, detached triggers via handle.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "preview-card.tsx",
+          "type": "registry:ui",
+          "target": "@ui/preview-card.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose PreviewCard, PreviewCardTrigger (an <a>; delay default 600, closeDelay 300), PreviewCardContent (arrow default true; viewport for animated content swaps), PreviewCardTitle, PreviewCardDescription, createPreviewCardHandle. Popup uses yorha-pop. A preview card is a supplement for pointer and sighted keyboard users; do not put essential content only in it."
+    }
+  ]
+}

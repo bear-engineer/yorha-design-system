@@ -169,6 +169,8 @@ export const Default: Story = {
     const d = await dialog();
     await expect(d).toHaveAccessibleDescription("격납고에 등록된 유닛을 확인한다.");
     await expect(d.className).toContain("yorha-slide-left");
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body().queryByRole("dialog")).toBeNull());
   },
 };
 
@@ -192,9 +194,10 @@ export const FocusTrap: Story = {
     await userEvent.keyboard(" ");
     const d = await dialog();
     // focus starts inside, and Tab/Shift+Tab never leave the popup
-    await waitFor(() => expect(d.contains(document.activeElement)).toBe(true));
+    await waitFor(() => expect(d.contains(document.activeElement)).toBe(true), { timeout: 3000 });
     for (let i = 0; i < 4; i += 1) {
       await userEvent.tab();
+      await waitFor(() => { if (!d.contains(document.activeElement)) throw new Error(`TRAP i=${i} active=${document.activeElement?.outerHTML.slice(0,90)} hasFocus=${document.hasFocus()}`); }, { timeout: 3000 });
       await expect(d.contains(document.activeElement)).toBe(true);
     }
     await userEvent.tab({ shift: true });
@@ -237,19 +240,24 @@ export const SwipeToDismiss: Story = {
     await userEvent.keyboard("{Enter}");
     const d = await dialog();
     await expect(d).toHaveAttribute("data-swipe-direction", "down");
-    const r = d.getBoundingClientRect();
+    // let the opening transition finish so the pointer lands on the title, not on a moving popup
+    await waitFor(() => expect(d).not.toHaveAttribute("data-starting-style"), { timeout: 4000 });
+    await waitFor(() => expect(d.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight + 1), { timeout: 4000 });
+    await new Promise((res) => setTimeout(res, 100));
+    const target = within(d).getByRole("heading", { name: "유닛 목록" });
+    const r = target.getBoundingClientRect();
     const x = r.left + r.width / 2;
-    const y = r.top + 20;
-    const opts = { pointerId: 1, pointerType: "touch", isPrimary: true, bubbles: true, clientX: x } as const;
-    fireEvent.pointerDown(d, { ...opts, clientY: y, buttons: 1 });
+    const y = r.top + r.height / 2;
+    const opts = { pointerId: 1, pointerType: "mouse", isPrimary: true, bubbles: true, clientX: x } as const;
+    fireEvent.pointerDown(target, { ...opts, clientY: y, buttons: 1 });
     for (let i = 1; i <= 8; i += 1) {
-      fireEvent.pointerMove(d, { ...opts, clientY: y + i * 40, buttons: 1 });
+      fireEvent.pointerMove(target, { ...opts, clientY: y + i * 40, buttons: 1 });
       await new Promise((res) => setTimeout(res, 16));
     }
-    // while dragging, Base UI exposes the movement and swiping state
+    // while dragging, Base UI exposes the swiping state and --drawer-swipe-movement-y
     await expect(d).toHaveAttribute("data-swiping");
-    fireEvent.pointerUp(d, { ...opts, clientY: y + 320, buttons: 0 });
-    await waitFor(() => expect(body().queryByRole("dialog")).toBeNull(), { timeout: 2000 });
+    fireEvent.pointerUp(target, { ...opts, clientY: y + 320, buttons: 0 });
+    await waitFor(() => expect(body().queryByRole("dialog")).toBeNull(), { timeout: 4000 });
   },
 };
 

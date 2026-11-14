@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "context-menu",
+      "type": "registry:ui",
+      "title": "Context Menu",
+      "description": "Context menu on Base UI ContextMenu: opens at the pointer on right click or long press, and from the keyboard with Shift+F10 or the ContextMenu key. Menu-like rows (selected row inverts, arrow cursor), items, link items, checkbox and radio items, groups, submenus, optional arrow.",
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "context-menu.tsx",
+          "type": "registry:ui",
+          "target": "@ui/context-menu.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose ContextMenu, ContextMenuTrigger (focusable area: give it aria-label or text), ContextMenuContent, ContextMenuItem, ContextMenuLinkItem, ContextMenuSeparator, ContextMenuSub + ContextMenuSubTrigger, ContextMenuCheckboxItem, ContextMenuRadioGroup + ContextMenuRadioItem, ContextMenuGroup + ContextMenuLabel, ContextMenuShortcut. Styles are self-contained (no menu item needed). Popup uses yorha-pop."
+    }
+  ]
+}
