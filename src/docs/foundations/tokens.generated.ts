@@ -1035,7 +1035,7 @@ export const tokens = {
     },
     {
       "name": "text",
-      "cssVar": "",
+      "cssVar": "--yorha-text-shadow",
       "alias": "",
       "utility": "text-shadow-yorha",
       "value": "0.125rem 0.125rem 0px var(--yorha-shadow)",

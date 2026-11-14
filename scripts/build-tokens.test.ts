@@ -95,10 +95,11 @@ describe("token generator", () => {
       expect(block("@utility yorha-break")).toContain("overflow-wrap: anywhere;");
     });
 
-    it("long-string safety net keeps keep-all for ko and breaks links, code and cells", () => {
+    it("long-string safety net keeps keep-all for ko and breaks links and code anywhere, cells at word breaks", () => {
       const layer = block("@layer base");
       expect(layer).toContain("word-break: keep-all;");
-      expect(layer).toMatch(/a, code, td, th \{\n\s+overflow-wrap: anywhere;/);
+      expect(layer).toMatch(/a, code \{\n\s+overflow-wrap: anywhere;/);
+      expect(layer).toMatch(/td, th \{\n\s+overflow-wrap: break-word;/);
       expect(layer).toContain("max-width: var(--yorha-measure)");
     });
 
@@ -278,5 +279,18 @@ describe("token generator", () => {
       expect(rows).toEqual(MOTION_UTILITIES);
       for (const list of ["durations", "easings", "parameters"]) expect(mdx, list).toContain(`tokens.motion.${list}.map(`);
     });
+  });
+
+  it("emits forced-colors, table wrap, text-shadow and mobile base rules", () => {
+    const css = generate()["src/styles/tokens.generated.css"] ?? "";
+    expect(css).toMatch(/@media \(forced-colors: active\) \{[\s\S]*\.bg-yorha-ink \{[^}]*background-color: Highlight/);
+    expect(css).toMatch(/\[role=switch\]\[data-checked\][^{]*\{[^}]*forced-color-adjust: none/);
+    expect(css).toMatch(/\[role=tab\]\[data-active\][^{]*\{[^}]*Highlight/);
+    expect(css).toMatch(/td, th \{\s*overflow-wrap: break-word/);
+    expect(css).toMatch(/a, code \{\s*overflow-wrap: anywhere/);
+    expect(css).toMatch(/\[data-theme=high-contrast\] \{[^}]*--yorha-text-shadow: none/);
+    expect(css).toMatch(/-webkit-text-size-adjust: 100%/);
+    expect(css).toMatch(/-webkit-tap-highlight-color: transparent/);
+    expect(css).toMatch(/touch-action: manipulation/);
   });
 });

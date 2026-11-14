@@ -100,7 +100,7 @@ const RULES = [
   [/^border\.width\.(.+)$/, (k) => ({ cssVar: k === "thin" ? "yorha-border-width" : `yorha-border-width-${k}` })],
   [/^border\.ring\.(.+)$/, (k) => ({ cssVar: `yorha-ring-${k}` })],
   [/^border\.menu-rule$/, () => ({ cssVar: "yorha-menu-rule", alias: "menu-rule" })],
-  [/^shadow\.text$/, () => ({ theme: "text-shadow-yorha" })],
+  [/^shadow\.text$/, () => ({ cssVar: "yorha-text-shadow", theme: "text-shadow-yorha" })],
   [/^shadow\.(.+)$/, (k) => ({ theme: `shadow-yorha-${k}` })],
   [/^motion\.duration\.(.+)$/, (k) => ({ cssVar: `yorha-motion-${k}`, alias: `motion-${k}` })],
   [/^motion\.easing\.(.+)$/, (k) => ({ cssVar: k === "standard" ? "yorha-ease" : `yorha-ease-${k}`, theme: k === "standard" ? "ease-yorha" : `ease-yorha-${k}` })],
@@ -313,7 +313,14 @@ function buildModel(tokens) {
   css[`@custom-variant dark (${DARK_VARIANT})`] = {};
   css[":root"] = { "color-scheme": scheme(theme.default), ...dashed(rootVars) };
   css[".dark"] = { "color-scheme": "dark" };
-  for (const context of themeNames) css[`[data-theme=${context}]`] = { "color-scheme": scheme(context), ...dashed(colorVars(context)) };
+  for (const context of themeNames) {
+    css[`[data-theme=${context}]`] = {
+      "color-scheme": scheme(context),
+      ...dashed(colorVars(context)),
+      // Heading text-shadow is decoration: a 2px offset smears glyphs, so the strict-contrast theme drops it.
+      ...(context === "high-contrast" ? { "--yorha-text-shadow": "none" } : {}),
+    };
+  }
   for (const [context, vars] of Object.entries(modifierBlocks.density)) css[`[data-density=${context}]`] = dashed(vars);
   // Language leading: CJK gets the roomier body leading; Latin keeps the base value (a lang="en" island inside a ko page resets it).
   css[":lang(ko), :lang(ja)"] = { "--yorha-leading-body": "var(--yorha-leading-body-cjk)" };
@@ -324,8 +331,31 @@ function buildModel(tokens) {
   css["@utility yorha-tabular"] = { "font-variant-numeric": "tabular-nums" };
   css["@utility yorha-break"] = { "overflow-wrap": "anywhere", "word-break": "normal" };
   Object.assign(css, MOTION_CSS);
+  // Forced colours (Windows contrast themes): the UA replaces background-color with Canvas and fill/stroke with text colours,
+  // so fills built from bg-yorha-ink and SVG marks disappear. Unlayered on purpose: it must beat the utilities layer.
+  // forced-color-adjust: none is set only on the elements that paint a state, and they take system colours.
+  const selectedFill = { "forced-color-adjust": "none", "background-color": "Highlight", color: "HighlightText" };
+  css["@media (forced-colors: active)"] = {
+    ":root, [data-theme]": { "--yorha-text-shadow": "none" },
+    // Filled bars (progress, meter, tab indicator) and every control state that fills with ink.
+    ".bg-yorha-ink": selectedFill,
+    "[role=switch][data-checked], [role=checkbox][data-checked], [role=checkbox][data-indeterminate], [role=tab][data-active], [role=tab][aria-selected=true], [data-pressed]": selectedFill,
+    // Switch thumb and checked radio dot paint with currentColor; keep it the control's own text colour, not a forced Canvas.
+    "[role=switch] > span, [role=radio][data-checked] > span": { "forced-color-adjust": "none", "background-color": "currentColor" },
+    "[role=radio][data-checked]": { "forced-color-adjust": "none", color: "Highlight", "border-color": "Highlight" },
+    // Status markers and SVG marks (timeline).
+    ".bg-yorha-alert-ui": { "forced-color-adjust": "none", "background-color": "CanvasText" },
+    ".fill-yorha-ink": { "forced-color-adjust": "none", fill: "Highlight" },
+    ".fill-yorha-on-ink": { "forced-color-adjust": "none", fill: "HighlightText" },
+    ".stroke-yorha-bg": { "forced-color-adjust": "none", stroke: "Canvas" },
+    ".stroke-yorha-alert-ui": { "forced-color-adjust": "none", stroke: "CanvasText" },
+    ".stroke-yorha-ring": { "forced-color-adjust": "none", stroke: "Highlight" },
+  };
   css["@layer base"] = {
+    // Mobile: no iOS landscape font inflation, no grey tap flash, no double-tap zoom delay on controls (sliders keep their own touch handling).
+    html: { "-webkit-text-size-adjust": "100%", "text-size-adjust": "100%" },
     body: {
+      "-webkit-tap-highlight-color": "transparent",
       "background-color": "var(--yorha-bg)",
       color: "var(--yorha-fg)",
       "font-family": "var(--yorha-font-sans)",
@@ -335,12 +365,15 @@ function buildModel(tokens) {
       "word-break": "keep-all",
       "overflow-wrap": "break-word",
     },
+    ":where(a[href], button, summary, label, select, textarea, input:not([type=range]), [role=button], [role=tab], [role=checkbox], [role=radio], [role=switch], [role=menuitem], [role=option], [role=combobox])": { "touch-action": "manipulation" },
     // Never on :root: a font-size there would rescale every rem (and the 16px spacing maths); body carries it for a root density.
     "[data-density]:not(:root)": { "font-size": "var(--yorha-text-base)" },
     ":lang(ko)": { "word-break": "keep-all" },
     ":lang(ja)": { "font-family": "var(--yorha-font-sans-ja)", "word-break": "normal" },
-    // Long-string safety net: keep-all stays for Korean prose, but links, code and table cells may break anywhere rather than overflow.
-    "a, code, td, th": { "overflow-wrap": "anywhere" },
+    // Long-string safety net: keep-all stays for Korean prose, but links and code may break anywhere rather than overflow.
+    "a, code": { "overflow-wrap": "anywhere" },
+    // Table cells break only at word boundaries: `anywhere` shrinks min-content to one glyph and collapses the columns at 320px.
+    "td, th": { "overflow-wrap": "break-word" },
     ".yorha-prose": { "max-width": "var(--yorha-measure)" },
     ".yorha-prose p + p": { "margin-top": "var(--yorha-paragraph-gap)" },
     "[data-theme]": { color: "var(--yorha-fg)" },

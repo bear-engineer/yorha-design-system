@@ -115,7 +115,7 @@
   --shadow-yorha-sm: 2px 2px 0px 0px var(--yorha-shadow);
   --shadow-yorha-md: 4px 4px 0px 0px var(--yorha-shadow);
   --shadow-yorha-lg: 6px 6px 0px 0px var(--yorha-shadow);
-  --text-shadow-yorha: 0.125rem 0.125rem 0px var(--yorha-shadow);
+  --text-shadow-yorha: var(--yorha-text-shadow);
   --ease-yorha: var(--yorha-ease);
   --ease-yorha-out: var(--yorha-ease-out);
   --ease-yorha-in: var(--yorha-ease-in);
@@ -158,6 +158,7 @@
   --yorha-ring-offset: 2px;
   --yorha-menu-rule: 1px;
   --menu-rule: 1px;
+  --yorha-text-shadow: 0.125rem 0.125rem 0px var(--yorha-shadow);
   --yorha-motion-select: 180ms;
   --motion-select: 180ms;
   --yorha-motion-select-exit: 120ms;
@@ -322,6 +323,7 @@
   --yorha-ring: oklch(0.1864 0.008 95.48);
   --yorha-shadow: oklch(0.3247 0.0123 93.82);
   --yorha-scrim: oklch(0.1864 0.008 95.48 / 0.75);
+  --yorha-text-shadow: none;
 }
 
 [data-density=default] {
@@ -656,8 +658,62 @@
   animation-delay: calc(var(--motion-stagger) * min(var(--yorha-stagger-index, 0), var(--motion-stagger-max)));
 }
 
+@media (forced-colors: active) {
+  :root, [data-theme] {
+    --yorha-text-shadow: none;
+  }
+  .bg-yorha-ink {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    color: HighlightText;
+  }
+  [role=switch][data-checked], [role=checkbox][data-checked], [role=checkbox][data-indeterminate], [role=tab][data-active], [role=tab][aria-selected=true], [data-pressed] {
+    forced-color-adjust: none;
+    background-color: Highlight;
+    color: HighlightText;
+  }
+  [role=switch] > span, [role=radio][data-checked] > span {
+    forced-color-adjust: none;
+    background-color: currentColor;
+  }
+  [role=radio][data-checked] {
+    forced-color-adjust: none;
+    color: Highlight;
+    border-color: Highlight;
+  }
+  .bg-yorha-alert-ui {
+    forced-color-adjust: none;
+    background-color: CanvasText;
+  }
+  .fill-yorha-ink {
+    forced-color-adjust: none;
+    fill: Highlight;
+  }
+  .fill-yorha-on-ink {
+    forced-color-adjust: none;
+    fill: HighlightText;
+  }
+  .stroke-yorha-bg {
+    forced-color-adjust: none;
+    stroke: Canvas;
+  }
+  .stroke-yorha-alert-ui {
+    forced-color-adjust: none;
+    stroke: CanvasText;
+  }
+  .stroke-yorha-ring {
+    forced-color-adjust: none;
+    stroke: Highlight;
+  }
+}
+
 @layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
   body {
+    -webkit-tap-highlight-color: transparent;
     background-color: var(--yorha-bg);
     color: var(--yorha-fg);
     font-family: var(--yorha-font-sans);
@@ -666,6 +722,9 @@
     letter-spacing: var(--yorha-tracking-body);
     word-break: keep-all;
     overflow-wrap: break-word;
+  }
+  :where(a[href], button, summary, label, select, textarea, input:not([type=range]), [role=button], [role=tab], [role=checkbox], [role=radio], [role=switch], [role=menuitem], [role=option], [role=combobox]) {
+    touch-action: manipulation;
   }
   [data-density]:not(:root) {
     font-size: var(--yorha-text-base);
@@ -677,8 +736,11 @@
     font-family: var(--yorha-font-sans-ja);
     word-break: normal;
   }
-  a, code, td, th {
+  a, code {
     overflow-wrap: anywhere;
+  }
+  td, th {
+    overflow-wrap: break-word;
   }
   .yorha-prose {
     max-width: var(--yorha-measure);
