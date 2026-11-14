@@ -17,7 +17,7 @@ export function Switch({ children, className, rowClassName, ...props }: SwitchPr
   return (
     <label
       className={cn(
-        "inline-flex cursor-pointer items-center gap-3 align-middle font-yorha text-yorha-base text-yorha-fg",
+        "group/row inline-flex cursor-pointer items-center gap-3 align-middle font-yorha text-yorha-base text-yorha-fg",
         "has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:opacity-50",
         rowClassName,
       )}
@@ -29,6 +29,8 @@ export function Switch({ children, className, rowClassName, ...props }: SwitchPr
             "text-yorha-fg transition-[color,background-color,border-color] duration-(--motion-select) ease-yorha",
             "data-[checked]:bg-yorha-ink data-[checked]:text-yorha-on-ink",
             "focus-visible:yorha-focus",
+            // M22: pointer-down tints the track at once (colour only, no size change); press-in uses the short press duration.
+            "group-active/row:bg-[color-mix(in_srgb,var(--yorha-ink)_25%,transparent)] data-[checked]:group-active/row:bg-[color-mix(in_srgb,var(--yorha-ink)_80%,var(--yorha-bg))] active:duration-(--motion-press)",
           ),
           className,
         )}

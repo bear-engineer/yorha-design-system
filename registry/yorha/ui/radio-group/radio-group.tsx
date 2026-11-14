@@ -37,7 +37,7 @@ export function Radio({ children, className, rowClassName, ...props }: RadioProp
   return (
     <label
       className={cn(
-        "relative flex cursor-pointer items-center gap-3 px-3 py-2 text-yorha-fg",
+        "group/row relative flex cursor-pointer items-center gap-3 px-3 py-2 text-yorha-fg",
         "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-no-repeat [background-size:0%_100%]",
         "transition-[background-size,color] duration-(--motion-select) ease-yorha",
         "has-[[data-checked]]:text-yorha-on-ink has-[[data-checked]]:[background-size:100%_100%]",
@@ -47,7 +47,11 @@ export function Radio({ children, className, rowClassName, ...props }: RadioProp
     >
       <BaseRadio.Root
         className={cnState(
+          cn(
           "grid size-5 min-h-[24px] min-w-[24px] shrink-0 place-items-center rounded-yorha border border-current bg-transparent",
+          // M22: pointer-down tints the box at once (colour only, no size change).
+          "transition-[background-color] duration-(--motion-select) ease-yorha group-active/row:bg-[color-mix(in_srgb,var(--yorha-ink)_25%,transparent)] data-[checked]:group-active/row:bg-[color-mix(in_srgb,var(--yorha-bg)_70%,var(--yorha-on-ink))] active:duration-(--motion-press)",
+          ),
           className,
         )}
         {...props}
