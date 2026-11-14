@@ -225,9 +225,9 @@ export const StaggerEntersOnce: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const delays = () => c.getAllByRole("option").map((o) => getComputedStyle(o).transitionDelay);
-    await waitFor(() => expect(delays()[2]).toContain("0.2s"));
-    await expect(delays()[0]).not.toContain("0.1s");
-    await expect(delays()[1]).toContain("0.1s");
+    await waitFor(() => expect(delays()[2]).toContain("0.08s"));
+    await expect(delays()[0]).not.toContain("0.04s");
+    await expect(delays()[1]).toContain("0.04s");
     await waitFor(() => expect(getComputedStyle(opt(c, "시스템")).opacity).toBe("1"));
   },
 };

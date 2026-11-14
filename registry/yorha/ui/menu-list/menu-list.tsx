@@ -21,8 +21,6 @@ const MenuContext = React.createContext<MenuContextValue | null>(null);
 const ITEM = "[data-menu-item]";
 const ENABLED = "[data-menu-item]:not([data-disabled])";
 const TYPEAHEAD_RESET_MS = 500;
-/** Rows past this index enter together so a long list does not take seconds to appear. */
-const MAX_STAGGER_INDEX = 12;
 
 export interface MenuListProps extends Omit<React.ComponentProps<"ul">, "defaultValue" | "onChange"> {
   /** `listbox`: role=listbox with options (selection follows the cursor). `navigation`: a list of buttons or links. */
@@ -97,7 +95,7 @@ function MenuListImpl({
     const root = ref.current;
     if (!root) return;
     const rows = Array.from(root.querySelectorAll<HTMLElement>(ITEM));
-    rows.forEach((row, i) => row.style.setProperty("--menu-i", String(Math.min(i, MAX_STAGGER_INDEX))));
+    rows.forEach((row, i) => row.style.setProperty("--menu-i", String(i)));
     const enabled = rows.filter((r) => !r.hasAttribute("data-disabled"));
     const current = enabled.find((r) => r.dataset.menuValue === value) ?? enabled[0];
     const next = current?.dataset.menuValue ?? null;
@@ -204,7 +202,8 @@ const ROW = cn(
   "focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
 );
 
-const STAGGER = "calc(var(--motion-stagger) * var(--menu-i, 0))";
+// Index is clamped by the token: later rows enter together.
+const STAGGER = "calc(var(--motion-stagger) * min(var(--menu-i, 0), var(--motion-stagger-max)))";
 
 /** One row. Selected: ink wipes in left to right, bullet inverts, arrow cursor and rules appear. */
 export function MenuListItem({
@@ -231,8 +230,8 @@ export function MenuListItem({
 
   const wipe = selected ? "var(--motion-select)" : "var(--motion-select-exit, var(--motion-select))";
   const transition = [
-    `opacity var(--motion-panel) var(--yorha-ease-out) ${STAGGER}`,
-    `translate var(--motion-panel) var(--yorha-ease-out) ${STAGGER}`,
+    `opacity var(--motion-stagger-enter) var(--yorha-ease-out) ${STAGGER}`,
+    `translate var(--motion-stagger-enter) var(--yorha-ease-out) ${STAGGER}`,
     `background-size ${wipe} var(--yorha-ease-out)`,
     `color ${wipe} var(--yorha-ease-out)`,
   ].join(", ");

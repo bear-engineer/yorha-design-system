@@ -1093,9 +1093,20 @@ export const tokens = {
         "cssVar": "--yorha-motion-stagger",
         "alias": "--motion-stagger",
         "utility": "",
-        "value": "100ms",
-        "description": "Delay per row in staggered lists.",
-        "full": "100ms",
+        "value": "40ms",
+        "description": "Delay per row in staggered lists (30-80ms). Last row starts at stagger * stagger-max.",
+        "full": "40ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "stagger-enter",
+        "cssVar": "--yorha-motion-stagger-enter",
+        "alias": "--motion-stagger-enter",
+        "utility": "",
+        "value": "240ms",
+        "description": "Entry duration of one staggered row or tile (yorha-stagger, MenuList). stagger * stagger-max + this stays within 500ms.",
+        "full": "240ms",
         "reduced": "0ms",
         "off": "0ms"
       },
@@ -1324,11 +1335,11 @@ export const tokens = {
         "cssVar": "--yorha-motion-stagger-max",
         "alias": "--motion-stagger-max",
         "utility": "",
-        "value": "12",
+        "value": "6",
         "description": "Highest row index that still adds stagger delay; later rows enter together (yorha-stagger).",
-        "full": "12",
-        "reduced": "12",
-        "off": "12"
+        "full": "6",
+        "reduced": "6",
+        "off": "6"
       }
     ],
     "utilities": [

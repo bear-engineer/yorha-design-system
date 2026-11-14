@@ -32,6 +32,12 @@
           "unit": "ms"
         }
       },
+      "stagger-enter": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
       "scramble-char": {
         "$value": {
           "value": 0,

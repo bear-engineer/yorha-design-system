@@ -401,10 +401,17 @@
       },
       "stagger": {
         "$value": {
-          "value": 100,
+          "value": 40,
           "unit": "ms"
         },
-        "$description": "Delay per row in staggered lists."
+        "$description": "Delay per row in staggered lists (30-80ms). Last row starts at stagger * stagger-max."
+      },
+      "stagger-enter": {
+        "$value": {
+          "value": 240,
+          "unit": "ms"
+        },
+        "$description": "Entry duration of one staggered row or tile (yorha-stagger, MenuList). stagger * stagger-max + this stays within 500ms."
       },
       "scramble-char": {
         "$value": {
@@ -566,7 +573,7 @@
     },
     "stagger-max": {
       "$type": "number",
-      "$value": 12,
+      "$value": 6,
       "$description": "Highest row index that still adds stagger delay; later rows enter together (yorha-stagger)."
     }
   },

@@ -148,7 +148,7 @@ describe("token generator", () => {
       expect(blockVar(":root", "motion-select")).toBe("180ms");
       expect(blockVar(":root", "motion-panel")).toBe("400ms");
       expect(blockVar(":root", "motion-panel-exit")).toBe("240ms");
-      expect(blockVar(":root", "motion-stagger")).toBe("100ms");
+      expect(blockVar(":root", "motion-stagger")).toBe("40ms");
     });
 
     it("adds emphasized and decelerate easings as variables and Tailwind ease-* keys", () => {
@@ -220,6 +220,16 @@ describe("token generator", () => {
         expect(exit, name).toContain("transition-timing-function: var(--yorha-ease);");
         expect(exit, name).not.toContain("ease-in");
       }
+    });
+
+    it("stagger fits the entry budget: stagger * stagger-max + stagger-enter <= 500ms; yorha-stagger reads the entry token", () => {
+      const ms = (name: string) => parseFloat(blockVar(":root", `motion-${name}`)!);
+      const max = Number(blockVar(":root", "motion-stagger-max"));
+      expect(ms("stagger")).toBe(40);
+      expect(max).toBe(6);
+      expect(ms("stagger-enter")).toBe(240);
+      expect(ms("stagger") * max + ms("stagger-enter")).toBeLessThanOrEqual(500);
+      expect(utilityBlock("yorha-stagger")).toContain("animation-duration: max(var(--motion-stagger-enter), var(--motion-reduced-fade));");
     });
 
     it("yorha-pop scales and fades from --transform-origin, exit on the faster token", () => {

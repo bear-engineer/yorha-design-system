@@ -238,10 +238,10 @@ export const MotionUtilities: Story = {
     const active = findStyleRule(".yorha-press", (selector) => selector.includes(":active"));
     await expect(active?.style.getPropertyValue("scale")).toContain("--motion-scale-press");
     await expect(style("stagger-0", "full").animationName).toBe("yorha-stagger-in");
-    await expect(seconds(style("stagger-0", "full").animationDuration)).toEqual([token("panel")]);
+    await expect(seconds(style("stagger-0", "full").animationDuration)).toEqual([token("stagger-enter")]);
     for (const index of [0, 1, 2] as const) await expect(parseFloat(style(`stagger-${index}`, "full").animationDelay)).toBeCloseTo(token("stagger") * index, 5);
     // Rows past the cap enter together, so a long list never takes seconds to appear.
-    await expect(parseFloat(style("stagger-40", "full").animationDelay)).toBeCloseTo(token("stagger") * 12, 5);
+    await expect(parseFloat(style("stagger-40", "full").animationDelay)).toBeCloseTo(token("stagger") * 6, 5);
 
     // reduced: opacity only, at most 120ms. No scale, no translate, no height animation, no stagger delay.
     for (const name of OPEN_CLOSE) {

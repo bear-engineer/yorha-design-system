@@ -237,7 +237,7 @@ const MOTION_CSS = {
   },
   "@utility yorha-stagger": {
     "animation-name": "yorha-stagger-in",
-    "animation-duration": fade("panel"),
+    "animation-duration": fade("stagger-enter"),
     "animation-timing-function": "var(--yorha-ease-out)",
     "animation-fill-mode": "backwards",
     "animation-delay": "calc(var(--motion-stagger) * min(var(--yorha-stagger-index, 0), var(--motion-stagger-max)))",

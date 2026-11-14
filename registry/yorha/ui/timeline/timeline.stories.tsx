@@ -219,8 +219,8 @@ export const MotionTokens: Story = {
     const wire = canvasElement.querySelector("[data-item-id='wire']")!; // lane index 1
     const dur = () => parseFloat(getComputedStyle(wire).animationDuration);
     await withMotion("full", async () => {
-      await expect(dur()).toBeCloseTo(0.4, 2);
-      await expect(parseFloat(getComputedStyle(wire).animationDelay)).toBeCloseTo(0.1, 2);
+      await expect(dur()).toBeCloseTo(0.24, 2);
+      await expect(parseFloat(getComputedStyle(wire).animationDelay)).toBeCloseTo(0.04, 2);
     });
     await withMotion("reduced", async () => {
       await waitFor(() => expect(dur()).toBeLessThanOrEqual(0.12));
@@ -271,8 +271,8 @@ export const VerticalMotion: StoryObj<typeof Timeline> = {
     const rows = within(canvasElement).getAllByRole("listitem");
     const row = rows[2]!;
     await withMotion("full", async () => {
-      await expect(parseFloat(getComputedStyle(row).animationDuration)).toBeCloseTo(0.4, 2);
-      await expect(parseFloat(getComputedStyle(row).animationDelay)).toBeCloseTo(0.2, 2);
+      await expect(parseFloat(getComputedStyle(row).animationDuration)).toBeCloseTo(0.24, 2);
+      await expect(parseFloat(getComputedStyle(row).animationDelay)).toBeCloseTo(0.08, 2);
     });
     await withMotion("reduced", async () => {
       await waitFor(() => expect(parseFloat(getComputedStyle(row).animationDuration)).toBeLessThanOrEqual(0.12));
