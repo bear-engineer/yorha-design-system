@@ -255,6 +255,24 @@
       ],
       "@/components/ui/date-picker": [
         "./registry/yorha/ui/date-picker/date-picker.tsx"
+      ],
+      "@/components/ui/date-input": [
+        "./registry/yorha/ui/date-input/date-input.tsx"
+      ],
+      "@/components/ui/color-input": [
+        "./registry/yorha/ui/color-input/color-input.tsx"
+      ],
+      "@/components/ui/file-input": [
+        "./registry/yorha/ui/file-input/file-input.tsx"
+      ],
+      "@/components/ui/password-input": [
+        "./registry/yorha/ui/password-input/password-input.tsx"
+      ],
+      "@/components/ui/search-input": [
+        "./registry/yorha/ui/search-input/search-input.tsx"
+      ],
+      "@/components/ui/input-types": [
+        "./registry/yorha/ui/input-types/input-types.tsx"
       ]
     }
   },

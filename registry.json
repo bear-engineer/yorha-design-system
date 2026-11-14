@@ -85,6 +85,12 @@
     "registry/yorha/ui/context-menu/registry.json",
     "registry/yorha/ui/preview-card/registry.json",
     "registry/yorha/ui/calendar/registry.json",
-    "registry/yorha/ui/date-picker/registry.json"
+    "registry/yorha/ui/date-picker/registry.json",
+    "registry/yorha/ui/date-input/registry.json",
+    "registry/yorha/ui/color-input/registry.json",
+    "registry/yorha/ui/file-input/registry.json",
+    "registry/yorha/ui/password-input/registry.json",
+    "registry/yorha/ui/search-input/registry.json",
+    "registry/yorha/ui/input-types/registry.json"
   ]
 }

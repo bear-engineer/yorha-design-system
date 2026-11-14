@@ -579,5 +579,47 @@
     "type": "registry:ui",
     "alias": "@/components/ui/date-picker",
     "file": "date-picker.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "date-input",
+    "type": "registry:ui",
+    "alias": "@/components/ui/date-input",
+    "file": "date-input.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "color-input",
+    "type": "registry:ui",
+    "alias": "@/components/ui/color-input",
+    "file": "color-input.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "file-input",
+    "type": "registry:ui",
+    "alias": "@/components/ui/file-input",
+    "file": "file-input.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "password-input",
+    "type": "registry:ui",
+    "alias": "@/components/ui/password-input",
+    "file": "password-input.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "search-input",
+    "type": "registry:ui",
+    "alias": "@/components/ui/search-input",
+    "file": "search-input.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "input-types",
+    "type": "registry:ui",
+    "alias": "@/components/ui/input-types",
+    "file": "input-types.tsx"
   }
 ]
