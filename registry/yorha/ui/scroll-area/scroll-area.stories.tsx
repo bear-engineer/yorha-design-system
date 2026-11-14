@@ -1,0 +1,90 @@
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, userEvent, waitFor, within } from "storybook/test";
+import {
+  ScrollArea,
+  ScrollAreaCorner,
+  ScrollAreaScrollbar,
+  ScrollAreaThumb,
+  ScrollAreaViewport,
+} from "./scroll-area";
+
+const THEMES = ["light", "dark", "high-contrast"] as const;
+const LINES = Array.from({ length: 40 }, (_, i) => `로그 ${String(i + 1).padStart(2, "0")} — 임무 기록 항목`);
+
+function Demo({ wide }: { wide?: boolean }) {
+  return (
+    <div className="bg-yorha-panel p-4 text-yorha-fg">
+      <ScrollArea className="h-48 w-80 border border-yorha-border">
+        <ScrollAreaViewport aria-label="임무 기록" className="h-full w-full">
+          <div className={wide ? "w-[60rem] p-3" : "p-3"}>
+            {LINES.map((l) => (
+              <p key={l} className="whitespace-nowrap">
+                {l}
+              </p>
+            ))}
+          </div>
+        </ScrollAreaViewport>
+        <ScrollAreaScrollbar orientation="vertical">
+          <ScrollAreaThumb />
+        </ScrollAreaScrollbar>
+        <ScrollAreaScrollbar orientation="horizontal">
+          <ScrollAreaThumb />
+        </ScrollAreaScrollbar>
+        <ScrollAreaCorner />
+      </ScrollArea>
+    </div>
+  );
+}
+
+const meta = {
+  title: "컴포넌트/구조/ScrollArea",
+  component: ScrollArea,
+  tags: ["autodocs"],
+  parameters: { layout: "centered" },
+} satisfies Meta<typeof ScrollArea>;
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const viewport = c.getByRole("region", { name: "임무 기록" });
+    await waitFor(() => expect(canvasElement.querySelector('[data-slot="scroll-area-thumb"]')).not.toBeNull());
+    // keyboard scrolling stays native: focus the viewport and press ArrowDown
+    viewport.focus();
+    await expect(document.activeElement).toBe(viewport);
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}");
+    await waitFor(() => expect(viewport.scrollTop).toBeGreaterThan(0));
+  },
+};
+
+export const BothScrollbars: Story = {
+  render: () => <Demo wide />,
+  play: async ({ canvasElement }) => {
+    await waitFor(() => expect(canvasElement.querySelectorAll('[data-slot="scroll-area-thumb"]').length).toBe(2));
+    await expect(canvasElement.querySelector('[data-slot="scroll-area-corner"]')).not.toBeNull();
+  },
+};
+
+export const Themes: Story = {
+  render: () => (
+    <div className="grid grid-cols-3 gap-4">
+      {THEMES.map((t) => (
+        <div key={t} data-theme={t}>
+          <Demo />
+        </div>
+      ))}
+    </div>
+  ),
+};
+
+// authentic palette is intentionally low-contrast (decorative mode), so only this story skips a11y.
+export const Authentic: Story = {
+  parameters: { a11y: { test: "todo" } },
+  render: () => (
+    <div data-theme="authentic">
+      <Demo />
+    </div>
+  ),
+};
