@@ -597,7 +597,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
                           {date.getDate()}
                         </span>
                         {renderDay ? (
-                          <span data-slot="calendar-day-extra" aria-hidden="true" className="absolute inset-x-0 bottom-[2px] flex h-1 items-end justify-center gap-[2px]">
+                          <span data-slot="calendar-day-extra" aria-hidden="true" className="absolute inset-x-0 bottom-0 flex h-1 items-end justify-center gap-[2px]">
                             {renderDay(date, state)}
                           </span>
                         ) : null}
