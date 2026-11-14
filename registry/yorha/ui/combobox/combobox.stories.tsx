@@ -23,7 +23,7 @@ import {
   ComboboxValue,
 } from "./combobox";
 
-const UNITS = ["Archive", "Bunker", "Command", "Desert", "Factory", "사막 구역", "벙커"];
+const UNITS = ["Archive", "Bunker", "Command", "Desert", "Factory", "사막 구역", "벙커", "Depot", "Eden", "Foundry"];
 const GROUPS = [
   { value: "지상", items: ["Bunker", "Desert"] },
   { value: "시설", items: ["Archive", "Factory"] },
@@ -67,8 +67,8 @@ function Single({ defaultValue, grouped, disabled }: { defaultValue?: string; gr
   );
 }
 
-function Multiple({ onChange }: { onChange?: (v: string[]) => void }) {
-  const [value, setValue] = useState<string[]>(["Archive", "Bunker"]);
+function Multiple({ onChange, initial = ["Archive", "Bunker"] }: { onChange?: (v: string[]) => void; initial?: string[] }) {
+  const [value, setValue] = useState<string[]>(initial);
   return (
     <div lang="ko" className="w-80 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
       <Combobox
@@ -94,7 +94,7 @@ function Multiple({ onChange }: { onChange?: (v: string[]) => void }) {
               </ComboboxChips>
             )}
           </ComboboxValue>
-          <ComboboxClear />
+          {value.length > 1 && <ComboboxClear />}
           <ComboboxTrigger />
         </ComboboxInputGroup>
         <ComboboxContent>
@@ -252,6 +252,14 @@ export const MultipleChips: Story = {
     await waitFor(() => expect(chips()).toEqual(["Archive", "Bunker", "Desert"]));
     // multiple: popup stays open after choosing
     await expect(body().queryByRole("listbox")).not.toBeNull();
+  },
+};
+
+/** Eight values selected: the chips row stays one line, the rest collapse into a "+N" count chip. */
+export const ManySelected: Story = {
+  render: () => <Multiple initial={UNITS.slice(0, 8)} />,
+  play: async () => {
+    await expect(body().getByRole("img", { name: /^외 \d+개 선택됨$/ })).toBeVisible();
   },
 };
 

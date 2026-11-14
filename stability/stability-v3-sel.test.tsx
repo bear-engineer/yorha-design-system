@@ -220,22 +220,64 @@ describe("FSEL-07 empty state", () => {
   }
 });
 
-describe("FSEL-08 combobox chips", () => {
-  test("every chip row has the same height and one gap", { timeout: 60_000 }, async () => {
+describe("FSEL-08 / C2-221..223 combobox chips", () => {
+  const frame = () => q<HTMLElement>("[data-slot=combobox-input-group]")!;
+  test("chip row stays one line: height never changes with 1, 3 or 8 values; +N names the rest", { timeout: 60_000 }, async () => {
     await mountStory("combobox", "MultipleChips", { stage: "top" });
-    const chips = [...document.querySelectorAll<HTMLElement>("[data-slot=combobox-chip]")];
+    const base = frame().getBoundingClientRect().height;
+    expect(base).toBe(token("--yorha-control-md"));
+    const sibling = frame().parentElement!.parentElement!.getBoundingClientRect().height;
+    // select a 3rd value
     const input = q<HTMLElement>("[data-slot=combobox-chips] input")!;
-    expect(chips.length).toBeGreaterThanOrEqual(2);
-    const hs = [...chips, input].map((e) => e.getBoundingClientRect().height);
-    expect(new Set(hs).size, `heights ${hs.join(",")}`).toBe(1);
-    expect(hs[0]).toBe(24);
-    for (const c of chips) expectPixelSnapped(c);
-    const group = q<HTMLElement>("[data-slot=combobox-input-group]")!;
-    expectPixelSnapped(group);
-    // chip rows: equal gaps (rows are 24px tall, so equal tops spacing = equal gaps)
-    const tops = [...new Set(chips.map((c) => c.getBoundingClientRect().top))].sort((a, b) => a - b);
-    const gaps = tops.slice(1).map((t, i) => t - tops[i]!);
-    expect(new Set(gaps).size, `row pitch ${gaps.join(",")}`).toBeLessThanOrEqual(1);
+    input.focus();
+    await userEvent.keyboard("{ArrowDown}");
+    await until(() => !!q("[role=listbox]"), "listbox");
+    await userEvent.type(input, "des");
+    await frames(5);
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    await frames(10);
+    expect(frame().getBoundingClientRect().height, "3 values").toBe(base);
+    expect(frame().parentElement!.parentElement!.getBoundingClientRect().height, "container").toBe(sibling);
+    expectPixelSnapped(frame());
+    await mountStory("combobox", "ManySelected", { stage: "top" });
+    await frames(10);
+    expect(frame().getBoundingClientRect().height, "8 values").toBe(base);
+    const more = q<HTMLElement>("[data-slot=combobox-chips-more]")!;
+    expect(more, "+N chip").toBeTruthy();
+    expect(more.getAttribute("aria-label")).toMatch(/^외 \d+개 선택됨$/);
+    const chips = [...document.querySelectorAll<HTMLElement>("[data-slot=combobox-chip]")];
+    const visible = chips.filter((c) => c.getBoundingClientRect().height > 0);
+    expect(visible.length + Number(more.textContent!.replace("+", "")), "visible + hidden = 8").toBe(8);
+    const row = q<HTMLElement>("[data-slot=combobox-chips]")!.getBoundingClientRect();
+    for (const c of visible) expect(c.getBoundingClientRect().height).toBe(24);
+    expect(new Set(visible.map((c) => c.getBoundingClientRect().top)).size, "one row").toBe(1);
+    for (const c of [...visible, more]) expect(c.getBoundingClientRect().right).toBeLessThanOrEqual(row.right + 0.5);
+  });
+
+  test("end cells fill the frame, one ring, same fill and body text as Input (C2-222/223)", { timeout: 60_000 }, async () => {
+    await mountStory("combobox", "ManySelected", { stage: "top" });
+    const f = frame().getBoundingClientRect();
+    const trig = q<HTMLElement>("[data-slot=combobox-trigger]")!.getBoundingClientRect();
+    const clear = q<HTMLElement>("[data-slot=combobox-clear]")!.getBoundingClientRect();
+    expect(trig.height, "trigger fills inner height").toBe(f.height - 2);
+    expect(clear.height).toBe(f.height - 2);
+    expect(trig.left - clear.right, "clear and chevron are adjacent cells").toBeLessThanOrEqual(1);
+    const cs = getComputedStyle(frame());
+    const probe = document.createElement("div");
+    probe.className = "bg-yorha-bg text-yorha-base";
+    document.body.append(probe);
+    const ref = getComputedStyle(probe);
+    expect(cs.backgroundColor).toBe(ref.backgroundColor);
+    expect(getComputedStyle(q("[data-slot=combobox-chips] input")!).fontSize).toBe(ref.fontSize);
+    probe.remove();
+    // focus inside: only the frame draws a ring; the focused cell draws none
+    q<HTMLElement>("[data-slot=combobox-trigger]")!.focus();
+    await userEvent.keyboard("{Tab}");
+    await userEvent.keyboard("+{Tab}");
+    const ae = document.activeElement as HTMLElement;
+    expect(ae.matches("[data-slot=combobox-trigger]")).toBe(true);
+    expect(getComputedStyle(ae).outlineStyle === "none" || px(getComputedStyle(ae).outlineWidth) === 0, "cell has no ring").toBe(true);
+    expect(px(getComputedStyle(frame()).outlineWidth), "frame ring").toBeGreaterThanOrEqual(2);
   });
 });
 
