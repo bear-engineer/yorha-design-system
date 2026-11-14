@@ -62,7 +62,7 @@ export function meta() {
 
 export default function YorhaDemo() {
   return (
-    <div lang="ko">
+    <div lang="ko" className="w-full min-w-0">
       <AppShell
         header={<span className="font-yorha font-yorha-bold uppercase tracking-yorha-wide">YoRHa 설정</span>}
         footer={<p className="text-yorha-sm text-yorha-fg-soft">비공식 팬 프로젝트</p>}

@@ -28,7 +28,7 @@ const SKIP =
   "focus-visible:bg-yorha-ink focus-visible:px-3 focus-visible:py-2 focus-visible:text-yorha-on-ink focus-visible:yorha-focus";
 const HEADER = "flex items-center gap-3 bg-yorha-ink px-4 py-2 text-yorha-on-ink";
 const TOGGLE =
-  "@lg:hidden ml-auto border border-yorha-on-ink px-3 py-1 text-yorha-sm uppercase tracking-yorha-wide " +
+  "@lg:hidden ml-auto inline-flex h-control-sm items-center border border-yorha-on-ink px-3 text-yorha-sm uppercase tracking-yorha-wide " +
   "focus-visible:yorha-focus";
 
 export function AppShell({
