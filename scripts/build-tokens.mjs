@@ -366,11 +366,12 @@ const ROW = {
     color: "var(--yorha-on-ink)",
     "transition-duration": "var(--motion-press)",
     "transition-timing-function": "var(--yorha-ease-out)",
+    // Media nested inside the selector, not around it: the shadcn CLI splices a nested
+    // `&[...]` key into the enclosing @media params (e2e build broke on
+    // `@media (forced-colors[data-highlighted]...: active)`).
+    "@media (forced-colors: active)": { outline: "2px solid Highlight", "outline-offset": "-2px" },
   },
   "&[data-disabled]": { color: "var(--yorha-disabled)", cursor: "not-allowed" },
-  "@media (forced-colors: active)": {
-    "&[data-highlighted]:not([data-disabled])": { outline: "2px solid Highlight", "outline-offset": "-2px" },
-  },
 };
 // Every floating popup. Tooltip is the one exception (ink chip, no shadow).
 const SURFACE = {
@@ -406,6 +407,30 @@ const MOTION_UTILITIES = Object.keys(MOTION_CSS).map((key) => key.slice("@utilit
 /* ----------------------------------------------------------------- model */
 
 const dashed = (vars) => Object.fromEntries(Object.entries(vars).map(([name, value]) => [`--${name}`, value]));
+
+// Inside an @utility, write `&sel { @media (...) { ... } }`, never `@media (...) { &sel { ... } }`.
+// Same CSS, but the shadcn CLI (registry transport) splices a nested `&...` key into the
+// enclosing @media params, which breaks the consumer build (`@media (forced-colors[data-x]: active)`).
+export function mediaInsideSelectors(rules) {
+  const out = {};
+  const merge = (sel, media, body) => {
+    const target = (out[sel] ??= {});
+    target[media] = { ...(target[media] ?? {}), ...body };
+  };
+  for (const [key, value] of Object.entries(rules)) {
+    if (key.startsWith("@media") && value && typeof value === "object") {
+      const plain = {};
+      for (const [inner, body] of Object.entries(value)) {
+        if (inner.startsWith("&") && body && typeof body === "object") merge(inner, key, body);
+        else plain[inner] = body;
+      }
+      if (Object.keys(plain).length) out[key] = { ...(out[key] ?? {}), ...plain };
+    } else if (key.startsWith("&") && value && typeof value === "object") {
+      out[key] = { ...(out[key] ?? {}), ...value };
+    } else out[key] = value;
+  }
+  return out;
+}
 
 function buildModel(tokens) {
   const { base, modifiers } = tokens;
@@ -517,6 +542,7 @@ function buildModel(tokens) {
   };
   css["@utility yorha-break"] = { "overflow-wrap": "anywhere", "word-break": "normal" };
   Object.assign(css, MOTION_CSS);
+  for (const key of Object.keys(css)) if (key.startsWith("@utility ")) css[key] = mediaInsideSelectors(css[key]);
   // Forced colours (Windows contrast themes): the UA replaces background-color with Canvas and fill/stroke with text colours,
   // so fills built from bg-yorha-ink and SVG marks disappear. Unlayered on purpose: it must beat the utilities layer.
   // forced-color-adjust: none is set only on the elements that paint a state, and they take system colours.

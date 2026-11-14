@@ -620,3 +620,16 @@ describe("craft v3 recipes (G5-G10)", () => {
     });
   });
 });
+
+describe("registry transport safety", () => {
+  it("never wraps a nested &-selector in @media inside an @utility (shadcn CLI splices it into the media params)", async () => {
+    const { readFileSync } = await import("node:fs");
+    const css = readFileSync("src/styles/tokens.generated.css", "utf8");
+    const offenders: string[] = [];
+    for (const block of css.split(/\n(?=@utility )/).filter((b) => b.startsWith("@utility "))) {
+      const body = block.slice(0, block.indexOf("\n}\n") >>> 0);
+      if (/\n  @media[^{]*\{\s*\n\s*&/.test(body)) offenders.push(block.split(" ")[1] ?? "?");
+    }
+    expect(offenders).toEqual([]);
+  });
+});
