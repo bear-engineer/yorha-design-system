@@ -9,9 +9,9 @@ import { cn, cnState } from "@/lib/utils";
 export const previewCardStyles = {
   trigger:
     "cursor-pointer text-yorha-fg underline decoration-dotted underline-offset-4 focus-visible:yorha-focus " +
-    "data-[popup-open]:bg-yorha-ink data-[popup-open]:text-yorha-on-ink",
+    "-mx-1 px-1 box-decoration-clone data-[popup-open]:bg-yorha-ink data-[popup-open]:text-yorha-on-ink data-[popup-open]:decoration-transparent",
   popup:
-    "yorha-pop max-w-80 min-w-56 rounded-yorha border border-yorha-border bg-yorha-panel p-4 text-yorha-fg shadow-yorha-md " +
+    "yorha-pop max-w-[min(20rem,calc(100vw-1rem))] min-w-56 rounded-yorha border border-yorha-border bg-yorha-panel p-4 text-yorha-fg shadow-yorha-md " +
     "font-yorha text-yorha-sm tracking-yorha-body",
   title: "mb-2 font-yorha-bold text-yorha-sm tracking-yorha-heading uppercase",
   description: "text-yorha-fg-soft",
@@ -75,7 +75,9 @@ function PreviewCardContent({
         sideOffset={sideOffset}
         alignOffset={alignOffset}
         collisionPadding={collisionPadding}
-        className="z-(--yorha-z-popover) outline-none"
+        arrowPadding={8}
+        collisionAvoidance={{ side: "flip", align: "shift", fallbackAxisSide: "none" }}
+        className="z-(--yorha-z-popover)"
       >
         <PreviewCardPrimitive.Popup data-slot="preview-card-content" className={cnState(previewCardStyles.popup, className)} {...props}>
           {arrow && <PreviewCardPrimitive.Arrow data-slot="preview-card-arrow" aria-hidden="true" className={previewCardStyles.arrow} />}

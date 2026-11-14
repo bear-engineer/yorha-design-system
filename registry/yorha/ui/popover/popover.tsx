@@ -59,7 +59,7 @@ function PopoverContent({
         alignOffset={alignOffset}
         collisionPadding={collisionPadding}
         anchor={anchor}
-        className="z-(--yorha-z-popover) outline-none"
+        className="z-(--yorha-z-popover)"
       >
         <PopoverPrimitive.Popup
           data-slot="popover-content"
@@ -72,7 +72,7 @@ function PopoverContent({
           initialFocus={(type) => (type === "keyboard" ? true : popupRef.current)}
           className={cnState(
             [
-              "yorha-surface yorha-scroll max-h-(--available-height) max-w-[min(20rem,var(--available-width))] min-w-56 p-4 outline-none",
+              "yorha-surface yorha-scroll max-h-(--available-height) max-w-[min(20rem,var(--available-width))] min-w-56 p-4 outline-none focus-visible:yorha-focus",
               "font-yorha text-yorha-sm tracking-yorha-body",
               "yorha-pop",
             ],

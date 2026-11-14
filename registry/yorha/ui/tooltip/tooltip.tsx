@@ -88,7 +88,7 @@ function TooltipContent({
         sideOffset={sideOffset}
         alignOffset={alignOffset}
         collisionPadding={collisionPadding}
-        className="z-(--yorha-z-tooltip) outline-none"
+        className="z-(--yorha-z-tooltip)"
       >
         <TooltipPrimitive.Popup
           id={id}
