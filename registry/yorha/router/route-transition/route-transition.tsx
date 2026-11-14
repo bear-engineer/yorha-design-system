@@ -57,3 +57,18 @@ export function RouteTransition({ context }: RouteTransitionProps) {
     </div>
   );
 }
+
+export type RouteDirection = "forward" | "back" | "replace";
+export type RouteTransitionMode = "on" | "reduced" | "off" | "unsupported";
+export function resolveRouteDirection(_: { navigationType: "PUSH" | "POP" | "REPLACE"; idx: number | null; prevIdx: number | null }): RouteDirection {
+  return "replace";
+}
+export function segmentDirection(_order: readonly string[], _from: string, _to: string): RouteDirection {
+  return "replace";
+}
+export function resolveTransitionMode(_: { motion: string | null; prefersReduced: boolean; supported: boolean }): RouteTransitionMode {
+  return "on";
+}
+export function supportsViewTransition(_doc?: unknown): boolean {
+  return true;
+}
