@@ -147,7 +147,7 @@ function themeStory(theme: (typeof THEMES)[number], name: string): Story {
   return {
     name,
     render: (args) => (
-      <div data-theme={theme} className="bg-yorha-bg p-4 text-yorha-fg">
+      <div data-theme={theme} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
         <SystemMenuLayout {...args} />
       </div>
     ),
@@ -166,7 +166,7 @@ export const Authentic: Story = {
   tags: ["!autodocs"],
   parameters: { a11y: { test: "todo" } },
   render: (args) => (
-    <div data-theme="authentic" className="bg-yorha-bg p-4 text-yorha-fg">
+    <div data-theme="authentic" className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg">
       <SystemMenuLayout {...args} />
     </div>
   ),

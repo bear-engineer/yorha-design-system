@@ -143,9 +143,9 @@ function SettingsFormBody() {
 
       <Field name="otp" invalid={Boolean(errors.otp)} disabled={submitting}>
         <FieldLabel>인증 코드</FieldLabel>
-        <OTPFieldRoot id={ANCHOR.otp} length={OTP_LENGTH} value={otp} onValueChange={setOtp} className="flex items-center gap-2">
+        <OTPFieldRoot id={ANCHOR.otp} length={OTP_LENGTH} value={otp} onValueChange={setOtp} className="flex w-full items-center gap-2">
           {Array.from({ length: OTP_LENGTH }, (_, i) => (
-            <OTPFieldInput key={i} aria-label={i === 0 ? undefined : `${i + 1}번째 자리 (총 ${OTP_LENGTH})`} className="size-10 text-center" />
+            <OTPFieldInput key={i} aria-label={i === 0 ? undefined : `${i + 1}번째 자리 (총 ${OTP_LENGTH})`} className="h-10 w-10 min-w-0 shrink text-center" />
           ))}
         </OTPFieldRoot>
         <FieldDescription>문자로 받은 6자리 숫자</FieldDescription>
@@ -173,7 +173,7 @@ function SettingsFormBody() {
 export default function SettingsFormRoute() {
   return (
     <ToastProvider>
-      <main aria-label="본문" lang="ko" className="min-h-dvh bg-yorha-bg pb-8 text-yorha-fg">
+      <main aria-label="본문" lang="ko" className="min-h-dvh w-full min-w-0 bg-yorha-bg pb-8 text-yorha-fg">
         <PageHeader eyebrow="SEC-13" title="유닛 설정" description="이름, 구역, 인증 코드를 입력하고 저장합니다." />
         <SettingsFormBody />
       </main>

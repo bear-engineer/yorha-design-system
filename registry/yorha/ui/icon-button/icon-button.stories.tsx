@@ -100,11 +100,11 @@ export const Matrix: Story = {
 
 export const Themes: Story = {
   render: (args) => (
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-4">
       {THEMES.map((t) => (
-        <div key={t} data-theme={t} className="flex flex-col gap-3 bg-yorha-panel p-4 text-yorha-fg">
+        <div key={t} data-theme={t} className="flex min-w-0 flex-col gap-3 bg-yorha-panel p-4 text-yorha-fg">
           <span className="text-yorha-sm">{t}</span>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             {VARIANTS.map((v) => (
               <IconButton key={v} {...args} aria-label={`${t} ${v}`} variant={v} />
             ))}
