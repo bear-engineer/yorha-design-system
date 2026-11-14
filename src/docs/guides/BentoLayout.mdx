@@ -1,0 +1,51 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="가이드/벤토 레이아웃" />
+
+<main lang="ko">
+
+# 벤토 레이아웃
+
+`@yorha/bento`는 크기가 다른 타일을 격자에 배치합니다. 예제는 [레이아웃/Bento](?path=/docs/레이아웃-bento--docs) 스토리에 있습니다.
+
+## 반응형 규칙
+
+프레임이 `@container`이므로 뷰포트가 아니라 **컨테이너 너비**로 열 수가 정해집니다.
+
+<table>
+  <thead><tr><th scope="col">컨테이너 너비</th><th scope="col">열</th></tr></thead>
+  <tbody>
+    <tr><td>28rem 미만</td><td>1열</td></tr>
+    <tr><td>28rem 이상(<code>@md</code>)</td><td>2열</td></tr>
+    <tr><td>48rem 이상(<code>@3xl</code>)</td><td><code>cols</code> 전체(2, 4, 6, 12). 프리셋은 4열</td></tr>
+  </tbody>
+</table>
+
+- 행 높이 `rowHeight`(`sm`, `md`, `lg`)는 밀도에 따라 달라지는 간격 토큰으로 계산하며 `minmax(행, auto)`라서 내용이 잘리지 않습니다.
+- `dense` 자동 배치는 쓰지 않습니다. 타일이 시각 순서와 DOM 순서가 어긋나면 Tab 순서가 뒤섞이기 때문입니다.
+- 프리셋 `dashboard`, `feature`, `profile`은 `grid-template-areas`를 DOM 순서(행 우선)로 적습니다. 좁은 화면(1열)에서도 DOM 순서가 곧 시각 순서입니다.
+
+## 타일
+
+```tsx
+import { Bento, BentoTile } from "@/components/bento";
+
+<Bento preset="dashboard" gap={3}>
+  <BentoTile area="hero" href="/units" label="유닛 목록">…</BentoTile>
+  <BentoTile size="wide">…</BentoTile>
+  <BentoTile size="1x1">…</BentoTile>
+</Bento>
+```
+
+- `size`: `1x1`, `2x1`, `1x2`, `2x2`, `wide`, `tall`. `area`를 주면 `size`는 무시됩니다.
+- 타일도 `@container`입니다. 본문은 타일 너비 `@sm`부터 세로에서 가로 배치로 바뀝니다.
+- **타일마다 상호작용 대상은 하나**입니다. 타일 전체를 링크로 만들 때는 `href`와 `label`을 주고(stretched-link) 그 안에 링크나 버튼을 넣지 않습니다.
+- 모서리는 타일이 `--yorha-radius`, 본문이 `max(0, 반경 - 안쪽 여백)`이라 겹쳐도 어긋나지 않습니다.
+- 마운트 때 `yorha-stagger`로 순차 진입하며 인덱스는 DOM 순서로 자동 부여됩니다(`stagger={false}`로 끔). 호버 들어올림은 `translate`만 쓰고 `reduced`와 `off`에서는 없습니다([모션 사양](?path=/docs/가이드-모션-사양--docs)).
+
+## 접근성
+
+- 타일을 구역으로 쓸 때는 `<section aria-label>`처럼 이름을 붙입니다. 한 페이지에 `main`이나 `nav` 랜드마크를 중복해 만들지 않습니다.
+- 대시보드 예제: [블록/BentoDashboard](?path=/docs/블록-bentodashboard--docs). 로딩·빈 상태·오류 상태 전환과 목록→상세 공유 요소 전환을 함께 보여 줍니다.
+
+</main>

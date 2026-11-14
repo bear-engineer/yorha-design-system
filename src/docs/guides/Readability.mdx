@@ -1,0 +1,50 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="가이드/가독성" />
+
+<main lang="ko">
+
+# 가독성
+
+본문 가독성 기준과 이를 지키는 도구입니다. 값은 [파운데이션/Typography](?path=/docs/파운데이션-typography--docs)의 토큰이 정본입니다.
+
+## 줄 높이
+
+`<html lang="ko">`처럼 문서 언어를 표시하면 `:lang(ko)`·`:lang(ja)`에서 `--yorha-leading-body`가 `--yorha-leading-body-cjk`(**1.7**)로 바뀝니다. 라틴 문자는 1.6입니다. 영어 구절은 `lang="en"`으로 감싸면 1.6으로 돌아갑니다. Storybook에는 `<html lang>`이 없으므로 스토리 래퍼에 `lang`을 직접 둡니다.
+
+`body`에 지정한 `line-height`는 `body`에서 이미 값이 정해져 하위 요소의 `:lang`을 따라가지 않습니다. 그래서 `Prose`는 자기 요소에 `line-height: var(--yorha-leading-body)`를 직접 둡니다.
+
+## 줄 길이(measure)
+
+`--yorha-measure`는 `40em`(한글 약 40자)입니다. `.yorha-prose`가 `max-width: var(--yorha-measure)`로 줄 길이를 제한하고 문단 사이는 `--yorha-paragraph-gap`(1em)을 둡니다. 긴 줄은 눈이 다음 줄을 찾기 어려워지므로 본문 컨테이너에 이 토큰을 씁니다.
+
+## Prose
+
+`@yorha/prose`는 본문 서식(제목, 목록, 인용, 인라인 코드, 링크)을 한 번에 줍니다.
+
+```tsx
+import { Prose, ProseTable } from "@/components/prose";
+
+<Prose lang="ko">
+  <h2>점검 결과</h2>
+  <p>…</p>
+  <ProseTable label="점검 항목" caption="유닛별 결과">…</ProseTable>
+</Prose>
+```
+
+- 링크는 밑줄을 유지합니다. 코드는 스크롤 대신 줄바꿈합니다.
+- 일본어는 `line-break: strict`가 적용됩니다.
+- `ProseTable`은 `role="region"`과 `tabIndex=0`을 가진 스크롤 래퍼에 담겨 넓은 표를 키보드로 스크롤할 수 있고, 숫자 열은 `yorha-tabular`로 맞춥니다.
+- 한 줄 서식은 `@yorha/text`(`size`, `weight`, `tone`, `tabular`, `truncate`, `lineClamp`)를 씁니다. 잘린 텍스트도 DOM에 남고 `title`이 기본으로 붙습니다.
+
+## 텍스트 간격 테스트
+
+WCAG 1.4.12는 사용자가 줄 높이 1.5, 글자 간격 0.12em, 단어 간격 0.16em, 문단 간격 2em으로 바꿔도 내용이 잘리지 않을 것을 요구합니다.
+
+```sh
+pnpm test:text-spacing
+```
+
+대표 스토리 20개에 이 간격을 `!important`로 주입하고, `overflow`가 hidden/clip인 요소의 내용이 상자를 넘쳐 잘리는지 검사합니다. 잘린 텍스트에 `title`이 있거나 `.sr-only` 대체 텍스트가 있으면 허용합니다. 한계: 문단 간격은 `p`, `li`, `dd`, `dt`, `blockquote`에만 적용하고 라이트 테마만 확인합니다. 새 컴포넌트에 `overflow-hidden`이나 고정 높이를 쓰면 대표 스토리에 추가하세요.
+
+</main>

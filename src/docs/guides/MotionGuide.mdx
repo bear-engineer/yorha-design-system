@@ -1,0 +1,54 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="가이드/모션 사양" />
+
+<main lang="ko">
+
+# 모션 사양 가이드
+
+토큰·유틸리티·모드 값의 정본은 [파운데이션/Motion](?path=/docs/파운데이션-motion--docs)입니다. 이 가이드는 그 표를 컴포넌트에 적용할 때의 규칙만 정리합니다. 표에 없는 유틸리티나 토큰은 만들지 않습니다.
+
+## 요소마다 유틸리티 하나
+
+열림/닫힘 유틸리티(`yorha-pop`, `yorha-panel`, `yorha-fade`, `yorha-slide-*`, `yorha-collapse`)와 `yorha-press`는 각각 요소의 `transition` 속성 전체를 정합니다. 그래서 한 요소에는 이 중 하나만 붙입니다. 같은 요소에 `transition-*`, `duration-*`, `ease-*` 클래스를 더하지 않습니다. 더하면 유틸리티가 정한 모드별 지속 시간이 덮여 `reduced`와 `off`에서도 움직입니다.
+
+```tsx
+// 좋음: 요소 하나, 유틸리티 하나
+<Popover.Popup className="yorha-pop" />
+<Dialog.Backdrop className="yorha-fade" />
+<Dialog.Popup className="yorha-panel" />
+
+// 나쁨: 같은 요소에 유틸리티와 transition 클래스를 함께 씀
+<Dialog.Popup className="yorha-panel transition-[opacity] duration-300" />
+```
+
+백드롭과 팝업처럼 서로 다른 요소는 각자 하나씩 가집니다. 열림/닫힘 뒤에 `yorha-press`가 필요한 컨트롤(예: 팝업 안의 버튼)도 요소가 다르면 따로 붙일 수 있습니다.
+
+유틸리티가 없는 전환(탭 표시선, 라우트 전환, 공유 요소)만 토큰을 직접 씁니다. 숫자 지속 시간, `cubic-bezier(...)`, `transition-all`은 `pnpm registry:lint`의 `motion` 규칙이 막습니다.
+
+## 감소·끔 동작
+
+앱은 `data-motion`(`full`, `reduced`, `off`)으로 모드를 정합니다. 프로바이더가 없어도 OS의 "동작 줄이기"가 켜져 있으면 `reduced`와 같습니다.
+
+<table>
+  <thead><tr><th scope="col">모드</th><th scope="col">보이는 동작</th><th scope="col">지속 시간</th></tr></thead>
+  <tbody>
+    <tr><td><code>full</code></td><td>크기·위치·높이 변화와 불투명도</td><td>토큰 값 그대로</td></tr>
+    <tr><td><code>reduced</code></td><td>불투명도 페이드만. 이동·배율은 바로 최종 상태</td><td>120ms 이하(<code>--motion-reduced-fade</code>)</td></tr>
+    <tr><td><code>off</code></td><td>전환 없음. 최종 상태가 바로 나타남</td><td>0</td></tr>
+  </tbody>
+</table>
+
+- 지속 시간 토큰은 `reduced`와 `off`에서 0입니다. 불투명도에만 `max(토큰, var(--motion-reduced-fade))`를 써서 `reduced`에 짧은 페이드를 남깁니다.
+- 이동 거리와 배율에는 `var(--motion-spatial)`(1 또는 0)을 곱합니다.
+- 새 애니메이션 파트에는 `reduced`에서 계산된 `transition-duration`이 120ms 이하이고 `off`에서 0인지 확인하는 play 테스트를 추가합니다. 컴포넌트 스토리의 `ReducedMotion`이 예시입니다.
+- 모션 모드는 Storybook 툴바의 Motion 항목으로 바꿔 확인합니다.
+
+## 그 밖의 규칙
+
+- 나가는 동작은 들어오는 동작보다 빠르게 합니다(`--motion-popover-exit` 등).
+- 열림/닫힘은 Base UI의 `data-starting-style` / `data-ending-style` 전환으로 만듭니다.
+- 깜빡임은 초당 3회 이하로 하고, 5초를 넘는 자동 동작에는 일시정지 수단을 둡니다.
+- 페이지 전환은 [페이지 전환](?path=/docs/가이드-페이지-전환--docs), 목록·보드의 순차 진입은 `yorha-stagger`를 씁니다.
+
+</main>

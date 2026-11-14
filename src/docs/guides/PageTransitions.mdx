@@ -1,0 +1,62 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="가이드/페이지 전환" />
+
+<main lang="ko">
+
+# 페이지 전환
+
+`@yorha/route-transition`은 React 19.3의 `ViewTransition`과 React Router 8로 페이지 전환을 만듭니다. 이동 방향(앞으로·뒤로·교체)에 따라 클래스가 바뀌고, 목록 항목과 상세 화면의 같은 요소는 공유 요소로 이어집니다. `document.startViewTransition`은 직접 호출하지 않고 지원 여부만 확인합니다. 지속 시간과 이징은 [모션 토큰](?path=/docs/파운데이션-motion--docs)에서 옵니다.
+
+## 뒤로 가기 주의 (React 19.3)
+
+> **React 19.3에서는 `popstate`(뒤로·앞으로 가기) 안에서 시작된 업데이트의 뷰 전환을 건너뜁니다.** 그대로 두면 뒤로 가기에서 전환이 사라집니다.
+
+우회 방법은 `route-transition` 모듈이 모듈 수준에서 등록하는 `popstate` 리스너입니다. 이 리스너가 가벼운 전환을 먼저 예약해 React의 건너뜀을 피합니다. 리스너 순서가 중요하므로 **라우터를 만들기 전에 `route-transition`을 import해야 합니다.** 라우터가 먼저 만들어지면 라우터의 `popstate` 리스너가 앞서 실행되어 우회가 듣지 않습니다.
+
+```tsx
+// main.tsx
+import "@/components/route-transition"; // 1. 먼저 import (부수 효과로 리스너 등록)
+import { createBrowserRouter, RouterProvider } from "react-router"; // 2. 그다음 라우터
+import { routes } from "./routes";
+
+const router = createBrowserRouter(routes); // 3. 이 시점 이후에 만든다
+
+createRoot(document.getElementById("root")!).render(<RouterProvider router={router} />);
+```
+
+이름 있는 export(`RouteTransition` 등)를 같은 파일에서 쓰면 import 순서는 자연히 만족되지만, 라우터를 만드는 모듈보다 앞에서 평가되는지 확인하세요. 이 규칙은 E2E(`e2e/transitions.spec.ts`)가 지킵니다.
+
+## 사용
+
+레이아웃 라우트에서 `<Outlet />` 대신 `RouteTransition`을 렌더합니다. `RouterProvider`는 이동을 React 전환 안에서 실행하므로 따로 감쌀 필요가 없습니다.
+
+```tsx
+import { RouteTransition, SharedElement } from "@/components/route-transition";
+
+export default function Layout() {
+  return <RouteTransition />;
+}
+
+// 목록의 링크 글자와 상세의 제목에 같은 name을 줍니다.
+<SharedElement name={`unit-${id}`}><h2>{unit.name}</h2></SharedElement>
+```
+
+<table>
+  <thead><tr><th scope="col">이동</th><th scope="col">클래스</th><th scope="col">비고</th></tr></thead>
+  <tbody>
+    <tr><td>링크·<code>navigate()</code></td><td><code>yorha-route-forward</code></td><td>새 페이지가 앞에서 들어옴</td></tr>
+    <tr><td>뒤로 가기</td><td><code>yorha-route-back</code></td><td>위의 import 순서 필요</td></tr>
+    <tr><td><code>replace</code></td><td><code>yorha-route-replace</code></td><td>방향 없이 교차 페이드</td></tr>
+  </tbody>
+</table>
+
+- `useRouteTransition()`은 `{ direction, mode }`를 돌려줍니다. `mode`는 `on`, `reduced`(120ms 교차 페이드), `off`, `unsupported`(`document.startViewTransition` 없음, 전환 없이 즉시 이동)입니다.
+- `SharedElement`의 `name`은 화면에서 유일해야 합니다. 중복 이름은 개발 모드에서 경고합니다.
+- 탭·세그먼트는 `segmentDirection`, `changeSegment`, `SegmentTransition`으로 순서에 따른 방향을 얻습니다.
+- React Router의 `viewTransition` 속성(Link, `navigate` 옵션)은 쓰지 않습니다.
+- Firefox·Safari의 뷰 전환 동작은 자동 검증 대상이 아닙니다. 지원하지 않는 브라우저는 `unsupported`로 즉시 이동합니다.
+
+모션 모드에 따른 동작은 [모션 사양](?path=/docs/가이드-모션-사양--docs)을 따릅니다. 동작 예제는 [RouteTransition 스토리](?path=/docs/라우터-routetransition--docs)에서 확인하세요.
+
+</main>
