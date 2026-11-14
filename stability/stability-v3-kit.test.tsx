@@ -113,7 +113,7 @@ describe("C2-303 one field fill, C2-302 one field type size", () => {
 });
 
 describe("C2-304 button type ramp", () => {
-  it("font-size strictly increases sm < md < lg by at least 2px; sm is not under 15px", async () => {
+  it("font-size is base-2 / base / base+2 (one 2px step per size, md = body size)", async () => {
     const host = await render(
       createElement("div", null,
         createElement(Button, { size: "sm" }, "가"),
@@ -124,7 +124,12 @@ describe("C2-304 button type ramp", () => {
     const [sm, md, lg] = [...host.querySelectorAll("button")].map((b) => parseFloat(css(b).fontSize));
     expect(md! - sm!).toBeGreaterThanOrEqual(2);
     expect(lg! - md!).toBeGreaterThanOrEqual(2);
-    expect(sm).toBeGreaterThanOrEqual(15);
+    const probe = document.createElement("div");
+    probe.style.fontSize = "var(--yorha-text-base)";
+    host.append(probe);
+    const base = parseFloat(css(probe).fontSize);
+    probe.remove();
+    expect([sm, md, lg]).toEqual([base - 2, base, base + 2]);
   });
 });
 

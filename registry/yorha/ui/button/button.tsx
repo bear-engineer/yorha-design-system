@@ -54,7 +54,7 @@ const TYPE: Record<ButtonSize, string> = {
  * Heights come from the density-aware control scale (never from padding + line height); content is centred.
  * Migration (B8): the busy indicator is a 2px bar on the bottom inner edge (all sizes and variants), not the 8px square;
  * a loading button neither wipes nor scales. Tests that looked for the square use `[data-slot=button-busy]`.
- * Migration (C2-304): the label size ramp is sm 15 / md 17 / lg 19px at the default density (was 14 / 17 / 18): one 2px step per size.
+ * Migration (C2-304): the label size ramp is base-2 / base / base+2 (14/16/18, or 15/17/19 where --yorha-text-base is 17px); was a fixed 14 / base / 18, which gave md and lg nearly the same size at 17px.
  */
 export const controlSize: Record<ButtonSize, string> = {
   sm: `h-control-sm min-w-control-sm px-pad-sm ${TYPE.sm}`,
