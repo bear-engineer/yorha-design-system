@@ -64,6 +64,11 @@
     "registry/yorha/ui/navigation-menu/registry.json",
     "registry/yorha/ui/menubar/registry.json",
     "registry/yorha/ui/toolbar/registry.json",
-    "registry/yorha/layout/bento/registry.json"
+    "registry/yorha/layout/bento/registry.json",
+    "registry/yorha/ui/input/registry.json",
+    "registry/yorha/ui/otp-field/registry.json",
+    "registry/yorha/ui/checkbox-group/registry.json",
+    "registry/yorha/ui/form/registry.json",
+    "registry/yorha/ui/fieldset/registry.json"
   ]
 }
