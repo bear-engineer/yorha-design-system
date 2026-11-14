@@ -206,6 +206,14 @@ describe("token generator", () => {
       }
     });
 
+    it("yorha-pop/panel/fade honour Base UI data-instant (keyboard open, Esc, focus tooltip) after the exit rule", () => {
+      for (const name of ["yorha-pop", "yorha-panel", "yorha-fade"]) {
+        const block = utilityBlock(name);
+        expect(block, name).toMatch(/&\[data-instant\] \{\n\s+transition-duration: 0s;/);
+        expect(block.indexOf("&[data-instant]"), name).toBeGreaterThan(block.lastIndexOf("&[data-ending-style] {"));
+      }
+    });
+
     it("yorha-pop scales and fades from --transform-origin, exit on the faster token", () => {
       const pop = utilityBlock("yorha-pop");
       expect(pop).toContain("transform-origin: var(--transform-origin");

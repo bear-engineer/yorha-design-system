@@ -534,6 +534,9 @@
           "&[data-ending-style]": {
             "transition-duration": "max(var(--motion-popover-exit), var(--motion-reduced-fade))",
             "transition-timing-function": "var(--yorha-ease-in)"
+          },
+          "&[data-instant]": {
+            "transition-duration": "0s"
           }
         },
         "@utility yorha-panel": {
@@ -547,6 +550,9 @@
           "&[data-ending-style]": {
             "transition-duration": "max(var(--motion-panel-exit), var(--motion-reduced-fade))",
             "transition-timing-function": "var(--yorha-ease-in)"
+          },
+          "&[data-instant]": {
+            "transition-duration": "0s"
           }
         },
         "@utility yorha-fade": {
@@ -559,6 +565,9 @@
           "&[data-ending-style]": {
             "transition-duration": "max(var(--motion-panel-exit), var(--motion-reduced-fade))",
             "transition-timing-function": "var(--yorha-ease-in)"
+          },
+          "&[data-instant]": {
+            "transition-duration": "0s"
           }
         },
         "@utility yorha-slide-up": {

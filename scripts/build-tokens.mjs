@@ -168,6 +168,8 @@ const scaleTo = (token) => `calc(1 - (1 - var(--motion-scale-${token})) * var(--
 /** Base UI sets these while a component mounts / unmounts; transitions between them can be cancelled midway. */
 const HIDDEN = "&[data-starting-style], &[data-ending-style]";
 const EXIT = "&[data-ending-style]";
+// Base UI marks keyboard opens, Esc dismissals and focus tooltips with data-instant: no animation for those.
+const INSTANT = { "&[data-instant]": { "transition-duration": "0s" } };
 
 /** Edge-attached surface. `enter` is the direction it moves while opening: [x, y] in units of its own size. */
 function slide([x, y]) {
@@ -193,6 +195,7 @@ const MOTION_CSS = {
     "transition-timing-function": "var(--yorha-ease-decelerate)",
     [HIDDEN]: { opacity: "0", scale: scaleTo("pop") },
     [EXIT]: { "transition-duration": fade("popover-exit"), "transition-timing-function": "var(--yorha-ease-in)" },
+    ...INSTANT,
   },
   "@utility yorha-panel": {
     "transition-property": "opacity, translate",
@@ -200,6 +203,7 @@ const MOTION_CSS = {
     "transition-timing-function": "var(--yorha-ease-out)",
     [HIDDEN]: { opacity: "0", translate: `0 ${spatial("var(--motion-shift)")}` },
     [EXIT]: { "transition-duration": fade("panel-exit"), "transition-timing-function": "var(--yorha-ease-in)" },
+    ...INSTANT,
   },
   "@utility yorha-fade": {
     "transition-property": "opacity",
@@ -207,6 +211,7 @@ const MOTION_CSS = {
     "transition-timing-function": "var(--yorha-ease-out)",
     [HIDDEN]: { opacity: "0" },
     [EXIT]: { "transition-duration": fade("panel-exit"), "transition-timing-function": "var(--yorha-ease-in)" },
+    ...INSTANT,
   },
   "@utility yorha-slide-up": slide([0, -1]),
   "@utility yorha-slide-down": slide([0, 1]),

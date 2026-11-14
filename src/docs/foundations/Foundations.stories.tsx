@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, within } from "storybook/test";
+import { expect, screen, userEvent, waitFor, within } from "storybook/test";
+import { Menu, MenuContent, MenuItem, MenuTrigger } from "../../../registry/yorha/ui/menu/menu";
 import { tokens } from "./tokens.generated";
 
 const DENSITIES = ["compact", "default", "comfortable"] as const;
@@ -291,4 +292,44 @@ export const Authentic: Story = {
   render: () => <ThemeSurfaces themes={["authentic"]} />,
   // The authentic palette fails WCAG AA by design (see the Contrast page), so axe violations are reported, not enforced.
   parameters: { a11y: { test: "todo" } },
+};
+
+/** Open/close transitions (opacity, scale, translate) still running on the menu popup; item highlight fills do not count. */
+const popupTransitions = (menu: Element) =>
+  document.getAnimations().filter((animation) => {
+    const target = animation instanceof CSSTransition && animation.effect instanceof KeyframeEffect ? animation.effect.target : null;
+    return target instanceof Element && (target === menu || target.contains(menu)) && /^(opacity|scale|translate)$/.test((animation as CSSTransition).transitionProperty);
+  });
+
+const InstantMenuDemo = () => (
+  <Menu>
+    <MenuTrigger>열기</MenuTrigger>
+    <MenuContent>
+      <MenuItem>항목</MenuItem>
+    </MenuContent>
+  </Menu>
+);
+
+/** yorha-pop honours Base UI data-instant: a keyboard-opened menu has no running transition; a pointer-opened one keeps its duration. */
+export const InstantKeyboardOpen: Story = {
+  render: () => <InstantMenuDemo />,
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getByRole("button", { name: "열기" });
+    trigger.focus();
+    await userEvent.keyboard("{Enter}");
+    const menu = await screen.findByRole("menu");
+    await expect(menu.closest("[data-instant]") ?? menu).toHaveAttribute("data-instant");
+    await expect(getComputedStyle(menu).transitionDuration).toBe("0s");
+    await expect(popupTransitions(menu)).toHaveLength(0);
+  },
+};
+
+export const PointerOpenAnimates: Story = {
+  render: () => <InstantMenuDemo />,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "열기" }));
+    const menu = await screen.findByRole("menu");
+    await waitFor(() => expect(menu).not.toHaveAttribute("data-instant"));
+    await waitFor(() => expect(parseFloat(getComputedStyle(menu).transitionDuration)).toBeGreaterThan(0));
+  },
 };
