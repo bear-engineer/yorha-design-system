@@ -88,9 +88,15 @@ export const PanelTransition: Story = {
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const detail = canvasElement.querySelector<HTMLElement>("[data-slot=system-menu-detail]")!;
-    await waitFor(() => expect(getComputedStyle(detail).transitionDuration).toBe("0.4s"));
+    // M08: a row change is a high-frequency keyboard action: the detail swaps with no animation at all.
+    await expect(detail).not.toHaveAttribute("data-phase");
+    await expect(getComputedStyle(detail).transitionDuration).toBe("0s");
     await userEvent.click(c.getByRole("option", { name: /강화 칩/ }));
     await waitFor(() => expect(c.getByRole("region", { name: "강화 칩" })).toBeVisible());
+    await expect(detail).not.toHaveAttribute("data-phase");
+    await expect(detail.getAnimations({ subtree: true }).filter((a) => !(a instanceof CSSTransition && a.transitionProperty === "background-size"))).toHaveLength(0);
+    await expect(parseFloat(getComputedStyle(detail).opacity)).toBe(1);
+    await expect(getComputedStyle(detail).translate).toBe("none");
   },
 };
 
