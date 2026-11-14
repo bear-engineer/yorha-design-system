@@ -1,0 +1,26 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "date-picker",
+      "type": "registry:ui",
+      "title": "Date picker",
+      "description": "Date input with a calendar popup: locale-formatted text field (parsed on blur, invalid text shows a Field error), trigger button opening the Calendar in the Popover, single and range variants, Field label, description and error, and focus return to the trigger on close.",
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base",
+        "@yorha/popover",
+        "@yorha/field",
+        "@yorha/calendar"
+      ],
+      "files": [
+        {
+          "path": "date-picker.tsx",
+          "type": "registry:ui",
+          "target": "@ui/date-picker.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Text input in the locale format (default ko-KR, e.g. 2026. 11. 14.) plus a trigger button that opens the Calendar in the yorha Popover. Typed text is parsed on blur or Enter; text that is not a date, or a day that is disabled or outside minDate/maxDate, marks the Field invalid with an error message (invalidMessage, outOfRangeMessage). Label, description and error come from the yorha Field. Escape, picking a day (single) or the range end closes the popup and returns focus to the trigger. DateRangePicker accepts typed ranges separated by ~, – or ' - ' in either order. Pass name to submit ISO dates through hidden inputs (name, or name-from and name-to). Set lang on the wrapper for CJK leading."
+    }
+  ]
+}
