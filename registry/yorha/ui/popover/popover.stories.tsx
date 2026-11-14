@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import {
   Popover,
@@ -265,5 +266,18 @@ export const ReducedMotion: Story = {
         await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull(), { timeout: 400 });
       });
     }
+  },
+};
+
+/** States: closed trigger and open popover with close button. Targets >= 24px at both densities. */
+export const States: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    await expectTargetSize(canvasElement);
+    await userEvent.click(trigger());
+    const d = await dialog();
+    await expectTargetSize(d);
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body().queryByRole("dialog")).toBeNull());
   },
 };

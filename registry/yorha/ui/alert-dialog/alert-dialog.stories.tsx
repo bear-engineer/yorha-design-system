@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import {
   AlertDialog,
@@ -239,4 +240,18 @@ export const Themes: Story = {
 export const Authentic: Story = {
   parameters: { a11y: { test: "todo" } },
   render: () => <Preview theme="authentic" />,
+};
+
+/** States: closed trigger and open popup with cancel/destructive actions. Targets >= 24px at both densities. */
+export const States: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    await expectTargetSize(canvasElement);
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "기록 삭제" }));
+    const dialog = await screen.findByRole("alertdialog");
+    await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
+    await expectTargetSize(dialog);
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("alertdialog")).toBeNull());
+  },
 };

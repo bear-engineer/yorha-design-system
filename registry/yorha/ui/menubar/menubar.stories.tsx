@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import {
   Menubar,
@@ -236,5 +237,53 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("menubar")).toBeVisible();
+  },
+};
+
+/** States: closed bar, open menu with checkbox/radio rows. Targets >= 24px at both densities. */
+export const States: Story = {
+  play: async ({ canvasElement }) => {
+    await expectTargetSize(canvasElement);
+    await userEvent.click(within(canvasElement).getByRole("menuitem", { name: "보기" }));
+    const menu = await body(canvasElement).findByRole("menu");
+    await expect(within(menu).getByRole("menuitemcheckbox", { name: "격자 표시" })).toHaveAttribute("aria-checked", "true");
+    await expectTargetSize(menu);
+    await userEvent.keyboard("{Escape}");
+    // Wait out the close transition so the a11y scan never sees Base UI's transient focus guards.
+    await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull(), { timeout: 5000 });
+  },
+};
+
+const popupMs = (el: Element) =>
+  getComputedStyle(el)
+    .transitionDuration.split(",")
+    .map((v) => (v.trim().endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000));
+
+/** Menubar popup shares Menu's motion: reduced is an opacity-only fade of at most 120ms with no travel; off is 0. */
+export const PopupMotionMatchesMenu: Story = {
+  play: async ({ canvasElement }) => {
+    const bar = within(canvasElement).getByRole("menubar");
+    for (const mode of ["reduced", "off"] as const) {
+      const restore = setMotion(mode);
+      try {
+        await userEvent.click(within(bar).getByRole("menuitem", { name: "파일" }));
+        const menu = await body(canvasElement).findByRole("menu");
+        if (mode === "reduced") {
+          // Base UI sets an inline `transition: none` for the first frame.
+          await waitFor(() => expect(getComputedStyle(menu).transitionProperty).not.toBe("none"), { timeout: 3000 });
+          const max = Math.max(...popupMs(menu));
+          expect(max).toBeGreaterThan(0);
+          expect(max).toBeLessThanOrEqual(120);
+          expect(getComputedStyle(menu).transitionProperty).toContain("opacity");
+          expect(getComputedStyle(document.documentElement).getPropertyValue("--motion-spatial").trim()).toBe("0");
+        } else {
+          expect(Math.max(...popupMs(menu))).toBe(0);
+        }
+        await userEvent.keyboard("{Escape}");
+        await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull(), { timeout: 600 });
+      } finally {
+        restore();
+      }
+    }
   },
 };

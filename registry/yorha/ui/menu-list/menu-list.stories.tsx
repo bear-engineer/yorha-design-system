@@ -1,5 +1,6 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { YorhaProvider } from "@/components/yorha-provider";
 import { resetSoundEngineForTests } from "@/lib/sound";
@@ -417,5 +418,20 @@ export const RowEasingToken: Story = {
     } finally {
       restore();
     }
+  },
+};
+
+/** States: default, selected (defaultValue), disabled row. Targets >= 24px at both densities. */
+export const States: Story = {
+  render: (args) => (
+    <MenuList {...args}>
+      <Rows disabled="weapons" />
+    </MenuList>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(opt(c, "상태")).toHaveAttribute("aria-selected", "true");
+    await expect(opt(c, "무기")).toHaveAttribute("aria-disabled", "true");
+    await expectTargetSize(canvasElement);
   },
 };

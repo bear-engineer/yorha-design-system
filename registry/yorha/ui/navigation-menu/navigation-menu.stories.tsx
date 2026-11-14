@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Outlet, useLocation } from "react-router";
 import { withRouter } from "../../../../.storybook/decorators";
@@ -242,5 +243,17 @@ export const Authentic: Story = {
   parameters: { a11y: { test: "todo" }, route: { routes: routeFor(<div data-theme="authentic" className="bg-yorha-panel p-4"><Demo /></div>), initialEntries: ["/units"] } },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("button", { name: "유닛" })).toBeVisible();
+  },
+};
+
+/** States: closed triggers and an open panel with links. Targets >= 24px at both densities. */
+export const States: Story = {
+  play: async ({ canvasElement }) => {
+    await expectTargetSize(canvasElement);
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "기록 보관소" }));
+    const link = await body(canvasElement).findByRole("link", { name: "보관함" });
+    await waitFor(() => expect(link).toBeVisible());
+    await expectTargetSize(link.closest("ul") as HTMLElement);
+    await userEvent.keyboard("{Escape}");
   },
 };

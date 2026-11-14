@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, fireEvent, userEvent, waitFor, within } from "storybook/test";
 import {
   Drawer,
@@ -367,4 +368,18 @@ export const Authentic: Story = {
       <StaticPreview side="bottom" />
     </div>
   ),
+};
+
+/** States: closed trigger and open drawer (focus inside). Targets >= 24px at both densities. */
+export const States: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    await expectTargetSize(canvasElement);
+    await userEvent.click(trigger());
+    const d = await dialog();
+    await waitFor(() => expect(d.contains(document.activeElement)).toBe(true));
+    await expectTargetSize(d);
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body().queryByRole("dialog")).toBeNull());
+  },
 };

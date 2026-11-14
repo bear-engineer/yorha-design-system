@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
 import {
   Menu,
@@ -382,5 +383,34 @@ export const ReducedMotion: Story = {
         await waitFor(() => expect(screen.queryByRole("menu")).toBeNull(), { timeout: 600 });
       });
     }
+  },
+};
+
+/** States: closed trigger, open menu with highlighted, checked, radio and disabled rows. Targets >= 24px at both densities. */
+export const States: Story = {
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getByRole("button", { name: "파일 메뉴" });
+    await expectTargetSize(canvasElement);
+    await userEvent.click(trigger);
+    const menu = await body(canvasElement).findByRole("menu");
+    await expect(within(menu).getByRole("menuitem", { name: "휴지통 비우기" })).toHaveAttribute("aria-disabled", "true");
+    await expect(within(menu).getByRole("menuitemcheckbox", { name: "자동 저장" })).toHaveAttribute("aria-checked", "true");
+    await expectTargetSize(menu);
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull());
+  },
+};
+
+/** Filterable menu: input, clear and rows are all >= 24px. */
+export const StatesFilterable: Story = {
+  render: () => <FilterDemo />,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "명령 검색" }));
+    const menu = await body(canvasElement).findByRole("menu");
+    await userEvent.type(body(canvasElement).getByLabelText("명령 필터"), "삭");
+    await waitFor(() => expect(within(menu).getAllByRole("menuitem")).toHaveLength(1));
+    await expectTargetSize(menu);
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull(), { timeout: 5000 });
   },
 };

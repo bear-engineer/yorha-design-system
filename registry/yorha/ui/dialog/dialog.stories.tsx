@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "@/components/ui/button";
 import { YorhaProvider } from "@/components/yorha-provider";
@@ -255,4 +256,19 @@ export const Themes: Story = {
 export const Authentic: Story = {
   parameters: { a11y: { test: "todo" } },
   render: () => <Preview theme="authentic" />,
+};
+
+/** States: closed trigger, open popup (focus inside, Tab trapped), disabled-free actions. Targets >= 24px at both densities. */
+export const States: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getByRole("button", { name: "유닛 정보 열기" });
+    await expectTargetSize(canvasElement);
+    await userEvent.click(trigger);
+    const dialog = await screen.findByRole("dialog");
+    await waitFor(() => expect(dialog.contains(document.activeElement)).toBe(true));
+    await expectTargetSize(dialog);
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  },
 };

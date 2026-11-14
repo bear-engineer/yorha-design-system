@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import {
   Tooltip,
@@ -205,5 +206,19 @@ export const ReducedMotion: Story = {
         await waitFor(() => expect(screen.queryByRole("tooltip")).toBeNull(), { timeout: 600 });
       });
     }
+  },
+};
+
+/** States: default, focus-visible (opens tooltip), disabled-free. The trigger is the only target. >= 24px at both densities. */
+export const States: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    await expectTargetSize(canvasElement);
+    await userEvent.tab();
+    await expect(trigger()).toHaveFocus();
+    const t = await tooltip();
+    await expect(t).toBeVisible();
+    await expectTargetSize(canvasElement);
+    await userEvent.keyboard("{Escape}");
   },
 };

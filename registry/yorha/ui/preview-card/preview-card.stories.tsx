@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import {
   PreviewCard,
@@ -154,4 +155,16 @@ export const Authentic: Story = {
       <StaticPreview />
     </div>
   ),
+};
+
+/** States: default link and open card via keyboard focus. Trigger link is in a paragraph, so inline exemption (SC 2.5.8) applies. */
+export const States: Story = {
+  render: () => <Demo />,
+  play: async () => {
+    await userEvent.tab();
+    await expect(link()).toHaveFocus();
+    await openCard();
+    // Inline link inside prose is exempt (measureTargets skips inline <a> in <p>); the card has no other targets.
+    await expect(card()!.querySelectorAll("a,button").length).toBe(0);
+  },
 };

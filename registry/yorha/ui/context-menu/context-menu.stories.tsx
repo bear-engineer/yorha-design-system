@@ -1,5 +1,6 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import {
   ContextMenu,
@@ -222,4 +223,17 @@ export const Authentic: Story = {
       <StaticPreview />
     </div>
   ),
+};
+
+/** States: trigger area, open menu with disabled, checked and radio rows. Targets >= 24px at both densities. */
+export const States: Story = {
+  play: async ({ canvasElement }) => {
+    await userEvent.pointer({ keys: "[MouseRight]", target: area() });
+    const m = await menu();
+    await expect(within(m).getByRole("menuitem", { name: "삭제" })).toHaveAttribute("aria-disabled", "true");
+    await expectTargetSize(m);
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body().queryByRole("menu")).toBeNull());
+    void canvasElement;
+  },
 };
