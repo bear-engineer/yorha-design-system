@@ -403,6 +403,8 @@ describe("drawer (FOVL-06, 07, 08, 09)", () => {
 describe("toast (FOVL-01, 02, 16)", () => {
   async function toasts(types: ("alert" | "success" | "info")[]) {
     const manager = createToastManager();
+    // the pointer of a previous test may still rest over the viewport corner, which would open the stack at once
+    await userEvent.hover(document.body);
     const c = await render(<ToastProvider toastManager={manager} timeout={0} />);
     for (const type of types) manager.add({ title: "알림 제목", description: "설명 문장이다.", type });
     await until(() => document.querySelectorAll('[data-slot="toast"]').length === types.length);
