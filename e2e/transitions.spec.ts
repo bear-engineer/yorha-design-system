@@ -109,8 +109,8 @@ test("route durations come from the motion tokens", async ({ page }) => {
   await startRecording(page);
   await page.getByRole("link", { name: "Unit 2B" }).click();
   const seen = await stopRecording(page);
-  expect(seen.find((s) => s.name === "yorha-route-in-forward")?.duration).toBe(320);
-  expect(seen.find((s) => s.name === "yorha-route-out-forward")?.duration).toBe(200);
+  expect(seen.find((s) => s.name === "yorha-route-in-forward")?.duration).toBe(200);
+  expect(seen.find((s) => s.name === "yorha-route-out-forward")?.duration).toBe(120);
 });
 
 test("reduced motion crossfades in 120ms without movement", async ({ browser }) => {

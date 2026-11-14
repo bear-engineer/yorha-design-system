@@ -464,14 +464,14 @@
       },
       "route": {
         "$value": {
-          "value": 320,
+          "value": 200,
           "unit": "ms"
         },
         "$description": "Route (page) transition, entering view."
       },
       "route-exit": {
         "$value": {
-          "value": 200,
+          "value": 120,
           "unit": "ms"
         },
         "$description": "Route transition, leaving view (faster than enter)."

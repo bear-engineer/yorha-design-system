@@ -1192,9 +1192,9 @@ export const tokens = {
         "cssVar": "--yorha-motion-route",
         "alias": "--motion-route",
         "utility": "",
-        "value": "320ms",
+        "value": "200ms",
         "description": "Route (page) transition, entering view.",
-        "full": "320ms",
+        "full": "200ms",
         "reduced": "0ms",
         "off": "0ms"
       },
@@ -1203,9 +1203,9 @@ export const tokens = {
         "cssVar": "--yorha-motion-route-exit",
         "alias": "--motion-route-exit",
         "utility": "",
-        "value": "200ms",
+        "value": "120ms",
         "description": "Route transition, leaving view (faster than enter).",
-        "full": "200ms",
+        "full": "120ms",
         "reduced": "0ms",
         "off": "0ms"
       },
