@@ -1,0 +1,25 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "file-input",
+      "type": "registry:ui",
+      "title": "File input",
+      "description": "File selector with a button and a drop zone: multiple, accept, maxSize, a removable file list, sizes formatted with Intl, keyboard operable, drag-over state, and live-region announcements.",
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils",
+        "@yorha/field",
+        "@yorha/button"
+      ],
+      "files": [
+        {
+          "path": "file-input.tsx",
+          "type": "registry:ui",
+          "target": "@ui/file-input.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. The native input type=file is display:none and opened by the button, so Enter and Space work. Dropped or chosen files that do not match accept or exceed maxSize are rejected with a role=alert message. Removing a file keeps the native input's FileList in sync through DataTransfer."
+    }
+  ]
+}

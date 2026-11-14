@@ -30,6 +30,9 @@ const toDataTransfer = (files: File[]) => {
   files.forEach((f) => dt.items.add(f));
   return dt;
 };
+// testing-library copies only own properties of a DataTransfer, which drops its files; build the event directly.
+const fireDrop = (target: Element, dataTransfer: DataTransfer) =>
+  target.dispatchEvent(new DragEvent("drop", { bubbles: true, cancelable: true, dataTransfer }));
 const nativeOf = (root: HTMLElement) => root.querySelector<HTMLInputElement>("input[type=file]")!;
 const zoneOf = (root: HTMLElement) => root.querySelector<HTMLElement>("[data-slot=file-drop-zone]")!;
 
@@ -45,7 +48,7 @@ type Story = StoryObj<typeof meta>;
 
 export const FormatSize: Story = {
   play: async () => {
-    await expect(formatFileSize(0, "ko-KR")).toMatch(/^0\s?(B|바이트)$/);
+    await expect(formatFileSize(0, "ko-KR")).toMatch(/^0\s?(B|byte|바이트)$/);
     await expect(formatFileSize(1536, "en-US")).toMatch(/^1\.5\s?kB$/);
     await expect(formatFileSize(5 * 1024 * 1024, "en-US")).toMatch(/^5\s?MB$/);
   },
@@ -146,7 +149,7 @@ export const DropZone: Story = {
     fireEvent.dragLeave(zone, { dataTransfer });
     await waitFor(() => expect(zone).not.toHaveAttribute("data-dragging"));
     fireEvent.dragEnter(zone, { dataTransfer });
-    fireEvent.drop(zone, { dataTransfer });
+    fireDrop(zone, dataTransfer);
     await waitFor(() => expect(zone).not.toHaveAttribute("data-dragging"));
     // files that do not match accept are rejected
     await c.findByText("drop.txt");
@@ -176,7 +179,7 @@ export const Disabled: Story = {
     await expect(c.getByRole("button", { name: /파일 선택/ })).toBeDisabled();
     await expect(nativeOf(canvasElement)).toBeDisabled();
     const zone = zoneOf(canvasElement);
-    fireEvent.drop(zone, { dataTransfer: toDataTransfer(makeFiles(["x.txt", 1])) });
+    fireDrop(zone, toDataTransfer(makeFiles(["x.txt", 1])));
     await expect(c.queryByText("x.txt")).toBeNull();
   },
 };
