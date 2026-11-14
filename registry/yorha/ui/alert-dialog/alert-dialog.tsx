@@ -51,7 +51,7 @@ export function AlertDialogContent({
       <BaseAlertDialog.Backdrop className={dialogStyles.backdrop} />
       <div className={dialogStyles.viewport}>
         <BaseAlertDialog.Popup
-          className={cnState(dialogStyles.popup, "border-yorha-alert-ui", className)}
+          className={cnState(cn(dialogStyles.popup, "border-yorha-alert-ui"), className)}
           {...props}
         >
           {children}
@@ -74,7 +74,7 @@ export function AlertDialogDescription({
 }: ComponentProps<typeof BaseAlertDialog.Description>) {
   return (
     <BaseAlertDialog.Description
-      className={cnState(dialogStyles.body, dialogStyles.description, className)}
+      className={cnState(cn(dialogStyles.body, dialogStyles.description), className)}
       {...props}
     />
   );
