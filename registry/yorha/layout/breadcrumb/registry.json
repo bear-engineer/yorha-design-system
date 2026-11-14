@@ -1,4 +1,25 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "breadcrumb",
+      "type": "registry:component",
+      "title": "Breadcrumb",
+      "description": "Ordered location trail in a nav landmark. Links use react-router Link; the last item is the current page (aria-current=page, not a link); separators are aria-hidden.",
+      "dependencies": [
+        "react-router@^8.5.1"
+      ],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "breadcrumb.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Use inside a react-router data or declarative router."
+    }
+  ]
 }

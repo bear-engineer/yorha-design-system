@@ -1,4 +1,25 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "page-header",
+      "type": "registry:component",
+      "title": "PageHeader",
+      "description": "Page title block: eyebrow section code, a single Heading level 1, description, an actions slot and a decorative ornament band over a dark header-strip treatment.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base",
+        "@yorha/heading",
+        "@yorha/ornament"
+      ],
+      "files": [
+        {
+          "path": "page-header.tsx",
+          "type": "registry:component"
+        }
+      ],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+    }
+  ]
 }
