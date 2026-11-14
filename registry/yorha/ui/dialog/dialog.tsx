@@ -1,5 +1,5 @@
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
-import type { ComponentProps, ReactNode } from "react";
+import { useCallback, useState, type ComponentProps, type ReactNode, type Ref } from "react";
 import { CrossIcon } from "@/components/ui/icons";
 import { cn, cnState } from "@/lib/utils";
 import { useSound } from "@/lib/sound";
@@ -37,6 +37,28 @@ export const dialogStyles = {
     "hover:bg-[color-mix(in_oklab,var(--yorha-on-ink)_16%,transparent)] active:bg-[color-mix(in_oklab,var(--yorha-on-ink)_28%,transparent)] " +
     "focus-visible:yorha-focus-inset",
 };
+
+/**
+ * Keyboard access for a scrolling region: returns a ref callback and `tabIndex` (0 only while the content overflows,
+ * so a short body is not an extra tab stop). Shared by DialogBody and AlertDialogDescription.
+ */
+export function useScrollableFocus<T extends HTMLElement>(forwarded?: Ref<T>) {
+  const [scrollable, setScrollable] = useState(false);
+  const ref = useCallback(
+    (node: T | null) => {
+      if (typeof forwarded === "function") forwarded(node);
+      else if (forwarded) forwarded.current = node;
+      if (!node) return;
+      const check = () => setScrollable(node.scrollHeight > node.clientHeight + 1);
+      check();
+      const ro = new ResizeObserver(check);
+      ro.observe(node);
+      return () => ro.disconnect();
+    },
+    [forwarded],
+  );
+  return { ref, tabIndex: scrollable ? 0 : undefined } as const;
+}
 
 type RootProps = ComponentProps<typeof BaseDialog.Root>;
 export interface DialogProps extends RootProps {
@@ -110,8 +132,9 @@ export function DialogDescription({
   );
 }
 
-export function DialogBody({ className, ...props }: ComponentProps<"div">) {
-  return <div data-slot="dialog-body" className={cn(dialogStyles.body, className)} {...props} />;
+export function DialogBody({ className, ref, ...props }: ComponentProps<"div">) {
+  const scroll = useScrollableFocus<HTMLDivElement>(ref);
+  return <div data-slot="dialog-body" className={cn(dialogStyles.body, "focus-visible:yorha-focus-inset", className)} {...scroll} {...props} />;
 }
 
 export function DialogFooter({ className, ...props }: ComponentProps<"div">) {

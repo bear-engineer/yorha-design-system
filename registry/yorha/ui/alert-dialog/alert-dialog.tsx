@@ -1,7 +1,7 @@
 import { AlertDialog as BaseAlertDialog } from "@base-ui/react/alert-dialog";
-import type { ComponentProps } from "react";
+import type { ComponentProps, Ref } from "react";
 import { buttonVariants, type ButtonVariant } from "@/components/ui/button";
-import { dialogStyles } from "@/components/ui/dialog";
+import { dialogStyles, useScrollableFocus } from "@/components/ui/dialog";
 import { cn, cnState } from "@/lib/utils";
 import { useSound } from "@/lib/sound";
 
@@ -94,12 +94,15 @@ export function AlertDialogTitle({
 
 export function AlertDialogDescription({
   className,
+  ref,
   ...props
 }: ComponentProps<typeof BaseAlertDialog.Description>) {
+  const scroll = useScrollableFocus<HTMLParagraphElement>(ref as Ref<HTMLParagraphElement> | undefined);
   return (
     <BaseAlertDialog.Description
       data-slot="alert-dialog-description"
-      className={cnState(cn(dialogStyles.body, dialogStyles.description), className)}
+      className={cnState(cn(dialogStyles.body, dialogStyles.description, "focus-visible:yorha-focus-inset"), className)}
+      {...scroll}
       {...props}
     />
   );
