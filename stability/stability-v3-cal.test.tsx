@@ -5,7 +5,9 @@ import { userEvent } from "vitest/browser";
 import "./mount"; // storybook project annotations + css
 import { frames } from "./mount";
 import { Calendar, type DateRange } from "../registry/yorha/ui/calendar/calendar";
-import { expectGrid, expectPixelSnapped, expectSameHeight } from "../.storybook/geometry";
+import { expectAnchoredBelow, expectGrid, expectPixelSnapped, expectSameHeight, expectWithinViewport } from "../.storybook/geometry";
+import { DatePicker, DateRangePicker } from "../registry/yorha/ui/date-picker/date-picker";
+import { DateInput } from "../registry/yorha/ui/date-input/date-input";
 
 /**
  * yorha v3 calendar family (f-cal): geometry assertions for FCAL-01..21. Rendered without the Storybook decorator.
@@ -259,5 +261,121 @@ describe("calendar header (FCAL-09, 13)", () => {
     expect(rect(prev).height).toBe(controlSm());
     expect(getComputedStyle(q("[data-slot=calendar-header] [aria-live]", c)!).textTransform).toBe("none");
     expect(q("svg", prev)).not.toBeNull();
+  });
+});
+
+const until = async (fn: () => boolean, ms = 3000) => {
+  const end = performance.now() + ms;
+  while (performance.now() < end) {
+    if (fn()) return;
+    await new Promise((r) => setTimeout(r, 30));
+  }
+  throw new Error(`timeout waiting for ${fn.toString().slice(0, 80)}`);
+};
+/** `--yorha-control-md` in px, measured through a real element. */
+function controlMd(): number {
+  const probe = document.createElement("div");
+  probe.style.cssText = "height:var(--yorha-control-md);width:1px;position:absolute";
+  document.body.append(probe);
+  const h = probe.getBoundingClientRect().height;
+  probe.remove();
+  return h;
+}
+
+describe("date picker field and popup (FCAL-04, 05, 06, 07, 19, 20)", () => {
+  it("FCAL-04/20/19: one frame of control-md height; input and trigger are equal, the trigger sits inside the frame, icon is CalendarIcon", async () => {
+    const c = await render(<DatePicker label="출발일" today={TODAY} />);
+    const frame = q("[data-slot=input-group]", c)!;
+    const input = q("input[data-slot=input-group-control]", c)!;
+    const trigger = q("[data-slot=input-group-button]", c)!;
+    expect(rect(frame).height).toBe(controlMd());
+    expectSameHeight(input, trigger);
+    expect(rect(trigger).width).toBe(rect(trigger).height);
+    expect(rect(trigger).right).toBeLessThanOrEqual(rect(frame).right);
+    expect(rect(trigger).top).toBeGreaterThanOrEqual(rect(frame).top);
+    const svg = q("svg", trigger)!;
+    expect(svg.getAttribute("viewBox")).toBe("0 0 16 16");
+    expect(trigger.getAttribute("aria-label")).toBe("달력 열기");
+    expectPixelSnapped(frame, { axes: "xy" });
+  });
+
+  it("FCAL-05: a disabled picker looks disabled (cursor, colour) and keeps its geometry", async () => {
+    const a = await render(<DatePicker label="가" today={TODAY} />);
+    const b = await render(<DatePicker label="나" today={TODAY} disabled />);
+    const on = q("[data-slot=input-group-button]", a)!;
+    const off = q("[data-slot=input-group-button]", b)!;
+    expect(off.hasAttribute("disabled")).toBe(true);
+    expect(getComputedStyle(off).cursor).toBe("not-allowed");
+    expect(getComputedStyle(off).color).not.toBe(getComputedStyle(on).color);
+    expect(rect(off).height).toBe(rect(on).height);
+    expect(rect(q("[data-slot=input-group]", b)!).height).toBe(rect(q("[data-slot=input-group]", a)!).height);
+  });
+
+  it("FCAL-06/07: the popup opens below the field, start-aligned, 8px gap, inside the viewport and content-wide", async () => {
+    const c = await render(<DatePicker label="출발일" today={TODAY} />);
+    await userEvent.click(q("[data-slot=input-group-button]", c)!);
+    await until(() => !!q("[data-slot=popover-content] [data-slot=calendar]"));
+    await frames(8);
+    const popup = q("[data-slot=popover-content]")!;
+    const frame = q("[data-slot=input-group]", c)!;
+    expectAnchoredBelow(popup, frame, { gap: 8, align: "start" });
+    expectWithinViewport(popup, 8);
+    expectGrid(qa("[data-slot=popover-content] tbody td"), { columns: 7, rows: 6 });
+    const cal = rect(q("[data-slot=popover-content] [data-slot=calendar]")!);
+    // popup border box = calendar + the 1px popup border on each side; no frame inside the frame
+    expect(rect(popup).width).toBe(cal.width + 2);
+    expect(q("[data-slot=popover-content] [data-slot=calendar-footer]")).not.toBeNull();
+  });
+});
+
+describe("date range picker (FCAL-21)", () => {
+  it("FCAL-21: two inputs share one frame; under 400px the end date drops to a second row inside the frame", async () => {
+    const wide = await render(<DateRangePicker label="기간" today={TODAY} defaultValue={{ from: new Date(2026, 10, 14), to: new Date(2026, 10, 25) }} />, 520);
+    const start = q<HTMLInputElement>("input[aria-label=시작일]", wide)!;
+    const end = q<HTMLInputElement>("input[aria-label=종료일]", wide)!;
+    expect(start.value).toBe("2026. 11. 14.");
+    expect(end.value).toBe("2026. 11. 25.");
+    expect(rect(start).top).toBe(rect(end).top);
+    const narrow = await render(<DateRangePicker label="기간" today={TODAY} defaultValue={{ from: new Date(2026, 10, 14), to: new Date(2026, 10, 25) }} />, 300);
+    const s2 = q<HTMLInputElement>("input[aria-label=시작일]", narrow)!;
+    const e2 = q<HTMLInputElement>("input[aria-label=종료일]", narrow)!;
+    expect(rect(e2).top).toBeGreaterThan(rect(s2).top);
+    const frame = rect(q("[data-slot=input-group]", narrow)!);
+    expect(rect(e2).bottom).toBeLessThanOrEqual(frame.bottom);
+    for (const i of [s2, e2]) expect(i.scrollWidth).toBeLessThanOrEqual(i.clientWidth);
+  });
+
+  it("FCAL-21: an end before the start is invalid with its own message", async () => {
+    const c = await render(<DateRangePicker label="기간" today={TODAY} defaultValue={{ from: new Date(2026, 10, 14), to: new Date(2026, 10, 25) }} />);
+    const end = q<HTMLInputElement>("input[aria-label=종료일]", c)!;
+    end.focus();
+    await userEvent.fill(end, "2026. 11. 10.");
+    await userEvent.keyboard("{Enter}");
+    await until(() => !!q("[data-slot=field-error], [role=alert]", c));
+    expect(c.textContent).toContain("종료일이 시작일보다 빠릅니다");
+    expect(end.getAttribute("aria-invalid")).toBe("true");
+  });
+});
+
+describe("date input (FCAL-19, 25, 26)", () => {
+  it("FCAL-25/26: the native indicator is hidden for every type; the end button is a frame square with the YoRHa icon", async () => {
+    for (const type of ["date", "datetime-local", "month", "week", "time"] as const) {
+      const c = await render(<DateInput label="값" type={type} today={TODAY} />);
+      const input = q<HTMLInputElement>("input", c)!;
+      expect(getComputedStyle(input, "::-webkit-calendar-picker-indicator").display).toBe("none");
+      const btn = q("[data-slot=input-group-button]", c)!;
+      expect(rect(btn).height).toBe(rect(input).height);
+      expect(rect(q("[data-slot=input-group]", c)!).height).toBe(controlMd());
+      expect(q("svg", btn)!.getAttribute("viewBox")).toBe("0 0 16 16");
+    }
+  });
+
+  it("FCAL-06/19: with picker the kit calendar opens below the field", async () => {
+    const c = await render(<DateInput label="출발일" picker today={TODAY} />);
+    expect(qa("[data-slot=input-group-button]", c)).toHaveLength(1);
+    await userEvent.click(q("[data-slot=input-group-button]", c)!);
+    await until(() => !!q("[data-slot=popover-content] [data-slot=calendar]"));
+    await frames(8);
+    expectAnchoredBelow(q("[data-slot=popover-content]")!, q("[data-slot=input-group]", c)!, { gap: 8, align: "start" });
   });
 });
