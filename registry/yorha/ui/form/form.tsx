@@ -37,7 +37,7 @@ export const FormSubmit = React.forwardRef<HTMLButtonElement, FormSubmitProps>(f
       className={cn(
         "inline-flex h-9 items-center justify-center gap-2 rounded-yorha border border-current bg-yorha-ink px-4",
         "font-yorha-bold text-yorha-base text-yorha-on-ink",
-        "transition-colors duration-(--motion-press) ease-yorha",
+        "transition-[color,background-color,border-color] duration-(--motion-press) ease-yorha",
         "focus-visible:yorha-focus disabled:cursor-not-allowed disabled:opacity-60",
         className,
       )}

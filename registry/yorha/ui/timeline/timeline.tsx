@@ -505,12 +505,14 @@ export interface TimelineProps extends Omit<React.ComponentProps<"ol">, "childre
 
 const STATUS_WORDS: Record<TimelineStatus, string> = { info: "정보", success: "성공", warn: "경고", danger: "위험" };
 
+// Square-edged like the rest of the kit; the shape and fill carry the status without colour:
+// info = solid square, success = hollow square, warn = hollow diamond, danger = solid diamond.
 const dotClass: Record<TimelineStatus | "none", string> = {
-  none: "size-3 rounded-full border-2 border-yorha-border bg-yorha-panel",
-  info: "size-3 rounded-full bg-yorha-ink",
-  success: "size-3 rounded-full border-2 border-yorha-ink bg-yorha-panel",
-  warn: "size-3 rotate-45 bg-yorha-ink",
-  danger: "size-3 bg-yorha-alert-ui",
+  none: "size-3 border-2 border-yorha-border bg-yorha-panel",
+  info: "size-3 bg-yorha-ink",
+  success: "size-3 border-2 border-yorha-ink bg-yorha-panel",
+  warn: "size-2.5 rotate-45 border-2 border-yorha-ink bg-yorha-panel",
+  danger: "size-2.5 rotate-45 bg-yorha-alert-ui",
 };
 
 /** Vertical event list for logs and history: dot, time, title, body. Entry uses yorha-stagger. */

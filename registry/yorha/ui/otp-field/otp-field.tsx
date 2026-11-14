@@ -33,7 +33,7 @@ export const OTPFieldInput = React.forwardRef<HTMLInputElement, OTPFieldInputPro
       className={cn(
         "m-0 size-10 min-w-0 rounded-yorha border border-yorha-border bg-yorha-bg p-0 text-center",
         "font-yorha text-yorha-base text-yorha-fg-strong",
-        "transition-colors duration-(--motion-press) ease-yorha",
+        "transition-[color,background-color,border-color] duration-(--motion-press) ease-yorha",
         "focus-visible:yorha-focus disabled:cursor-not-allowed disabled:opacity-60",
         "data-[invalid]:border-(length:--yorha-border-width-strong) data-[invalid]:border-yorha-alert-ui",
         className,
