@@ -20,7 +20,7 @@
           "target": "@components/breadcrumb.tsx"
         }
       ],
-      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Use inside a react-router data or declarative router."
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Use inside a react-router data or declarative router. Labels clip at 24ch with an ellipsis (v3; they wrapped before), so keep long names short and show the full name elsewhere on the page."
     }
   ]
 }

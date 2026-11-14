@@ -18,7 +18,7 @@
           "target": "@components/container.tsx"
         }
       ],
-      "docs": "Unofficial fan project. Layout primitive for YoRHa-styled screens; spacing follows the density token ([data-density])."
+      "docs": "Unofficial fan project. Layout primitive for YoRHa-styled screens; padding and gaps are fixed on the 4px grid in every density (B1); [data-density] does not scale them. Migration (v3): before v3 spacing followed [data-density]."
     }
   ]
 }

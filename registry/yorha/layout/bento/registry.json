@@ -18,7 +18,7 @@
           "target": "@components/bento.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Each tile holds at most one interactive target: pass href and label for the stretched-link pattern, and do not nest other links or buttons in that tile. Tiles enter with yorha-stagger; the hover lift moves only transform."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Each tile holds at most one interactive target: pass href and label for the stretched-link pattern, and do not nest other links or buttons in that tile. Gaps are fixed at 16px in every density (B1). Tiles enter with yorha-stagger; the hover lift moves only transform."
     }
   ]
 }

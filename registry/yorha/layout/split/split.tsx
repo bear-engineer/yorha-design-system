@@ -8,7 +8,7 @@ export interface SplitProps {
   detail: ReactNode;
   /** Container width at which the panes go side by side; below it they stack. Default md (28rem). */
   breakpoint?: "sm" | "md" | "lg";
-  /** 1px rule between the panes (left of the detail side by side, above it when stacked). Turn off when the detail is already framed. Default true. */
+  /** 1px rule between the panes (left of the detail side by side, above it when stacked). Default true. Migration (v3): new in v3, pre-v3 Split drew no rule; pass false when the detail is already framed (system-menu-layout does). */
   divider?: boolean;
   className?: string;
 }

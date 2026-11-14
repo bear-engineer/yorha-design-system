@@ -20,7 +20,7 @@
           "target": "@components/app-shell.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Put <Sidebar/> in the nav slot and pass <GridBackground/> and <Vignette/> to the decorative slots if wanted."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Put <Sidebar/> in the nav slot and pass <GridBackground/> and <Vignette/> to the decorative slots if wanted. The default story is plain paper: decor appears only in the Authentic story. Migration (v3): the scanline/vignette overlay no longer sits over the default shell; pass grid and vignette explicitly to keep it."
     }
   ]
 }
