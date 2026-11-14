@@ -1,4 +1,18 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "sound",
+      "type": "registry:lib",
+      "title": "sound",
+      "description": "Procedural WebAudio cues (cursor-move, select, confirm, cancel, open, close, error, typing-tick) with one shared lazy AudioContext. Off by default; muted while the window is blurred.",
+      "dependencies": [],
+      "registryDependencies": ["@yorha/yorha-provider"],
+      "files": [
+        { "path": "sound.ts", "type": "registry:lib" },
+        { "path": "use-sound.ts", "type": "registry:hook" }
+      ],
+      "docs": "Unofficial fan project. All sounds are synthesized at runtime with WebAudio oscillators and noise; no audio files are shipped. Enable with <YorhaProvider sound={{ enabled: true }}>. Import with: import { useSound } from \"@/lib/sound\"."
+    }
+  ]
 }
