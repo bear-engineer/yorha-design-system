@@ -24,7 +24,7 @@ function PopoverTrigger({ className, ...props }: TriggerProps) {
 
 type PositionerProps = ComponentProps<typeof PopoverPrimitive.Positioner>;
 type ContentProps = ComponentProps<typeof PopoverPrimitive.Popup> &
-  Pick<PositionerProps, "side" | "align" | "sideOffset" | "alignOffset" | "collisionPadding" | "anchor"> & {
+  Pick<PositionerProps, "side" | "align" | "sideOffset" | "alignOffset" | "collisionPadding" | "anchor" | "collisionAvoidance"> & {
     /** Portal mount node; defaults to document.body. */
     container?: ComponentProps<typeof PopoverPrimitive.Portal>["container"];
     /** Render a PopoverBackdrop (scrim) behind the popup. Use with `modal` on the root. */
@@ -44,6 +44,7 @@ function PopoverContent({
   sideOffset = 8,
   alignOffset,
   collisionPadding = 8,
+  collisionAvoidance,
   anchor,
   container,
   backdrop = false,
@@ -61,6 +62,7 @@ function PopoverContent({
         alignOffset={alignOffset}
         collisionPadding={collisionPadding}
         anchor={anchor}
+        collisionAvoidance={collisionAvoidance}
         className="z-(--yorha-z-popover)"
       >
         <PopoverPrimitive.Popup

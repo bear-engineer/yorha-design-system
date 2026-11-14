@@ -6,6 +6,9 @@ import { CalendarIcon, ClockIcon } from "@/components/ui/icons";
 import { InputGroup, InputGroupButton } from "@/components/ui/input-group";
 import { Popover, PopoverContent } from "@/components/ui/popover";
 
+/** Field popups flip above/below only; never fall back to the side of the field (short viewports). */
+const FIELD_POPUP_COLLISION = { side: "flip", align: "shift", fallbackAxisSide: "none" } as const;
+
 export type DateInputType = "date" | "datetime-local" | "month" | "week" | "time";
 
 const pad = (n: number, w = 2) => String(n).padStart(w, "0");
@@ -141,6 +144,7 @@ export function DateInput({
           {field}
           <PopoverContent
             anchor={frameRef}
+          collisionAvoidance={FIELD_POPUP_COLLISION}
             side="bottom"
             align="start"
             sideOffset={8}

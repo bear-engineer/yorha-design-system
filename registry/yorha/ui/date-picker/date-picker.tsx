@@ -16,6 +16,9 @@ function partsOf(locale: string) {
 }
 
 /** Date as text in the locale's numeric format, e.g. `2026. 11. 14.` for ko-KR. */
+/** Field popups flip above/below only; never fall back to the side of the field (short viewports). */
+const FIELD_POPUP_COLLISION = { side: "flip", align: "shift", fallbackAxisSide: "none" } as const;
+
 export function formatDate(date: Date, locale = "ko-KR"): string {
   return new Intl.DateTimeFormat(locale, { year: "numeric", month: "2-digit", day: "2-digit" }).format(date);
 }
@@ -358,6 +361,7 @@ function PickerImpl(props: PickerImplProps) {
         </InputGroup>
         <PopoverContent
           anchor={frameRef}
+          collisionAvoidance={FIELD_POPUP_COLLISION}
           side="bottom"
           align="start"
           sideOffset={8}
