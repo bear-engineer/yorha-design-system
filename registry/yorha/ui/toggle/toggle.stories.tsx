@@ -150,7 +150,7 @@ export const PressFeedback: Story = {
   args: { children: "토글" },
   play: async ({ canvasElement }) => {
     const t = within(canvasElement).getByRole("button", { name: "토글" });
-    await expect(getComputedStyle(t).transitionProperty).toContain("scale");
+    await expect(getComputedStyle(t).transitionProperty).not.toContain("scale"); // C2-106: pressed never resizes
     await expectReducedMotion(t);
   },
 };

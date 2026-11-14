@@ -209,7 +209,7 @@ export const Authentic: Story = {
 export const PressFeedback: Story = {
   play: async ({ canvasElement }) => {
     const btn = within(canvasElement).getByRole("button", { name: "확인" });
-    await expect(getComputedStyle(btn).transitionProperty).toContain("scale");
+    await expect(getComputedStyle(btn).transitionProperty).not.toContain("scale"); // C2-106: pressed never resizes
     await expectReducedMotion(btn);
   },
 };
