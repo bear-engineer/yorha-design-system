@@ -106,3 +106,41 @@ export const Authentic: Story = {
     </div>
   ),
 };
+
+const withMotion = async (mode: string, run: () => Promise<void>) => {
+  const root = document.documentElement;
+  const prev = root.getAttribute("data-motion");
+  root.setAttribute("data-motion", mode);
+  try {
+    await run();
+  } finally {
+    if (prev === null) root.removeAttribute("data-motion");
+    else root.setAttribute("data-motion", prev);
+  }
+};
+
+/** Indicator uses --motion-tab-indicator; panel reports its direction through data-activation-direction. */
+export const MotionTokens: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const status = c.getByRole("tab", { name: "상태" });
+    const units = c.getByRole("tab", { name: "유닛" });
+    const indicator = canvasElement.querySelector<HTMLElement>('[data-slot="tabs-indicator"]')!;
+    await withMotion("full", async () => {
+      status.focus();
+      await userEvent.keyboard("{ArrowRight}");
+      await waitFor(() => expect(units).toHaveAttribute("aria-selected", "true"));
+      await expect(parseFloat(getComputedStyle(indicator).transitionDuration)).toBeCloseTo(0.24, 2);
+      await waitFor(() => expect(visiblePanel().getAttribute("data-activation-direction")).toBe("right"));
+    });
+    await withMotion("reduced", async () => {
+      await expect(parseFloat(getComputedStyle(indicator).transitionDuration)).toBeLessThanOrEqual(0.12);
+    });
+    await withMotion("off", async () => {
+      await expect(parseFloat(getComputedStyle(indicator).transitionDuration)).toBe(0);
+    });
+    await userEvent.keyboard("{ArrowLeft}");
+    await waitFor(() => expect(status).toHaveAttribute("aria-selected", "true"));
+  },
+};

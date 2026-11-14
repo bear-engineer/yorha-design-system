@@ -400,3 +400,21 @@ export const Authentic: Story = {
     await expect(within(canvasElement).getByRole("listbox")).toBeInTheDocument();
   },
 };
+
+/** Row transitions use the ease-yorha-out token (cubic-bezier(0, 0, 0.2, 1)), not the raw `ease-out` keyword. */
+export const RowEasingToken: Story = {
+  render: Default.render,
+  play: async ({ canvasElement }) => {
+    const restore = setMotion("full");
+    try {
+      const c = within(canvasElement);
+      await waitFor(() => {
+        const timing = getComputedStyle(opt(c, "아이템")).transitionTimingFunction;
+        expect(timing).toContain("0, 0.2, 1");
+        expect(timing).not.toContain("0.58");
+      });
+    } finally {
+      restore();
+    }
+  },
+};

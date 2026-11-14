@@ -117,3 +117,41 @@ export const Authentic: Story = {
     </div>
   ),
 };
+
+const withMotion = async (mode: string, run: () => Promise<void>) => {
+  const root = document.documentElement;
+  const prev = root.getAttribute("data-motion");
+  root.setAttribute("data-motion", mode);
+  try {
+    await run();
+  } finally {
+    if (prev === null) root.removeAttribute("data-motion");
+    else root.setAttribute("data-motion", prev);
+  }
+};
+
+/** Panel height/opacity use the yorha-collapse utility: --motion-collapse in full, ≤120ms reduced, 0 off. */
+export const MotionTokens: Story = {
+  render: () => <Demo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const overview = c.getByRole("button", { name: "개요" });
+    const panelOf = () => document.getElementById(overview.getAttribute("aria-controls")!)!;
+    await withMotion("full", async () => {
+      overview.focus();
+      await userEvent.keyboard("{Enter}");
+      await waitFor(() => expect(overview).toHaveAttribute("aria-expanded", "true"));
+      await expect(parseFloat(getComputedStyle(panelOf()).transitionDuration)).toBeCloseTo(0.24, 2);
+      await expect(getComputedStyle(panelOf()).transitionTimingFunction).toContain("0.32, 0.72, 0, 1");
+    });
+    await withMotion("reduced", async () => {
+      await waitFor(() => expect(parseFloat(getComputedStyle(panelOf()).transitionDuration)).toBeLessThanOrEqual(0.12));
+      await expect(getComputedStyle(panelOf()).transitionProperty).not.toContain("transform");
+    });
+    await withMotion("off", async () => {
+      await waitFor(() => expect(parseFloat(getComputedStyle(panelOf()).transitionDuration)).toBe(0));
+    });
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(overview).toHaveAttribute("aria-expanded", "false"));
+  },
+};

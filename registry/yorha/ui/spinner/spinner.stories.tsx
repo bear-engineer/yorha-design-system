@@ -77,3 +77,22 @@ export const Authentic: Story = {
     </div>
   ),
 };
+
+/** Dots use the emphasized motion-token easing, not the raw `ease-in-out` keyword. */
+export const DotEasingToken: Story = {
+  args: { label: "불러오는 중" },
+  play: async ({ canvasElement }) => {
+    const html = document.documentElement;
+    const previous = html.dataset.motion;
+    try {
+      html.dataset.motion = "full";
+      const dot = canvasElement.querySelector<HTMLElement>("[data-yorha-dot]")!;
+      await waitFor(() => expect(dot.getAnimations().length).toBeGreaterThan(0));
+      const easing = (dot.getAnimations()[0].effect as KeyframeEffect).getTiming().easing;
+      await expect(easing).toMatch(/^cubic-bezier\(/);
+      await expect(easing).not.toBe("ease-in-out");
+    } finally {
+      html.dataset.motion = previous ?? "full";
+    }
+  },
+};
