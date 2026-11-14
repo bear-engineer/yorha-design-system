@@ -46,7 +46,7 @@ function MenubarTrigger({ className, ...props }: ComponentProps<typeof MenuPrimi
         [
           "inline-flex h-control-sm cursor-default select-none items-center px-pad-sm text-yorha-sm tracking-yorha-wide text-yorha-fg",
           "bg-linear-to-r from-yorha-ink to-yorha-ink bg-no-repeat bg-[position:left_center] bg-[length:0%_100%]",
-          "yorha-wipe",
+          "yorha-wipe [--yorha-wipe-exit:0s]",
           "hover:bg-[length:100%_100%] hover:text-yorha-on-ink data-[popup-open]:bg-[length:100%_100%] data-[popup-open]:text-yorha-on-ink",
           "focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-disabled",
         ],

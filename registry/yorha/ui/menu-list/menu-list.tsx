@@ -201,7 +201,7 @@ const ROW = cn(
   "data-[enter=pre]:-translate-x-2 data-[enter=pre]:opacity-0",
   "data-[selected]:text-yorha-on-ink data-[selected]:border-yorha-border data-[selected]:[background-size:100%_100%]",
   "outline-none forced-colors:focus-visible:outline-2 forced-colors:focus-visible:-outline-offset-2 forced-colors:focus-visible:outline-[Highlight]",
-  "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-disabled",
+  "yorha-disabled",
 );
 
 // Index is clamped by the token: later rows enter together.

@@ -354,9 +354,11 @@ export const WithDescriptionPane: Story = {
         <MenuList {...args} value={value} onValueChange={setValue}>
           <Rows />
         </MenuList>
-        <p role="status" aria-label="설명" className="flex min-h-row items-center border-l border-yorha-border pl-4 text-yorha-sm">
-          {DETAILS[value]}
-        </p>
+        <div className="border-l border-yorha-border pl-4">
+          <p role="status" aria-label="설명" className="m-0 pt-[calc((var(--yorha-row)-1lh)/2)] text-yorha-sm">
+            {DETAILS[value]}
+          </p>
+        </div>
       </div>
     );
   },

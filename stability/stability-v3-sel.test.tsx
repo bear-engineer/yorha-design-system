@@ -288,3 +288,27 @@ describe("menu-list rows (FSEL-03/04/10/14)", () => {
     expect(Math.abs(text.top + text.height / 2 - (label.top + label.height / 2)), "first line centre vs first label centre").toBeLessThanOrEqual(2);
   });
 });
+
+describe("FSEL-10 triggers + FL-18 disabled row", () => {
+  test("menubar and navigation-menu triggers drop the wipe at once; colour flips after the fill starts", { timeout: 60_000 }, async () => {
+    for (const [item, slot] of [["menubar", "menubar-trigger"], ["navigation-menu", "navigation-menu-trigger"]] as const) {
+      await mountStory(item, "Default", { stage: "top" });
+      const t = document.querySelector<HTMLElement>(`[data-slot=${slot}]`)!;
+      const cs = getComputedStyle(t);
+      const props = cs.transitionProperty.split(",").map((p) => p.trim());
+      const dur = cs.transitionDuration.split(",").map((d) => parseFloat(d) * (d.trim().endsWith("ms") ? 0.001 : 1));
+      const delay = cs.transitionDelay.split(",").map((d) => parseFloat(d) * (d.trim().endsWith("ms") ? 0.001 : 1));
+      expect(dur[props.indexOf("background-size")], `${item} exit`).toBe(0);
+      expect(delay[props.indexOf("color")], `${item} colour delay`).toBeGreaterThan(0);
+    }
+  });
+
+  test("disabled menu-list row uses the disabled recipe and not-allowed cursor (FL-18)", { timeout: 60_000 }, async () => {
+    await mountStory("menu-list", "Themes", { stage: "top" });
+    const row = document.querySelector<HTMLElement>("[role=option][aria-disabled=true]")!;
+    expect(row).toBeTruthy();
+    const cs = getComputedStyle(row);
+    expect(cs.cursor).toBe("not-allowed");
+    expect(cs.color).not.toBe(getComputedStyle(document.querySelector<HTMLElement>("[role=option]:not([aria-disabled])")!).color);
+  });
+});
