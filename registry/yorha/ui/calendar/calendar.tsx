@@ -1,4 +1,6 @@
 import * as React from "react";
+import { buttonVariants } from "@/components/ui/button";
+import { ChevronIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
 
 /* ---------- date helpers (local time, Date + Intl only) ---------- */
@@ -64,13 +66,17 @@ export interface CalendarDayState {
   inRange: boolean;
   rangeStart: boolean;
   rangeEnd: boolean;
+  /** Between a pending range start and the hovered or focused day. */
+  preview: boolean;
 }
 
 export interface CalendarLabels {
   previousMonth: string;
   nextMonth: string;
+  today: string;
+  pendingRange: string;
 }
-const DEFAULT_LABELS: CalendarLabels = { previousMonth: "이전 달", nextMonth: "다음 달" };
+const DEFAULT_LABELS: CalendarLabels = { previousMonth: "이전 달", nextMonth: "다음 달", today: "오늘", pendingRange: "종료일 선택" };
 
 interface CalendarCommonProps {
   /** Visible (first) month, controlled. */
@@ -87,14 +93,22 @@ interface CalendarCommonProps {
   locale?: string;
   /** Override the locale week start (0 = Sunday ... 6 = Saturday). */
   weekStartsOn?: number;
-  /** Slot rendered under the day number, e.g. event dots. */
+  /** Slot rendered under the day number, e.g. event dots. Not called for outside days. */
   renderDay?: (date: Date, state: CalendarDayState) => React.ReactNode;
-  /** Visually hidden text appended to a day's accessible name, e.g. `일정 2건`. */
+  /** Text appended to a day's accessible name, e.g. `일정 2건`. */
   getDayLabelSuffix?: (date: Date) => string | undefined;
-  /** "Today" for the outline and the first focus. Defaults to the current date. */
+  /** "Today" for the bar and the first focus. Defaults to the current date. */
   today?: Date;
   /** Move focus to the roving day on mount (used by popups). */
   autoFocus?: boolean;
+  /** Dim, inactive days of the adjacent months. Default true for one month, always false for several. */
+  showOutsideDays?: boolean;
+  /** Always render 6 week rows so the height never changes between months. Default true. */
+  fixedWeeks?: boolean;
+  /** Footer with a button that shows and focuses today's month (and the pending range hint). Default false. */
+  showToday?: boolean;
+  /** 1px frame. Default true; turn it off inside a surface that already has one. */
+  bordered?: boolean;
   labels?: Partial<CalendarLabels>;
   className?: string;
   "aria-label"?: string;
@@ -129,54 +143,66 @@ function useControllable<T>(value: T | undefined, defaultValue: T, onChange?: (v
 
 const EMPTY_RANGE: DateRange = { from: null, to: null };
 
-const NAV_BUTTON = cn(
-  "yorha-press grid size-8 shrink-0 cursor-pointer place-items-center rounded-yorha border border-yorha-border bg-yorha-panel text-yorha-fg",
-  "focus-visible:yorha-focus disabled:cursor-not-allowed disabled:opacity-40",
-);
+/** Week-row width: 7 cells of the compact control step (40 / 32 / 24 px by density). */
+const GRID_WIDTH = "w-[calc(var(--yorha-control-sm)*7)]";
 
-const DAY_CELL = cn(
-  "yorha-tabular relative isolate grid size-10 cursor-pointer select-none place-items-center font-yorha text-yorha-sm text-yorha-fg",
-  "transition-[color,background-color,border-color] duration-(--motion-press) ease-yorha",
-  // dark wipe: a pseudo element that scales in from the left (opacity-only when motion is reduced)
-  "before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:origin-left before:bg-yorha-control before:opacity-0",
-  "before:scale-x-[calc(1-var(--motion-spatial))]",
-  "before:transition-[scale,opacity] before:duration-[max(var(--motion-tab-indicator),var(--motion-reduced-fade))] before:ease-yorha-emphasized",
-  "data-[selected]:text-yorha-on-control data-[selected]:before:scale-x-100 data-[selected]:before:opacity-100",
-  // today: square outline inset from the edge
-  "data-[today]:after:pointer-events-none data-[today]:after:absolute data-[today]:after:inset-1 data-[today]:after:border data-[today]:after:border-yorha-fg-strong",
-  "data-[today]:data-[selected]:after:border-yorha-on-control",
-  "data-[in-range]:bg-yorha-ink/10",
-  "not-data-[disabled]:not-data-[selected]:hover:bg-yorha-ink/10",
-  "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-40",
-  "focus-visible:yorha-focus",
-);
-
-function Chevron({ dir }: { dir: "left" | "right" }) {
-  return (
-    <svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d={dir === "left" ? "M10 3 5 8l5 5" : "M6 3l5 5-5 5"} />
-    </svg>
-  );
-}
+/** One numeral box for in-month and outside days, so the digits never move between kinds. */
+const NUMBER = "grid size-full place-items-center pb-1 text-yorha-sm yorha-tabular";
 
 /**
- * Pointer month change: the month title and grid ease from 60% opacity with at most --motion-shift of travel
- * over --motion-select (never from 0, so rapid clicks cannot blank the grid). reduced = opacity only, off = instant.
- * Keyboard month changes set dir 0 and run no animation. The prev/next buttons never move.
+ * Day button (the td stays a plain table cell and the button fills it). Hover/press come from yorha-tint,
+ * selection is an ink wipe on ::before, today is a 12 x 2 bar, the ring lifts above neighbours with z-10.
  */
+const DAY_BUTTON = cn(
+  "yorha-tint yorha-tabular relative isolate block size-control-sm cursor-pointer select-none rounded-none p-0 font-yorha text-yorha-fg",
+  // dark wipe: a pseudo element that scales in from the left (opacity-only when motion is reduced)
+  "before:pointer-events-none before:absolute before:inset-0 before:-z-10 before:origin-left before:bg-yorha-ink before:opacity-0",
+  "before:scale-x-[calc(1-var(--motion-spatial))]",
+  "before:transition-[scale,opacity] before:duration-[max(var(--motion-select),var(--motion-reduced-fade))] before:ease-yorha-out",
+  "data-[selected]:text-yorha-on-ink data-[selected]:before:scale-x-100 data-[selected]:before:opacity-100",
+  // today bar
+  "data-[today]:font-yorha-bold data-[today]:text-yorha-fg-strong data-[today]:data-[selected]:text-yorha-on-ink",
+  "data-[today]:after:pointer-events-none data-[today]:after:absolute data-[today]:after:bottom-[6px] data-[today]:after:left-1/2 data-[today]:after:h-0.5 data-[today]:after:w-3 data-[today]:after:-translate-x-1/2 data-[today]:after:bg-current",
+  // the end of a preview: 1px inset ink outline
+  "data-[preview-end]:outline data-[preview-end]:outline-1 data-[preview-end]:-outline-offset-1 data-[preview-end]:outline-yorha-ink",
+  "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-disabled",
+  "focus-visible:yorha-focus focus-visible:z-10",
+  "forced-colors:data-[selected]:before:bg-[Highlight] forced-colors:data-[selected]:text-[HighlightText] forced-colors:data-[selected]:[forced-color-adjust:none]",
+  "forced-colors:data-[today]:after:bg-[CanvasText] forced-colors:data-[disabled]:text-[GrayText]",
+);
+
+/** Band cell: range fill and the dashed preview lines never touch the cell box. */
+const BAND_CELL = cn(
+  "size-control-sm p-0",
+  "data-[in-range]:bg-yorha-range",
+  "data-[preview]:[background-image:repeating-linear-gradient(90deg,var(--yorha-border)_0_4px,transparent_4px_8px),repeating-linear-gradient(90deg,var(--yorha-border)_0_4px,transparent_4px_8px)]",
+  "data-[preview]:[background-position:0_0,0_100%] data-[preview]:[background-size:100%_1px,100%_1px] data-[preview]:bg-no-repeat",
+  "forced-colors:data-[preview]:[background-image:repeating-linear-gradient(90deg,CanvasText_0_4px,transparent_4px_8px),repeating-linear-gradient(90deg,CanvasText_0_4px,transparent_4px_8px)]",
+  "forced-colors:data-[in-range]:underline",
+);
+
+/**
+ * Pointer month change: the month title and grid ease from 60% opacity (the grid also travels at most --motion-shift)
+ * over --motion-select, never from 0, so rapid clicks cannot blank the grid. A second change within 150ms is
+ * opacity only. reduced = opacity only, off = instant. Keyboard month changes run no animation. The nav buttons never move.
+ */
+const FADE_ITEM = cn(
+  "transition-opacity duration-[max(var(--motion-select),var(--motion-reduced-fade))] ease-yorha-out",
+  "group-data-[entering]/slide:opacity-60 group-data-[entering]/slide:transition-none",
+);
 const SLIDE_ITEM = cn(
   "transition-[translate,opacity] duration-[max(var(--motion-select),var(--motion-reduced-fade))] ease-yorha-out",
   "group-data-[entering]/slide:translate-x-[calc(var(--yorha-cal-dir)*var(--motion-spatial)*var(--motion-shift))] group-data-[entering]/slide:opacity-60 group-data-[entering]/slide:transition-none",
 );
 
-/** Carries the travel direction and the entering flag for the SLIDE_ITEM descendants. */
-function MonthSlide({ monthKey, dir, children }: { monthKey: number; dir: number; children: React.ReactNode }) {
+/** Carries the travel direction and the entering flag for the FADE_ITEM / SLIDE_ITEM descendants. */
+function MonthSlide({ monthKey, animate, travel, children }: { monthKey: number; animate: boolean; travel: number; children: React.ReactNode }) {
   const [entering, setEntering] = React.useState(false);
   const prev = React.useRef(monthKey);
   React.useLayoutEffect(() => {
     if (prev.current === monthKey) return;
     prev.current = monthKey;
-    if (dir === 0) return;
+    if (!animate) return;
     setEntering(true);
     let raf2 = 0;
     const raf1 = requestAnimationFrame(() => {
@@ -186,13 +212,13 @@ function MonthSlide({ monthKey, dir, children }: { monthKey: number; dir: number
       cancelAnimationFrame(raf1);
       cancelAnimationFrame(raf2);
     };
-  }, [monthKey, dir]);
+  }, [monthKey, animate]);
   return (
     <div
-      data-slot="calendar-month-body"
+      data-slot="calendar-months"
       data-entering={entering ? "" : undefined}
-      style={{ "--yorha-cal-dir": dir } as React.CSSProperties}
-      className="group/slide flex flex-wrap gap-6"
+      style={{ "--yorha-cal-dir": travel } as React.CSSProperties}
+      className="group/slide flex flex-col sm:flex-row"
     >
       {children}
     </div>
@@ -202,7 +228,8 @@ function MonthSlide({ monthKey, dir, children }: { monthKey: number; dir: number
 /**
  * Month grid following the WAI-ARIA date grid pattern. No dependencies: Date + Intl only.
  * Keys: Arrow = day/week, PageUp/PageDown = month, Shift+PageUp/PageDown = year, Home/End = week start/end,
- * Enter/Space = select. Single and range selection, controlled or uncontrolled.
+ * Enter/Space = select, Escape = drop a pending range start. Single and range selection, controlled or uncontrolled.
+ * Geometry: a month is 7 x 6 cells of `--yorha-control-sm`; the height never changes between months.
  */
 export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function Calendar(props, ref) {
   const {
@@ -218,6 +245,9 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
     renderDay,
     getDayLabelSuffix,
     autoFocus,
+    fixedWeeks = true,
+    showToday = false,
+    bordered = true,
     className,
   } = props;
   const isRange = props.mode === "range";
@@ -226,6 +256,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
   const min = minDate ? startOfDay(minDate) : undefined;
   const max = maxDate ? startOfDay(maxDate) : undefined;
   const count = Math.max(1, Math.floor(numberOfMonths));
+  const showOutside = count === 1 && (props.showOutsideDays ?? true);
   const weekStart = weekStartsOn ?? getWeekStart(locale);
   const baseId = React.useId();
   const rootRef = React.useRef<HTMLDivElement | null>(null);
@@ -243,6 +274,15 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
   );
   const range: DateRange = isRange ? ((selection as DateRange | null) ?? EMPTY_RANGE) : EMPTY_RANGE;
   const single = isRange ? null : (selection as Date | null);
+  const pendingStart = isRange && range.from && !range.to ? range.from : null;
+
+  // range preview: one state, set by fine pointers entering a day and by focus, cleared on grid leave and blur
+  const [previewDate, setPreviewDate] = React.useState<Date | null>(null);
+  const inPreview = (d: Date) => {
+    if (!pendingStart || !previewDate) return false;
+    if (previewDate > pendingStart) return d > pendingStart && d <= previewDate;
+    return previewDate < pendingStart && d >= previewDate && d < pendingStart;
+  };
 
   const disabledAt = React.useCallback(
     (d: Date) => (min && d < min) || (max && d > max) || !!isDateDisabled?.(d),
@@ -257,12 +297,18 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
     onMonthChange,
   );
   const [dir, setDir] = React.useState(0);
+  const [travel, setTravel] = React.useState(0);
+  const lastPointerChange = React.useRef(0);
   /** `animate` is true only for pointer-driven month changes; keyboard paths pass nothing and run no animation. */
   const setMonth = (next: Date, animate = false) => {
     const n = startOfMonth(next);
     const delta = monthIndex(n) - monthIndex(month);
     if (delta === 0) return;
+    const now = performance.now();
+    const quick = animate && now - lastPointerChange.current < 150;
+    if (animate) lastPointerChange.current = now;
     setDir(animate ? Math.sign(delta) : 0);
+    setTravel(animate && !quick ? Math.sign(delta) : 0);
     setMonthValue(n);
   };
   const firstIdx = monthIndex(month);
@@ -364,6 +410,10 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
       case "End":
         target = rel(6);
         break;
+      case "Escape":
+        if (!pendingStart) return;
+        setSelection({ from: null, to: null });
+        return;
       case "Enter":
       case " ":
         event.preventDefault();
@@ -376,6 +426,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
     if (target) moveTo(target);
   };
 
+  const dayLabel = React.useMemo(() => new Intl.DateTimeFormat(locale, { dateStyle: "full" }), [locale]);
   const monthNames = React.useMemo(() => new Intl.DateTimeFormat(locale, { year: "numeric", month: "long" }), [locale]);
   const weekdayShort = React.useMemo(() => new Intl.DateTimeFormat(locale, { weekday: "short" }), [locale]);
   const weekdayLong = React.useMemo(() => new Intl.DateTimeFormat(locale, { weekday: "long" }), [locale]);
@@ -391,58 +442,71 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
     setFocusedState(addMonths(roving, n));
     setMonth(new Date(month.getFullYear(), month.getMonth() + n, 1), pointer);
   };
+  const goToday = () => {
+    setFocusedState(today);
+    setMonth(today, true);
+    pendingFocus.current = true;
+  };
 
   const renderMonth = (offset: number) => {
     const first = new Date(month.getFullYear(), month.getMonth() + offset, 1);
     const daysInMonth = new Date(first.getFullYear(), first.getMonth() + 1, 0).getDate();
     const lead = (first.getDay() - weekStart + 7) % 7;
-    const cells: (Date | null)[] = [
-      ...Array.from({ length: lead }, () => null),
-      ...Array.from({ length: daysInMonth }, (_, i) => new Date(first.getFullYear(), first.getMonth(), i + 1)),
-    ];
-    while (cells.length % 7) cells.push(null);
-    const weeks = Array.from({ length: cells.length / 7 }, (_, w) => cells.slice(w * 7, w * 7 + 7));
+    const rowCount = fixedWeeks ? 6 : Math.ceil((lead + daysInMonth) / 7);
+    const gridStart = addDays(first, -lead);
+    const cells = Array.from({ length: rowCount * 7 }, (_, i) => addDays(gridStart, i));
+    const weeks = Array.from({ length: rowCount }, (_, w) => cells.slice(w * 7, w * 7 + 7));
     const titleId = `${baseId}-title-${offset}`;
+    const isLast = offset === count - 1;
     return (
-      <div key={offset} data-slot="calendar-month" className="flex flex-col gap-2">
-        <div className="flex h-8 items-center justify-between gap-2">
-          {offset === 0 ? (
-            <button
-              type="button"
-              data-slot="calendar-prev"
-              aria-label={labels.previousMonth}
-              disabled={!canPrev}
-              onClick={(e) => shift(-1, e.detail > 0)}
-              className={NAV_BUTTON}
-            >
-              <Chevron dir="left" />
-            </button>
-          ) : (
-            <span className="size-8" aria-hidden="true" />
-          )}
-          <div
-            id={titleId}
-            aria-live="polite"
-            className={cn("font-yorha-bold text-yorha-sm tracking-yorha-heading text-yorha-fg-strong uppercase", SLIDE_ITEM)}
-          >
+      <div
+        key={offset}
+        data-slot="calendar-month"
+        className={cn(
+          "flex flex-col",
+          GRID_WIDTH,
+          offset > 0 && "max-sm:mt-3 max-sm:border-t max-sm:border-yorha-separator max-sm:pt-3 sm:ml-3 sm:border-l sm:border-yorha-separator sm:pl-3 sm:box-content",
+        )}
+      >
+        <div data-slot="calendar-header" className={cn("grid h-control-sm grid-cols-[1fr_auto_auto] items-center", GRID_WIDTH)}>
+          <div id={titleId} aria-live="polite" className={cn("truncate font-yorha-bold text-yorha-base yorha-tabular text-yorha-fg-strong", FADE_ITEM)}>
             {monthNames.format(first)}
           </div>
-          {offset === count - 1 ? (
-            <button
-              type="button"
-              data-slot="calendar-next"
-              aria-label={labels.nextMonth}
-              disabled={!canNext}
-              onClick={(e) => shift(1, e.detail > 0)}
-              className={NAV_BUTTON}
-            >
-              <Chevron dir="right" />
-            </button>
-          ) : (
-            <span className="size-8" aria-hidden="true" />
-          )}
+          {isLast ? (
+            <>
+              <button
+                type="button"
+                data-slot="calendar-prev"
+                aria-label={labels.previousMonth}
+                disabled={!canPrev}
+                onClick={(e) => shift(-1, e.detail > 0)}
+                className={buttonVariants({ variant: "ghost", size: "sm", square: true })}
+              >
+                <ChevronIcon dir="left" size={16} />
+              </button>
+              <button
+                type="button"
+                data-slot="calendar-next"
+                aria-label={labels.nextMonth}
+                disabled={!canNext}
+                onClick={(e) => shift(1, e.detail > 0)}
+                className={buttonVariants({ variant: "ghost", size: "sm", square: true })}
+              >
+                <ChevronIcon dir="right" size={16} />
+              </button>
+            </>
+          ) : null}
         </div>
-        <table role="grid" aria-labelledby={titleId} onKeyDown={onGridKeyDown} className={cn("border-separate border-spacing-0", SLIDE_ITEM)}>
+        <table
+          role="grid"
+          aria-labelledby={titleId}
+          onKeyDown={onGridKeyDown}
+          onPointerLeave={() => setPreviewDate(null)}
+          onBlur={(e) => {
+            if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPreviewDate(null);
+          }}
+          className={cn("table-fixed border-separate border-spacing-0", GRID_WIDTH, SLIDE_ITEM)}
+        >
           <thead>
             <tr>
               {weekdays.map((w) => (
@@ -450,7 +514,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
                   key={w.long}
                   scope="col"
                   abbr={w.long}
-                  className="size-10 font-yorha-medium text-yorha-xs tracking-yorha-wide text-yorha-fg-soft"
+                  className="h-6 border-b border-yorha-separator p-0 font-yorha-medium text-yorha-xs text-yorha-fg-soft"
                 >
                   {w.short}
                 </th>
@@ -461,13 +525,24 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
             {weeks.map((week, wi) => (
               <tr key={wi}>
                 {week.map((date, di) => {
-                  if (!date) return <td key={di} role="presentation" className="size-10 p-0" />;
+                  const inMonth = date.getMonth() === first.getMonth();
+                  if (!inMonth) {
+                    if (!showOutside) return <td key={di} role="presentation" className="size-control-sm p-0" />;
+                    return (
+                      <td key={di} role="gridcell" aria-disabled="true" data-outside="" className="size-control-sm cursor-default p-0">
+                        <span data-slot="calendar-day-number" className={cn(NUMBER, "font-yorha text-yorha-disabled")}>
+                          {date.getDate()}
+                        </span>
+                      </td>
+                    );
+                  }
                   const disabled = !!disabledAt(date);
                   const isStart = isRange ? isSameDay(date, range.from) : false;
                   const isEnd = isRange ? isSameDay(date, range.to) : false;
                   const inRange = isRange && !!range.from && !!range.to && date > range.from && date < range.to;
                   const selected = isRange ? isStart || isEnd || inRange : isSameDay(date, single);
                   const isToday = isSameDay(date, today);
+                  const preview = inPreview(date);
                   const state: CalendarDayState = {
                     selected,
                     today: isToday,
@@ -475,42 +550,57 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
                     inRange,
                     rangeStart: isStart,
                     rangeEnd: isEnd,
+                    preview,
                   };
                   const suffix = getDayLabelSuffix?.(date);
                   const isRoving = isSameDay(date, roving);
+                  const name = [dayLabel.format(date), isToday ? labels.today : null, suffix].filter(Boolean).join(", ");
                   return (
                     <td
                       key={di}
                       role="gridcell"
-                      data-slot="calendar-day"
-                      data-date={toDateKey(date)}
                       aria-selected={selected}
                       aria-current={isToday ? "date" : undefined}
-                      aria-disabled={disabled || undefined}
-                      tabIndex={isRoving ? 0 : -1}
-                      data-selected={selected && !inRange ? "" : undefined}
                       data-in-range={inRange ? "" : undefined}
-                      data-range-start={isStart ? "" : undefined}
-                      data-range-end={isEnd ? "" : undefined}
-                      data-today={isToday ? "" : undefined}
-                      data-disabled={disabled ? "" : undefined}
-                      onClick={() => {
-                        if (disabled) return;
-                        setFocusedState(date);
-                        select(date);
-                      }}
-                      onFocus={() => {
-                        if (!disabled) setFocusedState(date);
-                      }}
-                      className={cn(DAY_CELL, "p-0")}
+                      data-preview={preview ? "" : undefined}
+                      className={BAND_CELL}
                     >
-                      <span>{date.getDate()}</span>
-                      {suffix ? <span className="sr-only">{`, ${suffix}`}</span> : null}
-                      {renderDay ? (
-                        <span aria-hidden="true" className="absolute inset-x-0 bottom-1 flex justify-center gap-px">
-                          {renderDay(date, state)}
+                      <button
+                        type="button"
+                        data-slot="calendar-day"
+                        data-date={toDateKey(date)}
+                        aria-label={name}
+                        aria-disabled={disabled || undefined}
+                        tabIndex={isRoving ? 0 : -1}
+                        data-selected={selected && !inRange ? "" : undefined}
+                        data-range-start={isStart ? "" : undefined}
+                        data-range-end={isEnd ? "" : undefined}
+                        data-today={isToday ? "" : undefined}
+                        data-disabled={disabled ? "" : undefined}
+                        data-preview-end={pendingStart && previewDate && isSameDay(previewDate, date) && !isSameDay(date, pendingStart) ? "" : undefined}
+                        onClick={() => {
+                          if (disabled) return;
+                          setFocusedState(date);
+                          select(date);
+                        }}
+                        onPointerEnter={(e) => {
+                          if (e.pointerType !== "touch") setPreviewDate(date);
+                        }}
+                        onFocus={() => {
+                          if (!disabled) setFocusedState(date);
+                          setPreviewDate(date);
+                        }}
+                        className={DAY_BUTTON}
+                      >
+                        <span data-slot="calendar-day-number" className={cn(NUMBER, disabled && "line-through")}>
+                          {date.getDate()}
                         </span>
-                      ) : null}
+                        {renderDay ? (
+                          <span data-slot="calendar-day-extra" aria-hidden="true" className="absolute inset-x-0 bottom-[2px] flex h-1 items-end justify-center gap-[2px]">
+                            {renderDay(date, state)}
+                          </span>
+                        ) : null}
+                      </button>
                     </td>
                   );
                 })}
@@ -529,11 +619,21 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
       data-mode={isRange ? "range" : "single"}
       lang={locale}
       aria-label={props["aria-label"]}
-      className={cn("inline-block bg-yorha-panel p-2 text-yorha-fg", className)}
+      className={cn("inline-block bg-yorha-panel p-2 font-yorha text-yorha-fg", bordered && "border border-yorha-border", className)}
     >
-      <MonthSlide monthKey={firstIdx} dir={dir}>
+      <MonthSlide monthKey={firstIdx} animate={dir !== 0} travel={travel}>
         {Array.from({ length: count }, (_, i) => renderMonth(i))}
       </MonthSlide>
+      {showToday ? (
+        <div data-slot="calendar-footer" className="flex h-control-sm items-center justify-between border-t border-yorha-separator">
+          <button type="button" onClick={goToday} className={buttonVariants({ variant: "ghost", size: "sm" })}>
+            {labels.today}
+          </button>
+          <span aria-live="polite" className="truncate text-yorha-xs text-yorha-fg-soft">
+            {pendingStart ? labels.pendingRange : null}
+          </span>
+        </div>
+      ) : null}
     </div>
   );
 });

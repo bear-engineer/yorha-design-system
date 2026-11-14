@@ -211,7 +211,7 @@ describe("calendar states (FCAL-11, 12, 15, 17)", () => {
 describe("calendar range (FCAL-08)", () => {
   function Range({ initial }: { initial?: DateRange }) {
     const [v, setV] = useState<DateRange>(initial ?? { from: null, to: null });
-    return <Calendar mode="range" today={TODAY} value={v} onValueChange={setV} bordered={false} />;
+    return <Calendar mode="range" today={TODAY} value={v} onValueChange={setV} bordered={false} showToday />;
   }
 
   it("FCAL-08: after a start, hovering day N marks exactly N - start cells and none after leaving; arrows do the same", async () => {
