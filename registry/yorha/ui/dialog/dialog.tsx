@@ -5,23 +5,16 @@ import { useSound } from "@/lib/sound";
 
 /**
  * Class strings shared by Dialog, AlertDialog and static previews (one definition).
- * Motion: enter uses --motion-panel, exit uses the faster --motion-panel-exit; both are 0ms
- * under data-motion reduced/off, so the final state is immediate.
+ * Motion: backdrop = `yorha-fade`, popup = `yorha-panel` (T3 utilities; enter/exit tokens, opacity-only
+ * and <=120ms under data-motion reduced, 0 under off).
  */
 export const dialogStyles = {
   backdrop:
-    "fixed inset-0 z-(--yorha-z-overlay) bg-yorha-scrim " +
-    "transition-opacity duration-(--motion-panel) ease-yorha-out " +
-    "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0 " +
-    "data-[ending-style]:duration-(--motion-panel-exit) data-[ending-style]:ease-yorha-in",
+    "yorha-fade fixed inset-0 z-(--yorha-z-overlay) bg-yorha-scrim",
   viewport: "pointer-events-none fixed inset-0 z-(--yorha-z-modal) grid place-items-center p-4",
   popup:
-    "pointer-events-auto relative flex max-h-full w-full max-w-md flex-col overflow-auto " +
-    "rounded-yorha border border-yorha-border bg-yorha-panel text-yorha-fg shadow-yorha-lg " +
-    "transition-[opacity,translate] duration-(--motion-panel) ease-yorha-out " +
-    "data-[starting-style]:translate-y-2 data-[starting-style]:opacity-0 " +
-    "data-[ending-style]:translate-y-1 data-[ending-style]:opacity-0 " +
-    "data-[ending-style]:duration-(--motion-panel-exit) data-[ending-style]:ease-yorha-in",
+    "yorha-panel pointer-events-auto relative flex max-h-full w-full max-w-md flex-col overflow-auto " +
+    "rounded-yorha border border-yorha-border bg-yorha-panel text-yorha-fg shadow-yorha-lg",
   // dark header strip; the dot and trailing rule are decorative pseudo elements
   title:
     "flex items-center gap-3 bg-yorha-ink px-4 py-2 font-yorha font-yorha-bold text-yorha-sm uppercase " +
@@ -57,6 +50,10 @@ export function Dialog({ sound = false, ...props }: DialogProps) {
   return sound ? <SoundRoot {...props} /> : <BaseDialog.Root {...props} />;
 }
 
+/** Handle for a trigger placed outside `<Dialog>`: pass the same handle to `DialogTrigger` and `Dialog`. */
+export const createDialogHandle = BaseDialog.createHandle;
+export type DialogHandle<Payload = unknown> = BaseDialog.Handle<Payload>;
+
 export function DialogTrigger(props: ComponentProps<typeof BaseDialog.Trigger>) {
   return <BaseDialog.Trigger {...props} />;
 }
@@ -73,11 +70,11 @@ export function DialogContent({ className, children, ...props }: DialogContentPr
   return (
     <BaseDialog.Portal>
       <BaseDialog.Backdrop className={dialogStyles.backdrop} />
-      <div className={dialogStyles.viewport}>
+      <BaseDialog.Viewport className={dialogStyles.viewport}>
         <BaseDialog.Popup className={cnState(dialogStyles.popup, className)} {...props}>
           {children}
         </BaseDialog.Popup>
-      </div>
+      </BaseDialog.Viewport>
     </BaseDialog.Portal>
   );
 }

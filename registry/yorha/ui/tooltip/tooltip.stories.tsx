@@ -1,7 +1,46 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent, waitFor, within } from "storybook/test";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { expect, screen, userEvent, waitFor, within } from "storybook/test";
+import {
+  Tooltip,
+  TooltipArrow,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipViewport,
+  createTooltipHandle,
+} from "@/components/ui/tooltip";
+
+// --- motion helpers (reduced: opacity-only, <=120ms; off: 0) ---
+async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
+  const root = document.documentElement;
+  const prev = root.getAttribute("data-motion");
+  root.setAttribute("data-motion", mode);
+  try {
+    await run();
+  } finally {
+    if (prev === null) root.removeAttribute("data-motion");
+    else root.setAttribute("data-motion", prev);
+  }
+}
+function durationsMs(el: Element): number[] {
+  return getComputedStyle(el)
+    .transitionDuration.split(",")
+    .map((v) => (v.trim().endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000));
+}
+/** Reduced: a fade of at most 120ms and no spatial travel (--motion-spatial is 0). */
+async function expectReduced(el: Element) {
+  // Base UI sets an inline `transition: none` for the first frame of some popups.
+  await waitFor(() => expect(getComputedStyle(el).transitionProperty).not.toBe("none"));
+  const max = Math.max(...durationsMs(el));
+  expect(max).toBeGreaterThan(0);
+  expect(max).toBeLessThanOrEqual(120);
+  expect(getComputedStyle(el).transitionProperty).toContain("opacity");
+  expect(getComputedStyle(document.documentElement).getPropertyValue("--motion-spatial").trim()).toBe("0");
+}
+async function expectOff(el: Element) {
+  expect(Math.max(...durationsMs(el))).toBe(0);
+}
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -116,4 +155,55 @@ export const Authentic: Story = {
       <Demo defaultOpen />
     </div>
   ),
+};
+
+const shared = createTooltipHandle<string>();
+
+/** Provider shares the delay; one handle, two triggers, one popup. Viewport cross-fades the text, Arrow points at the trigger. */
+export const SharedTooltip: Story = {
+  render: () => (
+    <TooltipProvider delay={0}>
+      <div className="flex min-h-48 items-start justify-center gap-3 bg-yorha-panel p-16 text-yorha-fg">
+        <TooltipTrigger handle={shared} payload="재장전 설명" className={TRIGGER_CLASS}>
+          재장전
+        </TooltipTrigger>
+        <TooltipTrigger handle={shared} payload="회피 설명" className={TRIGGER_CLASS}>
+          회피
+        </TooltipTrigger>
+        <Tooltip handle={shared}>
+          {({ payload }) => (
+            <TooltipContent>
+              <TooltipArrow />
+              <TooltipViewport>{payload as string}</TooltipViewport>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </div>
+    </TooltipProvider>
+  ),
+  play: async () => {
+    await userEvent.hover(body().getByRole("button", { name: "재장전" }));
+    const tip = await tooltip();
+    await expect(tip).toHaveTextContent("재장전 설명");
+    await expect(tip.querySelector("[data-slot=tooltip-arrow]")).not.toBeNull();
+    await userEvent.hover(body().getByRole("button", { name: "회피" }));
+    await waitFor(() => expect(tip).toHaveTextContent("회피 설명"));
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body().queryByRole("tooltip")).toBeNull());
+  },
+};
+
+export const ReducedMotion: Story = {
+  render: () => <Demo />,
+  play: async () => {
+    for (const mode of ["reduced", "off"] as const) {
+      await inMotion(mode, async () => {
+        await userEvent.hover(trigger());
+        const tip = await screen.findByRole("tooltip");
+        await (mode === "reduced" ? expectReduced : expectOff)(tip);
+        await userEvent.unhover(trigger());
+        await waitFor(() => expect(screen.queryByRole("tooltip")).toBeNull(), { timeout: 600 });
+      });
+    }
+  },
 };

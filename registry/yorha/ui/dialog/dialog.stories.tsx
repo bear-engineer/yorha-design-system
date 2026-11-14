@@ -11,8 +11,40 @@ import {
   DialogFooter,
   DialogTitle,
   DialogTrigger,
+  createDialogHandle,
   dialogStyles,
 } from "@/components/ui/dialog";
+
+// --- motion helpers (reduced: opacity-only, <=120ms; off: 0) ---
+async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
+  const root = document.documentElement;
+  const prev = root.getAttribute("data-motion");
+  root.setAttribute("data-motion", mode);
+  try {
+    await run();
+  } finally {
+    if (prev === null) root.removeAttribute("data-motion");
+    else root.setAttribute("data-motion", prev);
+  }
+}
+function durationsMs(el: Element): number[] {
+  return getComputedStyle(el)
+    .transitionDuration.split(",")
+    .map((v) => (v.trim().endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000));
+}
+/** Reduced: a fade of at most 120ms and no spatial travel (--motion-spatial is 0). */
+async function expectReduced(el: Element) {
+  // Base UI sets an inline `transition: none` for the first frame of some popups.
+  await waitFor(() => expect(getComputedStyle(el).transitionProperty).not.toBe("none"));
+  const max = Math.max(...durationsMs(el));
+  expect(max).toBeGreaterThan(0);
+  expect(max).toBeLessThanOrEqual(120);
+  expect(getComputedStyle(el).transitionProperty).toContain("opacity");
+  expect(getComputedStyle(document.documentElement).getPropertyValue("--motion-spatial").trim()).toBe("0");
+}
+async function expectOff(el: Element) {
+  expect(Math.max(...durationsMs(el))).toBe(0);
+}
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -104,20 +136,58 @@ export const CloseButton: Story = {
 export const ReducedMotion: Story = {
   render: () => <Demo />,
   play: async ({ canvasElement }) => {
-    const root = document.documentElement;
-    const prev = root.getAttribute("data-motion");
-    root.setAttribute("data-motion", "reduced");
-    try {
-      await userEvent.click(within(canvasElement).getByRole("button", { name: "유닛 정보 열기" }));
+    const open = within(canvasElement).getByRole("button", { name: "유닛 정보 열기" });
+    await inMotion("reduced", async () => {
+      await userEvent.click(open);
       const dialog = await screen.findByRole("dialog");
-      await expect(getComputedStyle(dialog).transitionDuration).toBe("0s");
+      await expectReduced(dialog);
+      await expectReduced(document.querySelector(".yorha-fade")!);
       await userEvent.keyboard("{Escape}");
-      // exit is immediate when motion is reduced
+      await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull(), { timeout: 400 });
+    });
+    await inMotion("off", async () => {
+      await userEvent.click(open);
+      const dialog = await screen.findByRole("dialog");
+      await expectOff(dialog);
+      await expectOff(document.querySelector(".yorha-fade")!);
+      await userEvent.keyboard("{Escape}");
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull(), { timeout: 200 });
-    } finally {
-      if (prev === null) root.removeAttribute("data-motion");
-      else root.setAttribute("data-motion", prev);
-    }
+    });
+  },
+};
+
+const detached = createDialogHandle();
+
+/** Trigger outside <Dialog>, linked by a handle. DialogContent renders Backdrop and Viewport. */
+export const DetachedTrigger: Story = {
+  render: () => (
+    <div>
+      <DialogTrigger handle={detached} render={<Button />}>
+        분리된 트리거
+      </DialogTrigger>
+      <Dialog handle={detached}>
+        <DialogContent>
+          <DialogTitle>분리된 다이얼로그</DialogTitle>
+          <DialogBody>
+            <DialogDescription>트리거가 Dialog 밖에 있어도 handle로 연결된다.</DialogDescription>
+          </DialogBody>
+          <DialogFooter>
+            <DialogClose render={<Button variant="ghost" />}>닫기</DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getByRole("button", { name: "분리된 트리거" });
+    await userEvent.click(trigger);
+    const dialog = await screen.findByRole("dialog", { name: "분리된 다이얼로그" });
+    // Viewport and Backdrop are real parts around the popup
+    await expect(dialog.parentElement).toHaveClass("fixed");
+    await expect(document.querySelector(".yorha-fade")).not.toBeNull();
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await waitFor(() => expect(trigger).toHaveFocus());
   },
 };
 

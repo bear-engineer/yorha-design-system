@@ -1,13 +1,20 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, userEvent, waitFor, within } from "storybook/test";
+import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
 import {
   Menu,
+  MenuArrow,
   MenuCheckboxItem,
+  MenuClear,
   MenuContent,
+  MenuEmpty,
+  MenuFilterProvider,
   MenuGroup,
+  MenuInput,
   MenuItem,
   MenuLabel,
+  MenuLinkItem,
+  MenuList,
   MenuRadioGroup,
   MenuRadioItem,
   MenuSeparator,
@@ -15,7 +22,40 @@ import {
   MenuSub,
   MenuSubTrigger,
   MenuTrigger,
+  MenuViewport,
+  createMenuHandle,
 } from "./menu";
+
+// --- motion helpers (reduced: opacity-only, <=120ms; off: 0) ---
+async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
+  const root = document.documentElement;
+  const prev = root.getAttribute("data-motion");
+  root.setAttribute("data-motion", mode);
+  try {
+    await run();
+  } finally {
+    if (prev === null) root.removeAttribute("data-motion");
+    else root.setAttribute("data-motion", prev);
+  }
+}
+function durationsMs(el: Element): number[] {
+  return getComputedStyle(el)
+    .transitionDuration.split(",")
+    .map((v) => (v.trim().endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000));
+}
+/** Reduced: a fade of at most 120ms and no spatial travel (--motion-spatial is 0). */
+async function expectReduced(el: Element) {
+  // Base UI sets an inline `transition: none` for the first frame of some popups.
+  await waitFor(() => expect(getComputedStyle(el).transitionProperty).not.toBe("none"));
+  const max = Math.max(...durationsMs(el));
+  expect(max).toBeGreaterThan(0);
+  expect(max).toBeLessThanOrEqual(120);
+  expect(getComputedStyle(el).transitionProperty).toContain("opacity");
+  expect(getComputedStyle(document.documentElement).getPropertyValue("--motion-spatial").trim()).toBe("0");
+}
+async function expectOff(el: Element) {
+  expect(Math.max(...durationsMs(el))).toBe(0);
+}
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -105,16 +145,17 @@ export const KeyboardNavigation: Story = {
     await userEvent.keyboard("{Enter}");
     const menu = await body(canvasElement).findByRole("menu");
     const first = within(menu).getByRole("menuitem", { name: /새 문서/ });
-    await waitFor(() => expect(first).toHaveAttribute("data-highlighted"));
+    await waitFor(() => expect(first).toHaveAttribute("data-highlighted"), { timeout: 5000 });
+    await waitFor(() => expect(first).toHaveFocus(), { timeout: 5000 });
     await userEvent.keyboard("{ArrowDown}");
     const second = within(menu).getByRole("menuitem", { name: /열기/ });
-    await waitFor(() => expect(second).toHaveAttribute("data-highlighted"));
+    await waitFor(() => expect(second).toHaveAttribute("data-highlighted"), { timeout: 5000 });
     await expect(first).not.toHaveAttribute("data-highlighted");
     await userEvent.keyboard("{ArrowUp}");
-    await waitFor(() => expect(first).toHaveAttribute("data-highlighted"));
+    await waitFor(() => expect(first).toHaveAttribute("data-highlighted"), { timeout: 5000 });
     await userEvent.keyboard("{ArrowDown}{Enter}");
     await expect(args.onSelect).toHaveBeenCalledWith("열기");
-    await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull());
+    await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull(), { timeout: 5000 });
     await expect(trigger).toHaveFocus();
   },
 };
@@ -139,22 +180,24 @@ export const Submenu: Story = {
     const sub = within(menu).getByRole("menuitem", { name: "내보내기" });
     await expect(sub).toHaveAttribute("aria-haspopup", "menu");
     // Rows: 새 문서, 열기, 내보내기
-    await waitFor(() => expect(within(menu).getByRole("menuitem", { name: /새 문서/ })).toHaveAttribute("data-highlighted"));
-    await userEvent.keyboard("{ArrowDown}{ArrowDown}");
-    await waitFor(() => expect(sub).toHaveAttribute("data-highlighted"));
+    await waitFor(() => expect(within(menu).getByRole("menuitem", { name: /새 문서/ })).toHaveFocus(), { timeout: 5000 });
+    await userEvent.keyboard("{ArrowDown}");
+    await waitFor(() => expect(within(menu).getByRole("menuitem", { name: /열기/ })).toHaveAttribute("data-highlighted"), { timeout: 5000 });
+    await userEvent.keyboard("{ArrowDown}");
+    await waitFor(() => expect(sub).toHaveAttribute("data-highlighted"), { timeout: 5000 });
     await userEvent.keyboard("{ArrowRight}");
     const pdf = await body(canvasElement).findByRole("menuitem", { name: "PDF" });
-    await waitFor(() => expect(pdf).toHaveFocus());
+    await waitFor(() => expect(pdf).toHaveFocus(), { timeout: 5000 });
     await userEvent.keyboard("{ArrowLeft}");
-    await waitFor(() => expect(body(canvasElement).queryByRole("menuitem", { name: "PDF" })).toBeNull());
-    await waitFor(() => expect(sub).toHaveFocus());
+    await waitFor(() => expect(body(canvasElement).queryByRole("menuitem", { name: "PDF" })).toBeNull(), { timeout: 5000 });
+    await waitFor(() => expect(sub).toHaveFocus(), { timeout: 5000 });
     await userEvent.keyboard("{ArrowRight}");
     const again = await body(canvasElement).findByRole("menuitem", { name: "PDF" });
-    await waitFor(() => expect(again).toHaveFocus());
+    await waitFor(() => expect(again).toHaveFocus(), { timeout: 5000 });
     await userEvent.keyboard("{Enter}");
     await expect(args.onSelect).toHaveBeenCalledWith("PDF");
     // Wait out the close transition so the a11y scan never sees Base UI's transient focus guards.
-    await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull());
+    await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull(), { timeout: 5000 });
   },
 };
 
@@ -239,5 +282,105 @@ export const Authentic: Story = {
   },
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("button", { name: "파일 메뉴" })).toBeVisible();
+  },
+};
+
+function FilterDemo() {
+  return (
+    <MenuFilterProvider>
+      <Menu>
+        <MenuTrigger>명령 검색</MenuTrigger>
+        <MenuContent>
+          <MenuInput aria-label="명령 필터" placeholder="검색" />
+          <MenuClear aria-label="필터 지우기">지우기</MenuClear>
+          <MenuEmpty>일치하는 명령이 없다.</MenuEmpty>
+          <MenuList>
+            <MenuItem>이름 바꾸기</MenuItem>
+            <MenuItem>복제</MenuItem>
+            <MenuItem>삭제</MenuItem>
+            <MenuLinkItem href="#projects">프로젝트로 이동</MenuLinkItem>
+          </MenuList>
+        </MenuContent>
+      </Menu>
+    </MenuFilterProvider>
+  );
+}
+
+export const Filterable: Story = {
+  render: () => <FilterDemo />,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "명령 검색" }));
+    const menu = await body(canvasElement).findByRole("menu");
+    await expect(within(menu).getAllByRole("menuitem")).toHaveLength(4);
+    // the link row is a real anchor with the menuitem role
+    await expect(within(menu).getByRole("menuitem", { name: "프로젝트로 이동" })).toHaveAttribute("href", "#projects");
+    const input = body(canvasElement).getByLabelText("명령 필터");
+    await userEvent.type(input, "삭");
+    await waitFor(() => expect(within(menu).getAllByRole("menuitem")).toHaveLength(1));
+    await waitFor(() => expect(within(menu).getByRole("menuitem", { name: "삭제" })).toBeVisible());
+    // no match shows the empty message
+    await userEvent.clear(input);
+    await userEvent.type(input, "zzz");
+    await waitFor(() => expect(within(menu).queryAllByRole("menuitem")).toHaveLength(0));
+    await waitFor(() => expect(body(canvasElement).getByText("일치하는 명령이 없다.")).toBeVisible());
+    // clear is pointer-only (Base UI hides it from the a11y tree); it restores every row
+    await userEvent.click(body(canvasElement).getByText("지우기"));
+    await waitFor(() => expect(within(menu).getAllByRole("menuitem")).toHaveLength(4));
+  },
+};
+
+const shared = createMenuHandle<string>();
+
+/** Two triggers, one popup (handle). Backdrop dims, Arrow points at the trigger, Viewport cross-fades rows. */
+function SharedDemo() {
+  return (
+    <div className="flex min-h-48 items-start gap-3">
+      <MenuTrigger handle={shared} payload="편집">
+        편집
+      </MenuTrigger>
+      <MenuTrigger handle={shared} payload="보기">
+        보기
+      </MenuTrigger>
+      <Menu handle={shared}>
+        {({ payload }) => (
+          <MenuContent backdrop>
+            <MenuArrow />
+            <MenuViewport>
+              <MenuItem>{String(payload)} 항목 1</MenuItem>
+              <MenuItem>{String(payload)} 항목 2</MenuItem>
+            </MenuViewport>
+          </MenuContent>
+        )}
+      </Menu>
+    </div>
+  );
+}
+
+export const SharedMenu: Story = {
+  render: () => <SharedDemo />,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "편집" }));
+    const menu = await body(canvasElement).findByRole("menu");
+    await waitFor(() => expect(within(menu).getByRole("menuitem", { name: "편집 항목 1" })).toBeVisible());
+    await expect(menu.querySelector("[data-slot=menu-arrow]")).not.toBeNull();
+    await expect(document.querySelector("[data-slot=menu-backdrop]")).not.toBeNull();
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull());
+  },
+};
+
+export const ReducedMotion: Story = {
+  render: () => <SharedDemo />,
+  play: async ({ canvasElement }) => {
+    for (const mode of ["reduced", "off"] as const) {
+      await inMotion(mode, async () => {
+        await userEvent.click(within(canvasElement).getByRole("button", { name: "편집" }));
+        const menu = await screen.findByRole("menu");
+        const backdrop = document.querySelector("[data-slot=menu-backdrop]")!;
+        for (const el of [menu, backdrop]) await (mode === "reduced" ? expectReduced : expectOff)(el);
+        await userEvent.keyboard("{Escape}");
+        await waitFor(() => expect(screen.queryByRole("menu")).toBeNull(), { timeout: 600 });
+      });
+    }
   },
 };

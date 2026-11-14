@@ -1,8 +1,39 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent, waitFor, within } from "storybook/test";
+import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "@/components/ui/button";
 import { ToastProvider, ToastViewport, useToast, type ToastType } from "./toast";
+
+// --- motion helpers (reduced: opacity-only, <=120ms; off: 0) ---
+async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
+  const root = document.documentElement;
+  const prev = root.getAttribute("data-motion");
+  root.setAttribute("data-motion", mode);
+  try {
+    await run();
+  } finally {
+    if (prev === null) root.removeAttribute("data-motion");
+    else root.setAttribute("data-motion", prev);
+  }
+}
+function durationsMs(el: Element): number[] {
+  return getComputedStyle(el)
+    .transitionDuration.split(",")
+    .map((v) => (v.trim().endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000));
+}
+/** Reduced: a fade of at most 120ms and no spatial travel (--motion-spatial is 0). */
+async function expectReduced(el: Element) {
+  // Base UI sets an inline `transition: none` for the first frame of some popups.
+  await waitFor(() => expect(getComputedStyle(el).transitionProperty).not.toBe("none"));
+  const max = Math.max(...durationsMs(el));
+  expect(max).toBeGreaterThan(0);
+  expect(max).toBeLessThanOrEqual(120);
+  expect(getComputedStyle(el).transitionProperty).toContain("opacity");
+  expect(getComputedStyle(document.documentElement).getPropertyValue("--motion-spatial").trim()).toBe("0");
+}
+async function expectOff(el: Element) {
+  expect(Math.max(...durationsMs(el))).toBe(0);
+}
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const LABEL: Record<ToastType, string> = { info: "정보 알림", success: "성공 알림", alert: "경고 알림" };
@@ -193,5 +224,87 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByRole("button", { name: LABEL.info })).toBeVisible();
+  },
+};
+
+function PartsTriggers() {
+  const toast = useToast();
+  const anchorRef = useRef<HTMLButtonElement>(null);
+  return (
+    <div className="flex flex-wrap gap-2">
+      <Button
+        onClick={() =>
+          toast.add({
+            type: "info",
+            title: "기록 삭제됨",
+            description: "되돌릴 수 있다.",
+            timeout: 0,
+            actionProps: { children: "되돌리기" },
+          })
+        }
+      >
+        실행 취소 토스트
+      </Button>
+      <Button
+        ref={anchorRef}
+        onClick={() =>
+          toast.add({
+            type: "success",
+            title: "복사됨",
+            timeout: 0,
+            positionerProps: { anchor: anchorRef.current, sideOffset: 10 },
+          })
+        }
+      >
+        복사
+      </Button>
+    </div>
+  );
+}
+
+const PartsDemo = () => (
+  <ToastProvider>
+    <PartsTriggers />
+  </ToastProvider>
+);
+
+/** Action button in a stacked toast; Positioner + Arrow in an anchored one. */
+export const ActionAndAnchored: Story = {
+  render: () => <PartsDemo />,
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "실행 취소 토스트" }));
+    const region = await body(canvasElement).findByRole("region", { name: "알림" });
+    const action = await within(region).findByRole("button", { name: "되돌리기" });
+    await expect(action).toHaveAttribute("data-slot", "toast-action");
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "복사" }));
+    await waitFor(() => expect(region.querySelector("[data-slot=toast-positioner]")).not.toBeNull());
+    const anchored = region.querySelector("[data-slot=toast-positioner] [data-slot=toast]") as HTMLElement;
+    await expect(anchored.querySelector("[data-slot=toast-arrow]")).not.toBeNull();
+  },
+};
+
+export const ReducedMotion: Story = {
+  render: () => <PartsDemo />,
+  play: async ({ canvasElement }) => {
+    for (const mode of ["reduced", "off"] as const) {
+      await inMotion(mode, async () => {
+        await userEvent.click(within(canvasElement).getByRole("button", { name: "실행 취소 토스트" }));
+        const region = await screen.findByRole("region", { name: "알림" });
+        const stacked = await waitFor(() => {
+          const el = region.querySelector("[data-slot=toast]:not([data-slot=toast-positioner] *)");
+          expect(el).not.toBeNull();
+          return el as HTMLElement;
+        });
+        await userEvent.click(within(canvasElement).getByRole("button", { name: "복사" }));
+        const anchored = await waitFor(() => {
+          const el = region.querySelector("[data-slot=toast-positioner] [data-slot=toast]");
+          expect(el).not.toBeNull();
+          return el as HTMLElement;
+        });
+        for (const el of [stacked, anchored]) await (mode === "reduced" ? expectReduced : expectOff)(el);
+        for (const b of within(region).getAllByRole("button", { name: "닫기" })) await userEvent.click(b);
+        await waitFor(() => expect(region.querySelectorAll("[data-slot=toast]")).toHaveLength(0), { timeout: 800 });
+      });
+    }
   },
 };

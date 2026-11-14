@@ -20,7 +20,7 @@
           "target": "@ui/tooltip.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Tooltip, TooltipTrigger, TooltipContent. The wrapper sets aria-describedby on the trigger while open, because Base UI does not link them. Do not put interactive content inside TooltipContent; use Popover for that."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Tooltip, TooltipTrigger, TooltipContent. The wrapper sets aria-describedby on the trigger while open, because Base UI does not link them. Do not put interactive content inside TooltipContent; use Popover for that. Popup uses yorha-pop; optional TooltipArrow. Reduced motion is opacity-only, off is instant."
     }
   ]
 }

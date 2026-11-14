@@ -31,9 +31,49 @@ function toToastType(type: string | undefined): ToastType {
 const ROOT =
   "relative flex w-80 max-w-full items-start gap-3 border bg-yorha-panel p-3 pr-2 rounded-yorha shadow-yorha-md " +
   "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg " +
-  "transition-[opacity,translate] duration-(--motion-panel) ease-yorha-out " +
-  "data-[starting-style]:translate-x-4 data-[starting-style]:opacity-0 " +
-  "data-[ending-style]:translate-x-4 data-[ending-style]:opacity-0 data-[ending-style]:duration-(--motion-select) data-[ending-style]:ease-yorha-in";
+  "yorha-slide-left [--yorha-slide-distance:1rem]";
+
+// Anchored toasts (added with `positionerProps`) pop from their anchor instead of sliding in.
+const ANCHORED_ROOT =
+  "relative flex w-max max-w-80 items-start gap-3 border bg-yorha-panel px-3 py-2 rounded-yorha shadow-yorha-md " +
+  "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg yorha-pop";
+
+const ARROW =
+  "relative block h-1.5 w-3 overflow-clip " +
+  "data-[side=bottom]:top-[-6px] data-[side=top]:bottom-[-6px] data-[side=top]:rotate-180 " +
+  "data-[side=left]:right-[-9px] data-[side=left]:rotate-90 data-[side=right]:left-[-9px] data-[side=right]:-rotate-90 " +
+  "before:absolute before:bottom-0 before:left-1/2 before:size-[calc(6px*1.4142)] before:border before:border-yorha-border " +
+  "before:bg-yorha-panel before:content-[''] before:[transform:translate(-50%,50%)_rotate(45deg)]";
+
+/** Pointer from an anchored toast to its anchor. Rendered by ToastList inside anchored toasts. */
+function ToastArrow({ className, ...props }: ComponentProps<typeof ToastPrimitive.Arrow>) {
+  return <ToastPrimitive.Arrow data-slot="toast-arrow" className={cnState(ARROW, className)} {...props} />;
+}
+
+/** Action button of a toast (`toast.add({ actionProps: { children: "Undo", onClick } })`). Renders only when set. */
+function ToastAction({ className, ...props }: ComponentProps<typeof ToastPrimitive.Action>) {
+  return (
+    <ToastPrimitive.Action
+      data-slot="toast-action"
+      className={cnState(
+        "mt-2 min-h-6 cursor-pointer rounded-yorha border border-yorha-border px-2 font-yorha text-yorha-xs tracking-yorha-body text-yorha-fg hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+/** Anchors one toast to an element (`toast.add({ positionerProps: { anchor, sideOffset } })`). Used by ToastList. */
+function ToastPositioner({ className, ...props }: ComponentProps<typeof ToastPrimitive.Positioner>) {
+  return (
+    <ToastPrimitive.Positioner
+      data-slot="toast-positioner"
+      className={cnState("z-[calc(var(--yorha-z-toast)-var(--toast-index))] outline-none", className)}
+      {...props}
+    />
+  );
+}
 
 const TYPE_BORDER: Record<ToastType, string> = {
   info: "border-yorha-border",
@@ -46,13 +86,22 @@ function ToastList() {
   const { toasts } = ToastPrimitive.useToastManager();
   return toasts.map((toast) => {
     const type = toToastType(toast.type);
-    return (
-      <ToastPrimitive.Root key={toast.id} toast={toast} data-slot="toast" data-type={type} className={cnState([ROOT, TYPE_BORDER[type]], undefined)}>
+    const anchored = toast.positionerProps !== undefined;
+    const root = (
+      <ToastPrimitive.Root
+        key={anchored ? undefined : toast.id}
+        toast={toast}
+        data-slot="toast"
+        data-type={type}
+        className={cnState([anchored ? ANCHORED_ROOT : ROOT, TYPE_BORDER[type]], undefined)}
+      >
+        {anchored ? <ToastArrow /> : null}
         <TypeShape type={type} />
         <ToastPrimitive.Content className="min-w-0 flex-1">
           <span className="sr-only">{TYPE_LABEL[type]}: </span>
           <ToastPrimitive.Title className="font-yorha-bold text-yorha-sm tracking-yorha-heading uppercase" />
           <ToastPrimitive.Description className="mt-1 text-yorha-fg-soft" />
+          {toast.actionProps ? <ToastAction /> : null}
         </ToastPrimitive.Content>
         <ToastPrimitive.Close
           // Base UI sets aria-hidden on Close while the stack is collapsed, but the button stays tabbable
@@ -63,6 +112,13 @@ function ToastList() {
           <span aria-hidden="true">×</span>
         </ToastPrimitive.Close>
       </ToastPrimitive.Root>
+    );
+    return anchored ? (
+      <ToastPositioner key={toast.id} toast={toast}>
+        {root}
+      </ToastPositioner>
+    ) : (
+      root
     );
   });
 }
@@ -111,4 +167,4 @@ function ToastViewport({ className, container, contained = false, ...props }: Vi
   );
 }
 
-export { ToastProvider, ToastViewport, useToast, createToastManager };
+export { ToastProvider, ToastViewport, ToastAction, ToastArrow, ToastPositioner, useToast, createToastManager };

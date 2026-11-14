@@ -21,7 +21,7 @@
           "target": "@ui/menu.tsx"
         }
       ],
-      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Popup uses yorha-pop; optional arrow and backdrop parts. Reduced motion is opacity-only, off is instant."
     }
   ]
 }

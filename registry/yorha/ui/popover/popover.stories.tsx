@@ -1,14 +1,48 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent, waitFor, within } from "storybook/test";
+import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import {
   Popover,
+  PopoverArrow,
   PopoverClose,
   PopoverContent,
   PopoverDescription,
   PopoverTitle,
   PopoverTrigger,
+  PopoverViewport,
+  createPopoverHandle,
 } from "@/components/ui/popover";
+
+// --- motion helpers (reduced: opacity-only, <=120ms; off: 0) ---
+async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
+  const root = document.documentElement;
+  const prev = root.getAttribute("data-motion");
+  root.setAttribute("data-motion", mode);
+  try {
+    await run();
+  } finally {
+    if (prev === null) root.removeAttribute("data-motion");
+    else root.setAttribute("data-motion", prev);
+  }
+}
+function durationsMs(el: Element): number[] {
+  return getComputedStyle(el)
+    .transitionDuration.split(",")
+    .map((v) => (v.trim().endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000));
+}
+/** Reduced: a fade of at most 120ms and no spatial travel (--motion-spatial is 0). */
+async function expectReduced(el: Element) {
+  // Base UI sets an inline `transition: none` for the first frame of some popups.
+  await waitFor(() => expect(getComputedStyle(el).transitionProperty).not.toBe("none"));
+  const max = Math.max(...durationsMs(el));
+  expect(max).toBeGreaterThan(0);
+  expect(max).toBeLessThanOrEqual(120);
+  expect(getComputedStyle(el).transitionProperty).toContain("opacity");
+  expect(getComputedStyle(document.documentElement).getPropertyValue("--motion-spatial").trim()).toBe("0");
+}
+async function expectOff(el: Element) {
+  expect(Math.max(...durationsMs(el))).toBe(0);
+}
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -30,6 +64,34 @@ function Demo({ defaultOpen, onOpenChange }: DemoProps) {
           <PopoverDescription>전투 보조 유닛. 현재 위치는 지하 격납고다.</PopoverDescription>
           <PopoverClose>닫기</PopoverClose>
         </PopoverContent>
+      </Popover>
+    </div>
+  );
+}
+
+const panels = createPopoverHandle<string>();
+
+/** Two triggers share one popup (handle). Viewport cross-fades the content, Arrow follows the popup, Backdrop dims in modal mode. */
+function SharedDemo({ modal = false }: { modal?: boolean }) {
+  return (
+    <div className="flex min-h-64 items-start justify-center gap-3 bg-yorha-panel p-16 text-yorha-fg">
+      <PopoverTrigger handle={panels} payload="알림 내용" className={TRIGGER_CLASS}>
+        알림
+      </PopoverTrigger>
+      <PopoverTrigger handle={panels} payload="활동 내용" className={TRIGGER_CLASS}>
+        활동
+      </PopoverTrigger>
+      <Popover handle={panels} modal={modal}>
+        {({ payload }) => (
+          <>
+            <PopoverContent aria-label="공유 팝오버" backdrop={modal}>
+              <PopoverArrow />
+              <PopoverViewport>
+                <PopoverDescription>{payload as string}</PopoverDescription>
+              </PopoverViewport>
+            </PopoverContent>
+          </>
+        )}
       </Popover>
     </div>
   );
@@ -160,4 +222,48 @@ export const Authentic: Story = {
       <Demo defaultOpen />
     </div>
   ),
+};
+
+export const SharedPopup: Story = {
+  render: () => <SharedDemo />,
+  play: async () => {
+    await userEvent.click(body().getByRole("button", { name: "알림" }));
+    const d = await body().findByRole("dialog", { name: "공유 팝오버" });
+    await waitFor(() => expect(d).toBeVisible());
+    await expect(within(d).getByText("알림 내용")).toBeVisible();
+    // the arrow is a real part of the popup
+    await expect(d.querySelector("[data-slot=popover-arrow]")).not.toBeNull();
+    // second trigger swaps the content inside the same popup
+    await userEvent.click(body().getByRole("button", { name: "활동" }));
+    await waitFor(() => expect(within(d).getByText("활동 내용")).toBeVisible());
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body().queryByRole("dialog")).toBeNull());
+  },
+};
+
+export const ModalBackdrop: Story = {
+  render: () => <SharedDemo modal />,
+  play: async () => {
+    await userEvent.click(body().getByRole("button", { name: "알림" }));
+    await body().findByRole("dialog", { name: "공유 팝오버" });
+    await waitFor(() => expect(document.querySelector("[data-slot=popover-backdrop]")).not.toBeNull());
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body().queryByRole("dialog")).toBeNull());
+  },
+};
+
+export const ReducedMotion: Story = {
+  render: () => <SharedDemo modal />,
+  play: async () => {
+    for (const mode of ["reduced", "off"] as const) {
+      await inMotion(mode, async () => {
+        await userEvent.click(body().getByRole("button", { name: "알림" }));
+        const d = await screen.findByRole("dialog", { name: "공유 팝오버" });
+        const backdrop = document.querySelector("[data-slot=popover-backdrop]")!;
+        for (const el of [d, backdrop]) await (mode === "reduced" ? expectReduced : expectOff)(el);
+        await userEvent.keyboard("{Escape}");
+        await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull(), { timeout: 400 });
+      });
+    }
+  },
 };

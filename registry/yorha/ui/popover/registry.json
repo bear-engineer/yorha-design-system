@@ -20,7 +20,7 @@
           "target": "@ui/popover.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Popover, PopoverTrigger, PopoverContent, PopoverTitle, PopoverDescription, PopoverClose. Pass `modal={false}` for a non-trapping popover. Positioning uses Base UI's Positioner (side, align, sideOffset), not CSS anchor positioning."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Popover, PopoverTrigger, PopoverContent, PopoverTitle, PopoverDescription, PopoverClose. Pass `modal={false}` for a non-trapping popover. Positioning uses Base UI's Positioner (side, align, sideOffset), not CSS anchor positioning. Popup uses yorha-pop (scale+opacity from --transform-origin); optional PopoverArrow and PopoverBackdrop (yorha-fade) parts. Reduced motion is opacity-only, off is instant."
     }
   ]
 }

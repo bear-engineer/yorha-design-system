@@ -20,7 +20,7 @@
           "target": "@ui/select.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Select, SelectTrigger, SelectValue, SelectContent, SelectItem (plus SelectGroup, SelectGroupLabel, SelectSeparator). Pass `items` to Select so the closed trigger can show the selected label. Disabled items stay keyboard-highlightable (Base UI behaviour) but cannot be chosen."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Select, SelectTrigger, SelectValue, SelectContent, SelectItem (plus SelectGroup, SelectGroupLabel, SelectSeparator). Pass `items` to Select so the closed trigger can show the selected label. Disabled items stay keyboard-highlightable (Base UI behaviour) but cannot be chosen. Popup uses yorha-pop; optional SelectArrow, SelectBackdrop and SelectLabel parts; the list scrolls inside the popup with scroll arrows. Reduced motion is opacity-only, off is instant."
     }
   ]
 }

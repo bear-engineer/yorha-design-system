@@ -21,7 +21,7 @@
           "target": "@ui/toast.tsx"
         }
       ],
-      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Toasts enter with yorha-slide-left [--yorha-slide-distance:1rem]; reduced motion is opacity-only, off is instant."
     }
   ]
 }

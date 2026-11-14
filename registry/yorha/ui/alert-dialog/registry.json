@@ -23,7 +23,7 @@
           "target": "@ui/alert-dialog.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction. Put AlertDialogCancel first so it takes initial focus. Escape still cancels (WAI-ARIA); outside press does not. Pass `sound` for open/close cues (requires YorhaProvider)."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction. Put AlertDialogCancel first so it takes initial focus. Escape still cancels (WAI-ARIA); outside press does not. Pass `sound` for open/close cues (requires YorhaProvider). Popup uses yorha-panel and Backdrop yorha-fade (T3 motion utilities); reduced motion is opacity-only, off is instant."
     }
   ]
 }

@@ -22,7 +22,7 @@
           "target": "@ui/dialog.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogClose; use Button for actions via render={<Button />}. Pass `sound` to Dialog to play open/close cues (silent unless the sound preference is enabled; requires YorhaProvider). Enter uses --motion-panel, exit --motion-panel-exit; both are instant under data-motion reduced/off."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Dialog, DialogTrigger, DialogContent, DialogTitle, DialogDescription, DialogBody, DialogFooter, DialogClose; use Button for actions via render={<Button />}. Pass `sound` to Dialog to play open/close cues (silent unless the sound preference is enabled; requires YorhaProvider). Popup uses yorha-panel, Backdrop yorha-fade (T3 motion utilities); both are instant under data-motion reduced/off and opacity-only under reduced."
     }
   ]
 }

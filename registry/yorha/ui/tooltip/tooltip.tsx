@@ -11,7 +11,7 @@ const TooltipContext = createContext<TooltipState | null>(null);
 
 function useTooltipState(): TooltipState {
   const ctx = useContext(TooltipContext);
-  if (!ctx) throw new Error("TooltipTrigger and TooltipContent must be used inside <Tooltip>");
+  if (!ctx) throw new Error("TooltipContent must be used inside <Tooltip>");
   return ctx;
 }
 
@@ -43,12 +43,17 @@ function Tooltip({ open, defaultOpen = false, onOpenChange, ...props }: RootProp
 
 type TriggerProps = ComponentProps<typeof TooltipPrimitive.Trigger>;
 
+/**
+ * Inside `<Tooltip>` the trigger gets `aria-describedby` while open. A trigger outside `<Tooltip>`
+ * (linked with a `handle`) cannot see the root: give it its own `aria-describedby` if it needs one.
+ */
 function TooltipTrigger({ className, ...props }: TriggerProps) {
-  const { id, open } = useTooltipState();
+  const ctx = useContext(TooltipContext);
+  if (!ctx && !props.handle) throw new Error("TooltipTrigger must be used inside <Tooltip> or get a `handle`");
   return (
     <TooltipPrimitive.Trigger
       data-slot="tooltip-trigger"
-      aria-describedby={open ? id : undefined}
+      aria-describedby={ctx?.open ? ctx.id : undefined}
       className={cnState(
         [
           "cursor-pointer rounded-yorha border border-yorha-border bg-yorha-panel px-3 py-2",
@@ -98,9 +103,7 @@ function TooltipContent({
           className={cnState(
             [
               "max-w-72 rounded-yorha bg-yorha-ink px-2 py-1 font-yorha text-yorha-xs tracking-yorha-body text-yorha-on-ink shadow-yorha-sm",
-              "origin-(--transform-origin) transition-[opacity,translate] duration-(--motion-select) ease-yorha-out",
-              "data-[starting-style]:opacity-0",
-              "data-[ending-style]:opacity-0 data-[ending-style]:duration-(--motion-select) data-[ending-style]:ease-yorha-in",
+              "yorha-pop",
             ],
             className,
           )}
@@ -111,4 +114,49 @@ function TooltipContent({
   );
 }
 
-export { Tooltip, TooltipTrigger, TooltipContent };
+const ARROW =
+  "relative block h-1.5 w-3 overflow-clip " +
+  "data-[side=bottom]:top-[-6px] data-[side=top]:bottom-[-6px] data-[side=top]:rotate-180 " +
+  "data-[side=left]:right-[-9px] data-[side=left]:rotate-90 data-[side=right]:left-[-9px] data-[side=right]:-rotate-90 " +
+  "before:absolute before:bottom-0 before:left-1/2 before:size-[calc(6px*1.4142)] before:bg-yorha-ink " +
+  "before:content-[''] before:[transform:translate(-50%,50%)_rotate(45deg)]";
+
+/** Pointer from the tooltip to its trigger. Render it inside TooltipContent. */
+function TooltipArrow({ className, ...props }: ComponentProps<typeof TooltipPrimitive.Arrow>) {
+  return <TooltipPrimitive.Arrow data-slot="tooltip-arrow" className={cnState(ARROW, className)} {...props} />;
+}
+
+/** Wrap the content of a tooltip with several triggers (one handle) so it cross-fades between them. */
+function TooltipViewport({ className, ...props }: ComponentProps<typeof TooltipPrimitive.Viewport>) {
+  return (
+    <TooltipPrimitive.Viewport
+      data-slot="tooltip-viewport"
+      className={cnState(
+        "relative h-full w-full overflow-clip [&_[data-current]]:yorha-fade [&_[data-previous]]:yorha-fade",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+/**
+ * Shares open delay and skip-delay between tooltips: wrap a toolbar or page region once.
+ * `delay` / `closeDelay` are milliseconds.
+ */
+const TooltipProvider = TooltipPrimitive.Provider;
+
+/** Handle for a trigger placed outside `<Tooltip>`: pass the same handle to TooltipTrigger and Tooltip. */
+const createTooltipHandle = TooltipPrimitive.createHandle;
+type TooltipHandle<Payload = unknown> = TooltipPrimitive.Handle<Payload>;
+
+export {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipArrow,
+  TooltipViewport,
+  TooltipProvider,
+  createTooltipHandle,
+};
+export type { TooltipHandle };

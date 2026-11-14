@@ -27,6 +27,10 @@ export function AlertDialog({ sound = false, ...props }: AlertDialogProps) {
   return sound ? <SoundRoot {...props} /> : <BaseAlertDialog.Root {...props} />;
 }
 
+/** Handle for a trigger placed outside `<AlertDialog>`: pass the same handle to the trigger and the root. */
+export const createAlertDialogHandle = BaseAlertDialog.createHandle;
+export type AlertDialogHandle<Payload = unknown> = BaseAlertDialog.Handle<Payload>;
+
 export function AlertDialogTrigger(props: ComponentProps<typeof BaseAlertDialog.Trigger>) {
   return <BaseAlertDialog.Trigger {...props} />;
 }
@@ -49,14 +53,14 @@ export function AlertDialogContent({
   return (
     <BaseAlertDialog.Portal>
       <BaseAlertDialog.Backdrop className={dialogStyles.backdrop} />
-      <div className={dialogStyles.viewport}>
+      <BaseAlertDialog.Viewport className={dialogStyles.viewport}>
         <BaseAlertDialog.Popup
           className={cnState(cn(dialogStyles.popup, "border-yorha-alert-ui"), className)}
           {...props}
         >
           {children}
         </BaseAlertDialog.Popup>
-      </div>
+      </BaseAlertDialog.Viewport>
     </BaseAlertDialog.Portal>
   );
 }
