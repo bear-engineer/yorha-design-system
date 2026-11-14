@@ -77,9 +77,9 @@ export const tokens = {
         "name": "fg-muted",
         "cssVar": "--yorha-fg-muted",
         "utility": "yorha-fg-muted",
-        "hex": "#5f5c4e",
-        "value": "oklch(0.4733 0.0221 97.16)",
-        "description": "Muted text. Light theme: panel only (4.20:1 on bg); use fg-soft on bg."
+        "hex": "#595649",
+        "value": "oklch(0.4533 0.0221 97.16)",
+        "description": "Muted text; 4.6:1 on bg and 4.95:1 on panel in the light theme."
       },
       {
         "name": "border",
@@ -93,9 +93,9 @@ export const tokens = {
         "name": "separator",
         "cssVar": "--yorha-separator",
         "utility": "yorha-separator",
-        "hex": "#7c765c",
-        "value": "oklch(0.564 0.0388 96.58)",
-        "description": "Meaningful separators on panel."
+        "hex": "#767057",
+        "value": "oklch(0.545 0.0388 96.58)",
+        "description": "Meaningful separators; 3.1:1 on bg and 3.3:1 on panel."
       },
       {
         "name": "ink",
@@ -1493,11 +1493,21 @@ export const tokens = {
         },
         {
           "fg": "fg-muted",
+          "bg": "bg",
+          "kind": "text",
+          "fgHex": "#595649",
+          "bgHex": "#d1cdb7",
+          "ratio": 4.6,
+          "min": 4.5,
+          "pass": true
+        },
+        {
+          "fg": "fg-muted",
           "bg": "panel",
           "kind": "text",
-          "fgHex": "#5f5c4e",
+          "fgHex": "#595649",
           "bgHex": "#dad4bb",
-          "ratio": 4.51,
+          "ratio": 4.94,
           "min": 4.5,
           "pass": true
         },
@@ -1583,11 +1593,21 @@ export const tokens = {
         },
         {
           "fg": "separator",
+          "bg": "bg",
+          "kind": "ui",
+          "fgHex": "#767057",
+          "bgHex": "#d1cdb7",
+          "ratio": 3.1,
+          "min": 3,
+          "pass": true
+        },
+        {
+          "fg": "separator",
           "bg": "panel",
           "kind": "ui",
-          "fgHex": "#7c765c",
+          "fgHex": "#767057",
           "bgHex": "#dad4bb",
-          "ratio": 3.06,
+          "ratio": 3.34,
           "min": 3,
           "pass": true
         },
@@ -1738,6 +1758,16 @@ export const tokens = {
         },
         {
           "fg": "fg-muted",
+          "bg": "bg",
+          "kind": "text",
+          "fgHex": "#b4af9a",
+          "bgHex": "#302e29",
+          "ratio": 6.16,
+          "min": 4.5,
+          "pass": true
+        },
+        {
+          "fg": "fg-muted",
           "bg": "panel",
           "kind": "text",
           "fgHex": "#b4af9a",
@@ -1823,6 +1853,16 @@ export const tokens = {
           "fgHex": "#8c8878",
           "bgHex": "#3f3d36",
           "ratio": 3.05,
+          "min": 3,
+          "pass": true
+        },
+        {
+          "fg": "separator",
+          "bg": "bg",
+          "kind": "ui",
+          "fgHex": "#8c8878",
+          "bgHex": "#302e29",
+          "ratio": 3.81,
           "min": 3,
           "pass": true
         },
@@ -1983,6 +2023,16 @@ export const tokens = {
         },
         {
           "fg": "fg-muted",
+          "bg": "bg",
+          "kind": "text",
+          "fgHex": "#bab5a1",
+          "bgHex": "#d1cdb7",
+          "ratio": 1.28,
+          "min": 4.5,
+          "pass": false
+        },
+        {
+          "fg": "fg-muted",
           "bg": "panel",
           "kind": "text",
           "fgHex": "#bab5a1",
@@ -2068,6 +2118,16 @@ export const tokens = {
           "fgHex": "#b4af9a",
           "bgHex": "#dad4bb",
           "ratio": 1.47,
+          "min": 3,
+          "pass": false
+        },
+        {
+          "fg": "separator",
+          "bg": "bg",
+          "kind": "ui",
+          "fgHex": "#b4af9a",
+          "bgHex": "#d1cdb7",
+          "ratio": 1.37,
           "min": 3,
           "pass": false
         },
@@ -2228,6 +2288,16 @@ export const tokens = {
         },
         {
           "fg": "fg-muted",
+          "bg": "bg",
+          "kind": "text",
+          "fgHex": "#36342d",
+          "bgHex": "#ebe7d6",
+          "ratio": 10.04,
+          "min": 7,
+          "pass": true
+        },
+        {
+          "fg": "fg-muted",
           "bg": "panel",
           "kind": "text",
           "fgHex": "#36342d",
@@ -2313,6 +2383,16 @@ export const tokens = {
           "fgHex": "#36342d",
           "bgHex": "#f4f1e4",
           "ratio": 11,
+          "min": 4.5,
+          "pass": true
+        },
+        {
+          "fg": "separator",
+          "bg": "bg",
+          "kind": "ui",
+          "fgHex": "#4e4b42",
+          "bgHex": "#ebe7d6",
+          "ratio": 7.02,
           "min": 4.5,
           "pass": true
         },

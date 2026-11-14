@@ -11,7 +11,7 @@ import { tokens } from "./tokens.generated";
 - 테마는 `data-theme` 속성으로 바꿉니다. `<html data-theme="dark">`처럼 문서 전체에 걸거나 하위 트리에만 걸 수 있습니다.
 - `light`(기본), `dark`, `high-contrast`는 대비 게이트를 통과합니다. `authentic`은 원작 느낌의 저대비 팬 팔레트로, 장식 모드이며 WCAG AA를 통과하지 못합니다.
 - 강조색은 탁한 적주황 하나이고 경고에만 씁니다.
-- `fg-muted`는 light 테마에서 패널 위에서만 씁니다(배경 위 4.20:1). 배경 위에서는 `fg-soft`를 씁니다.
+- `fg-muted`는 light 테마에서도 배경 4.6:1, 패널 4.95:1로 AA를 충족합니다.
 - `grid`와 `line-deco`는 장식 전용입니다. 의미를 전달하는 선에는 `border`나 `separator`를 씁니다.
 
 {tokens.themes.map((theme) => (

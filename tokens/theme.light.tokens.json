@@ -102,13 +102,13 @@
       "$value": {
         "colorSpace": "oklch",
         "components": [
-          0.4733,
+          0.4533,
           0.0221,
           97.16
         ],
-        "hex": "#5f5c4e"
+        "hex": "#595649"
       },
-      "$description": "Muted text. Light theme: panel only (4.20:1 on bg); use fg-soft on bg."
+      "$description": "Muted text; 4.6:1 on bg and 4.95:1 on panel in the light theme."
     },
     "border": {
       "$value": {
@@ -126,13 +126,13 @@
       "$value": {
         "colorSpace": "oklch",
         "components": [
-          0.564,
+          0.545,
           0.0388,
           96.58
         ],
-        "hex": "#7c765c"
+        "hex": "#767057"
       },
-      "$description": "Meaningful separators on panel."
+      "$description": "Meaningful separators; 3.1:1 on bg and 3.3:1 on panel."
     },
     "ink": {
       "$value": {

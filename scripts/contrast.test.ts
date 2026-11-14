@@ -52,6 +52,22 @@ describe("theme contrast gate", () => {
     expect(rows.filter((r) => !r.pass).map((r) => `${r.fg}/${r.bg} ${r.ratio.toFixed(2)} < ${r.min}`)).toEqual([]);
   });
 
+  it("gates every text token on bg and panel, and every border/separator/focus token at >= 3:1 (all accessible themes)", () => {
+    const has = (fg: string, bg: string, kind: string) => CONTRAST_PAIRS.some((p) => p.fg === fg && p.bg === bg && p.kind === kind);
+    for (const fg of ["fg-ink", "fg-strong", "fg", "fg-soft", "fg-muted", "alert"]) {
+      for (const bg of ["bg", "panel"]) expect(has(fg, bg, "text"), `text ${fg}/${bg}`).toBe(true);
+    }
+    for (const fg of ["border", "separator", "ring", "alert-ui"]) {
+      for (const bg of ["bg", "panel"]) expect(has(fg, bg, "ui"), `ui ${fg}/${bg}`).toBe(true);
+    }
+    for (const theme of ACCESSIBLE) {
+      expect(THRESHOLDS[theme]?.ui, theme).toBeGreaterThanOrEqual(3);
+      for (const row of checkPairs(colors[theme] ?? {}, THRESHOLDS[theme] ?? { text: 4.5, ui: 3 })) {
+        if (["fg-muted", "separator"].includes(row.fg)) expect(row.ratio, `${theme} ${row.fg}/${row.bg}`).toBeGreaterThanOrEqual(row.kind === "text" ? 4.5 : 3);
+      }
+    }
+  });
+
   it("authentic stays a decoration mode: it fails the AA gate", () => {
     const rows = checkPairs(colors.authentic ?? {}, { text: 4.5, ui: 3 });
     expect(rows.some((r) => !r.pass)).toBe(true);
@@ -74,7 +90,7 @@ describe("fixture that must fail", () => {
     const failed = checkPairs(fixture, { text: 4.5, ui: 3 })
       .filter((r) => !r.pass)
       .map((r) => `${r.kind}:${r.fg}/${r.bg}`);
-    expect(failed.sort()).toEqual(["text:fg-muted/panel", "ui:border/bg", "ui:border/panel"]);
+    expect(failed.sort()).toEqual(["text:fg-muted/bg", "text:fg-muted/panel", "ui:border/bg", "ui:border/panel"]);
   });
 
   it("throws on a pair that names a missing token", () => {
