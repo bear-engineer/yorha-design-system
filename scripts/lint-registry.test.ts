@@ -46,6 +46,7 @@ describe("lintRegistry motion rule", () => {
     ["motion/layout-transition", [/thing\.tsx:2 motion: transition on layout property \"width\"/]],
     ["motion/layout-transition-inset", [/thing\.tsx:2 motion: transition on layout property \"inset\"/, /thing\.tsx:2 motion: transition on layout property \"margin-left\"/]],
     ["motion/display-switch", [/thing\.tsx:2 motion: state indicator toggled by display \(`hidden` \+ `group-data-\[pressed\]\/item:block`\)/]],
+    ["motion/focus-colors", [/thing\.tsx:2 motion: transition-colors on an element with focus-visible classes/]],
   ] as const;
 
   it("accepts tokens, utilities, identifiers and comments", () => {

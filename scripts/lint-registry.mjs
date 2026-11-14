@@ -7,6 +7,7 @@
 // Rule `motion` (warning; error with env YORHA_MOTION_STRICT=1 or options.motionStrict): no raw `NNNms`, no raw
 // cubic-bezier(), no `transition-all` in registry .tsx; no transition on layout properties (width/height/top/left/margin/padding/
 // border-width/font-weight/inset...) and no `hidden` + `group-data-[..]:block` display switches for state indicators; a
+// Also: `transition-colors` on a line carrying `focus-visible:` classes.
 // `lint-allow layout-transition: <reason>` comment on the line or the line above allows an unavoidable layout transition. Use --motion-* tokens, ease-yorha-* and the yorha-* motion utilities.
 import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, basename, extname, resolve, relative, sep } from "node:path";
@@ -27,6 +28,10 @@ const MOTION_RULES = [
 // Layout properties: animating them re-runs layout every frame and moves neighbours. Animate transform, opacity or colour instead.
 const LAYOUT_PROP = /^(?:width|height|top|left|right|bottom|inset(?:-[a-z]+)*|margin(?:-[a-z]+)*|padding(?:-[a-z]+)*|border(?:-[a-z]+)?-width|font-weight|(?:min|max)-(?:width|height)|gap|flex-basis|grid-template-(?:rows|columns))$/;
 const TRANSITION_LIST = /(?<![\w-])(?:transition-\[([^\]]+)\]|\[transition-property:([^\]]+)\])/g;
+// `transition-colors` includes outline-color, so a focus ring would fade in; a focusable element lists its colour properties instead.
+const FOCUS_VISIBLE = /(?<![\w-])(?:[\w-]+:)*focus-visible:/;
+const TRANSITION_COLORS = /(?<![\w-])transition-colors\b/;
+const FOCUS_HINT = "use transition-[color,background-color,border-color]";
 // A state indicator toggled by display: `hidden` in the base classes plus `group-data-[...]:block|flex|grid|inline*`.
 const HIDDEN = /(?<![\w:-])hidden(?![\w-])/;
 const DISPLAY_SWITCH = /(?<![\w-])((?:peer-|group-)?(?:data|aria)-\[[^\]]+\](?:\/[\w-]+)?:(?:block|flex|grid|inline-block|inline-flex|inline-grid|inline))(?![\w-])/;
@@ -58,6 +63,9 @@ function motionFindings(code, raw = code) {
         for (const prop of (list[1] ?? list[2]).split(/[,_\s]+/).filter(Boolean)) {
           if (LAYOUT_PROP.test(prop)) findings.push(`${index + 1} motion: transition on layout property "${prop}" (${LAYOUT_HINT})`);
         }
+      }
+      if (FOCUS_VISIBLE.test(line) && TRANSITION_COLORS.test(line)) {
+        findings.push(`${index + 1} motion: transition-colors on an element with focus-visible classes also eases the focus outline (${FOCUS_HINT})`);
       }
       if (HIDDEN.test(line)) {
         const sw = line.match(DISPLAY_SWITCH);

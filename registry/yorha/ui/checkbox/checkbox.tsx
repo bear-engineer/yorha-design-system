@@ -30,7 +30,7 @@ export function Checkbox({ children, className, rowClassName, ...props }: Checkb
         className={cnState(
           cn(
             "group grid size-5 self-center min-h-[24px] min-w-[24px] shrink-0 place-items-center rounded-yorha border border-current bg-transparent text-yorha-fg",
-            "transition-colors duration-(--motion-select) ease-yorha",
+            "transition-[color,background-color,border-color] duration-(--motion-select) ease-yorha",
             "data-[checked]:bg-yorha-ink data-[checked]:text-yorha-on-ink",
             "data-[indeterminate]:bg-yorha-ink data-[indeterminate]:text-yorha-on-ink",
             "focus-visible:yorha-focus",

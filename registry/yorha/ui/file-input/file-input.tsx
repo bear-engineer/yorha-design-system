@@ -190,7 +190,7 @@ export function FileInput({
         data-dragging={dragging ? "true" : undefined}
         className={cn(
           "flex flex-col items-start gap-3 rounded-yorha border border-dashed border-yorha-border bg-yorha-bg p-4",
-          "transition-colors duration-(--motion-select) ease-yorha",
+          "transition-[color,background-color,border-color] duration-(--motion-select) ease-yorha",
           "data-[dragging=true]:border-solid data-[dragging=true]:border-yorha-ink data-[dragging=true]:bg-yorha-control data-[dragging=true]:text-yorha-on-control",
         )}
         {...dragProps}

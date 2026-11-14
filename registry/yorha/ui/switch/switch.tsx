@@ -26,7 +26,7 @@ export function Switch({ children, className, rowClassName, ...props }: SwitchPr
         className={cnState(
           cn(
             "relative inline-flex h-5 self-center w-9 min-h-[24px] min-w-[24px] shrink-0 items-center rounded-yorha border border-current bg-transparent p-0.5",
-            "text-yorha-fg transition-colors duration-(--motion-select) ease-yorha",
+            "text-yorha-fg transition-[color,background-color,border-color] duration-(--motion-select) ease-yorha",
             "data-[checked]:bg-yorha-ink data-[checked]:text-yorha-on-ink",
             "focus-visible:yorha-focus",
           ),

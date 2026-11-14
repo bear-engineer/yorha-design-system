@@ -13,7 +13,7 @@ export interface NumberFieldProps extends Omit<RootProps, "children"> {
 
 const STEP_BUTTON = cn(
   "grid size-9 shrink-0 place-items-center border border-yorha-border bg-yorha-control text-yorha-on-control",
-  "cursor-pointer select-none transition-colors duration-(--motion-select) ease-yorha",
+  "cursor-pointer select-none transition-[color,background-color,border-color] duration-(--motion-select) ease-yorha",
   "hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus",
   "data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
 );
