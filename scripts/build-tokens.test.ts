@@ -82,7 +82,7 @@ describe("token generator", () => {
       expect(rootVar("yorha-text-base")).toBe("1rem");
       expect(block("[data-density=comfortable]")).toContain("--yorha-text-base: 1.0625rem;");
       expect(block("[data-density=compact]")).toContain("--yorha-text-base: 1rem;");
-      expect(block("[data-density]")).toContain("font-size: var(--yorha-text-base);");
+      expect(block("@layer base")).toMatch(/\[data-density\]:not\(:root\) \{\n\s+font-size: var\(--yorha-text-base\);/);
     });
 
     it("ships tabular and break utilities", () => {
@@ -100,7 +100,7 @@ describe("token generator", () => {
     it("registry base item carries the same rules", () => {
       const item = baseItem();
       expect(Object.keys(item.css)).toEqual(expect.arrayContaining(["@utility yorha-tabular", "@utility yorha-break", ":lang(ko), :lang(ja)", ":lang(en)"]));
-      expect(item.cssVars.light["yorha-measure"]).toBe("40em");
+      expect((item.css[":root"] as Record<string, string>)["--yorha-measure"]).toBe("40em");
     });
   });
 });

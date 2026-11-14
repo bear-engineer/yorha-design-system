@@ -54,3 +54,23 @@ import { tokens } from "./tokens.generated";
     ))}
   </tbody>
 </table>
+
+## 가독성
+
+본문 줄 높이는 언어로 갈립니다. `:lang(ko)`·`:lang(ja)` 안에서는 `--yorha-leading-body`가 `--yorha-leading-body-cjk`(1.7)로 바뀌고, 라틴 문자(`:lang(en)` 또는 lang 미지정)는 1.6을 유지합니다. 그러려면 `<html lang="ko">`처럼 문서 언어를 표시해야 합니다. 영어 구절은 `lang="en"`으로 감싸면 1.6으로 돌아갑니다.
+
+<table>
+  <thead>
+    <tr><th>CSS 변수</th><th>값</th><th>용도</th></tr>
+  </thead>
+  <tbody>
+    {tokens.readability.map((token) => (
+      <tr key={token.cssVar}><td><code>{token.cssVar}</code></td><td>{token.value}</td><td>{token.description}</td></tr>
+    ))}
+  </tbody>
+</table>
+
+- **줄 길이**: `.yorha-prose`는 `max-width: var(--yorha-measure)`(40em, 한글 약 40자)로 줄 길이를 제한하고, 문단 사이는 `--yorha-paragraph-gap`(1em)을 둡니다.
+- **밀도**: `data-density="comfortable"`은 본문 글자를 17px(`--yorha-text-base: 1.0625rem`)로 키웁니다. 기본·compact는 16px입니다. 글자 크기는 `body`와 `<html>`이 아닌 `data-density` 요소에만 걸리므로 `rem` 기준 크기와 간격 계산은 바뀌지 않습니다.
+- **숫자**: `yorha-tabular`는 `font-variant-numeric: tabular-nums`로 표·미터·타이머의 자릿수 폭을 맞춥니다.
+- **긴 문자열**: 한국어는 `word-break: keep-all`을 유지합니다. 링크·코드·표 셀(`a`, `code`, `td`, `th`)은 `overflow-wrap: anywhere`로 넘치기 전에 줄을 바꾸고, 그 밖의 요소에는 `yorha-break` 유틸리티를 씁니다.

@@ -91,6 +91,8 @@ const RULES = [
   [/^font\.weight\.(.+)$/, (k) => ({ cssVar: `yorha-font-weight-${k}`, theme: `font-weight-yorha-${k}` })],
   [/^font\.size\.(.+)$/, (k) => ({ cssVar: `yorha-text-${k}`, theme: `text-yorha-${k}` })],
   [/^font\.leading\.(.+)$/, (k) => ({ cssVar: `yorha-leading-${k}`, theme: `leading-yorha-${k}` })],
+  [/^font\.measure$/, () => ({ cssVar: "yorha-measure" })],
+  [/^font\.paragraph-gap$/, () => ({ cssVar: "yorha-paragraph-gap" })],
   [/^font\.tracking\.(.+)$/, (k) => ({ cssVar: `yorha-tracking-${k}`, theme: `tracking-yorha-${k}` })],
   [/^spacing\.base$/, () => ({ cssVar: "yorha-spacing", theme: "spacing", mirror: true })],
   [/^spacing\.grid$/, () => ({ cssVar: "yorha-grid-size" })],
@@ -222,20 +224,33 @@ function buildModel(tokens) {
   css[".dark"] = { "color-scheme": "dark" };
   for (const context of themeNames) css[`[data-theme=${context}]`] = { "color-scheme": scheme(context), ...dashed(colorVars(context)) };
   for (const [context, vars] of Object.entries(modifierBlocks.density)) css[`[data-density=${context}]`] = dashed(vars);
+  // Language leading: CJK gets the roomier body leading; Latin keeps the base value (a lang="en" island inside a ko page resets it).
+  css[":lang(ko), :lang(ja)"] = { "--yorha-leading-body": "var(--yorha-leading-body-cjk)" };
+  css[":lang(en)"] = { "--yorha-leading-body": cssValue("font.leading.body", base.get("font.leading.body")) };
   css["@media (prefers-reduced-motion: reduce)"] = { ":root:not([data-motion=full])": dashed(modifierBlocks.motion.reduced) };
   for (const [context, vars] of Object.entries(modifierBlocks.motion)) css[`[data-motion=${context}]`] = dashed(vars);
   css["@utility yorha-focus"] = focusRing;
+  css["@utility yorha-tabular"] = { "font-variant-numeric": "tabular-nums" };
+  css["@utility yorha-break"] = { "overflow-wrap": "anywhere", "word-break": "normal" };
   css["@layer base"] = {
     body: {
       "background-color": "var(--yorha-bg)",
       color: "var(--yorha-fg)",
       "font-family": "var(--yorha-font-sans)",
+      "font-size": "var(--yorha-text-base)",
       "line-height": "var(--yorha-leading-body)",
       "letter-spacing": "var(--yorha-tracking-body)",
       "word-break": "keep-all",
       "overflow-wrap": "break-word",
     },
+    // Never on :root: a font-size there would rescale every rem (and the 16px spacing maths); body carries it for a root density.
+    "[data-density]:not(:root)": { "font-size": "var(--yorha-text-base)" },
+    ":lang(ko)": { "word-break": "keep-all" },
     ":lang(ja)": { "font-family": "var(--yorha-font-sans-ja)", "word-break": "normal" },
+    // Long-string safety net: keep-all stays for Korean prose, but links, code and table cells may break anywhere rather than overflow.
+    "a, code, td, th": { "overflow-wrap": "anywhere" },
+    ".yorha-prose": { "max-width": "var(--yorha-measure)" },
+    ".yorha-prose p + p": { "margin-top": "var(--yorha-paragraph-gap)" },
     "[data-theme]": { color: "var(--yorha-fg)" },
     ":focus-visible": focusRing,
   };
@@ -337,6 +352,7 @@ function renderDocs({ tokens, themeNames, hexByTheme, colorPaths, modifierBlocks
     fontSizes: list("font.size.").map((size) => ({ ...size, lineHeight: cssValue("", base.get(`font.leading.${base.get(`font.size.${size.name}`).extensions["dev.yorha"].leading}`)) })),
     leading: list("font.leading."),
     tracking: list("font.tracking."),
+    readability: [...list("font.measure"), ...list("font.paragraph-gap")],
     spacing: list("spacing."),
     density: Object.fromEntries(Object.entries(modifierBlocks.density).map(([context, vars]) => [context, vars["yorha-spacing"]])),
     radius: list("radius."),

@@ -7,5 +7,16 @@
         "unit": "rem"
       }
     }
+  },
+  "font": {
+    "size": {
+      "$type": "dimension",
+      "base": {
+        "$value": {
+          "value": 1,
+          "unit": "rem"
+        }
+      }
+    }
   }
 }

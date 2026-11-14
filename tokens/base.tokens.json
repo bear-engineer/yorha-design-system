@@ -154,7 +154,11 @@
       },
       "body": {
         "$value": 1.6,
-        "$description": "Body copy (Korean / Japanese)."
+        "$description": "Body copy, Latin text (:lang(en) and unmarked)."
+      },
+      "body-cjk": {
+        "$value": 1.7,
+        "$description": "Body copy, Korean / Japanese (:lang(ko), :lang(ja)). Wide glyphs need more air."
       }
     },
     "tracking": {
@@ -186,6 +190,22 @@
           }
         }
       }
+    },
+    "measure": {
+      "$type": "dimension",
+      "$value": {
+        "value": 40,
+        "unit": "em"
+      },
+      "$description": "Maximum line length of running prose (about 40 Korean characters)."
+    },
+    "paragraph-gap": {
+      "$type": "dimension",
+      "$value": {
+        "value": 1,
+        "unit": "em"
+      },
+      "$description": "Space between paragraphs in running prose."
     }
   },
   "spacing": {

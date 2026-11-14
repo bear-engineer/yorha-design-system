@@ -878,7 +878,15 @@ export const tokens = {
       "alias": "",
       "utility": "leading-yorha-body",
       "value": "1.6",
-      "description": "Body copy (Korean / Japanese)."
+      "description": "Body copy, Latin text (:lang(en) and unmarked)."
+    },
+    {
+      "name": "body-cjk",
+      "cssVar": "--yorha-leading-body-cjk",
+      "alias": "",
+      "utility": "leading-yorha-body-cjk",
+      "value": "1.7",
+      "description": "Body copy, Korean / Japanese (:lang(ko), :lang(ja)). Wide glyphs need more air."
     }
   ],
   "tracking": [
@@ -905,6 +913,24 @@ export const tokens = {
       "utility": "tracking-yorha-heading",
       "value": "0.16em",
       "description": "Uppercase headings."
+    }
+  ],
+  "readability": [
+    {
+      "name": "",
+      "cssVar": "--yorha-measure",
+      "alias": "",
+      "utility": "",
+      "value": "40em",
+      "description": "Maximum line length of running prose (about 40 Korean characters)."
+    },
+    {
+      "name": "",
+      "cssVar": "--yorha-paragraph-gap",
+      "alias": "",
+      "utility": "",
+      "value": "1em",
+      "description": "Space between paragraphs in running prose."
     }
   ],
   "spacing": [
