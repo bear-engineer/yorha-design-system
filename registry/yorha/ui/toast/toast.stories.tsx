@@ -175,19 +175,18 @@ export const MotionRecipe: Story = {
     const lift = await sample(() => first.getBoundingClientRect().y, 700, (v) => v.length > 3 && v.at(-1) === v.at(-2));
     await expect(new Set(lift.map((y) => Math.round(y))).size).toBeGreaterThan(2);
 
-    // Exit: opacity falls gradually; the node is not held at 1 and then removed.
+    // Exit: opacity falls gradually; the node is not held at 1 and then removed. The toast behind it settles back down
+    // at the same time (an 8px peek, so it is sampled from before the click, not after the exit has ended).
     const newest = at(0);
     const exit = (async () => sample(() => +getComputedStyle(newest).opacity, 700, () => !newest.isConnected))();
+    const drop = (async () => sample(() => first.getBoundingClientRect().y, 700, (v) => !newest.isConnected && v.length > 3 && v.at(-1) === v.at(-2)))();
     await userEvent.click(within(newest).getByRole("button", { name: "닫기" }));
     const fade = await exit;
     await expect(fade.filter((o) => o < 1 && o > 0).length).toBeGreaterThan(1);
     await expect(Math.min(...fade)).toBeLessThan(0.5);
-
-    // The remaining toast settles back down over more than one frame.
     await waitFor(() => expect(toasts()).toHaveLength(1));
-    const rest = at(0);
-    const drop = await sample(() => rest.getBoundingClientRect().y, 700, (v) => v.length > 3 && v.at(-1) === v.at(-2));
-    await expect(new Set(drop.map((y) => Math.round(y))).size).toBeGreaterThan(1);
+    const settled = await drop;
+    await expect(new Set(settled.map((y) => Math.round(y))).size).toBeGreaterThan(1);
   },
 };
 
