@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { tokens } from "./tokens.generated";
@@ -37,6 +38,63 @@ function MotionDemo() {
       ))}
     </div>
   );
+}
+
+const SWIPED = { "--drawer-swipe-movement-y": "24px" } as CSSProperties;
+const STAGGER_INDEXES = [0, 1, 2, 40] as const;
+
+/** One static probe per utility and state, in each motion mode: the play test reads their computed styles. */
+function MotionUtilityDemo() {
+  const box = "size-6 bg-yorha-ink";
+  return (
+    <div className="flex flex-wrap items-start gap-4 font-yorha text-yorha-fg">
+      {MOTIONS.map((mode) => (
+        <div key={mode} role="group" aria-label={`모션 유틸리티 ${mode}`} data-motion={mode} className="flex w-48 flex-col gap-2 border border-yorha-border bg-yorha-panel p-4">
+          <p className="text-yorha-sm tracking-yorha-wide uppercase">data-motion={mode}</p>
+          {(["pop", "panel", "fade", "slide-up", "slide-down", "slide-left", "slide-right"] as const).map((name) => (
+            <div key={name} className="flex gap-2">
+              <div data-testid={`${name}-open-${mode}`} className={`yorha-${name} ${box}`} />
+              <div data-testid={`${name}-start-${mode}`} data-starting-style="" className={`yorha-${name} ${box}`} />
+              <div data-testid={`${name}-end-${mode}`} data-ending-style="" className={`yorha-${name} ${box}`} />
+            </div>
+          ))}
+          <div data-testid={`slide-up-swiping-${mode}`} data-swiping="" style={SWIPED} className={`yorha-slide-up ${box}`} />
+          <div data-testid={`collapse-open-${mode}`} style={{ "--collapsible-panel-height": "40px" } as CSSProperties} className="yorha-collapse bg-yorha-grid">
+            {/* An accordion panel nested in a collapsible must read its own height variable, not the inherited one. */}
+            <div data-testid={`collapse-accordion-${mode}`} data-index="0" style={{ "--accordion-panel-height": "24px" } as CSSProperties} className="yorha-collapse bg-yorha-ink" />
+          </div>
+          <div data-testid={`collapse-start-${mode}`} data-starting-style="" style={{ "--collapsible-panel-height": "40px" } as CSSProperties} className="yorha-collapse bg-yorha-grid" />
+          <button type="button" data-testid={`press-${mode}`} className="yorha-press border border-yorha-border bg-yorha-control px-3 py-2 text-yorha-sm text-yorha-on-control focus-visible:yorha-focus">
+            누름 {mode}
+          </button>
+          <div className="flex gap-2">
+            {STAGGER_INDEXES.map((index) => (
+              <div key={index} data-testid={`stagger-${index}-${mode}`} style={{ "--yorha-stagger-index": index } as CSSProperties} className={`yorha-stagger ${box}`} />
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** First style rule matching `test`, searching nested rules and layers; `inside` is true below a rule whose selector matched `scope`. */
+function findStyleRule(scope: string, test: (selector: string) => boolean): CSSStyleRule | undefined {
+  const visit = (rules: CSSRuleList, inside: boolean): CSSStyleRule | undefined => {
+    for (const rule of rules) {
+      const selector = rule instanceof CSSStyleRule ? rule.selectorText : "";
+      const scoped = inside || selector.includes(scope);
+      if (rule instanceof CSSStyleRule && scoped && test(selector)) return rule;
+      const found = "cssRules" in rule ? visit(rule.cssRules as CSSRuleList, scoped) : undefined;
+      if (found) return found;
+    }
+    return undefined;
+  };
+  for (const sheet of document.styleSheets) {
+    const found = visit(sheet.cssRules, false);
+    if (found) return found;
+  }
+  return undefined;
 }
 
 function ThemeSurfaces({ themes }: { themes: readonly Theme[] }) {
@@ -104,6 +162,105 @@ export const Motion: Story = {
       }
       await expect(probe(mode).transitionDuration).toBe("0s");
     }
+  },
+};
+
+/**
+ * Base motion utilities (`yorha-pop`, `yorha-panel`, `yorha-fade`, `yorha-slide-*`, `yorha-collapse`, `yorha-press`, `yorha-stagger`).
+ * full: token durations and spatial movement. reduced: opacity only, at most 120ms. off: no transition at all.
+ */
+export const MotionUtilities: Story = {
+  render: () => <MotionUtilityDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    type Mode = (typeof MOTIONS)[number];
+    const style = (id: string, mode: Mode) => getComputedStyle(canvas.getByTestId(`${id}-${mode}`));
+    const seconds = (list: string) => list.split(",").map((value) => parseFloat(value));
+    const durations = (id: string, mode: Mode) => seconds(style(id, mode).transitionDuration);
+    /** Computed `translate` as [x, y] numbers ("none" -> [0, 0]); percentages keep their number. */
+    const translate = (id: string, mode: Mode) => {
+      const [x = 0, y = 0] = style(id, mode).translate.split(" ").map((value) => parseFloat(value) || 0);
+      return [x, y];
+    };
+    const token = (name: string) => {
+      const found = tokens.motion.durations.find((duration) => duration.name === name);
+      if (!found) throw new Error(`no motion duration token "${name}"`);
+      return parseFloat(found.value) / 1000;
+    };
+    const OPEN_CLOSE = ["pop", "panel", "fade", "slide-up", "slide-down", "slide-left", "slide-right"] as const;
+
+    // The spec table and the stylesheet agree: every listed utility resolves to a real class.
+    await expect(tokens.motion.utilities).toHaveLength(10);
+    for (const name of tokens.motion.utilities) await expect(findStyleRule(`.${name}`, () => true), name).toBeDefined();
+
+    // full: token durations, exit faster than enter, spatial start values.
+    await expect(style("pop-open", "full").transitionProperty).toBe("opacity, scale");
+    await expect(durations("pop-open", "full")).toEqual([token("popover"), token("popover")]);
+    await expect(durations("pop-end", "full")).toEqual([token("popover-exit"), token("popover-exit")]);
+    await expect(style("pop-start", "full").opacity).toBe("0");
+    await expect(parseFloat(style("pop-start", "full").scale)).toBeCloseTo(0.96, 3);
+    await expect(style("pop-open", "full").opacity).toBe("1");
+    await expect(durations("panel-open", "full")).toEqual([token("panel"), token("panel")]);
+    await expect(durations("panel-end", "full")).toEqual([token("panel-exit"), token("panel-exit")]);
+    await expect(translate("panel-start", "full")).toEqual([0, 0.5 * rootFontSize()]);
+    await expect(style("fade-open", "full").transitionProperty).toBe("opacity");
+    await expect(durations("fade-open", "full")).toEqual([token("panel")]);
+    await expect(durations("fade-end", "full")).toEqual([token("panel-exit")]);
+    await expect(style("fade-start", "full").opacity).toBe("0");
+    await expect(translate("slide-up-start", "full")).toEqual([0, 100]);
+    await expect(translate("slide-down-start", "full")).toEqual([0, -100]);
+    await expect(translate("slide-left-start", "full")).toEqual([100, 0]);
+    await expect(translate("slide-right-start", "full")).toEqual([-100, 0]);
+    await expect(durations("slide-up-open", "full")).toEqual([token("drawer"), token("drawer")]);
+    // A full-size slide does not fade; a dragged drawer follows the finger with no transition.
+    await expect(style("slide-up-start", "full").opacity).toBe("1");
+    await expect(translate("slide-up-swiping", "full")).toEqual([0, 24]);
+    await expect(durations("slide-up-swiping", "full")).toEqual([0, 0]);
+    await expect(style("collapse-open", "full").height).toBe("40px");
+    await expect(style("collapse-accordion", "full").height).toBe("24px");
+    await expect(style("collapse-start", "full").height).toBe("0px");
+    await expect(style("collapse-start", "full").opacity).toBe("0");
+    await expect(style("collapse-open", "full").transitionProperty).toBe("height, opacity");
+    await expect(durations("collapse-open", "full")).toEqual([token("collapse"), token("collapse")]);
+    await expect(style("press", "full").transitionProperty.split(", ")[0]).toBe("scale");
+    await expect(durations("press", "full")[0]).toBe(token("press"));
+    const active = findStyleRule(".yorha-press", (selector) => selector.includes(":active"));
+    await expect(active?.style.getPropertyValue("scale")).toContain("--motion-scale-press");
+    await expect(style("stagger-0", "full").animationName).toBe("yorha-stagger-in");
+    await expect(seconds(style("stagger-0", "full").animationDuration)).toEqual([token("panel")]);
+    for (const index of [0, 1, 2] as const) await expect(parseFloat(style(`stagger-${index}`, "full").animationDelay)).toBeCloseTo(token("stagger") * index, 5);
+    // Rows past the cap enter together, so a long list never takes seconds to appear.
+    await expect(parseFloat(style("stagger-40", "full").animationDelay)).toBeCloseTo(token("stagger") * 12, 5);
+
+    // reduced: opacity only, at most 120ms. No scale, no translate, no height animation, no stagger delay.
+    for (const name of OPEN_CLOSE) {
+      for (const state of ["open", "end"] as const) {
+        const list = durations(`${name}-${state}`, "reduced");
+        await expect(Math.max(...list), `${name}-${state}`).toBeLessThanOrEqual(0.12);
+        await expect(list[0], `${name}-${state} opacity fade`).toBeGreaterThan(0);
+      }
+      await expect(style(`${name}-start`, "reduced").opacity, name).toBe("0");
+      await expect(translate(`${name}-start`, "reduced"), name).toEqual([0, 0]);
+      await expect(["none", "1"], name).toContain(style(`${name}-start`, "reduced").scale);
+    }
+    await expect(durations("collapse-open", "reduced")).toEqual([0, 0.12]);
+    await expect(durations("press", "reduced").every((value) => value === 0)).toBe(true);
+    await expect(seconds(style("stagger-2", "reduced").animationDuration)).toEqual([0.12]);
+    await expect(parseFloat(style("stagger-2", "reduced").animationDelay)).toBe(0);
+
+    // off: nothing transitions or animates over time.
+    for (const name of [...OPEN_CLOSE.flatMap((utility) => [`${utility}-open`, `${utility}-end`]), "collapse-open", "press"]) {
+      await expect(durations(name, "off").every((value) => value === 0), name).toBe(true);
+    }
+    for (const name of OPEN_CLOSE) {
+      await expect(translate(`${name}-start`, "off"), name).toEqual([0, 0]);
+      await expect(["none", "1"], name).toContain(style(`${name}-start`, "off").scale);
+    }
+    await expect(seconds(style("stagger-2", "off").animationDuration)).toEqual([0]);
+    await expect(parseFloat(style("stagger-2", "off").animationDelay)).toBe(0);
+
+    // Let the entrance animations finish before the a11y pass looks at the canvas.
+    await Promise.all(canvasElement.getAnimations({ subtree: true }).map((animation) => animation.finished));
   },
 };
 
