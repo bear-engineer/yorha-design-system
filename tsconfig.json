@@ -249,6 +249,12 @@
       ],
       "@/components/ui/preview-card": [
         "./registry/yorha/ui/preview-card/preview-card.tsx"
+      ],
+      "@/components/ui/calendar": [
+        "./registry/yorha/ui/calendar/calendar.tsx"
+      ],
+      "@/components/ui/date-picker": [
+        "./registry/yorha/ui/date-picker/date-picker.tsx"
       ]
     }
   },

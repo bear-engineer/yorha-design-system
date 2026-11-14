@@ -565,5 +565,19 @@
     "type": "registry:ui",
     "alias": "@/components/ui/preview-card",
     "file": "preview-card.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "calendar",
+    "type": "registry:ui",
+    "alias": "@/components/ui/calendar",
+    "file": "calendar.tsx"
+  },
+  {
+    "group": "ui",
+    "name": "date-picker",
+    "type": "registry:ui",
+    "alias": "@/components/ui/date-picker",
+    "file": "date-picker.tsx"
   }
 ]

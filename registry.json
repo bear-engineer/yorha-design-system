@@ -83,6 +83,8 @@
     "registry/yorha/ui/kanban/registry.json",
     "registry/yorha/ui/drawer/registry.json",
     "registry/yorha/ui/context-menu/registry.json",
-    "registry/yorha/ui/preview-card/registry.json"
+    "registry/yorha/ui/preview-card/registry.json",
+    "registry/yorha/ui/calendar/registry.json",
+    "registry/yorha/ui/date-picker/registry.json"
   ]
 }
