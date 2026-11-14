@@ -14,10 +14,10 @@ WCAG 2.5.8의 목표는 comfortable과 compact 양쪽에서 대상의 너비와 
 | --- | --- | --- | --- | --- |
 | button | 기본, 비활성, 로딩·Enter 후 포커스 유지 | >=24 (assert) | PASS | 없음 |
 | icon-button | 크기별 기본, 비활성, 로딩·Enter 후 포커스 유지 | >=24 (assert) | PASS | 없음 |
-| toggle | 상태·대상 측정 근거 없음 | 미측정 | HOLD | 없음 |
-| checkbox | 상태·대상 측정 근거 없음 | 미측정 | HOLD | `d920b5c` |
+| toggle | 꺼짐, 켜짐, 비활성(꺼짐·켜짐) | >=24 (assert) | PASS | `PARENT` |
+| checkbox | 꺼짐, 켜짐, 일부, 비활성(꺼짐·켜짐) | >=24 (assert) | PASS | `d920b5c`, `PARENT` |
 | radio-group | 선택, 일부·전체 비활성 | >=24 (assert) | PASS | `d920b5c` |
-| switch | 상태·대상 측정 근거 없음 | 미측정 | HOLD | `d920b5c` |
+| switch | 꺼짐, 켜짐, 비활성(꺼짐·켜짐) | >=24 (assert) | PASS | `d920b5c`, `PARENT` |
 | slider | 기본, 범위, 비활성, 화살표 키 | >=24 (assert) | PASS | `d920b5c` |
 | text-field | 기본, 읽기 전용, 비활성, 오류·aria-describedby | >=24 (assert) | PASS | 없음 |
 | textarea | 기본, 읽기 전용, 비활성, 오류·aria-describedby | >=24 (assert) | PASS | 없음 |
@@ -76,7 +76,7 @@ WCAG 2.5.8의 목표는 comfortable과 compact 양쪽에서 대상의 너비와 
 | toggle-group | 선택, 비활성 | >=24 (assert) | PASS | 없음 |
 | avatar | N/A — 이미지·대체 텍스트 표시 | N/A | N/A | 없음 |
 | collapsible | 닫힘, 열림, 비활성 | >=24 (assert) | PASS | 없음 |
-| scroll-area | 상태·대상 측정 근거 없음 | 미측정 | HOLD | 없음 |
+| scroll-area | N/A — 스크롤바는 포커스 대상이 아닌 포인터 보조 수단이고, 내용은 키보드·휠로 스크롤된다(SC 2.5.8 동등 수단 예외) | N/A | N/A | 없음 |
 | separator | N/A — 시각적 구분선 | N/A | N/A | 없음 |
 | timeline | 그래프 막대 포커스, 세로 목록 | >=24 (assert) | PASS | `d920b5c` |
 | kanban | 기본, WIP 한도 초과, 키보드 픽업 시 핸들 포커스 유지 | >=24 (assert) | PASS | 없음 |
@@ -94,10 +94,11 @@ WCAG 2.5.8의 목표는 comfortable과 compact 양쪽에서 대상의 너비와 
 
 ## HOLD — 추가 감사 필요
 
-`toggle`, `checkbox`, `switch`, `scroll-area`: 제공된 근거에서 해당 항목 자체의 상태 매트릭스와 대상 크기를 확인할 수 없어 통과를 추정하지 않았다. checkbox와 switch의 크기 수정 커밋은 실측 결과를 대신하지 않는다.
+없음. 처음 HOLD였던 toggle, checkbox, switch는 기존 `States` 스토리에 대상 크기 검사를 추가해 통과했고, scroll-area는 N/A로 분류했다.
 
 ## 알려진 이슈
 
 - `cn`에는 `tailwind-merge`가 없어 `date-picker`가 `!` 우선순위 override를 사용한다.
 - `MenuClear`는 접근성 트리에서 숨겨져 대상 측정에 포함되지 않는다. `min-h-6`은 코드상의 선언이지 실측값이 아니다.
+- navigation-menu `States`는 전체 묶음 실행에서 한 번 `aria-hidden-focus`로 실패했다. Escape 뒤 팝업이 사라질 때까지 기다리게 고쳤다(`PARENT`).
 - kanban의 포인터·터치 드래그는 자동화되지 않았다. 키보드 픽업 중 포커스 확인과는 별개다.

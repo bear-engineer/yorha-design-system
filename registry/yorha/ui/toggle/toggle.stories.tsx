@@ -1,3 +1,4 @@
+import { expectTargetSize } from "../../../../.storybook/preview";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Toggle } from "./toggle";
@@ -83,6 +84,7 @@ export const States: Story = {
     await expect(c.getByRole("button", { name: "켜짐" })).toHaveAttribute("aria-pressed", "true");
     await expect(c.getByRole("button", { name: "꺼짐 비활성" })).toBeDisabled();
     await expect(c.getByRole("button", { name: "켜짐 비활성" })).toBeDisabled();
+    await expectTargetSize(canvasElement);
   },
 };
 

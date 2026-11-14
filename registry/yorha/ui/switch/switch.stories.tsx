@@ -1,3 +1,4 @@
+import { expectTargetSize } from "../../../../.storybook/preview";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { Switch } from "./switch";
@@ -101,6 +102,7 @@ export const States: Story = {
     await expect(c.getByRole("switch", { name: "켜짐" })).toHaveAttribute("aria-checked", "true");
     await expect(c.getByRole("switch", { name: "꺼짐 비활성" })).toHaveAttribute("aria-disabled", "true");
     await expect(c.getByRole("switch", { name: "켜짐 비활성" })).toHaveAttribute("aria-disabled", "true");
+    await expectTargetSize(canvasElement);
   },
 };
 

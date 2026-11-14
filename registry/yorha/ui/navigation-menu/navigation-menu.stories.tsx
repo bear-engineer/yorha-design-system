@@ -255,5 +255,7 @@ export const States: Story = {
     await waitFor(() => expect(link).toBeVisible());
     await expectTargetSize(link.closest("ul") as HTMLElement);
     await userEvent.keyboard("{Escape}");
+    // Let the popup unmount before the a11y pass (Base UI focus guards trip aria-hidden-focus).
+    await waitFor(() => expect(body(canvasElement).queryByRole("link", { name: "보관함" })).toBeNull(), { timeout: 3000 });
   },
 };

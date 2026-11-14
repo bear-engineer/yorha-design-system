@@ -1,3 +1,4 @@
+import { expectTargetSize } from "../../../../.storybook/preview";
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
@@ -133,6 +134,7 @@ export const States: Story = {
     await expect(c.getByRole("checkbox", { name: "켜짐" })).toHaveAttribute("aria-checked", "true");
     await expect(c.getByRole("checkbox", { name: "일부" })).toHaveAttribute("aria-checked", "mixed");
     await expect(c.getByRole("checkbox", { name: "꺼짐 비활성" })).toHaveAttribute("aria-disabled", "true");
+    await expectTargetSize(canvasElement);
   },
 };
 
