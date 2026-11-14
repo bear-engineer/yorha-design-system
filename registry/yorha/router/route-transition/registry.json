@@ -31,13 +31,13 @@
           "animation": "yorha-route-in-replace max(var(--motion-route), var(--motion-reduced-fade)) var(--yorha-ease-out) both"
         },
         "::view-transition-old(.yorha-route-exit)": {
-          "animation": "yorha-route-out-replace max(var(--motion-route-exit), var(--motion-reduced-fade)) var(--yorha-ease-in) both"
+          "animation": "yorha-route-out-replace max(var(--motion-route-exit), var(--motion-reduced-fade)) var(--yorha-ease) both"
         },
         "html[data-route-direction=\"forward\"]::view-transition-old(.yorha-route-exit)": {
-          "animation": "yorha-route-out-forward max(var(--motion-route-exit), var(--motion-reduced-fade)) var(--yorha-ease-in) both"
+          "animation": "yorha-route-out-forward max(var(--motion-route-exit), var(--motion-reduced-fade)) var(--yorha-ease) both"
         },
         "html[data-route-direction=\"back\"]::view-transition-old(.yorha-route-exit)": {
-          "animation": "yorha-route-out-back max(var(--motion-route-exit), var(--motion-reduced-fade)) var(--yorha-ease-in) both"
+          "animation": "yorha-route-out-back max(var(--motion-route-exit), var(--motion-reduced-fade)) var(--yorha-ease) both"
         },
         "::view-transition-group(.yorha-shared)": {
           "animation-duration": "var(--motion-shared-element)",

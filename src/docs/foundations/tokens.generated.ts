@@ -1244,7 +1244,7 @@ export const tokens = {
         "alias": "",
         "utility": "ease-yorha-in",
         "value": "cubic-bezier(0.4, 0, 1, 1)",
-        "description": "Exit."
+        "description": "Not used for UI exits (ease-in starts slow and reads as lag); exits use the default easing, faster. Kept for authors who need it."
       },
       {
         "name": "emphasized",

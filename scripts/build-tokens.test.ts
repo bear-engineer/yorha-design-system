@@ -214,6 +214,14 @@ describe("token generator", () => {
       }
     });
 
+    it("exits ease with --yorha-ease, never ease-in", () => {
+      for (const name of ["yorha-pop", "yorha-panel", "yorha-fade"]) {
+        const exit = utilityBlock(name).slice(utilityBlock(name).lastIndexOf("&[data-ending-style] {"));
+        expect(exit, name).toContain("transition-timing-function: var(--yorha-ease);");
+        expect(exit, name).not.toContain("ease-in");
+      }
+    });
+
     it("yorha-pop scales and fades from --transform-origin, exit on the faster token", () => {
       const pop = utilityBlock("yorha-pop");
       expect(pop).toContain("transform-origin: var(--transform-origin");

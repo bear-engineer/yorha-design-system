@@ -194,7 +194,7 @@ const MOTION_CSS = {
     "transition-duration": fade("popover"),
     "transition-timing-function": "var(--yorha-ease-decelerate)",
     [HIDDEN]: { opacity: "0", scale: scaleTo("pop") },
-    [EXIT]: { "transition-duration": fade("popover-exit"), "transition-timing-function": "var(--yorha-ease-in)" },
+    [EXIT]: { "transition-duration": fade("popover-exit"), "transition-timing-function": "var(--yorha-ease)" },
     ...INSTANT,
   },
   "@utility yorha-panel": {
@@ -202,7 +202,7 @@ const MOTION_CSS = {
     "transition-duration": fade("panel"),
     "transition-timing-function": "var(--yorha-ease-out)",
     [HIDDEN]: { opacity: "0", translate: `0 ${spatial("var(--motion-shift)")}` },
-    [EXIT]: { "transition-duration": fade("panel-exit"), "transition-timing-function": "var(--yorha-ease-in)" },
+    [EXIT]: { "transition-duration": fade("panel-exit"), "transition-timing-function": "var(--yorha-ease)" },
     ...INSTANT,
   },
   "@utility yorha-fade": {
@@ -210,7 +210,7 @@ const MOTION_CSS = {
     "transition-duration": fade("panel"),
     "transition-timing-function": "var(--yorha-ease-out)",
     [HIDDEN]: { opacity: "0" },
-    [EXIT]: { "transition-duration": fade("panel-exit"), "transition-timing-function": "var(--yorha-ease-in)" },
+    [EXIT]: { "transition-duration": fade("panel-exit"), "transition-timing-function": "var(--yorha-ease)" },
     ...INSTANT,
   },
   "@utility yorha-slide-up": slide([0, -1]),
