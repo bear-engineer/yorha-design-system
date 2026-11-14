@@ -74,7 +74,7 @@ export const ReadOnly: Story = {
 };
 
 export const Themes: Story = {
-  args: { defaultValue: 3 },
+  args: { label: "테마", defaultValue: 3 },
   render: (args) => (
     <div className="grid gap-4 sm:grid-cols-2">
       {THEMES.map((t) => (

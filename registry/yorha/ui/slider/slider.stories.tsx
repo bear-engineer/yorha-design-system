@@ -63,16 +63,16 @@ export const Range: Story = {
     const c = within(canvasElement);
     const sliders = c.getAllByRole("slider");
     await expect(sliders).toHaveLength(2);
-    await expect(sliders[0]).toHaveAttribute("aria-valuenow", "20");
-    await expect(sliders[1]).toHaveAttribute("aria-valuenow", "70");
-    sliders[1].focus();
+    await expect(sliders[0]!).toHaveAttribute("aria-valuenow", "20");
+    await expect(sliders[1]!).toHaveAttribute("aria-valuenow", "70");
+    sliders[1]?.focus();
     await userEvent.keyboard("{End}");
-    await expect(sliders[1]).toHaveAttribute("aria-valuenow", "100");
+    await expect(sliders[1]!).toHaveAttribute("aria-valuenow", "100");
   },
 };
 
 export const Themes: Story = {
-  args: { defaultValue: 60 },
+  args: { label: "테마", defaultValue: 60 },
   render: (args) => (
     <div className="grid gap-4">
       {THEMES.map((t) => (

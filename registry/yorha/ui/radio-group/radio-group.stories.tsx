@@ -34,7 +34,7 @@ export const Default: Story = {
     const radios = c.getAllByRole("radio");
     await expect(radios).toHaveLength(3);
     await expect(c.getByRole("radio", { name: "알파 유닛" })).toBeChecked();
-    radios[0].focus();
+    radios[0]?.focus();
     await userEvent.keyboard("{ArrowDown}");
     await expect(c.getByRole("radio", { name: "브라보 유닛" })).toBeChecked();
     await userEvent.keyboard("{ArrowDown}");
@@ -104,7 +104,7 @@ export const ClickSelect: Story = {
 };
 
 export const Themes: Story = {
-  args: { defaultValue: "bravo" },
+  args: { "aria-label": "테마", defaultValue: "bravo" },
   render: (args) => (
     <div className="grid gap-4 sm:grid-cols-2">
       {THEMES.map((t) => (
