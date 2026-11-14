@@ -234,11 +234,15 @@ export const Motion: Story = {
       expect(stagger(tile("reduced", i)).delay).toBe(0);
       expect(stagger(tile("reduced", i)).duration).toBeLessThanOrEqual(0.12);
     }
-    // Hover lift is transform-only (translate), and zero in reduced motion via --motion-spatial.
-    expect(getComputedStyle(tile("full", 1)).transitionProperty).toBe("translate");
-    expect(getComputedStyle(tile("full", 1)).transitionDuration).not.toBe("0s");
+    // M07: hover never moves the tile (edge flicker); it only changes border colour, transition on colours only.
+    const t = tile("full", 1);
+    expect(getComputedStyle(t).transitionProperty).toBe("color, background-color, border-color");
+    expect(getComputedStyle(t).transitionProperty).not.toMatch(/translate|transform/);
+    expect(parseFloat(getComputedStyle(t).transitionDuration)).toBeGreaterThan(0);
     expect(getComputedStyle(tile("reduced", 1)).transitionDuration).toBe("0s");
-    expect(getComputedStyle(tile("reduced", 1)).getPropertyValue("--motion-spatial").trim()).toBe("0");
+    // Real :hover is exercised by stability/ (CDP pointer): the tile must not move at all.
+    await Promise.all(t.getAnimations().map((a) => a.finished.catch(() => undefined))); // entry stagger done
+    expect(getComputedStyle(t).translate).toBe("none");
   },
 };
 

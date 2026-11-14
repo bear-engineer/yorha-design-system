@@ -132,8 +132,8 @@ export function BentoTile({ size = "1x1", area, href, label, index, className, s
         "rounded-yorha border border-yorha-border bg-yorha-panel text-yorha-fg",
         index !== undefined && "yorha-stagger",
         area ? "@3xl:[grid-area:var(--bento-area)]" : SIZE[size],
-        // Hover lift: translate only, travel scales with --motion-spatial (0 when reduced or off).
-        interactive && "transition-[translate] duration-(--motion-popover) ease-yorha-decelerate hover:[translate:0_calc(var(--motion-spatial)*-0.25rem)]",
+        // Hover changes colour only (a lifted tile slides out from under the pointer and flickers at its edge).
+        interactive && "transition-[color,background-color,border-color] duration-(--motion-select) ease-yorha-out hover:border-yorha-ink",
         className,
       )}
       {...rest}

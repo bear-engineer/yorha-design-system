@@ -21,7 +21,7 @@ export interface ItemConfig {
 
 /**
  * One test per item/story: hover, pointer-down, click and keyboard on each control must not move or resize the control
- * or its row (symmetric press scale and transform-only lifts are allowed, see measure.ts). Popups opened by an action are
+ * or its row (a symmetric press scale is allowed, see measure.ts). Popups opened by an action are
  * closed with Escape before the next control.
  */
 export function stabilitySuite(title: string, items: ItemConfig[]) {

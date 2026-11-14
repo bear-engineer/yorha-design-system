@@ -106,23 +106,14 @@ function ownScale(el: Element): { sx: number; sy: number; tx: number; ty: number
 
 /**
  * Layout box: the border box with the element's own scale divided out around its centre and its own translation
- * removed, so a symmetric press scale (yorha-press, scale 0.97) and a transform-only hover lift are allowed
+ * removed, so a symmetric press scale (yorha-press, scale 0.97) is allowed
  * while any real layout change (size, position in flow, neighbours pushed) still shows up.
  */
 const rectOf = (el: Element): Rect => {
   const r = el.getBoundingClientRect();
   const own = ownScale(el);
-  // Translation of ancestors (a card's hover lift moves its link) is a transform-only move, not a layout shift.
-  let ax = 0;
-  let ay = 0;
-  for (let p = el.parentElement; p && p !== document.documentElement; p = p.parentElement) {
-    const a = ownScale(p);
-    ax += a.tx;
-    ay += a.ty;
-  }
   const { sx, sy } = own;
-  const tx = own.tx + ax;
-  const ty = own.ty + ay;
+  const { tx, ty } = own;
   const width = r.width / sx;
   const height = r.height / sy;
   return { x: r.x + r.width / 2 - width / 2 - tx, y: r.y + r.height / 2 - height / 2 - ty, width, height };
