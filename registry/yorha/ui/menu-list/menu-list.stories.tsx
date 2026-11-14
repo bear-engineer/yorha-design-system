@@ -101,6 +101,8 @@ export const Typeahead: Story = {
     await userEvent.tab();
     await userEvent.keyboard("무");
     await expect(opt(c, "무기")).toHaveFocus();
+    // the typeahead buffer resets after 500 ms
+    await new Promise((r) => setTimeout(r, 600));
     await userEvent.keyboard("시");
     await expect(opt(c, "시스템")).toHaveFocus();
   },
@@ -162,10 +164,10 @@ export const Navigation: Story = {
   args: { variant: "navigation", defaultValue: "a" },
   render: (args) => (
     <MenuList {...args} aria-label="사이트 이동">
-      <MenuListItem value="a" current render={<a href="#a" />}>
+      <MenuListItem value="a" current render={<a href="#a" onClick={(e) => e.preventDefault()} />}>
         홈
       </MenuListItem>
-      <MenuListItem value="b" render={<a href="#b" />}>
+      <MenuListItem value="b" render={<a href="#b" onClick={(e) => e.preventDefault()} />}>
         기록
       </MenuListItem>
       <MenuListItem value="c">설정</MenuListItem>
@@ -255,7 +257,7 @@ const withFakeAudio = async (run: (constructed: () => number) => Promise<void>) 
   const prev = w.AudioContext;
   let count = 0;
   const chain: unknown = new Proxy(function () {}, {
-    get: (_t, p) => (p === Symbol.toPrimitive ? () => 0 : p === "state" ? "running" : chain),
+    get: (_t, p) => (p === Symbol.toPrimitive ? () => 0 : p === "state" ? "running" : p === "then" ? undefined : chain),
     apply: () => chain,
   });
   w.AudioContext = function FakeAudioContext() {
