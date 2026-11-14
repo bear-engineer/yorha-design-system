@@ -128,7 +128,6 @@ const PENDING_FAMILY_SWEEP = new Set<string>([
   "autocomplete / Default",
   "autocomplete / States",
   "bento-dashboard / Default",
-  "boot-log / Default",
   "button / States",
   "calendar / Default",
   "calendar / States",
