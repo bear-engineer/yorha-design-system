@@ -177,7 +177,7 @@ export const AllInputTypes: Story = {
     const table = within(canvasElement).getByRole("table", { name: "입력 유형과 담당 아이템" });
     await expect(within(table).getAllByRole("row")).toHaveLength(23);
     for (const type of EXPECTED) {
-      await expect(within(table).getByRole("cell", { name: type, exact: true })).toBeInTheDocument();
+      await expect(within(table).getByRole("cell", { name: (n: string) => n === type })).toBeInTheDocument();
     }
   },
 };

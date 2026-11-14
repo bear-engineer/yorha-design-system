@@ -75,8 +75,8 @@ export function FileInput({
   const buttonId = `${uid}-button`;
   const hintId = `${uid}-hint`;
   const nativeRef = React.useRef<HTMLInputElement>(null);
-  const buttonRef = React.useRef<HTMLButtonElement>(null);
-  const removeRefs = React.useRef<(HTMLButtonElement | null)[]>([]);
+  const buttonRef = React.useRef<HTMLElement>(null);
+  const removeRefs = React.useRef<(HTMLElement | null)[]>([]);
   const focusAfter = React.useRef<number | null>(null);
   const depth = React.useRef(0);
   const [files, setFiles] = React.useState<File[]>([]);
