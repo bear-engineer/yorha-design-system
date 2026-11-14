@@ -15,6 +15,7 @@
     "test:storybook": "vitest run --project storybook",
     "test:vrt": "vitest run --project vrt",
     "test:text-spacing": "vitest run --project text-spacing",
+    "test:stability": "vitest run --project stability",
     "storybook": "storybook dev -p 6006 --no-open",
     "build-storybook": "storybook build -o storybook-static --quiet",
     "docs:axe": "node scripts/docs-axe.mjs",

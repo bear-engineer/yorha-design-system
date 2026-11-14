@@ -47,6 +47,15 @@ export default defineConfig({
           browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: "chromium", viewport: { width: 1280, height: 800 } }] },
         },
       },
+      {
+        // State stability (T21): hover/press/toggle must not move or resize a control or its row.
+        extends: true,
+        test: {
+          name: "stability",
+          include: ["stability/**/*.test.tsx"],
+          browser: { enabled: true, headless: true, provider: playwright(), instances: [{ browser: "chromium", viewport: { width: 1280, height: 800 } }] },
+        },
+      },
     ],
   },
 });
