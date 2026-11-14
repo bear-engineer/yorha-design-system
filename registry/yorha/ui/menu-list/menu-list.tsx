@@ -227,10 +227,10 @@ export function MenuListItem({
 
   const wipe = selected ? "var(--motion-select)" : "var(--motion-select-exit, var(--motion-select))";
   const transition = [
-    `opacity var(--motion-panel) ease-out ${STAGGER}`,
-    `translate var(--motion-panel) ease-out ${STAGGER}`,
-    `background-size ${wipe} ease`,
-    `color ${wipe} ease`,
+    `opacity var(--motion-panel) var(--yorha-ease-out) ${STAGGER}`,
+    `translate var(--motion-panel) var(--yorha-ease-out) ${STAGGER}`,
+    `background-size ${wipe} var(--yorha-ease-out)`,
+    `color ${wipe} var(--yorha-ease-out)`,
   ].join(", ");
 
   const listbox = variant === "listbox";

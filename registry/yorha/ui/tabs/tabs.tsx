@@ -20,7 +20,7 @@ function TabsList({ className, children, activateOnFocus = true, ...props }: Com
       <TabsPrimitive.Indicator
         data-slot="tabs-indicator"
         aria-hidden="true"
-        className="absolute inset-y-0 left-(--active-tab-left) w-(--active-tab-width) bg-yorha-ink transition-[left,width] duration-(--motion-panel) ease-yorha-out"
+        className="absolute inset-y-0 left-(--active-tab-left) w-(--active-tab-width) bg-yorha-ink transition-[left,width] duration-(--motion-tab-indicator) ease-yorha-emphasized"
       />
       {children}
     </TabsPrimitive.List>
@@ -56,7 +56,13 @@ function TabsPanel({ className, ...props }: ComponentProps<typeof TabsPrimitive.
       className={cnState(
         [
           "pt-4 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
-          "transition-opacity duration-(--motion-panel) ease-yorha-out data-[starting-style]:opacity-0",
+          "transition-[opacity,translate] duration-(--motion-panel) ease-yorha-out",
+          "data-[starting-style]:opacity-0 data-[ending-style]:opacity-0",
+          // new panel enters from the side it sits on; the outgoing one leaves the opposite way; spatial=0 in reduced/off
+          "data-[starting-style]:data-[activation-direction=left]:-translate-x-[calc(var(--motion-shift)*var(--motion-spatial))]",
+          "data-[starting-style]:data-[activation-direction=right]:translate-x-[calc(var(--motion-shift)*var(--motion-spatial))]",
+          "data-[ending-style]:data-[activation-direction=left]:translate-x-[calc(var(--motion-shift)*var(--motion-spatial))]",
+          "data-[ending-style]:data-[activation-direction=right]:-translate-x-[calc(var(--motion-shift)*var(--motion-spatial))]",
           "focus-visible:yorha-focus",
         ],
         className,

@@ -11,9 +11,9 @@ const CYCLE_MS = 1200;
 const CYCLES = 3; // 3 x 1.2 s = 3.6 s, under the 5 s pause threshold, then rests on solid dots
 
 /**
- * Loading dots run as Web Animations (no keyframes in kit CSS), staggered 160 ms, for
- * CYCLES cycles then rest. Only `data-motion="full"` animates; reduced/off, or no attribute
- * with reduced-motion preferred, keeps the dots still.
+ * Loading dots run as Web Animations (no keyframes in kit CSS), staggered by --motion-stagger, for
+ * CYCLES cycles then rest. Easing comes from --yorha-ease-emphasized. Only `data-motion="full"`
+ * animates; reduced/off, or no attribute with reduced-motion preferred, keeps the dots still.
  */
 function useDots(ref: React.RefObject<HTMLSpanElement | null>) {
   React.useEffect(() => {
@@ -27,13 +27,16 @@ function useDots(ref: React.RefObject<HTMLSpanElement | null>) {
       anims.forEach((a) => a.cancel());
       anims = [];
       if (motionOf() !== "full" || typeof root.animate !== "function") return;
+      const css = getComputedStyle(html);
+      const stagger = parseFloat(css.getPropertyValue("--motion-stagger")) || 0;
+      const easing = css.getPropertyValue("--yorha-ease-emphasized").trim() || "linear";
       root.querySelectorAll<HTMLElement>("[data-yorha-dot]").forEach((dot, i) => {
         anims.push(
           dot.animate([{ opacity: 0.15 }, { opacity: 1 }, { opacity: 0.15 }], {
             duration: CYCLE_MS,
-            delay: i * 160,
+            delay: i * stagger,
             iterations: CYCLES,
-            easing: "ease-in-out",
+            easing,
           }),
         );
       });

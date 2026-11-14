@@ -58,15 +58,7 @@ function AccordionPanel({ className, ...props }: ComponentProps<typeof Accordion
   return (
     <AccordionPrimitive.Panel
       data-slot="accordion-panel"
-      className={cnState(
-        [
-          "h-(--accordion-panel-height) overflow-hidden px-7 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
-          "transition-[height,opacity] duration-(--motion-panel) ease-yorha-out",
-          "data-[starting-style]:h-0 data-[starting-style]:opacity-0",
-          "data-[ending-style]:h-0 data-[ending-style]:opacity-0 data-[ending-style]:duration-(--motion-panel-exit) data-[ending-style]:ease-yorha-in",
-        ],
-        className,
-      )}
+      className={cnState("yorha-collapse px-7 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg", className)}
       {...props}
     />
   );

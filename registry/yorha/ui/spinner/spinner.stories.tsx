@@ -88,7 +88,7 @@ export const DotEasingToken: Story = {
       html.dataset.motion = "full";
       const dot = canvasElement.querySelector<HTMLElement>("[data-yorha-dot]")!;
       await waitFor(() => expect(dot.getAnimations().length).toBeGreaterThan(0));
-      const easing = (dot.getAnimations()[0].effect as KeyframeEffect).getTiming().easing;
+      const easing = (dot.getAnimations()[0]!.effect as KeyframeEffect).getTiming().easing;
       await expect(easing).toMatch(/^cubic-bezier\(/);
       await expect(easing).not.toBe("ease-in-out");
     } finally {
