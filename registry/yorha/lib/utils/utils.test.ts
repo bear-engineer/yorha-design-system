@@ -37,7 +37,7 @@ describe("cn tailwind-merge", () => {
   it("covers every yorha token in the generated @theme block", () => {
     const css = readFileSync(new URL("../../../../src/styles/tokens.generated.css", import.meta.url), "utf8");
     const theme = /@theme inline \{([\s\S]*?)\n\}/.exec(css)?.[1] ?? "";
-    const names = [...theme.matchAll(/--([a-z-]+?)-(yorha[a-z0-9-]*|yorha):/g)].map((m) => [m[1], m[2]] as const);
+    const names = [...theme.matchAll(/--([a-z-]+?)-(yorha[a-z0-9-]*|yorha):/g)].map((m) => [m[1] ?? "", m[2] ?? ""] as const);
     expect(names.length).toBeGreaterThan(40);
     const bad: string[] = [];
     for (const [group, name] of names) {
