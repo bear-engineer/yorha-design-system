@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Toggle as BaseToggle } from "@base-ui/react/toggle";
 import { cn, cnState } from "@/lib/utils";
-import { controlSize, type ButtonSize } from "@/components/ui/button";
+import { PRESS_TRANSITION, controlSize, type ButtonSize } from "@/components/ui/button";
 
 export interface ToggleProps extends Omit<React.ComponentProps<typeof BaseToggle>, "children"> {
   /** Visible label; the whole button is the click target. */
@@ -17,6 +17,7 @@ const INDICATOR_BASE =
 /**
  * Two-state button (aria-pressed). Pressed fills with ink and the square bullet
  * turns solid; unpressed shows a hollow square, so state is not carried by colour alone.
+ * Migration (C2-106): pressing no longer scales the toggle (colour/fill only).
  * Migration (B9): `size` (sm/md/lg) sets a fixed control height; the default height 48 is now `md`, pass `size="sm"`
  * for the old toolbar size. Chip is `h-control-sm`, Badge 24px, Kbd 20px.
  */
@@ -28,8 +29,8 @@ export function Toggle({ children, className, size = "md", ...props }: TogglePro
           "group inline-flex items-center justify-center gap-2 align-middle whitespace-nowrap rounded-yorha border border-yorha-border bg-transparent",
           controlSize[size],
           "font-yorha text-yorha-fg cursor-pointer",
-          // Standalone control: press scales (yorha-press), hover tints the idle fill; pressed is ink.
-          "yorha-press enabled:not-data-[pressed]:hover:bg-yorha-hover",
+          // Standalone control: hover tints the idle fill; pressed is ink (colour only, the size never changes: C2-106).
+          PRESS_TRANSITION + " enabled:not-data-[pressed]:hover:bg-yorha-hover",
           "data-[pressed]:border-yorha-ink data-[pressed]:bg-yorha-ink data-[pressed]:text-yorha-on-ink",
           "focus-visible:yorha-focus yorha-disabled",
         ),
