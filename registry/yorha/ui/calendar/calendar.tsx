@@ -626,7 +626,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
         {Array.from({ length: count }, (_, i) => renderMonth(i))}
       </MonthSlide>
       {showToday ? (
-        <div data-slot="calendar-footer" className="flex h-control-sm items-center justify-between border-t border-yorha-separator">
+        <div data-slot="calendar-footer" className="flex h-[calc(var(--yorha-control-sm)+1px)] items-center justify-between border-t border-yorha-separator">
           <button type="button" onClick={goToday} className={buttonVariants({ variant: "ghost", size: "sm" })}>
             {labels.today}
           </button>

@@ -38,8 +38,8 @@ const q = <T extends Element = HTMLElement>(sel: string, root: ParentNode = docu
 const qa = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => [...root.querySelectorAll<T>(sel)];
 const rect = (el: Element) => el.getBoundingClientRect();
 const TODAY = new Date(2026, 10, 14);
-/** The InputGroup frame: `date-field` in the pickers, `input-group` in DateInput. */
-const FRAME = "[data-slot=date-field], [data-slot=input-group]";
+/** The InputGroup frame of the pickers and DateInput. */
+const FRAME = "[data-slot=input-group]";
 const day = (c: ParentNode, key: string) => q(`[data-date="${key}"]`, c)!;
 const tdOf = (c: ParentNode, key: string) => day(c, key).closest("td")!;
 

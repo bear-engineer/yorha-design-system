@@ -151,7 +151,7 @@ function PickerImpl(props: PickerImplProps) {
     required,
     locale = "ko-KR",
     placeholder,
-    invalidMessage = "날짜 형식이 올바르지 않다. 예: 2026. 11. 14.",
+    invalidMessage = "날짜 형식이 올바르지 않다 (예:\u00a02026.\u00a011.\u00a014.)",
     outOfRangeMessage = "선택할 수 없는 날짜다.",
     rangeOrderMessage = "종료일이 시작일보다 빠릅니다",
     triggerLabel = "달력 열기",
@@ -262,10 +262,12 @@ function PickerImpl(props: PickerImplProps) {
     bordered: false,
   };
 
+  // The narrow range frame stacks two control rows (94px), so its parts are not measured against one control height.
   const trigger = (
     <PopoverPrimitive.Trigger
       render={
         <InputGroupButton
+          data-size-exempt={isRange ? "" : undefined}
           aria-label={triggerLabel}
           disabled={disabled}
           className={cn(
@@ -287,8 +289,9 @@ function PickerImpl(props: PickerImplProps) {
       <Popover open={open} onOpenChange={setOpen}>
         <InputGroup
           ref={frameRef}
-          data-slot="date-field"
+          data-date-field=""
           variant={isRange ? "wrap" : "default"}
+          className={isRange ? "@container" : undefined}
           invalid={Boolean(shownError)}
           disabled={disabled}
           aria-label={typeof label === "string" ? label : triggerLabel}
@@ -299,6 +302,7 @@ function PickerImpl(props: PickerImplProps) {
               <InputGroupInput
                 id={fieldId}
                 data-slot="date-input"
+                data-size-exempt=""
                 aria-label="시작일"
                 aria-invalid={invalidSide === "from" || (!typedError && Boolean(error)) ? true : undefined}
                 disabled={disabled}
@@ -311,11 +315,12 @@ function PickerImpl(props: PickerImplProps) {
                 onChange={(e) => onTextChange("from", e)}
                 onBlur={() => commitText("from")}
                 onKeyDown={(e) => onTextKeyDown("from", e)}
-                className={cn("yorha-tabular h-[calc(var(--yorha-control-md)-2px)] min-w-[calc(13ch+2*var(--yorha-pad-md))] flex-1")}
+                className={cn("yorha-tabular h-[calc(var(--yorha-control-md)-2px)] flex-[0_0_100%] border-b border-yorha-border @[24rem]:flex-1 @[24rem]:border-b-0")}
               />
-              <InputGroupText className="h-[calc(var(--yorha-control-md)-2px)]">–</InputGroupText>
+              <InputGroupText aria-hidden className="hidden h-[calc(var(--yorha-control-md)-2px)] @[24rem]:grid">–</InputGroupText>
               <InputGroupInput
                 data-slot="date-input"
+                data-size-exempt=""
                 aria-label="종료일"
                 aria-invalid={invalidSide === "to" ? true : undefined}
                 disabled={disabled}
@@ -327,7 +332,7 @@ function PickerImpl(props: PickerImplProps) {
                 onChange={(e) => onTextChange("to", e)}
                 onBlur={() => commitText("to")}
                 onKeyDown={(e) => onTextKeyDown("to", e)}
-                className="yorha-tabular h-[calc(var(--yorha-control-md)-2px)] min-w-[calc(13ch+2*var(--yorha-pad-md))] flex-1"
+                className="yorha-tabular h-[calc(var(--yorha-control-md)-2px)] flex-1"
               />
               {trigger}
             </>
