@@ -61,7 +61,7 @@ function NavigationMenuTrigger({ className, children, ...props }: ComponentProps
         [
           "inline-flex h-8 cursor-default select-none items-center gap-2 px-3 text-yorha-sm tracking-yorha-wide text-yorha-fg",
           "bg-linear-to-r from-yorha-ink to-yorha-ink bg-no-repeat bg-[position:left_center] bg-[length:0%_100%]",
-          "transition-[background-size,color] duration-(--motion-select) ease-yorha-out",
+          "yorha-wipe",
           "hover:bg-[length:100%_100%] hover:text-yorha-on-ink data-[popup-open]:bg-[length:100%_100%] data-[popup-open]:text-yorha-on-ink",
           "focus-visible:yorha-focus data-[disabled]:cursor-not-allowed data-[disabled]:opacity-60",
         ],

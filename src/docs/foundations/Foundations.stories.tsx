@@ -199,7 +199,7 @@ export const MotionUtilities: Story = {
     await expect(running).toContain("yorha-stagger-in");
 
     // The spec table and the stylesheet agree: every listed utility resolves to a real class.
-    await expect(tokens.motion.utilities).toHaveLength(10);
+    await expect(tokens.motion.utilities).toHaveLength(11); // + yorha-wipe (design review M15)
     for (const name of tokens.motion.utilities) await expect(findStyleRule(`.${name}`, () => true), name).toBeDefined();
 
     // full: token durations, exit faster than enter, spatial start values.

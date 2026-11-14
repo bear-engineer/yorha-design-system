@@ -15,6 +15,8 @@ export const OUTPUTS = {
   css: "src/styles/tokens.generated.css",
   registry: "registry/yorha/base/base/registry.json",
   docs: "src/docs/foundations/tokens.generated.ts",
+  /** The route-transition registry item's css, so Storybook shows the kit's view transition instead of the UA crossfade. */
+  routeCss: "src/styles/route-transition.generated.css",
 };
 
 /** OFL font packages (devDependencies) and the unicode-range sliced stylesheets imported from each. */
@@ -229,6 +231,17 @@ const MOTION_CSS = {
     [HIDDEN]: { height: "0", opacity: "0" },
     // Exit is shorter than enter: Base UI 1.9 restarts height from a stale value when a panel re-opens mid-close, so the shorter the close, the smaller that window.
     [EXIT]: { "transition-duration": `var(--motion-select), ${fade("select")}` },
+  },
+  // Selection wipe: the ink layer grows left to right (`background-size`) while the text colour inverts. Enter speed
+  // when the row turns selected / highlighted / open / hovered, exit speed when it turns back. Pair with a
+  // `background-size` layer that goes 0% -> 100% on the same state; do not add `transition-*` classes next to it.
+  "@utility yorha-wipe": {
+    "transition-property": "background-size, color",
+    "transition-duration": "var(--motion-select-exit)",
+    "transition-timing-function": "var(--yorha-ease-out)",
+    "&:is([data-highlighted], [data-panel-open], [data-popup-open], [data-checked], [data-selected], [aria-current=page], :has([data-checked]), :hover)": {
+      "transition-duration": "var(--motion-select)",
+    },
   },
   // Owns the control's whole transition: scale at the press speed, the selection wipe properties at the select speed.
   "@utility yorha-press": {
@@ -510,6 +523,13 @@ function renderDocs({ tokens, themeNames, hexByTheme, colorPaths, modifierBlocks
   return `// ${HEADER}\nexport const tokens = ${JSON.stringify(docs, null, 2)} as const;\n\nexport type ThemeName = (typeof tokens.themes)[number];\nexport type DensityName = keyof typeof tokens.density;\n`;
 }
 
+function renderRouteCss() {
+  const [item] = readJson("registry/yorha/router/route-transition/registry.json").items;
+  return `/* ${HEADER} */\n${Object.entries(item.css)
+    .map(([key, value]) => renderRules({ [key]: value }))
+    .join("\n")}`;
+}
+
 /** Pure: output path -> file content. */
 export function generate() {
   const model = buildModel(loadTokens());
@@ -517,6 +537,7 @@ export function generate() {
     [OUTPUTS.css]: renderCss(model),
     [OUTPUTS.registry]: renderRegistry(model),
     [OUTPUTS.docs]: renderDocs(model),
+    [OUTPUTS.routeCss]: renderRouteCss(),
   };
 }
 

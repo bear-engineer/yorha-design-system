@@ -39,7 +39,7 @@ export function Radio({ children, className, rowClassName, ...props }: RadioProp
       className={cn(
         "group/row relative flex cursor-pointer items-center gap-3 px-3 py-2 text-yorha-fg",
         "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-no-repeat [background-size:0%_100%]",
-        "transition-[background-size,color] duration-(--motion-select) ease-yorha",
+        "yorha-wipe",
         "has-[[data-checked]]:text-yorha-on-ink has-[[data-checked]]:[background-size:100%_100%]",
         "has-[:focus-visible]:yorha-focus has-[[data-disabled]]:cursor-not-allowed has-[[data-disabled]]:opacity-50",
         rowClassName,

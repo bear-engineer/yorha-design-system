@@ -1351,6 +1351,7 @@ export const tokens = {
       "yorha-slide-left",
       "yorha-slide-right",
       "yorha-collapse",
+      "yorha-wipe",
       "yorha-press",
       "yorha-stagger"
     ]

@@ -661,6 +661,14 @@
             "transition-duration": "var(--motion-select), max(var(--motion-select), var(--motion-reduced-fade))"
           }
         },
+        "@utility yorha-wipe": {
+          "transition-property": "background-size, color",
+          "transition-duration": "var(--motion-select-exit)",
+          "transition-timing-function": "var(--yorha-ease-out)",
+          "&:is([data-highlighted], [data-panel-open], [data-popup-open], [data-checked], [data-selected], [aria-current=page], :has([data-checked]), :hover)": {
+            "transition-duration": "var(--motion-select)"
+          }
+        },
         "@utility yorha-press": {
           "transition-property": "scale, color, background-color, border-color, background-size",
           "transition-duration": "var(--motion-press), var(--motion-select), var(--motion-select), var(--motion-select), var(--motion-select)",

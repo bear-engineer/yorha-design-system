@@ -1,4 +1,5 @@
 @import "tailwindcss";
 @import "./tokens.generated.css";
+@import "./route-transition.generated.css";
 @source "../../registry";
 @source "../../src";

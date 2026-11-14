@@ -46,6 +46,7 @@ describe("lintRegistry motion rule", () => {
     ["motion/layout-transition", [/thing\.tsx:2 motion: transition on layout property \"width\"/]],
     ["motion/layout-transition-inset", [/thing\.tsx:2 motion: transition on layout property \"inset\"/, /thing\.tsx:2 motion: transition on layout property \"margin-left\"/]],
     ["motion/display-switch", [/thing\.tsx:2 motion: state indicator toggled by display \(`hidden` \+ `group-data-\[pressed\]\/item:block`\)/]],
+    ["motion/wipe-transition", [/thing\.tsx:2 motion: ad-hoc background-size transition \(use the yorha-wipe utility/]],
     ["motion/focus-colors", [/thing\.tsx:2 motion: transition-colors on an element with focus-visible classes/]],
   ] as const;
 

@@ -18,7 +18,7 @@ const ROW =
   "group/row relative flex min-h-8 cursor-default select-none items-center gap-3 py-1.5 pr-3 pl-9 outline-none focus-visible:yorha-focus " +
   "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg " +
   "bg-linear-to-r from-yorha-ink to-yorha-ink bg-no-repeat bg-[position:left_center] bg-[length:0%_100%] " +
-  "transition-[background-size,color] duration-(--motion-select) ease-yorha-out " +
+  "yorha-wipe " +
   "data-[highlighted]:bg-[length:100%_100%] data-[highlighted]:text-yorha-on-ink " +
   "data-[highlighted]:shadow-[0_calc(var(--menu-rule)*-1)_0_0_var(--yorha-ink),0_var(--menu-rule)_0_0_var(--yorha-ink)] " +
   "data-[highlighted]:z-1 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-60 " +

@@ -9,7 +9,7 @@ export interface LoadedTokens {
   modifiers: Record<string, { default: string; contexts: Record<string, LoadedTokens["base"]> }>;
 }
 /** Output path (relative to the repo root) for each generated file. */
-export const OUTPUTS: { css: string; registry: string; docs: string };
+export const OUTPUTS: { css: string; registry: string; docs: string; routeCss: string };
 export function loadTokens(): LoadedTokens;
 /** theme -> colour token name -> hex fallback */
 export function themeColors(tokens: LoadedTokens): Record<string, Record<string, string>>;

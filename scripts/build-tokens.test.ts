@@ -22,8 +22,14 @@ const baseItem = () => {
 
 describe("token generator", () => {
   it("emits the css, registry and docs outputs", () => {
-    expect(Object.keys(generate()).sort()).toEqual(["registry/yorha/base/base/registry.json", "src/docs/foundations/tokens.generated.ts", "src/styles/tokens.generated.css"]);
+    expect(Object.keys(generate()).sort()).toEqual(["registry/yorha/base/base/registry.json", "src/docs/foundations/tokens.generated.ts", "src/styles/route-transition.generated.css", "src/styles/tokens.generated.css"]);
     expect(Object.values(OUTPUTS).sort()).toEqual(Object.keys(generate()).sort());
+  });
+
+  it("Storybook loads the kit's route-transition CSS (not the UA default crossfade)", () => {
+    const css = generate()["src/styles/route-transition.generated.css"];
+    expect(css).toContain("yorha-route-in-forward");
+    expect(read("src/styles/storybook.css")).toContain("route-transition.generated.css");
   });
 
   it("is deterministic and the files on disk match it (no hand edits, no drift)", () => {
@@ -135,7 +141,7 @@ describe("token generator", () => {
       press: "90ms",
       loop: "1200ms",
     };
-    const MOTION_UTILITIES = ["yorha-pop", "yorha-panel", "yorha-fade", "yorha-slide-up", "yorha-slide-down", "yorha-slide-left", "yorha-slide-right", "yorha-collapse", "yorha-press", "yorha-stagger"];
+    const MOTION_UTILITIES = ["yorha-pop", "yorha-panel", "yorha-fade", "yorha-slide-up", "yorha-slide-down", "yorha-slide-left", "yorha-slide-right", "yorha-collapse", "yorha-wipe", "yorha-press", "yorha-stagger"];
     const OTHER_UTILITIES = ["yorha-focus", "yorha-tabular", "yorha-break"];
     const utilityBlock = (name: string) => block(`@utility ${name}`);
 
@@ -199,7 +205,7 @@ describe("token generator", () => {
     });
 
     it("open/close utilities transition between data-starting-style and data-ending-style, with an opacity fade when reduced", () => {
-      for (const name of MOTION_UTILITIES.filter((utility) => !["yorha-press", "yorha-stagger"].includes(utility))) {
+      for (const name of MOTION_UTILITIES.filter((utility) => !["yorha-press", "yorha-stagger", "yorha-wipe"].includes(utility))) {
         expect(utilityBlock(name), name).toContain("&[data-starting-style], &[data-ending-style] {");
         expect(utilityBlock(name), name).toMatch(/transition-property: [a-z, ]*opacity/);
         expect(utilityBlock(name), name).toContain("var(--motion-reduced-fade)");
@@ -279,6 +285,14 @@ describe("token generator", () => {
       expect(collapse).toContain("var(--motion-collapse)");
       expect(collapse).toMatch(/&\[data-starting-style\], &\[data-ending-style\] \{\n\s+height: 0;\n\s+opacity: 0;/);
       expect(collapse).toMatch(/&\[data-ending-style\] \{\n\s+transition-duration: var\(--motion-select\), max\(var\(--motion-select\), var\(--motion-reduced-fade\)\);/);
+    });
+
+    it("yorha-wipe transitions background-size and colour: exit speed by default, enter speed on the selected states", () => {
+      const wipe = utilityBlock("yorha-wipe");
+      expect(wipe).toContain("transition-property: background-size, color;");
+      expect(wipe).toContain("transition-timing-function: var(--yorha-ease-out);");
+      expect(wipe).toMatch(/^\s+transition-duration: var\(--motion-select-exit\);/m);
+      expect(wipe).toMatch(/&:is\(.*\[data-highlighted\].*\[data-checked\].*\) \{\n\s+transition-duration: var\(--motion-select\);/);
     });
 
     it("yorha-press scales on :active with the press token; yorha-stagger delays by --motion-stagger times an index", () => {

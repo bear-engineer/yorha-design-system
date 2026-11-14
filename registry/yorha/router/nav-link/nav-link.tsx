@@ -16,7 +16,7 @@ const base = [
   "border-y-(length:--menu-rule) border-transparent",
   "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-no-repeat bg-[length:0%_100%] bg-left",
   "text-yorha-sm font-yorha-medium uppercase tracking-yorha-wide leading-yorha-snug text-yorha-fg-ink",
-  "transition-[background-size,color] duration-(--motion-select) ease-yorha",
+  "yorha-wipe",
   "before:size-1.5 before:shrink-0 before:bg-current before:content-['']",
   "focus-visible:yorha-focus",
   "aria-[current=page]:bg-[length:100%_100%] aria-[current=page]:border-yorha-border aria-[current=page]:text-yorha-on-ink",

@@ -34,7 +34,7 @@ function AccordionTrigger({ className, children, ...props }: ComponentProps<type
           "group/trigger flex w-full items-center gap-3 px-3 py-3 text-left",
           "font-yorha text-yorha-sm font-yorha-bold tracking-yorha-heading text-yorha-fg uppercase",
           "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-left bg-no-repeat [background-size:0%_100%]",
-          "transition-[background-size,color] duration-(--motion-select) ease-yorha-out",
+          "yorha-wipe",
           "data-[panel-open]:text-yorha-on-ink data-[panel-open]:[background-size:100%_100%]",
           "focus-visible:yorha-focus",
           "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-fg-muted",

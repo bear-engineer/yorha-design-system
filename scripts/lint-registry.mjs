@@ -35,6 +35,7 @@ const FOCUS_HINT = "use transition-[color,background-color,border-color]";
 // A state indicator toggled by display: `hidden` in the base classes plus `group-data-[...]:block|flex|grid|inline*`.
 const HIDDEN = /(?<![\w:-])hidden(?![\w-])/;
 const DISPLAY_SWITCH = /(?<![\w-])((?:peer-|group-)?(?:data|aria)-\[[^\]]+\](?:\/[\w-]+)?:(?:block|flex|grid|inline-block|inline-flex|inline-grid|inline))(?![\w-])/;
+const WIPE_HINT = "use the yorha-wipe utility for the selection wipe";
 const LAYOUT_ALLOW = /lint-allow layout-transition:\s*\S/;
 const LAYOUT_HINT = "animate transform, opacity or colour; allow only with a `lint-allow layout-transition: <reason>` comment";
 
@@ -56,6 +57,9 @@ function motionFindings(code, raw = code) {
   code.split("\n").forEach((line, index) => {
     for (const [pattern, describe] of MOTION_RULES) {
       for (const match of line.matchAll(pattern)) findings.push(`${index + 1} motion: ${describe(match[0])} (${MOTION_HINT})`);
+    }
+    for (const list of line.matchAll(TRANSITION_LIST)) {
+      if ((list[1] ?? list[2]).split(/[,_\s]+/).includes("background-size")) findings.push(`${index + 1} motion: ad-hoc background-size transition (${WIPE_HINT})`);
     }
     const allowed = LAYOUT_ALLOW.test(rawLines[index] ?? "") || LAYOUT_ALLOW.test(rawLines[index - 1] ?? "");
     if (!allowed) {
