@@ -84,15 +84,11 @@ add_items block "${BLOCKS[@]}"
 echo "==> verify placed files"
 node "$E2E/expected-files.mjs" "$ROOT/public/r" >"$OUT/expected-files.tsv" || { echo "expected-files failed" >&2; exit 1; }
 missing=0
-: >"$OUT/findings.txt"
-while IFS=$'\t' read -r name flat alt; do
-  if [ -s "$APP/$flat" ]; then continue
-  elif [ -s "$APP/$alt" ]; then echo "item=$name placed at $alt (expected $flat)" >>"$OUT/findings.txt"
-  else echo "MISSING: item=$name file=$flat (also not at $alt)" >&2; missing=1
-  fi
+while IFS=$'\t' read -r name flat; do
+  [ -s "$APP/$flat" ] || { echo "MISPLACED/MISSING: item=$name expected $flat" >&2; missing=1; }
 done <"$OUT/expected-files.tsv"
-[ "$missing" -eq 0 ] || { echo "blocked: items did not install files for consumers (see MISSING above)" >&2; exit 1; }
-echo "$(wc -l <"$OUT/expected-files.tsv" | tr -d ' ') files present; $(wc -l <"$OUT/findings.txt" | tr -d ' ') placed off the flat path (see $OUT/findings.txt)"
+[ "$missing" -eq 0 ] || { echo "blocked: files not at documented flat paths (see above)" >&2; exit 1; }
+echo "$(wc -l <"$OUT/expected-files.tsv" | tr -d ' ') files at documented flat paths"
 
 step fixture-setup node "$E2E/fixture-src/fixture-setup.mjs" "$APP" "$E2E/fixture-src/gallery.tsx"
 step typegen pnpm exec react-router typegen

@@ -46,7 +46,7 @@ writeFileSync(
   join(dir, "app/routes/gallery.tsx"),
   readFileSync(gallery, "utf8").replace(/~\/components\/ui\/([\w-]+)"/g, (_, n) => `~/components/ui/${resolveUi(n)}"`),
 );
-const demo = existsSync(join(dir, "app/routes/yorha-demo.tsx")) ? "routes/yorha-demo.tsx" : "routes/routes/yorha-demo.tsx";
+const demo = "routes/yorha-demo.tsx";
 if (!existsSync(join(dir, "app", demo))) throw new Error("yorha-demo route file not found");
 writeFileSync(
   join(dir, "app/routes.ts"),
