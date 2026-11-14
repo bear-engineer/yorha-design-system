@@ -1,4 +1,23 @@
 {
   "$schema": "https://ui.shadcn.com/schema/registry.json",
-  "items": []
+  "items": [
+    {
+      "name": "ornament",
+      "type": "registry:ui",
+      "title": "Ornament",
+      "description": "Decorative rule-and-dot band and dashed separator drawn with CSS gradients (aria-hidden), plus a semantic Separator with role=separator for meaningful dividers.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        {
+          "path": "ornament.tsx",
+          "type": "registry:ui"
+        }
+      ],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+    }
+  ]
 }

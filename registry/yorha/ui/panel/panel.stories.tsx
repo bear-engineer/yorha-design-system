@@ -30,7 +30,7 @@ export const TitledSection: Story = {
     const c = within(canvasElement);
     const region = c.getByRole("region", { name: "상태 보고" });
     await expect(region.tagName).toBe("SECTION");
-    await expect(c.getByRole("heading", { level: 2, name: "상태 보고" })).toBeInTheDocument();
+    await expect(c.getByRole("heading", { level: 3, name: "상태 보고" })).toBeInTheDocument();
     await expect(c.getByText("본문 내용")).toBeInTheDocument();
   },
 };
