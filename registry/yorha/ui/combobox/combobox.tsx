@@ -77,17 +77,28 @@ function ComboboxTrigger({ className, children, ...props }: ComponentProps<typeo
   );
 }
 
+/** Fixed-size chevron (down). Square caps, currentColor; the trigger rotates it 180deg while open. */
+function ChevronGlyph({ up = false }: { up?: boolean }) {
+  return (
+    <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true" focusable="false" className="block shrink-0">
+      <path d={up ? "M2 8 L6 4 L10 8" : "M2 4 L6 8 L10 4"} />
+    </svg>
+  );
+}
+
 function ComboboxIcon({ className, ...props }: ComponentProps<typeof ComboboxPrimitive.Icon>) {
   return (
     <ComboboxPrimitive.Icon
       data-slot="combobox-icon"
       aria-hidden="true"
       className={cnState(
-        "inline-block size-2 shrink-0 -translate-y-px rotate-45 border-r-2 border-b-2 border-current group-data-[popup-open]/trigger:translate-y-px group-data-[popup-open]/trigger:rotate-[225deg]",
+        "inline-flex size-3 shrink-0 items-center justify-center transition-transform duration-(--motion-select) ease-yorha group-data-[popup-open]/trigger:rotate-180",
         className,
       )}
       {...props}
-    />
+    >
+      <ChevronGlyph />
+    </ComboboxPrimitive.Icon>
   );
 }
 

@@ -5,9 +5,18 @@ import { cnState } from "@/lib/utils";
 /** Root: re-export of the Base UI Select root (value, items, onValueChange, disabled, ...). */
 const Select = SelectPrimitive.Root;
 
+/** Fixed-size chevron (down). Square caps, currentColor; the trigger rotates it 180deg while open. */
+function ChevronGlyph({ up = false }: { up?: boolean }) {
+  return (
+    <svg viewBox="0 0 12 12" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="square" strokeLinejoin="miter" aria-hidden="true" focusable="false" className="block shrink-0">
+      <path d={up ? "M2 8 L6 4 L10 8" : "M2 4 L6 8 L10 4"} />
+    </svg>
+  );
+}
+
 type TriggerProps = ComponentProps<typeof SelectPrimitive.Trigger>;
 
-/** Square-edged field-like button; chevron is a CSS-drawn decorative glyph. */
+/** Square-edged field-like button; chevron is an inline svg glyph. */
 function SelectTrigger({ className, children, ...props }: TriggerProps) {
   return (
     <SelectPrimitive.Trigger
@@ -27,8 +36,10 @@ function SelectTrigger({ className, children, ...props }: TriggerProps) {
       {children}
       <SelectPrimitive.Icon
         aria-hidden="true"
-        className="inline-block size-2 shrink-0 -translate-y-px rotate-45 border-r-2 border-b-2 border-current transition-transform duration-(--motion-select) group-data-[popup-open]/trigger:translate-y-px group-data-[popup-open]/trigger:rotate-[225deg]"
-      />
+        className="inline-flex size-3 shrink-0 items-center justify-center transition-transform duration-(--motion-select) ease-yorha group-data-[popup-open]/trigger:rotate-180"
+      >
+        <ChevronGlyph />
+      </SelectPrimitive.Icon>
     </SelectPrimitive.Trigger>
   );
 }
@@ -188,19 +199,25 @@ function SelectLabel({ className, ...props }: ComponentProps<typeof SelectPrimit
 
 const SCROLL_ARROW =
   "absolute inset-x-0 z-1 flex h-5 w-full cursor-default items-center justify-center bg-yorha-panel text-yorha-fg " +
-  "before:size-1.5 before:border-r-2 before:border-b-2 before:border-current before:content-[''] " +
-  "data-[direction=up]:top-0 data-[direction=up]:before:translate-y-0.5 data-[direction=up]:before:rotate-[225deg] " +
-  "data-[direction=down]:bottom-0 data-[direction=down]:before:-translate-y-0.5 data-[direction=down]:before:rotate-45 " +
+  "data-[direction=up]:top-0 data-[direction=down]:bottom-0 " +
   "[&:not([data-visible])]:hidden";
 
 /** Appears at the top of a clipped list; hovering scrolls up. Decorative, keyboard navigation scrolls too. */
 function SelectScrollUpArrow({ className, ...props }: ComponentProps<typeof SelectPrimitive.ScrollUpArrow>) {
-  return <SelectPrimitive.ScrollUpArrow aria-hidden="true" data-slot="select-scroll-up-arrow" className={cnState(SCROLL_ARROW, className)} {...props} />;
+  return (
+    <SelectPrimitive.ScrollUpArrow aria-hidden="true" data-slot="select-scroll-up-arrow" className={cnState(SCROLL_ARROW, className)} {...props}>
+      <ChevronGlyph up />
+    </SelectPrimitive.ScrollUpArrow>
+  );
 }
 
 /** Appears at the bottom of a clipped list; hovering scrolls down. */
 function SelectScrollDownArrow({ className, ...props }: ComponentProps<typeof SelectPrimitive.ScrollDownArrow>) {
-  return <SelectPrimitive.ScrollDownArrow aria-hidden="true" data-slot="select-scroll-down-arrow" className={cnState(SCROLL_ARROW, className)} {...props} />;
+  return (
+    <SelectPrimitive.ScrollDownArrow aria-hidden="true" data-slot="select-scroll-down-arrow" className={cnState(SCROLL_ARROW, className)} {...props}>
+      <ChevronGlyph />
+    </SelectPrimitive.ScrollDownArrow>
+  );
 }
 
 /** Check mark slot of the selected item. SelectItem renders it itself; exported for custom rows. */
