@@ -13,7 +13,8 @@ import { tokens } from "./tokens.generated";
 
 - 열림/닫힘은 Base UI의 `data-starting-style` / `data-ending-style` 사이의 CSS 트랜지션으로 만듭니다. 트랜지션은 도중에 취소되어도 끊기지 않습니다.
 - 지속 시간은 `var(--motion-*)` 토큰, 이징은 `ease-yorha-*`로만 씁니다. 레지스트리 `.tsx`에 `180ms` 같은 숫자, `cubic-bezier(...)`, `transition-all`을 직접 쓰지 않습니다(`pnpm registry:lint`의 `motion` 규칙).
-- 나가는 동작은 들어오는 동작보다 빠릅니다.
+- 나가는 동작은 들어오는 동작보다 빠르고, 이징은 `ease-yorha`입니다(`ease-yorha-in`은 처음이 느려 지연처럼 보이므로 UI 이탈에 쓰지 않습니다). 예외는 드로어: 이탈도 `--motion-drawer`이며 스와이프로 놓으면 `--drawer-swipe-strength`만큼 줄어듭니다. 아코디언·콜랩서블은 이탈 `--motion-select`, 탭 패널은 열 때만 `--motion-select` 페이드입니다.
+- Base UI가 `data-instant`를 붙인 열림/닫힘(키보드로 연 팝업, Esc, 포커스 툴팁)은 `yorha-pop`, `yorha-panel`, `yorha-fade`가 애니메이션 없이 바로 표시합니다.
 - 팝업은 `--transform-origin`(Base UI Positioner가 설정)에서 커집니다.
 - 깜빡임은 초당 3회 이하, 5초를 넘는 자동 동작에는 일시정지 수단을 둡니다.
 - 로딩 표시(Spinner, 불확정 Progress, Skeleton, Button `loading`)는 마운트되어 있는 동안 `--motion-loop` 주기로 반복합니다. 멈춘 로더는 "끝났다/멈췄다"로 읽히기 때문입니다. `reduced`는 느린 주기(2400ms)의 불투명도 펄스만, `off`는 정지하되 줄무늬·단계 불투명도로 "진행 중"임을 보입니다.
@@ -42,14 +43,14 @@ import { tokens } from "./tokens.generated";
     <tr><th>클래스</th><th>동작</th><th>토큰</th><th>언제 쓰는가</th><th>예시</th></tr>
   </thead>
   <tbody>
-    <tr><td><code>yorha-pop</code></td><td>기준점(<code>--transform-origin</code>)에서 배율 0.96 → 1, 불투명도 0 → 1</td><td><code>--motion-popover</code> / <code>--motion-popover-exit</code>, <code>ease-yorha-decelerate</code></td><td>기준 요소에 붙는 작은 팝업: 팝오버, 툴팁, 메뉴, 셀렉트, 콤보박스, 미리보기 카드</td><td><code>{'<Popover.Popup className="yorha-pop" />'}</code></td></tr>
+    <tr><td><code>yorha-pop</code></td><td>기준점(<code>--transform-origin</code>)에서 배율 0.96 → 1, 불투명도 0 → 1</td><td><code>--motion-popover</code> / <code>--motion-popover-exit</code>, <code>ease-yorha-decelerate</code>(이탈 <code>ease-yorha</code>)</td><td>기준 요소에 붙는 작은 팝업: 팝오버, 툴팁, 메뉴, 셀렉트, 콤보박스, 미리보기 카드</td><td><code>{'<Popover.Popup className="yorha-pop" />'}</code></td></tr>
     <tr><td><code>yorha-panel</code></td><td>아래 0.5rem에서 올라오며 불투명도 0 → 1</td><td><code>--motion-panel</code> / <code>--motion-panel-exit</code>, <code>ease-yorha-out</code></td><td>화면 가운데 뜨는 큰 면: 다이얼로그, 경고 다이얼로그</td><td><code>{'<Dialog.Popup className="yorha-panel" />'}</code></td></tr>
-    <tr><td><code>yorha-fade</code></td><td>불투명도만 0 → 1</td><td><code>--motion-panel</code> / <code>--motion-panel-exit</code>, <code>ease-yorha-out</code></td><td>움직이지 않는 면: 백드롭(스크림), 탭 패널 내용 교체</td><td><code>{'<Dialog.Backdrop className="yorha-fade" />'}</code></td></tr>
+    <tr><td><code>yorha-fade</code></td><td>불투명도만 0 → 1</td><td><code>--motion-panel</code> / <code>--motion-panel-exit</code>, <code>ease-yorha-out</code></td><td>움직이지 않는 면: 백드롭(스크림)</td><td><code>{'<Dialog.Backdrop className="yorha-fade" />'}</code></td></tr>
     <tr><td><code>yorha-slide-up</code></td><td>아래 가장자리에서 위로 밀려 들어옴(자기 높이만큼). 스와이프 중에는 손가락을 따라감</td><td><code>--motion-drawer</code>, <code>ease-yorha-emphasized</code></td><td>하단 시트(<code>swipeDirection="down"</code>)</td><td><code>{'<Drawer.Popup className="yorha-slide-up" />'}</code></td></tr>
     <tr><td><code>yorha-slide-down</code></td><td>위 가장자리에서 아래로 밀려 들어옴</td><td><code>--motion-drawer</code>, <code>ease-yorha-emphasized</code></td><td>상단 시트, 상단 알림 띠(<code>swipeDirection="up"</code>)</td><td><code>{'<Drawer.Popup className="yorha-slide-down" />'}</code></td></tr>
     <tr><td><code>yorha-slide-left</code></td><td>오른쪽 가장자리에서 왼쪽으로 밀려 들어옴</td><td><code>--motion-drawer</code>, <code>ease-yorha-emphasized</code></td><td>오른쪽 드로어(<code>swipeDirection="right"</code>), 오른쪽에서 나오는 토스트</td><td><code>{'<Drawer.Popup className="yorha-slide-left" />'}</code></td></tr>
     <tr><td><code>yorha-slide-right</code></td><td>왼쪽 가장자리에서 오른쪽으로 밀려 들어옴</td><td><code>--motion-drawer</code>, <code>ease-yorha-emphasized</code></td><td>왼쪽 드로어, 모바일 내비게이션(<code>swipeDirection="left"</code>)</td><td><code>{'<Drawer.Popup className="yorha-slide-right" />'}</code></td></tr>
-    <tr><td><code>yorha-collapse</code></td><td>높이 0 ↔ 패널 높이(<code>--collapsible-panel-height</code>, 아코디언은 <code>--accordion-panel-height</code>), 불투명도 0 ↔ 1. <code>overflow: hidden</code> 포함</td><td><code>--motion-collapse</code>, <code>ease-yorha-emphasized</code></td><td>접히는 영역: 아코디언 패널, 콜랩서블 패널</td><td><code>{'<Accordion.Panel className="yorha-collapse" />'}</code></td></tr>
+    <tr><td><code>yorha-collapse</code></td><td>높이 0 ↔ 패널 높이(<code>--collapsible-panel-height</code>, 아코디언은 <code>--accordion-panel-height</code>), 불투명도 0 ↔ 1. <code>overflow: hidden</code> 포함</td><td><code>--motion-collapse</code> / <code>--motion-select</code>(이탈), <code>ease-yorha-emphasized</code></td><td>접히는 영역: 아코디언 패널, 콜랩서블 패널</td><td><code>{'<Accordion.Panel className="yorha-collapse" />'}</code></td></tr>
     <tr><td><code>yorha-press</code></td><td>누르는 동안(<code>:active</code>) 배율 0.97. 색·배경·테두리·선택 와이프 전환도 함께 정의</td><td><code>--motion-press</code>(배율), <code>--motion-select</code>(색), <code>ease-yorha-out</code></td><td>누를 수 있는 컨트롤: 버튼, 토글, 칩, 메뉴 행</td><td><code>{'<button className="yorha-press" />'}</code></td></tr>
     <tr><td><code>yorha-stagger</code></td><td>마운트될 때 아래 0.5rem에서 올라오며 나타남. 지연 = <code>--motion-stagger</code> × <code>--yorha-stagger-index</code>(6까지)</td><td><code>--motion-stagger-enter</code>, <code>--motion-stagger</code>, <code>ease-yorha-out</code></td><td>목록 행·벤토 타일의 순차 진입</td><td><code>{'<li className="yorha-stagger" style={{ "--yorha-stagger-index": index }} />'}</code></td></tr>
   </tbody>

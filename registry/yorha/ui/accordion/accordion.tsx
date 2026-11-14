@@ -53,7 +53,7 @@ function AccordionTrigger({ className, children, ...props }: ComponentProps<type
   );
 }
 
-/** Body; height animates with --motion-panel and collapses under reduced/off motion (duration 0). */
+/** Body; height animates with --motion-collapse (exit --motion-select) via yorha-collapse and is instant under reduced/off motion. */
 function AccordionPanel({ className, ...props }: ComponentProps<typeof AccordionPrimitive.Panel>) {
   return (
     <AccordionPrimitive.Panel

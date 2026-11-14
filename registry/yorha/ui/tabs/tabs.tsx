@@ -8,7 +8,7 @@ function Tabs({ className, ...props }: ComponentProps<typeof TabsPrimitive.Root>
 }
 
 /**
- * System-menu tab strip: dark indicator slides under (transform only: translate + scaleX) the active tab (--motion-panel),
+ * System-menu tab strip: dark indicator slides under (transform only: translate + scaleX) the active tab (--motion-tab-indicator),
  * the active label inverts to on-ink. Indicator is rendered first so tabs paint above it.
  */
 function TabsList({ className, children, activateOnFocus = true, ...props }: ComponentProps<typeof TabsPrimitive.List>) {

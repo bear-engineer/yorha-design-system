@@ -232,6 +232,19 @@ describe("token generator", () => {
       expect(utilityBlock("yorha-stagger")).toContain("animation-duration: max(var(--motion-stagger-enter), var(--motion-reduced-fade));");
     });
 
+    it("Motion.mdx utility table lists exactly the duration tokens each utility reads", () => {
+      const doc = read("src/docs/foundations/Motion.mdx");
+      const rows = [...doc.matchAll(/<tr><td><code>(yorha-[a-z-]+)<\/code><\/td>(.*?)<\/tr>/g)];
+      expect(rows.map((row) => row[1])).toEqual(MOTION_UTILITIES);
+      const DURATION = /--motion-(popover-exit|popover|panel-exit|panel|drawer|collapse|select-exit|select|press|stagger-enter|stagger)(?![a-z-])/g;
+      for (const [, name, cells] of rows) {
+        const tokenCell = cells.split("</td>")[1] ?? "";
+        const documented = new Set([...tokenCell.matchAll(DURATION)].map((match) => match[1]));
+        const used = new Set([...utilityBlock(name!).matchAll(DURATION)].map((match) => match[1]));
+        expect([...documented].sort(), name).toEqual([...used].sort());
+      }
+    });
+
     it("yorha-pop scales and fades from --transform-origin, exit on the faster token", () => {
       const pop = utilityBlock("yorha-pop");
       expect(pop).toContain("transform-origin: var(--transform-origin");
