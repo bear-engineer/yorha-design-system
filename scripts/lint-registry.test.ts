@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { lintRegistry as lintRegistryUntyped } from "./lint-registry.mjs";
 
 // The motion rule adds `options` and `warnings`; typed here so the test does not depend on the declaration file.
-type LintRegistry = (rootDir?: string, options?: { motionStrict?: boolean }) => { errors: string[]; warnings?: string[]; includes: number };
+type LintRegistry = (rootDir?: string, options?: { motionStrict?: boolean; craftStrict?: boolean }) => { errors: string[]; warnings?: string[]; includes: number };
 const lintRegistry = lintRegistryUntyped as unknown as LintRegistry;
 
 const fixture = (n: string) => fileURLToPath(new URL(`./fixtures/${n}`, import.meta.url));
@@ -115,5 +115,47 @@ describe("lintRegistry motion rule", () => {
       expect(result.stdout).toMatch(/registry lint ok \(1 includes\)/);
       expect(result.status).toBe(0);
     });
+  });
+});
+
+describe("lintRegistry craft rules (G16)", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  const CRAFT_FIXTURES = [
+    ["craft/td-flex", /thing\.tsx:3 craft: display:flex on a table cell/],
+    ["craft/opacity-disabled", /thing\.tsx:3 craft: opacity-based disabled/],
+    ["craft/text-shadow", /thing\.tsx:3 craft: text-shadow-yorha outside heading\.tsx/],
+    ["craft/leading", /thing\.tsx:3 craft: leading-yorha-tight in a component/],
+    ["craft/inline-svg", /thing\.tsx:3 craft: inline <svg> outside icons\/timeline/],
+    ["craft/glyph-icon", /thing\.tsx:3 craft: text glyph "×" used as an icon/],
+    ["craft/fractional", /thing\.tsx:3 craft: fractional arbitrary length "h-\[2\.5rem\]"/],
+    ["craft/press-grouped", /thing\.tsx:3 craft: yorha-press on a grouped item/],
+  ] as const;
+
+  it("accepts a clean craft fixture, strict", () => {
+    const result = lintRegistry(fixture("craft/ok"), { motionStrict: true, craftStrict: true });
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it.each(CRAFT_FIXTURES)("warns on fixture %s unless craftStrict, errors when strict", (name, message) => {
+    const soft = lintRegistry(fixture(name), { motionStrict: true, craftStrict: false });
+    expect(soft.errors).toEqual([]);
+    expect((soft.warnings ?? []).join("\n")).toMatch(message);
+    const hard = lintRegistry(fixture(name), { motionStrict: true, craftStrict: true });
+    expect(hard.errors.join("\n")).toMatch(message);
+  });
+
+  it("raw control heights only ever warn (use h-control-*)", () => {
+    const result = lintRegistry(fixture("craft/raw-height"), { motionStrict: true, craftStrict: true });
+    expect(result.errors).toEqual([]);
+    expect((result.warnings ?? []).join("\n")).toMatch(/thing\.tsx:3 craft: raw h-10 on a control \(use the h-control-\* scale\)/);
+  });
+
+  it("YORHA_CRAFT_STRICT=1 turns the rules into errors (CLI default is warnings while the sweeps land)", () => {
+    const run = (strict: string) =>
+      spawnSync(process.execPath, [cli], { cwd: fixture("craft/leading"), encoding: "utf8", env: { ...process.env, YORHA_MOTION_STRICT: "1", YORHA_CRAFT_STRICT: strict } });
+    expect(run("").status).toBe(0);
+    expect(run("1").status).toBe(1);
   });
 });
