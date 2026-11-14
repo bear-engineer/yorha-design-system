@@ -188,7 +188,10 @@ export const ReducedMotionHasNoTransition: Story = {
         return s.transitionDuration.split(",").every((d) => parseFloat(d) === 0);
       };
       await waitFor(() => {
-        expect(zero(popup)).toBe(true);
+        // Reduced keeps the popup's short opacity fade (--motion-reduced-fade) but nothing spatial (--motion-spatial 0, so the exit scale is 1).
+        const ps = getComputedStyle(popup);
+        expect(ps.transitionDuration.split(",").every((d) => parseFloat(d) <= 0.12)).toBe(true);
+        expect(parseFloat(ps.getPropertyValue("--motion-spatial"))).toBe(0);
         expect(zero(popup.parentElement!)).toBe(true);
         expect(zero(content)).toBe(true);
         expect(zero(c.getByRole("button", { name: "유닛" }).querySelector('[data-slot="navigation-menu-icon"]')!)).toBe(true);

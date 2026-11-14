@@ -29,7 +29,8 @@ const byDir = new Map(collectItems(modules).map((i) => [i.dir, i]));
 // Overlays use the Default story: it renders the closed demo with its trigger (States is a gallery).
 const defaults = (dir: string) => {
   const path = Object.keys(modules).find((p) => p.includes(`/ui/${dir}/`));
-  const mod = modules[path!];
+  const mod = path ? modules[path] : undefined;
+  if (!mod) throw new Error(`no stories module for ui/${dir}`);
   return { meta: mod.default, story: (mod.Default ?? byDir.get(dir)!.story) as Record<string, unknown> };
 };
 
