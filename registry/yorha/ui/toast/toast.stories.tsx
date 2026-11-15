@@ -209,29 +209,48 @@ async function sample<T>(read: () => T, ms: number, done?: (values: T[]) => bool
  */
 async function frozen<T>(el: HTMLElement, trigger: () => Promise<unknown>, read: () => T): Promise<T[]> {
   const doc = el.ownerDocument;
-  let anims: Animation[] = [];
-  const grab = (e: Event) => {
-    if (anims.length || !(e.target instanceof Element) || !(el === e.target || el.contains(e.target))) return;
-    anims = el.getAnimations({ subtree: true });
+  let out: T[] | null = null;
+  // Start from rest: an entry transition still running on `el` (a toast added a moment ago) is settled first and never
+  // mistaken for the transition the trigger starts.
+  const before = new Set(el.getAnimations({ subtree: true }));
+  before.forEach((a) => a.finish());
+  // Steps the element's own transitions (plus any started with them inside it) from 0 to their end and records read()
+  // at 10 steps. Runs synchronously inside the callback that first sees a transition on `el` itself, so no task can run in
+  // between: the toast unmounts once its exit transitions settle, and a later task would find it detached (reads 0).
+  const capture = () => {
+    if (out) return;
+    const anims = el.getAnimations({ subtree: true }).filter((a) => !before.has(a) && (a.playState === "running" || a.pending));
+    if (!anims.some((a) => (a.effect as KeyframeEffect | null)?.target === el)) return;
     anims.forEach((a) => a.pause());
+    const total = Math.max(...anims.map((a) => Number(a.effect?.getComputedTiming().endTime ?? 0)));
+    const values: T[] = [];
+    for (let i = 0; i <= 10; i++) {
+      anims.forEach((a) => (a.currentTime = (total * i) / 10));
+      values.push(read());
+    }
+    anims.forEach((a) => a.finish());
+    out = values;
   };
-  doc.addEventListener("transitionrun", grab, true);
-  doc.addEventListener("animationstart", grab, true);
+  // A MutationObserver callback runs as a microtask right after the DOM change that starts the transition, and
+  // getAnimations() flushes style, so the transition is caught at creation however loaded the machine is.
+  // transitionrun/animationstart (dispatched a frame later) stay as a second path.
+  const mo = new MutationObserver(capture);
+  mo.observe(doc.documentElement, { subtree: true, childList: true, attributes: true });
+  const onEvent = (e: Event) => {
+    if (e.target instanceof Element && (el === e.target || el.contains(e.target))) capture();
+  };
+  doc.addEventListener("transitionrun", onEvent, true);
+  doc.addEventListener("animationstart", onEvent, true);
   try {
     await trigger();
-    await waitFor(() => expect(anims.length, "an animation starts").toBeGreaterThan(0), { timeout: 2000 });
+    capture();
+    await waitFor(() => expect(out, "a transition starts on the element").not.toBeNull(), { timeout: 2000 });
   } finally {
-    doc.removeEventListener("transitionrun", grab, true);
-    doc.removeEventListener("animationstart", grab, true);
+    mo.disconnect();
+    doc.removeEventListener("transitionrun", onEvent, true);
+    doc.removeEventListener("animationstart", onEvent, true);
   }
-  const total = Math.max(...anims.map((a) => Number(a.effect?.getComputedTiming().endTime ?? 0)));
-  const out: T[] = [];
-  for (let i = 0; i <= 10; i++) {
-    anims.forEach((a) => (a.currentTime = (total * i) / 10));
-    out.push(read());
-  }
-  anims.forEach((a) => a.finish());
-  return out;
+  return out!;
 }
 
 
@@ -501,7 +520,11 @@ export const States: Story = {
     }
     const region = await body(canvasElement).findByRole("region", { name: "알림" });
     await waitFor(() => expect(region.querySelectorAll("[data-slot=toast]")).toHaveLength(3));
-    await waitFor(() => expect(within(region).getAllByRole("button").length).toBeGreaterThan(0));
+    // Wait for the stack to settle (entry transitions finished), not for an accessible button: the frontmost toast here is
+    // high priority, which Base UI keeps aria-hidden until focused, and the collapsed toasts behind it hide their content, so
+    // "some button is exposed" held only while the collapse transition was still running.
+    await waitFor(() => expect(region.querySelector("[data-starting-style]")).toBeNull());
+    await Promise.all(region.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => undefined)));
     await expectTargetSize(canvasElement.ownerDocument.body);
   },
 };

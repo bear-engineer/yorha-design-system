@@ -46,6 +46,9 @@ describe("Menu ink band seam (#22)", () => {
     rows[0].focus();
     rows[0].dispatchEvent(new PointerEvent("pointermove", { bubbles: true }));
     await frames(3);
+    // the ink band wipes in with a transition (background-size 0% -> 100%): read the settled value, not a mid-wipe sample
+    await Promise.all(rows[0].getAnimations().map((x) => x.finished.catch(() => null)));
+    await animationsFinished();
     const cs = getComputedStyle(rows[0]);
     expect(rows[0].hasAttribute("data-highlighted")).toBe(true);
     const band = colour(cs.backgroundImage);

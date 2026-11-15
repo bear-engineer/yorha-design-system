@@ -26,7 +26,7 @@ export const FilterAndRun: Story = {
     await expect(body().getAllByRole("option")).toHaveLength(1);
     await userEvent.keyboard("{Enter}");
     await waitFor(() => expect(body().queryByRole("searchbox")).toBeNull());
-    await expect(within(canvasElement).getByText("실행: 지역 정찰")).toBeVisible();
+    await waitFor(() => expect(within(canvasElement).getByText("실행: 지역 정찰")).toBeVisible());
     await waitFor(() => expect(trigger).toHaveFocus());
   },
 };
@@ -35,6 +35,7 @@ export const Empty: Story = {
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole("button", { name: /명령 팔레트/ }));
     await userEvent.type(await body().findByRole("searchbox", { name: "명령 검색" }), "zzz");
-    await expect(body().getByText("일치하는 명령이 없습니다")).toBeVisible();
+    // the dialog popup fades in from opacity 0: the status exists before it is visible
+    await waitFor(() => expect(body().getByText("일치하는 명령이 없습니다")).toBeVisible());
   },
 };
