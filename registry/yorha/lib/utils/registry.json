@@ -11,6 +11,11 @@
           "path": "utils.ts",
           "type": "registry:lib",
           "target": "@lib/utils.ts"
+        },
+        {
+          "path": "fx.ts",
+          "type": "registry:lib",
+          "target": "@lib/fx.ts"
         }
       ],
       "dependencies": [
