@@ -41,7 +41,7 @@ const meta = {
       name === "구성 한눈에" ? (
         <Story />
       ) : (
-      <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
+      <div className="flex max-w-[calc(100vw-2rem)] flex-col items-start bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
     ),

@@ -1,6 +1,6 @@
 # Base UI coverage
 
-Components with a registry item: 40/40 · parts used: 269/271
+Components with a registry item: 40/40 · parts used: 268/271
 
 | Component | Item dir | Parts used/total | Missing |
 |---|---|---|---|
@@ -12,7 +12,7 @@ Components with a registry item: 40/40 · parts used: 269/271
 | checkbox | registry/yorha/ui/checkbox | 2/2 | — |
 | checkbox-group | registry/yorha/ui/checkbox-group | 0/0 | — |
 | collapsible | registry/yorha/ui/collapsible | 3/3 | — |
-| combobox | registry/yorha/ui/combobox | 26/26 | — |
+| combobox | registry/yorha/ui/combobox | 25/26 | — (waived: Label) |
 | csp-provider | registry/yorha/providers/yorha-provider | 0/0 | — |
 | context-menu | registry/yorha/ui/context-menu | 19/19 | — |
 | dialog | registry/yorha/ui/dialog | 10/10 | — |

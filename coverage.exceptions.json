@@ -8,5 +8,10 @@
     "component": "meter",
     "part": "Indicator",
     "reason": "Same cell gauge as progress (shared Gauge): clip-path fill over a static cell mask instead of Indicator's inline width."
+  },
+  {
+    "component": "combobox",
+    "part": "Label",
+    "reason": "Base UI 1.9 Combobox.Label labels the Trigger only and logs a warning when the text Input is the control; ComboboxLabel is a native <label htmlFor> bound to the input id from context, so clicking it focuses the field and the accessible name comes from the label."
   }
 ]
