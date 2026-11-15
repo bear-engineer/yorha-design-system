@@ -73,7 +73,6 @@ export function CommandPalette({ commands, onRun, triggerLabel = "명령 팔레�
         setOpen(next);
         if (!next) setQuery("");
       }}
-      sound
     >
       <DialogTrigger render={<Button variant="default" />}>
         {triggerLabel}

@@ -46,7 +46,7 @@ const LANES: TimelineLane[] = [
 const MISSIONS: TimelineGraphItem[] = [
   { id: "scout", lane: "recon", title: "지역 정찰", start: at(16, 9), end: at(16, 15) },
   { id: "strike", lane: "combat", title: "거점 타격", start: at(16, 13), end: at(17, 4) },
-  { id: "sync", lane: "recon", title: "기록 동기화", start: at(17, 9), status: "success" },
+  { id: "sync", lane: "recon", title: "기록 동기화", start: at(17, 9), status: "done" },
 ];
 
 /** 드래그로 옮기고 양 끝으로 늘리며, 키보드는 Space로 들어올린다. 편집 가능한 일정은 defaultItems만으로 켜진다. */
