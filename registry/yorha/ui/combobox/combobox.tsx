@@ -1,13 +1,109 @@
-import { useLayoutEffect, useRef, useState, type ComponentProps } from "react";
+import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
 import { ChevronIcon, CrossIcon, TriangleIcon } from "@/components/ui/icons";
+import { Glyph } from "@/components/ui/glyph";
+import { Spinner } from "@/components/ui/spinner";
 import { cnState } from "@/lib/utils";
 
 const INPUT_MIN = 48; // typing area kept beside the chips (min-w-12)
 const MORE_W = 36; // room reserved for the "+N" chip
 
-/** Root: re-export of the Base UI Combobox root (items, value, onValueChange, multiple, ...). */
-const Combobox = ComboboxPrimitive.Root;
+type CreateSpec = { onCreate: (text: string) => void; label?: ReactNode | ((text: string) => ReactNode) };
+type Ctx = {
+  loading: boolean;
+  text: string;
+  open: boolean;
+  requestOpen: () => void;
+  requestClose: () => void;
+  /** Latest props of the mounted ComboboxCreate; the root appends one create token to flat `items` while it applies. */
+  create: { current: CreateSpec | null };
+  setCreateActive: (active: boolean) => void;
+};
+const ComboboxContext = createContext<Ctx>({
+  loading: false,
+  text: "",
+  open: false,
+  requestOpen: () => {},
+  requestClose: () => {},
+  create: { current: null },
+  setCreateActive: () => {},
+});
+
+/** A `ComboboxCreate` row is a selectable item whose value is this token; the root turns picking it into `onCreate(text)`. */
+type CreateToken = { __yorhaCreate: true; value: string; label: string; onCreate: (text: string) => void };
+const isCreateToken = (v: unknown): v is CreateToken => typeof v === "object" && v !== null && "__yorhaCreate" in v;
+
+type RootProps<Value, Multiple extends boolean | undefined> = ComboboxPrimitive.Root.Props<Value, Multiple> & {
+  /**
+   * Async search in flight: a Spinner replaces the chevron in the trigger cell (same box, the field never resizes), the
+   * list keeps its previous rows at 60 % opacity with `aria-busy`, and `ComboboxStatus` reads "불러오는 중" unless it has its own text.
+   */
+  loading?: boolean;
+};
+
+/**
+ * Root: Base UI Combobox root (items, value, onValueChange, multiple, ...) plus `loading`. It owns `open` (unless you pass
+ * it) so the `+N` chip and `ComboboxCreate` can open / close the popup.
+ */
+function Combobox<Value, Multiple extends boolean | undefined = false>({
+  loading = false,
+  onInputValueChange,
+  onValueChange,
+  onOpenChange,
+  open: openProp,
+  defaultOpen = false,
+  ...props
+}: RootProps<Value, Multiple>) {
+  const [text, setText] = useState<string>(String(props.inputValue ?? props.defaultInputValue ?? ""));
+  const [openState, setOpenState] = useState(defaultOpen);
+  const open = openProp ?? openState;
+  const createSpec = useRef<CreateSpec | null>(null);
+  const [createActive, setCreateActive] = useState(false);
+  const changeOpen = (next: boolean, details?: never) => {
+    if (openProp === undefined) setOpenState(next);
+    (onOpenChange as ((o: boolean, d?: never) => void) | undefined)?.(next, details);
+  };
+  const ctx = useMemo<Ctx>(
+    () => ({
+      loading,
+      text: props.inputValue === undefined ? text : String(props.inputValue),
+      open,
+      requestOpen: () => changeOpen(true),
+      requestClose: () => changeOpen(false),
+      create: createSpec,
+      setCreateActive,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [loading, props.inputValue, text, open],
+  );
+  // One create option rides at the end of a flat `items` array, so the list's own keyboard model reaches it.
+  const trimmed = ctx.text.trim();
+  const items = props.items as readonly unknown[] | undefined;
+  const flat = Array.isArray(items) && !items.some((i) => typeof i === "object" && i !== null && "items" in i);
+  const withCreate =
+    createActive && trimmed && flat
+      ? [...(items as unknown[]), { __yorhaCreate: true, value: trimmed, label: trimmed, onCreate: (t: string) => createSpec.current?.onCreate(t) } satisfies CreateToken]
+      : items;
+  return (
+    <ComboboxContext value={ctx}>
+      <ComboboxPrimitive.Root
+        {...(props as object)}
+        items={withCreate as never}
+        open={open}
+        onOpenChange={changeOpen as never}
+        onInputValueChange={((v: string, d: never) => {
+          setText(v);
+          (onInputValueChange as ((v: string, d: never) => void) | undefined)?.(v, d);
+        }) as never}
+        onValueChange={((v: unknown, d: never) => {
+          const token = Array.isArray(v) ? v.find(isCreateToken) : v;
+          if (isCreateToken(token)) return token.onCreate(token.value);
+          (onValueChange as ((v: unknown, d: never) => void) | undefined)?.(v, d);
+        }) as never}
+      />
+    </ComboboxContext>
+  );
+}
 
 /** Filter hook from Base UI (locale-aware contains/startsWith/endsWith matchers). */
 const useComboboxFilter = ComboboxPrimitive.useFilter;
@@ -53,6 +149,16 @@ function ComboboxInput({ className, onKeyDown, ...props }: ComponentProps<typeof
           event.preventBaseUIHandler();
           return;
         }
+        // Esc with the popup closed: text in the field is cleared first (no bubbling); an empty field lets Esc through (dialogs, drawers).
+        const el = event.currentTarget;
+        if (event.key === "Escape" && el.getAttribute("aria-expanded") !== "true" && el.value !== "") {
+          event.preventBaseUIHandler();
+          event.preventDefault();
+          event.stopPropagation();
+          Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(el, "");
+          el.dispatchEvent(new Event("input", { bubbles: true }));
+          return;
+        }
         onKeyDown?.(event);
       }}
       {...props}
@@ -68,7 +174,7 @@ function ComboboxTrigger({ className, children, ...props }: ComponentProps<typeo
       aria-label="목록 열기"
       className={cnState(
         [
-          "group/trigger grid w-[calc(var(--yorha-control-md)-2px)] shrink-0 self-stretch place-items-center text-yorha-fg",
+          "group/trigger grid w-[calc(var(--yorha-control-md)-2px)] shrink-0 self-stretch place-items-center text-yorha-fg [&>*]:col-start-1 [&>*]:row-start-1",
           // Divider spans the whole frame: an absolute pseudo with no left offset sits at the cell's static position, inset-y-0 against the relative frame.
           "before:absolute before:inset-y-0 before:justify-self-start before:w-px before:bg-yorha-border data-[disabled]:before:bg-yorha-disabled",
           "focus-visible:outline-none focus-visible:bg-yorha-control focus-visible:text-yorha-on-control data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
@@ -78,18 +184,36 @@ function ComboboxTrigger({ className, children, ...props }: ComponentProps<typeo
       )}
       {...props}
     >
-      {children ?? <ComboboxIcon />}
+      {children ?? (
+        <>
+          <ComboboxIcon />
+          <ComboboxBusy />
+        </>
+      )}
     </ComboboxPrimitive.Trigger>
   );
 }
 
+/** Spinner that takes the chevron's place in the trigger cell while `loading` (same 12px box; nothing resizes). */
+function ComboboxBusy() {
+  const { loading } = useContext(ComboboxContext);
+  if (!loading) return null;
+  return (
+    <span aria-hidden="true" data-slot="combobox-busy" className="grid size-icon-sm place-items-center">
+      <Spinner label="불러오는 중" className="text-current [&_[data-yorha-dot]]:bg-current" />
+    </span>
+  );
+}
+
 function ComboboxIcon({ className, ...props }: ComponentProps<typeof ComboboxPrimitive.Icon>) {
+  const { loading } = useContext(ComboboxContext);
   return (
     <ComboboxPrimitive.Icon
       data-slot="combobox-icon"
       aria-hidden="true"
+      data-loading={loading ? "" : undefined}
       className={cnState(
-        "grid size-icon-sm shrink-0 place-items-center transition-transform duration-(--motion-select) ease-yorha group-data-[popup-open]/trigger:rotate-180",
+        "grid size-icon-sm shrink-0 place-items-center data-[loading]:opacity-0 transition-transform duration-(--motion-select) ease-yorha group-data-[popup-open]/trigger:rotate-180",
         className,
       )}
       {...props}
@@ -142,21 +266,31 @@ function ComboboxBackdrop({ className, ...props }: ComponentProps<typeof Combobo
   );
 }
 
-/** Optional pointer arrow for the popup; rotates to the side the popup opens on. */
+// Pixel arrow: one 12px triangle glyph per side (crispEdges, no rotation), stacked in one 12px box and shown by the Base UI arrow's `data-side`.
+function ArrowGlyphs() {
+  return (
+    <>
+      <Glyph name="triangle-up" className="absolute inset-0 opacity-0 group-data-[side=bottom]/arrow:opacity-100" />
+      <Glyph name="triangle-down" className="absolute inset-0 opacity-0 group-data-[side=top]/arrow:opacity-100" />
+      <Glyph name="triangle-right" className="absolute inset-0 opacity-0 group-data-[side=left]/arrow:opacity-100" />
+      <Glyph name="triangle-left" className="absolute inset-0 opacity-0 group-data-[side=right]/arrow:opacity-100" />
+    </>
+  );
+}
+
+/** Optional pointer arrow for the popup; a pixel triangle per side, swapped by `data-side` (never rotated). */
 function ComboboxArrow({ className, ...props }: ComponentProps<typeof ComboboxPrimitive.Arrow>) {
   return (
     <ComboboxPrimitive.Arrow
       data-slot="combobox-arrow"
       className={cnState(
-        [
-          "size-2 rotate-45 border border-yorha-border bg-yorha-panel",
-          "data-[side=bottom]:-top-1 data-[side=bottom]:border-r-0 data-[side=bottom]:border-b-0",
-          "data-[side=top]:-bottom-1 data-[side=top]:border-t-0 data-[side=top]:border-l-0",
-        ],
+        "group/arrow block size-3 text-yorha-border data-[side=bottom]:top-[-8px] data-[side=top]:bottom-[-8px] data-[side=left]:right-[-8px] data-[side=right]:left-[-8px]",
         className,
       )}
       {...props}
-    />
+    >
+      <ArrowGlyphs />
+    </ComboboxPrimitive.Arrow>
   );
 }
 
@@ -209,10 +343,13 @@ function ComboboxContent({
 }
 
 function ComboboxList({ className, ...props }: ComponentProps<typeof ComboboxPrimitive.List>) {
+  const { loading } = useContext(ComboboxContext);
   return (
     <ComboboxPrimitive.List
       data-slot="combobox-list"
-      className={cnState("outline-none data-[empty]:hidden", className)}
+      aria-busy={loading || undefined}
+      data-loading={loading ? "" : undefined}
+      className={cnState("outline-none data-[empty]:hidden data-[loading]:opacity-60", className)}
       {...props}
     />
   );
@@ -229,19 +366,29 @@ function ComboboxEmpty({ className, ...props }: ComponentProps<typeof ComboboxPr
   );
 }
 
-/** Polite live region, e.g. "3 results" or "loading". */
-function ComboboxStatus({ className, ...props }: ComponentProps<typeof ComboboxPrimitive.Status>) {
+/** Polite live region, e.g. "3 results" or "loading". While the root is `loading` it reads "불러오는 중" unless you pass children. */
+function ComboboxStatus({ className, children, ...props }: ComponentProps<typeof ComboboxPrimitive.Status>) {
+  const { loading } = useContext(ComboboxContext);
   return (
     <ComboboxPrimitive.Status
       data-slot="combobox-status"
       className={cnState("px-3 py-1 text-yorha-xs text-yorha-fg-soft empty:p-0", className)}
       {...props}
-    />
+    >
+      {children ?? (loading ? "불러오는 중" : null)}
+    </ComboboxPrimitive.Status>
   );
 }
 
-function ComboboxCollection(props: ComponentProps<typeof ComboboxPrimitive.Collection>) {
-  return <ComboboxPrimitive.Collection {...props} />;
+/** Renders the list rows from the root's `items`; the create option that `ComboboxCreate` adds is drawn here too. */
+function ComboboxCollection({ children, ...props }: ComponentProps<typeof ComboboxPrimitive.Collection>) {
+  return (
+    <ComboboxPrimitive.Collection {...props}>
+      {typeof children === "function"
+        ? (item: unknown, index: number) => (isCreateToken(item) ? <ComboboxCreateRow key="__create" token={item} /> : (children as (i: unknown, n: number) => ReactNode)(item, index))
+        : children}
+    </ComboboxPrimitive.Collection>
+  );
 }
 
 /** Row wrapper for grid layouts (`grid` prop on the root). */
@@ -267,6 +414,55 @@ function ComboboxItem({ className, children, ...props }: ComponentProps<typeof C
         </span>
       </span>
       <span className="min-w-0 flex-1 truncate">{children}</span>
+    </ComboboxPrimitive.Item>
+  );
+}
+
+type CreateProps = {
+  /** Called with the trimmed input text when the option is picked (click or Enter). The popup closes; the value is not touched. */
+  onCreate: (text: string) => void;
+  /** Hide the option because the text already matches an existing option. */
+  exists?: boolean;
+  /** Option label; defaults to `"text" 만들기`. */
+  children?: ReactNode | ((text: string) => ReactNode);
+};
+
+/**
+ * "Create this value" option. Mount it once anywhere inside the root (e.g. in ComboboxContent); while the input has text
+ * and `exists` is false the root appends one real option at the end of the flat `items`, drawn by ComboboxCollection,
+ * so ArrowDown + Enter reach it and the "no results" message gives way to it. Picking it calls `onCreate(text)` and closes
+ * the popup; add the item / set the value yourself. Grouped `items` are not supported (no create option is added).
+ */
+function ComboboxCreate({ onCreate, exists = false, children }: CreateProps) {
+  const ctx = useContext(ComboboxContext);
+  ctx.create.current = { onCreate, label: children };
+  const { setCreateActive } = ctx;
+  useEffect(() => {
+    setCreateActive(!exists);
+    return () => setCreateActive(false);
+  }, [exists, setCreateActive]);
+  return null;
+}
+
+function ComboboxCreateRow({ token }: { token: CreateToken }) {
+  const { create, requestClose } = useContext(ComboboxContext);
+  const label = create.current?.label;
+  return (
+    <ComboboxPrimitive.Item
+      data-slot="combobox-create"
+      value={token}
+      className="group/item yorha-row cursor-default text-yorha-sm tracking-yorha-body"
+      onClick={(event) => {
+        event.preventBaseUIHandler();
+        token.onCreate(token.value);
+        requestClose();
+      }}
+    >
+      <TriangleIcon data-yorha-cursor="" className="size-icon-sm opacity-0 group-data-[highlighted]/item:opacity-100" />
+      <span data-slot="row-indicator" className="grid size-indicator shrink-0 place-items-center">
+        <Glyph name="plus" box={12} />
+      </span>
+      <span className="min-w-0 flex-1 truncate">{typeof label === "function" ? label(token.value) : (label ?? `"${token.value}" 만들기`)}</span>
     </ComboboxPrimitive.Item>
   );
 }
@@ -306,6 +502,7 @@ function ComboboxLabel({ className, ...props }: ComponentProps<typeof ComboboxPr
  */
 function ComboboxChips({ className, children, ...props }: ComponentProps<typeof ComboboxPrimitive.Chips>) {
   const ref = useRef<HTMLDivElement | null>(null);
+  const { open, requestOpen } = useContext(ComboboxContext);
   const [hidden, setHidden] = useState(0);
   // Runs after every render (chips come and go) and on resize; the guard on setHidden ends the loop.
   const measure = () => {
@@ -350,14 +547,21 @@ function ComboboxChips({ className, children, ...props }: ComponentProps<typeof 
     >
       {children}
       {hidden > 0 && (
-        <span
+        <button
+          type="button"
           data-slot="combobox-chips-more"
-          role="img"
           aria-label={`외 ${hidden}개 선택됨`}
-          className="order-1 inline-flex h-6 shrink-0 items-center rounded-yorha border border-yorha-border bg-yorha-bg px-2 font-yorha text-yorha-sm text-yorha-fg"
+          aria-haspopup="listbox"
+          aria-expanded={open}
+          onClick={(event) => {
+            requestOpen();
+            ref.current?.querySelector<HTMLInputElement>("[data-slot=combobox-input]")?.focus();
+            event.stopPropagation();
+          }}
+          className="order-1 inline-flex h-6 min-w-6 shrink-0 cursor-default items-center justify-center rounded-yorha border border-yorha-border bg-yorha-bg px-2 font-yorha text-yorha-sm text-yorha-fg focus-visible:outline-none focus-visible:bg-yorha-ink focus-visible:text-yorha-on-ink data-[popup-open]:bg-yorha-ink"
         >
           +{hidden}
-        </span>
+        </button>
       )}
     </ComboboxPrimitive.Chips>
   );
@@ -435,6 +639,7 @@ export {
   ComboboxClear,
   ComboboxCollection,
   ComboboxContent,
+  ComboboxCreate,
   ComboboxEmpty,
   ComboboxGroup,
   ComboboxGroupLabel,
