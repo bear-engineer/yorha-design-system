@@ -5,7 +5,7 @@
       "name": "meter",
       "type": "registry:ui",
       "title": "Meter",
-      "description": "HP-style value bar on Base UI Meter: visible label and value/max text, announced as a meter with aria-valuenow and aria-valuetext. Static, no animation.",
+      "description": "HP-style value bar on Base UI Meter: visible label and value/max text, announced as a meter with aria-valuenow and aria-valuetext. Static, no animation. variant=\"dots\" draws whole dot columns; low = every 2nd column, critical = every 3rd in the alert colour.",
       "dependencies": [
         "@base-ui/react@^1.9.0"
       ],
@@ -20,7 +20,7 @@
           "target": "@ui/meter.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. No original assets are used."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. No original assets are used. v4: variant=\"dots\" (opt-in; the hatched bar stays the default)."
     }
   ]
 }

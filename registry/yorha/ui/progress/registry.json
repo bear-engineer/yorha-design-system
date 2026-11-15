@@ -5,7 +5,7 @@
       "name": "progress",
       "type": "registry:ui",
       "title": "Progress",
-      "description": "Segmented YoRHa gauge bar on Base UI Progress. Determinate shows the percentage in aria-valuenow and aria-valuetext; indeterminate omits aria-valuenow and sweeps a block across the track for three passes, then rests.",
+      "description": "Segmented YoRHa gauge bar on Base UI Progress (or variant=\"dots\": three rows of 2 px dots in whole columns). Determinate shows the value in aria-valuenow and aria-valuetext (formatValue to customise) and advances by a 180 ms stepped clip; indeterminate omits aria-valuenow and hops a block across the track in --yorha-step-loop steps while mounted (reduced: opacity pulse; off: stripes).",
       "dependencies": [
         "@base-ui/react@^1.9.0"
       ],
@@ -20,7 +20,7 @@
           "target": "@ui/progress.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The gauge seams are a CSS gradient; no original assets are used."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The gauge seams are a CSS gradient; no original assets are used. v4: indeterminate easing is --yorha-step-loop (was --yorha-ease-emphasized; reduced keeps the eased pulse); new props variant and formatValue. Increases animate with clip-path only (never width)."
     }
   ]
 }

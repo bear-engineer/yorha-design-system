@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
 import { Button } from "@/components/ui/button";
 import { Card } from "./card";
+import { useState } from "react";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -80,4 +81,35 @@ export const Authentic: Story = {
       <Card {...args} />
     </div>
   ),
+};
+
+function SelectableCards() {
+  const [picked, setPicked] = useState<string[]>(["b"]);
+  return (
+    <div className="grid w-[30rem] max-w-full grid-cols-2 gap-4">
+      {["a", "b"].map((id) => (
+        <Card
+          key={id}
+          title={`유닛 ${id.toUpperCase()}`}
+          meta="전투형"
+          selected={picked.includes(id)}
+          onSelectedChange={(on) => setPicked((p) => (on ? [...p, id] : p.filter((x) => x !== id)))}
+        />
+      ))}
+    </div>
+  );
+}
+
+/** `selected` + `onSelectedChange`: the title is a stretched toggle button (aria-pressed); the corner check and 2 px frame mark selection. */
+export const Selectable: StoryObj = {
+  render: () => <SelectableCards />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const a = c.getByRole("button", { name: "유닛 A", pressed: false });
+    const card = a.closest("article")!;
+    const before = card.getBoundingClientRect().height;
+    await userEvent.click(a);
+    await expect(c.getByRole("button", { name: "유닛 A", pressed: true })).toBeInTheDocument();
+    await expect(card.getBoundingClientRect().height).toBe(before);
+  },
 };

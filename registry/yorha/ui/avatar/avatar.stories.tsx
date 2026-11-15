@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, within } from "storybook/test";
-import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
+import { Avatar, AvatarFallback, AvatarGroup, AvatarImage, AvatarStatus } from "./avatar";
+
 
 /** Inline SVG portrait: no binary assets in the registry. */
 const PORTRAIT = `data:image/svg+xml;utf8,${encodeURIComponent(
@@ -72,4 +73,31 @@ export const Authentic: Story = {
       <Demo src={PORTRAIT} />
     </div>
   ),
+};
+
+export const StatusAndGroup: StoryObj = {
+  render: () => (
+    <div className="flex flex-col gap-6 text-yorha-fg">
+      <div className="flex gap-4">
+        {(["online", "away", "busy", "offline"] as const).map((s) => (
+          <Avatar key={s} size="lg">
+            <AvatarFallback>2B</AvatarFallback>
+            <AvatarStatus status={s} />
+          </Avatar>
+        ))}
+      </div>
+      <AvatarGroup max={3} label="팀">
+        {["2B", "9S", "A2", "PO", "D"].map((n) => (
+          <Avatar key={n}>
+            <AvatarFallback>{n}</AvatarFallback>
+          </Avatar>
+        ))}
+      </AvatarGroup>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByRole("img", { name: "온라인" })).toBeInTheDocument();
+    await expect(c.getByRole("img", { name: "외 2명" })).toHaveTextContent("+2");
+  },
 };

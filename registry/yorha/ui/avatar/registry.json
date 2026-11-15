@@ -11,7 +11,8 @@
       ],
       "registryDependencies": [
         "@yorha/utils",
-        "@yorha/base"
+        "@yorha/base",
+        "@yorha/glyph"
       ],
       "files": [
         {
@@ -20,7 +21,7 @@
           "target": "@ui/avatar.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Compose Avatar, AvatarImage (alt required), AvatarFallback."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Compose Avatar, AvatarImage (alt required), AvatarFallback. v4: AvatarStatus (online/away/busy/offline: disc/diamond/square/ring glyph in a 12 px corner box, named for screen readers) and AvatarGroup (overlap by a hairline, +N overflow avatar, size applied to children)."
     }
   ]
 }

@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { Meter } from "@/components/ui/meter";
 
+
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
 const meta = {
@@ -65,4 +66,19 @@ export const Authentic: Story = {
       <Meter {...args} />
     </div>
   ),
+};
+
+/** Dots variant: low = every 2nd column, critical = every 3rd in the alert colour (readable without colour). */
+export const Dots: Story = {
+  render: () => (
+    <div className="flex w-80 max-w-full flex-col gap-4">
+      <Meter label="HP" value={80} variant="dots" low={30} critical={10} />
+      <Meter label="HP 낮음" value={25} variant="dots" low={30} critical={10} />
+      <Meter label="HP 위험" value={6} variant="dots" low={30} critical={10} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const pitches = [...canvasElement.querySelectorAll<HTMLElement>("[data-slot=dots-fill]")].map((e) => Number(e.dataset.pitch));
+    await expect(pitches).toEqual([4, 8, 12]);
+  },
 };

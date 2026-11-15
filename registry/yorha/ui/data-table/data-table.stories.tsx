@@ -11,6 +11,14 @@ import {
   DataTableRow,
   type SortDirection,
 } from "@/components/ui/data-table";
+import {
+  DataTableCol,
+  DataTableColgroup,
+  DataTableEmpty,
+  DataTableRowHeader,
+  DataTableSelectAll,
+  DataTableSelectCell,
+} from "@/components/ui/data-table";
 
 const ROWS = [
   { id: "2b", unit: "2B", type: "전투", level: 7 },
@@ -165,5 +173,112 @@ export const States: Story = {
     await expect(first!.closest("th")).toHaveAttribute("aria-sort", "ascending");
     await expect(first).toHaveFocus();
     await expectTargetSize(canvasElement);
+  },
+};
+
+function SelectableDemo({ state = "rows" }: { state?: "rows" | "loading" | "empty" }) {
+  const [picked, setPicked] = useState<string[]>(["9s"]);
+  const [sort, setSort] = useState<SortDirection>("none");
+  const all = picked.length === ROWS.length;
+  const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const rows = state === "rows" ? ROWS : [];
+  return (
+    <div className="w-[32rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
+      <DataTable caption="유닛 선택" resizable>
+        <DataTableColgroup>
+          <DataTableCol style={{ width: 48 }} />
+          <DataTableCol style={{ width: 160 }} />
+          <DataTableCol />
+          <DataTableCol style={{ width: 96 }} />
+        </DataTableColgroup>
+        <DataTableHeader>
+          <tr>
+            <DataTableSelectAll
+              label="전체 선택"
+              checked={all}
+              indeterminate={picked.length > 0 && !all}
+              onCheckedChange={(next) => setPicked(next ? ROWS.map((r) => r.id) : [])}
+            />
+            <DataTableHeadCell resizable minWidth={96}>
+              유닛
+            </DataTableHeadCell>
+            <DataTableHeadCell>유형</DataTableHeadCell>
+            <DataTableHeadCell numeric sortable sortCycle="three" sortDirection={sort} onSortChange={setSort}>
+              레벨
+            </DataTableHeadCell>
+          </tr>
+        </DataTableHeader>
+        <DataTableBody loading={state === "loading"} loadingRows={3} loadingColumns={3} loadingSelect streamKey={sort}>
+          {rows.map((r) => (
+            <DataTableRow key={r.id} data-selected={picked.includes(r.id) ? "" : undefined}>
+              <DataTableSelectCell label={`${r.unit} 선택`} checked={picked.includes(r.id)} onCheckedChange={() => toggle(r.id)} />
+              <DataTableRowHeader>{r.unit}</DataTableRowHeader>
+              <DataTableCell truncate>{r.type}</DataTableCell>
+              <DataTableCell numeric>{r.level}</DataTableCell>
+            </DataTableRow>
+          ))}
+          {state === "empty" ? <DataTableEmpty colSpan={4}>표시할 유닛이 없습니다</DataTableEmpty> : null}
+        </DataTableBody>
+      </DataTable>
+    </div>
+  );
+}
+
+/** Kit Checkbox column (labelled, select-all indeterminate); `data-selected` inks the row; resize handle and three-state sort on the header. */
+export const Selectable: Story = {
+  render: () => <SelectableDemo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const all = c.getByRole("checkbox", { name: "전체 선택" });
+    await expect(all).toHaveAttribute("aria-checked", "mixed");
+    const row = c.getByRole("checkbox", { name: "2B 선택" }).closest("tr")!;
+    const before = row.getBoundingClientRect().height;
+    await userEvent.click(c.getByRole("checkbox", { name: "2B 선택" }));
+    await expect(row).toHaveAttribute("data-selected");
+    await expect(row.getBoundingClientRect().height).toBe(before);
+    await expect(c.getByRole("rowheader", { name: "2B" })).toBeInTheDocument();
+    const sort = c.getByRole("button", { name: /레벨/ });
+    await userEvent.click(sort);
+    await expect(c.getByRole("status")).toHaveTextContent("레벨: 오름차순 정렬");
+    await userEvent.click(sort);
+    await userEvent.click(sort);
+    await expect(sort.closest("th")).toHaveAttribute("aria-sort", "none");
+  },
+};
+
+export const Loading: Story = { render: () => <SelectableDemo state="loading" /> };
+
+export const Empty: Story = {
+  render: () => <SelectableDemo state="empty" />,
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByText("표시할 유닛이 없습니다")).toHaveAttribute("colspan", "4");
+  },
+};
+
+/** The wrapper is a focusable labelled region only while the table overflows it; `stickyHeader` pins the header. */
+export const StickyScroll: Story = {
+  render: () => (
+    <div className="w-[20rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
+      <DataTable caption="긴 목록" stickyHeader className="min-w-[28rem]">
+        <DataTableHeader>
+          <tr>
+            <DataTableHeadCell>유닛</DataTableHeadCell>
+            <DataTableHeadCell>유형</DataTableHeadCell>
+          </tr>
+        </DataTableHeader>
+        <DataTableBody>
+          {Array.from({ length: 14 }, (_, i) => (
+            <DataTableRow key={i}>
+              <DataTableCell>유닛 {i + 1}</DataTableCell>
+              <DataTableCell>전투</DataTableCell>
+            </DataTableRow>
+          ))}
+        </DataTableBody>
+      </DataTable>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const region = within(canvasElement).getByRole("region", { name: "긴 목록" });
+    await expect(region).toHaveAttribute("tabindex", "0");
   },
 };

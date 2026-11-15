@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, within } from "storybook/test";
 import { Progress } from "@/components/ui/progress";
 
+
 const THEMES = [
   { theme: "light", label: "light" },
   { theme: "dark", label: "dark" },
@@ -105,4 +106,23 @@ export const Authentic: Story = {
       <Progress {...args} />
     </div>
   ),
+};
+
+/** Dot-matrix gauge: whole 4 px columns, ghost track behind the fill. Opt-in; segments stay the default. */
+export const Dots: Story = {
+  args: { variant: "dots", label: "전송", value: 62 },
+  play: async ({ canvasElement }) => {
+    const fill = canvasElement.querySelector<HTMLElement>("[data-slot=dots-fill]")!;
+    await expect(fill.getBoundingClientRect().width % 4).toBe(0);
+  },
+};
+
+export const DotsIndeterminate: Story = { args: { variant: "dots", value: null, label: "처리 중" } };
+
+/** `formatValue` feeds both the visible value and `aria-valuetext`. */
+export const FormatValue: Story = {
+  args: { value: 3, max: 8, label: "업로드", formatValue: (v: number | null) => (v === null ? "대기" : `${v}/8 파일`) },
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByRole("progressbar")).toHaveAttribute("aria-valuetext", "3/8 파일");
+  },
 };

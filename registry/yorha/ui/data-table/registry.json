@@ -5,12 +5,14 @@
       "name": "data-table",
       "type": "registry:ui",
       "title": "DataTable",
-      "description": "Semantic table with a required caption, scoped column headers, optional sortable headers (button + aria-sort), zebra rows drawn with a hatch rule, and dense/comfortable density.",
+      "description": "Semantic table with a required caption, scoped column/row headers, sortable headers (button + aria-sort, polite status, optional third state, 2 px under-rule), kit-Checkbox selection column, empty and skeleton-loading rows, truncating cells, resizable columns (window splitter on <col>), optional sticky header, stepped row arrival, and dense/comfortable density. The scroll wrapper is a focusable region only while it overflows.",
       "dependencies": [],
       "registryDependencies": [
         "@yorha/utils",
         "@yorha/base",
-        "@yorha/icons"
+        "@yorha/icons",
+        "@yorha/checkbox",
+        "@yorha/skeleton"
       ],
       "files": [
         {
@@ -19,7 +21,7 @@
           "target": "@ui/data-table.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose DataTable (caption required), DataTableHeader, DataTableBody, DataTableRow, DataTableHeadCell (sortable, sortDirection, onSortChange) and DataTableCell (numeric). Density is set with density=\"dense\" | \"comfortable\"; zebra is on by default (zebra={false} to turn off)."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose DataTable (caption required), DataTableHeader, DataTableBody, DataTableRow, DataTableHeadCell (sortable, sortDirection, onSortChange) and DataTableCell (numeric). Density is set with density=\"dense\" | \"comfortable\"; zebra is on by default (zebra={false} to turn off). v4: DataTableSelectCell/DataTableSelectAll (label required; mirror checked as data-selected on the row), DataTableEmpty (colSpan), DataTableBody loading/loadingRows/loadingColumns/loadingSelect, stream/streamKey, DataTableCell truncate, DataTableRowHeader, DataTableHeadCell sortCycle=\"three\"/resizable with DataTableColgroup+DataTableCol and DataTable resizable, DataTable stickyHeader/sortStatus. MIGRATION (breaking): rows no longer style aria-selected (invalid outside a grid): set data-selected on the row and name the selection with a DataTableSelectCell. Rejected: role=grid cell navigation and aria-rowcount. Body rows stream in by default on mount (stream={false} to opt out)."
     }
   ]
 }

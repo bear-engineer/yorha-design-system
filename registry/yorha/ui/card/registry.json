@@ -9,7 +9,8 @@
       "dependencies": [],
       "registryDependencies": [
         "@yorha/utils",
-        "@yorha/base"
+        "@yorha/base",
+        "@yorha/glyph"
       ],
       "files": [
         {
@@ -18,7 +19,7 @@
           "target": "@ui/card.tsx"
         }
       ],
-      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. v4: selected (corner check mark + 2 px frame, no size change) and onSelectedChange (title becomes a stretched button[aria-pressed]; with href, selected is display-only). Rejected: a full-card ink wipe on hover."
     }
   ]
 }
