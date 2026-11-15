@@ -1,6 +1,6 @@
 import * as React from "react";
 import { NumberField as BaseNumberField } from "@base-ui/react/number-field";
-import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldErrorSlot, FieldLabel } from "@/components/ui/field";
 import { MinusIcon, PlusIcon } from "@/components/ui/icons";
 import { InputGroup, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { cn } from "@/lib/utils";
@@ -15,12 +15,14 @@ export interface NumberFieldProps extends Omit<RootProps, "children" | "classNam
   description?: React.ReactNode;
   /** External error text; marks the field invalid. */
   error?: React.ReactNode;
+  /** Keep one error line reserved so an error appearing never moves the fields below. */
+  reserveError?: boolean;
   incrementLabel?: string;
   decrementLabel?: string;
 }
 
 /**
- * Numeric input with decrement/increment buttons; ArrowUp/ArrowDown step the value. Built on Field (label,
+ * Numeric input with decrement/increment buttons; ArrowUp/ArrowDown step the value, Shift+Arrow takes the large step (10x), Alt+Arrow the small step (0.1x); dragging the label scrubs. Built on Field (label,
  * description, error, invalid) and InputGroup (one frame, one focus ring). Read-only and disabled turn the
  * steppers off with the shared disabled recipe.
  */
@@ -30,6 +32,7 @@ export function NumberField({
   error,
   incrementLabel = "증가",
   decrementLabel = "감소",
+  reserveError,
   className,
   disabled,
   readOnly,
@@ -69,7 +72,11 @@ export function NumberField({
         </BaseNumberField.Group>
       </BaseNumberField.Root>
       {description ? <FieldDescription>{description}</FieldDescription> : null}
-      {error ? <FieldError>{error}</FieldError> : null}
+      <FieldErrorSlot reserve={reserveError}>
+        <FieldError match={error ? true : undefined} className={reserveError ? "mt-0" : undefined}>
+          {error}
+        </FieldError>
+      </FieldErrorSlot>
     </Field>
   );
 }

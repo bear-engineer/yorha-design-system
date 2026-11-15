@@ -225,7 +225,7 @@ describe("V4-125 Form async submit", () => {
       createElement(
         Form,
         { onFormSubmit: handler },
-        createElement(TextField, { label: "이름", name: "name" }),
+        createElement(TextField, { label: "이름", name: "name", reserveError: true }),
         createElement(FormSubmit, null, "저장"),
       ),
     );

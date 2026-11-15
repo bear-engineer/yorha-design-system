@@ -1,6 +1,7 @@
 import * as React from "react";
-import { Field, FieldDescription, FieldError, FieldGroupControl, FieldLabel, type FieldControlProps } from "@/components/ui/field";
+import { Field, FieldDescription, FieldError, FieldErrorSlot, FieldGroupControl, FieldLabel, type FieldControlProps } from "@/components/ui/field";
 import { CrossIcon, SearchIcon } from "@/components/ui/icons";
+import { Spinner } from "@/components/ui/spinner";
 import { InputGroup, InputGroupAddon, InputGroupButton } from "@/components/ui/input-group";
 
 export interface SearchInputProps
@@ -12,6 +13,12 @@ export interface SearchInputProps
   /** Called with the current text on Enter. */
   onSearch?: (value: string) => void;
   clearLabel?: string;
+  /** A search is running: the Spinner takes the search glyph's cell (same square, the group never resizes); the input gets aria-busy. */
+  loading?: boolean;
+  /** Accessible name of the spinner while loading. */
+  loadingLabel?: string;
+  /** Keep one error line reserved so an error appearing never moves the fields below. */
+  reserveError?: boolean;
   description?: React.ReactNode;
   error?: React.ReactNode;
   className?: string;
@@ -22,7 +29,7 @@ export interface SearchInputProps
  * input. The browser's own cancel button is hidden so there is one clear control.
  */
 export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(function SearchInput(
-  { label, value, defaultValue = "", onValueChange, onSearch, clearLabel = "검색어 지우기", description, error, className, disabled, onKeyDown, ...props },
+  { label, value, defaultValue = "", onValueChange, onSearch, clearLabel = "검색어 지우기", loading = false, loadingLabel = "검색 중", reserveError, description, error, className, disabled, onKeyDown, ...props },
   ref,
 ) {
   const [inner, setInner] = React.useState(defaultValue);
@@ -46,12 +53,13 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
       <FieldLabel>{label}</FieldLabel>
       <InputGroup>
         <InputGroupAddon align="start">
-          <SearchIcon />
+          {loading ? <Spinner label={loadingLabel} /> : <SearchIcon />}
         </InputGroupAddon>
         <FieldGroupControl
           ref={setRefs}
           type="search"
           autoComplete="off"
+          aria-busy={loading ? true : undefined}
           value={text}
           onChange={(e) => update(e.currentTarget.value)}
           onKeyDown={(e) => {
@@ -81,7 +89,11 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
         )}
       </InputGroup>
       {description ? <FieldDescription>{description}</FieldDescription> : null}
-      {error ? <FieldError>{error}</FieldError> : null}
+      <FieldErrorSlot reserve={reserveError}>
+        <FieldError match={error ? true : undefined} className={reserveError ? "mt-0" : undefined}>
+          {error}
+        </FieldError>
+      </FieldErrorSlot>
     </Field>
   );
 });
