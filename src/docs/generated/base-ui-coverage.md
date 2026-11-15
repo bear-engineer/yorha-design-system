@@ -28,7 +28,7 @@ Components with a registry item: 40/40 · parts used: 271/271
 | navigation-menu | registry/yorha/ui/navigation-menu | 13/13 | — |
 | number-field | registry/yorha/ui/number-field | 7/7 | — |
 | otp-field | registry/yorha/ui/otp-field | 3/3 | — |
-| popover | registry/yorha/ui/date-input, registry/yorha/ui/date-picker, registry/yorha/ui/popover | 12/12 | — |
+| popover | registry/yorha/ui/color-input, registry/yorha/ui/date-input, registry/yorha/ui/date-picker, registry/yorha/ui/popover | 12/12 | — |
 | preview-card | registry/yorha/ui/preview-card | 9/9 | — |
 | progress | registry/yorha/ui/progress | 5/5 | — |
 | radio | registry/yorha/ui/radio-group | 2/2 | — |
@@ -43,6 +43,6 @@ Components with a registry item: 40/40 · parts used: 271/271
 | toggle | registry/yorha/ui/chip, registry/yorha/ui/toggle, registry/yorha/ui/toggle-group, registry/yorha/ui/toolbar | 0/0 | — |
 | toggle-group | registry/yorha/ui/toggle-group | 0/0 | — |
 | toolbar | registry/yorha/ui/toolbar | 6/6 | — |
-| tooltip | registry/yorha/ui/tooltip | 9/9 | — |
+| tooltip | registry/yorha/ui/icon-button, registry/yorha/ui/tooltip | 9/9 | — |
 
 All components and parts covered.

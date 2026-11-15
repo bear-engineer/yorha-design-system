@@ -574,6 +574,13 @@
     "file": null
   },
   {
+    "group": "blocks",
+    "name": "command-palette",
+    "type": "registry:block",
+    "alias": null,
+    "file": null
+  },
+  {
     "group": "ui",
     "name": "drawer",
     "type": "registry:ui",

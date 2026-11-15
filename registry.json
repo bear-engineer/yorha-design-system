@@ -84,6 +84,7 @@
     "registry/yorha/ui/timeline/registry.json",
     "registry/yorha/blocks/bento-dashboard/registry.json",
     "registry/yorha/blocks/settings-form/registry.json",
+    "registry/yorha/blocks/command-palette/registry.json",
     "registry/yorha/ui/kanban/registry.json",
     "registry/yorha/ui/drawer/registry.json",
     "registry/yorha/ui/context-menu/registry.json",
