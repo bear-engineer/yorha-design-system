@@ -1,10 +1,28 @@
-import type { ComponentProps } from "react";
+import { createContext, useContext, type ComponentProps } from "react";
 import { Autocomplete as AutocompletePrimitive } from "@base-ui/react/autocomplete";
 import { ChevronIcon, CrossIcon, TriangleIcon } from "@/components/ui/icons";
+import { Glyph } from "@/components/ui/glyph";
+import { Spinner } from "@/components/ui/spinner";
 import { cnState } from "@/lib/utils";
 
-/** Root: re-export of the Base UI Autocomplete root (items, mode, value, onValueChange, autoHighlight, ...). */
-const Autocomplete = AutocompletePrimitive.Root;
+const AutocompleteContext = createContext({ loading: false });
+
+/**
+ * Root: Base UI Autocomplete root (items, mode, value, onValueChange, autoHighlight, ...) plus `loading`: async
+ * suggestions in flight. A Spinner replaces the chevron in the trigger cell (same 12px box, the field never resizes),
+ * the list keeps its previous rows at 60 % opacity with `aria-busy`, and `AutocompleteStatus` reads "불러오는 중"
+ * unless it has its own text.
+ */
+function Autocomplete<ItemValue>({
+  loading = false,
+  ...props
+}: AutocompletePrimitive.Root.Props<ItemValue> & { loading?: boolean }) {
+  return (
+    <AutocompleteContext value={{ loading }}>
+      <AutocompletePrimitive.Root {...(props as object)} />
+    </AutocompleteContext>
+  );
+}
 
 /** Filter hook from Base UI (locale-aware contains/startsWith/endsWith matchers). */
 const useAutocompleteFilter = AutocompletePrimitive.useFilter;
@@ -50,6 +68,16 @@ function AutocompleteInput({ className, onKeyDown, ...props }: ComponentProps<ty
           event.preventBaseUIHandler();
           return;
         }
+        // Esc with the popup closed: text in the field is cleared first (no bubbling); an empty field lets Esc through (dialogs, drawers).
+        const el = event.currentTarget;
+        if (event.key === "Escape" && el.getAttribute("aria-expanded") !== "true" && el.value !== "") {
+          event.preventBaseUIHandler();
+          event.preventDefault();
+          event.stopPropagation();
+          Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(el, "");
+          el.dispatchEvent(new Event("input", { bubbles: true }));
+          return;
+        }
         onKeyDown?.(event);
       }}
       {...props}
@@ -65,7 +93,7 @@ function AutocompleteTrigger({ className, children, ...props }: ComponentProps<t
       aria-label="목록 열기"
       className={cnState(
         [
-          "group/trigger grid aspect-square h-[calc(var(--yorha-control-md)-2px)] shrink-0 self-start place-items-center border-l border-yorha-border text-yorha-fg",
+          "group/trigger grid aspect-square h-[calc(var(--yorha-control-md)-2px)] shrink-0 self-start place-items-center border-l border-yorha-border text-yorha-fg [&>*]:col-start-1 [&>*]:row-start-1",
           "focus-visible:yorha-focus-inset data-[popup-open]:bg-yorha-control data-[popup-open]:text-yorha-on-control",
           "yorha-disabled data-[disabled]:border-yorha-disabled",
         ],
@@ -73,18 +101,36 @@ function AutocompleteTrigger({ className, children, ...props }: ComponentProps<t
       )}
       {...props}
     >
-      {children ?? <AutocompleteIcon />}
+      {children ?? (
+        <>
+          <AutocompleteIcon />
+          <AutocompleteBusy />
+        </>
+      )}
     </AutocompletePrimitive.Trigger>
   );
 }
 
+/** Spinner that takes the chevron's place in the trigger cell while `loading` (same 12px box; nothing resizes). */
+function AutocompleteBusy() {
+  const { loading } = useContext(AutocompleteContext);
+  if (!loading) return null;
+  return (
+    <span aria-hidden="true" data-slot="autocomplete-busy" className="grid size-icon-sm place-items-center">
+      <Spinner label="불러오는 중" className="text-current [&_[data-yorha-dot]]:bg-current" />
+    </span>
+  );
+}
+
 function AutocompleteIcon({ className, ...props }: ComponentProps<typeof AutocompletePrimitive.Icon>) {
+  const { loading } = useContext(AutocompleteContext);
   return (
     <AutocompletePrimitive.Icon
       data-slot="autocomplete-icon"
       aria-hidden="true"
+      data-loading={loading ? "" : undefined}
       className={cnState(
-        "grid size-icon-sm shrink-0 place-items-center transition-transform duration-(--motion-select) ease-yorha group-data-[popup-open]/trigger:rotate-180",
+        "grid size-icon-sm shrink-0 place-items-center data-[loading]:opacity-0 transition-transform duration-(--motion-select) ease-yorha group-data-[popup-open]/trigger:rotate-180",
         className,
       )}
       {...props}
@@ -133,21 +179,31 @@ function AutocompleteBackdrop({ className, ...props }: ComponentProps<typeof Aut
   );
 }
 
-/** Optional pointer arrow for the popup; rotates to the side the popup opens on. */
+// Pixel arrow: one 12px triangle glyph per side (crispEdges, no rotation), stacked in one 12px box and shown by the Base UI arrow's `data-side`.
+function ArrowGlyphs() {
+  return (
+    <>
+      <Glyph name="triangle-up" className="absolute inset-0 opacity-0 group-data-[side=bottom]/arrow:opacity-100" />
+      <Glyph name="triangle-down" className="absolute inset-0 opacity-0 group-data-[side=top]/arrow:opacity-100" />
+      <Glyph name="triangle-right" className="absolute inset-0 opacity-0 group-data-[side=left]/arrow:opacity-100" />
+      <Glyph name="triangle-left" className="absolute inset-0 opacity-0 group-data-[side=right]/arrow:opacity-100" />
+    </>
+  );
+}
+
+/** Optional pointer arrow for the popup; a pixel triangle per side, swapped by `data-side` (never rotated). */
 function AutocompleteArrow({ className, ...props }: ComponentProps<typeof AutocompletePrimitive.Arrow>) {
   return (
     <AutocompletePrimitive.Arrow
       data-slot="autocomplete-arrow"
       className={cnState(
-        [
-          "size-2 rotate-45 border border-yorha-border bg-yorha-panel",
-          "data-[side=bottom]:-top-1 data-[side=bottom]:border-r-0 data-[side=bottom]:border-b-0",
-          "data-[side=top]:-bottom-1 data-[side=top]:border-t-0 data-[side=top]:border-l-0",
-        ],
+        "group/arrow block size-3 text-yorha-border data-[side=bottom]:top-[-8px] data-[side=top]:bottom-[-8px] data-[side=left]:right-[-8px] data-[side=right]:left-[-8px]",
         className,
       )}
       {...props}
-    />
+    >
+      <ArrowGlyphs />
+    </AutocompletePrimitive.Arrow>
   );
 }
 
@@ -200,10 +256,13 @@ function AutocompleteContent({
 }
 
 function AutocompleteList({ className, ...props }: ComponentProps<typeof AutocompletePrimitive.List>) {
+  const { loading } = useContext(AutocompleteContext);
   return (
     <AutocompletePrimitive.List
       data-slot="autocomplete-list"
-      className={cnState("outline-none data-[empty]:hidden", className)}
+      aria-busy={loading || undefined}
+      data-loading={loading ? "" : undefined}
+      className={cnState("outline-none data-[empty]:hidden data-[loading]:opacity-60", className)}
       {...props}
     />
   );
@@ -221,13 +280,16 @@ function AutocompleteEmpty({ className, ...props }: ComponentProps<typeof Autoco
 }
 
 /** Polite live region, e.g. "3 results" or "loading". */
-function AutocompleteStatus({ className, ...props }: ComponentProps<typeof AutocompletePrimitive.Status>) {
+function AutocompleteStatus({ className, children, ...props }: ComponentProps<typeof AutocompletePrimitive.Status>) {
+  const { loading } = useContext(AutocompleteContext);
   return (
     <AutocompletePrimitive.Status
       data-slot="autocomplete-status"
       className={cnState("px-3 py-1 text-yorha-xs text-yorha-fg-soft empty:p-0", className)}
       {...props}
-    />
+    >
+      {children ?? (loading ? "불러오는 중" : null)}
+    </AutocompletePrimitive.Status>
   );
 }
 

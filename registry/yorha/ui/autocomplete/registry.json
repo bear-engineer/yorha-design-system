@@ -12,7 +12,9 @@
       "registryDependencies": [
         "@yorha/utils",
         "@yorha/base",
-        "@yorha/icons"
+        "@yorha/icons",
+        "@yorha/glyph",
+        "@yorha/spinner"
       ],
       "files": [
         {
