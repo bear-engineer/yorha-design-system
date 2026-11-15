@@ -52,8 +52,9 @@ describe("Button promise + result (V4-085)", () => {
     const calls = vi.fn(() => new Promise<void>((r) => setTimeout(r, 300)));
     const { host } = await render(<Button onClick={calls}>저장</Button>);
     const btn = q<HTMLButtonElement>(host, "button");
-    await userEvent.click(btn);
-    await userEvent.click(btn);
+    btn.click();
+    btn.click(); // inside the 300 ms window
+    await frames(2);
     expect(calls).toHaveBeenCalledTimes(1);
     expect(btn.getAttribute("aria-busy")).toBe("true");
     await wait(450);
@@ -119,16 +120,17 @@ describe("Button busy bar easing (V4-086)", () => {
   const easingOf = (host: HTMLElement) => {
     const bar = q(host, "[data-slot=button-busy]");
     const anims = bar.getAnimations();
-    return { count: anims.length, easing: anims[0] ? (anims[0].effect as KeyframeEffect).getTiming().easing : null };
+    return { count: anims.length, easing: anims[0] ? ((anims[0].effect as KeyframeEffect).getKeyframes()[0]!.easing as string) : null };
   };
   it("full = step-flip, reduced = soft slow pulse, off = static", async () => {
-    const flip = getComputedStyle(document.documentElement).getPropertyValue("--yorha-step-flip").trim();
     const full = await render(<Button loading>저장</Button>, "full");
-    expect(easingOf(full.host)).toEqual({ count: 1, easing: flip });
+    const f = easingOf(full.host);
+    expect(f.count).toBe(1);
+    expect(f.easing).toMatch(/^steps\(1/);
     const reduced = await render(<Button loading>저장</Button>, "reduced");
     const r = easingOf(reduced.host);
     expect(r.count).toBe(1);
-    expect(r.easing).not.toBe(flip);
+    expect(r.easing).toBe("linear");
     const off = await render(<Button loading>저장</Button>, "off");
     expect(easingOf(off.host).count).toBe(0);
     expect(getComputedStyle(q(off.host, "[data-slot=button-busy]")).opacity).toBe("1");
