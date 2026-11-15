@@ -1,7 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, within } from "storybook/test";
 
-import { Decipher } from "@/components/ui/decipher";
+import { useRef, useState } from "react";
+import { userEvent } from "storybook/test";
+
+import { Decipher, Glitch, type GlitchHandle } from "@/components/ui/decipher";
 
 const meta = {
   title: "컴포넌트/YoRHa/Decipher",
@@ -192,5 +195,82 @@ export const Authentic: Story = {
   play: async ({ canvasElement }) => {
     const heading = within(canvasElement).getByRole("heading");
     expect(glyphLayer(heading).getAttribute("aria-hidden")).toBe("true");
+  },
+};
+
+/** V4-265: `trigger="inview"` stays idle off screen, runs once when scrolled into view, and does not run again. */
+export const Inview: Story = {
+  beforeEach: () => setMotion("full"),
+  parameters: { layout: "fullscreen" },
+  render: (args) => (
+    <div className="h-[220vh] bg-yorha-panel p-6 text-yorha-fg">
+      <div className="mt-[130vh]">
+        <Decipher {...args} trigger="inview" />
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement, args }) => {
+    const el = canvasElement.querySelector<HTMLElement>('[data-slot="decipher"]')!;
+    await expect(el.dataset.state).toBe("idle");
+    el.scrollIntoView({ block: "center" });
+    await waitFor(() => expect(el.dataset.state).toBe("done"), { timeout: 4000 });
+    await expect(el.textContent).toContain(args.text);
+    window.scrollTo(0, 0);
+    await new Promise((r) => setTimeout(r, 200));
+    el.scrollIntoView({ block: "center" });
+    await new Promise((r) => setTimeout(r, 200));
+    await expect(el.dataset.state).toBe("done");
+  },
+};
+
+function GlitchReplayDemo() {
+  const ref = useRef<GlitchHandle>(null);
+  const [result, setResult] = useState("none");
+  return (
+    <div className="flex flex-col items-start gap-3 bg-yorha-panel p-6 text-yorha-fg">
+      <Glitch ref={ref} as="h2" text="링크 끊김, 재연결 실패" className="text-yorha-lg font-yorha-bold" />
+      <button
+        type="button"
+        onClick={() => setResult(ref.current?.replay() ? "played" : "ignored")}
+        className="inline-flex h-control-sm items-center border border-yorha-border px-pad-sm text-yorha-sm focus-visible:yorha-focus"
+      >
+        다시 재생
+      </button>
+      <output data-testid="replay-result">{result}</output>
+    </div>
+  );
+}
+
+/** V4-263: `replay()` runs one glitch; a second call inside the 1000 ms floor (WCAG 2.3.1) is ignored. The name stays the text. */
+export const GlitchReplay: Story = {
+  beforeEach: () => setMotion("full"),
+  render: () => <GlitchReplayDemo />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const heading = c.getByRole("heading", { name: "링크 끊김, 재연결 실패" });
+    await expect(heading).toHaveAttribute("data-glitch");
+    // the run at mount counts: wait out the floor, then replay
+    await new Promise((r) => setTimeout(r, 1100));
+    await userEvent.click(c.getByRole("button", { name: "다시 재생" }));
+    await expect(c.getByTestId("replay-result")).toHaveTextContent("played");
+    await userEvent.click(c.getByRole("button", { name: "다시 재생" }));
+    await expect(c.getByTestId("replay-result")).toHaveTextContent("ignored");
+    await expect(c.getByRole("heading", { name: "링크 끊김, 재연결 실패" })).toBeTruthy();
+  },
+};
+
+/** Reduced motion: replay() is refused and the name stays the text. Motion is set inside play so a neighbour story's cleanup cannot race it. */
+export const GlitchReducedMotion: Story = {
+  render: () => <GlitchReplayDemo />,
+  play: async ({ canvasElement }) => {
+    const restore = setMotion("reduced");
+    try {
+      const c = within(canvasElement);
+      await userEvent.click(c.getByRole("button", { name: "다시 재생" }));
+      await expect(c.getByTestId("replay-result")).toHaveTextContent("ignored");
+      await expect(c.getByRole("heading", { name: "링크 끊김, 재연결 실패" })).toBeTruthy();
+    } finally {
+      restore();
+    }
   },
 };

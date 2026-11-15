@@ -20,9 +20,15 @@ const LINES: BootLogLine[] = [
 const SHORT: BootLogLine[] = LINES.slice(0, 3);
 
 const logOf = (c: HTMLElement) => c.querySelector<HTMLElement>('[role="log"]')!;
+// Typed characters only: a fail line is not typed (it goes through Glitch), so it is not counted here.
 const typedTotal = (c: HTMLElement) =>
   Array.from(logOf(c).querySelectorAll("[data-yorha-typed]")).reduce((n, el) => n + (el.textContent?.length ?? 0), 0);
-const fullTexts = (c: HTMLElement) => Array.from(logOf(c).querySelectorAll(".sr-only")).map((el) => el.textContent);
+// What assistive tech gets for each line in the log: the Typer's full-text node, or the Glitch text of a fail line.
+// Unreached lines are not in the log at all, so they appear in neither list.
+const fullTexts = (c: HTMLElement) =>
+  Array.from(logOf(c).querySelectorAll("[data-slot=boot-log-line]")).map(
+    (line) => (line.querySelector(".sr-only") ?? line.querySelector("[data-glitch]"))?.textContent,
+  );
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 const meta = {
@@ -45,8 +51,14 @@ export const Default: Story = {
     const c = within(canvasElement);
     const log = c.getByRole("log", { name: "부팅 로그" });
     await expect(log).toHaveAttribute("aria-live", "polite");
+    // Only the reached line is in the log and the live region; the other nine are not in the accessibility tree yet.
     await waitFor(() => expect(fullTexts(canvasElement)[0]).toBe(LINES[0]?.text));
-    await expect(fullTexts(canvasElement)).toHaveLength(1);
+    await expect(fullTexts(canvasElement).length).toBeLessThan(LINES.length);
+    await expect(logOf(canvasElement).textContent).not.toContain(LINES[LINES.length - 1]!.text);
+    // The ghost reserves the final height, hidden from AT.
+    const ghost = canvasElement.querySelector<HTMLElement>("[data-slot=boot-log-ghost]")!;
+    await expect(ghost).toHaveAttribute("aria-hidden", "true");
+    await expect(ghost.children).toHaveLength(LINES.length);
     await expect(c.getByRole("button", { name: "일시정지" })).toBeInTheDocument();
     await expect(c.getByRole("button", { name: "건너뛰기" })).toBeInTheDocument();
   },
@@ -81,7 +93,7 @@ export const Skip: Story = {
     const c = within(canvasElement);
     await userEvent.click(c.getByRole("button", { name: "건너뛰기" }));
     await waitFor(() => expect(fullTexts(canvasElement)).toEqual(LINES.map((l) => l.text)));
-    await waitFor(() => expect(typedTotal(canvasElement)).toBe(LINES.reduce((n, l) => n + l.text.length, 0)));
+    await waitFor(() => expect(typedTotal(canvasElement)).toBe(LINES.filter((l) => l.status !== "fail").reduce((n, l) => n + l.text.length, 0)));
   },
 };
 
@@ -119,6 +131,28 @@ export const ReducedMotion: Story = {
     } finally {
       html.dataset.motion = previous ?? "full";
     }
+  },
+};
+
+/** V4-266: status is a glyph plus the text tag, never colour alone; the fail line goes through Glitch and still exposes its text once. */
+export const StatusGlyphs: Story = {
+  args: { lines: LINES.slice(0, 4), speed: 1, gap: 1 },
+  render: (args) => (
+    <div className="w-[36rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
+      <BootLog {...args} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    await waitFor(() => expect(canvasElement.querySelectorAll("[data-slot=boot-log-line][data-done]")).toHaveLength(4), { timeout: 4000 });
+    const tags = { ok: "[OK]", warn: "[WARN]", fail: "[FAIL]", info: "[INFO]" } as const;
+    for (const status of ["ok", "warn", "fail"] as const) {
+      const line = canvasElement.querySelector<HTMLElement>(`[data-slot=boot-log-line][data-status="${status}"]`)!;
+      await expect(line.querySelector("svg[data-glyph]")).not.toBeNull();
+      await expect(line.textContent).toContain(tags[status]);
+    }
+    const fail = canvasElement.querySelector<HTMLElement>('[data-status="fail"]')!;
+    await expect(fail.querySelector("[data-glitch]")).toHaveTextContent(LINES[2]!.text);
+    await expect(fullTexts(canvasElement)).toEqual(LINES.slice(0, 4).map((l) => l.text));
   },
 };
 

@@ -72,8 +72,8 @@ function TypingTick({ count, enabled }: { count: number; enabled: boolean }) {
 }
 
 /**
- * Typing reveal. The final text reserves the box from the first frame: an invisible copy sits in the same grid cell
- * as the typed text, so the height never changes while typing (V4-261). The full text is also a visually hidden node,
+ * Typing reveal. The final text reserves the box from the first frame: an invisible copy (caret included, so a caret that
+ * wraps at an exact line end is reserved too) sits in the same grid cell as the typed text, so the height never changes while typing (V4-261). The full text is also a visually hidden node,
  * and the typed portion is aria-hidden.
  */
 function Typer({ text, speed = DEFAULT_SPEED, paused = false, revealAll = false, onComplete, sound = false, caret = true, className, ...props }: TyperProps) {
@@ -108,6 +108,7 @@ function Typer({ text, speed = DEFAULT_SPEED, paused = false, revealAll = false,
       <span className="sr-only">{text}</span>
       <span aria-hidden="true" data-yorha-reserve="" className="invisible [grid-area:1/1]">
         {text}
+        {caret && <span className="yorha-caret" />}
       </span>
       <span aria-hidden="true" data-yorha-typed="" className="[grid-area:1/1]">
         {chars.slice(0, shown).join("")}

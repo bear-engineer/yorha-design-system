@@ -22,7 +22,7 @@
           "target": "@ui/boot-log.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The boot sequence is illustrative text generated from the props; no original assets are used."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The boot sequence is illustrative text generated from the props; no original assets are used. v4 migration: the log keeps only the lines reached so far inside role=log (unreached text is not in the accessibility tree or the live region), while an aria-hidden ghost copy of every line reserves the final height from the first frame. Fail lines no longer type: they render once through Glitch (`@yorha/decipher`). Status marks are a Glyph (`@yorha/glyph`) plus the text tag. The log is focusable until it finishes; a click or any key on it skips the run. Add `@yorha/typer`, `@yorha/glyph` and `@yorha/decipher` to a hand-copied install."
     }
   ]
 }

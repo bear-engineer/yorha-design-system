@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, within } from "storybook/test";
+import { expect, userEvent, within } from "storybook/test";
 import { Heading } from "../heading/heading";
 import { Prose, ProseTable } from "./prose";
 
@@ -236,6 +236,56 @@ export const WideTable: Story = {
     // FTXT-07: the table is wider than the 360 frame, so the region scrolls and shows the edge cue.
     await expect(region.scrollWidth > region.clientWidth).toBe(true);
     await expect(getComputedStyle(region).backgroundImage).toContain("linear-gradient");
+  },
+};
+
+/** V4-264: the scroll region is a tab stop only while it overflows; a table that fits adds no extra stop. */
+export const OverflowFocus: Story = {
+  render: () => (
+    <div lang="en">
+      <Prose>
+        <ProseTable label="Short table">
+          <thead>
+            <tr>
+              <th scope="col">Unit</th>
+              <th scope="col">Load</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th scope="row">A2</th>
+              <td>41</td>
+            </tr>
+          </tbody>
+        </ProseTable>
+        <ProseTable label="Wide table" className="min-w-[720px]">
+          <thead>
+            <tr>
+              {Array.from({ length: 8 }, (_, i) => (
+                <th scope="col" key={i}>{`CHANNEL ${i + 1}`}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              {Array.from({ length: 8 }, (_, i) => (
+                <td key={i}>{i * 7}</td>
+              ))}
+            </tr>
+          </tbody>
+        </ProseTable>
+      </Prose>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const short = c.getByRole("region", { name: "Short table" });
+    const wide = c.getByRole("region", { name: "Wide table" });
+    await expect(short).not.toHaveAttribute("tabindex");
+    await expect(wide).toHaveAttribute("tabindex", "0");
+    await userEvent.tab();
+    await expect(wide).toHaveFocus();
+    await expect(getComputedStyle(wide).outlineStyle).not.toBe("none");
   },
 };
 

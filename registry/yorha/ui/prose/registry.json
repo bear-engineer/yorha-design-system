@@ -18,7 +18,7 @@
           "target": "@ui/prose.tsx"
         }
       ],
-      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. v4 migration: the ProseTable scroll region is focusable (tabIndex 0) only while the table overflows; code that relied on it always being a tab stop must not. It exposes `data-slot=\"prose-table-scroll\"` and `data-overflow`. In development a `<th>` without `scope` logs a console warning."
     }
   ]
 }

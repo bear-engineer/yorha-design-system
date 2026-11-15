@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, within } from "storybook/test";
+import { expect, userEvent, within } from "storybook/test";
 import { Text } from "./text";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -68,6 +68,39 @@ export const LineClamp: Story = {
     await expect(el.scrollHeight > el.clientHeight).toBe(true);
     await expect(el.textContent).toBe(LONG);
     await expect(el.getAttribute("title")).toBe(LONG);
+  },
+};
+
+/** V4-267: clamped text offers an `aria-expanded` toggle; its row is reserved and hidden while the text fits. */
+export const Expandable: Story = {
+  render: () => (
+    <div style={{ width: "14rem" }} className="flex flex-col gap-4">
+      <Text lineClamp={2} expandable>
+        {LONG}
+      </Text>
+      <Text lineClamp={2} expandable data-testid="short">
+        짧은 문장
+      </Text>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const text = c.getByText(LONG);
+    const toggle = c.getByRole("button", { name: "더 보기" });
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await expect(text.scrollHeight > text.clientHeight).toBe(true);
+    await expect(toggle.getBoundingClientRect().height).toBeGreaterThanOrEqual(24);
+    await userEvent.click(toggle);
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+    await expect(toggle).toHaveTextContent("접기");
+    await expect(text.scrollHeight <= text.clientHeight + 1).toBe(true);
+    await userEvent.click(toggle);
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    // text that fits: the control keeps its slot but is not exposed
+    const short = canvasElement.querySelector<HTMLElement>('[data-testid="short"]')!;
+    const shortToggle = short.parentElement!.querySelector<HTMLElement>("[data-slot=text-expand]")!;
+    await expect(getComputedStyle(shortToggle).visibility).toBe("hidden");
+    await expect(shortToggle.getBoundingClientRect().height).toBeGreaterThanOrEqual(24);
   },
 };
 

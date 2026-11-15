@@ -49,6 +49,23 @@ function PausableTyper() {
   );
 }
 
+/** V4-261: multi-line text at 360 px. The invisible full-text copy reserves the box, so the height never changes while typing. */
+export const MultiLine360: Story = {
+  args: { text: "Recovered sector log entry: the archive index was rebuilt after the fault and every record now resolves to a stable address in the lower grid.", speed: 4 },
+  render: (args) => (
+    <div style={{ width: 360 }} className="bg-yorha-panel p-0 text-yorha-sm text-yorha-fg">
+      <Typer {...args} />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const typer = canvasElement.querySelector<HTMLElement>("[data-slot=typer]")!;
+    const h0 = typer.getBoundingClientRect().height;
+    await expect(h0).toBeGreaterThan(40);
+    await waitFor(() => expect(typer.dataset.state).toBe("done"), { timeout: 5000 });
+    await expect(Math.abs(typer.getBoundingClientRect().height - h0)).toBeLessThan(0.5);
+  },
+};
+
 export const PauseResume: Story = {
   render: () => <PausableTyper />,
   play: async ({ canvasElement }) => {

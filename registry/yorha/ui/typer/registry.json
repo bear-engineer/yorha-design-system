@@ -19,7 +19,7 @@
           "target": "@ui/typer.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The typing reveal is plain DOM text updated on a timer; the tick is a synthesized WebAudio cue. No original assets are used."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The typing reveal is plain DOM text updated on a timer; the tick is a synthesized WebAudio cue. No original assets are used. v4 migration: the root is now an inline-grid. An invisible full-text copy (caret included) shares the grid cell with the typed text, so the box is its final size from the first frame; code that measured the growing height or styled the root as inline-block should drop that. New `caret` prop (default true) renders the `yorha-caret` block caret; `data-blink` is set only when the reveal is done and motion is full."
     }
   ]
 }

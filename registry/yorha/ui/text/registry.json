@@ -18,7 +18,7 @@
           "target": "@ui/text.tsx"
         }
       ],
-      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. v4 migration: new `expandable` prop (with `lineClamp`): a 24 px `aria-expanded` button row is always reserved below the text and is visibility-hidden while the text fits, so unclamped text gains a 24 px empty row when `expandable` is on. `Text` now accepts a `ref`."
     }
   ]
 }
