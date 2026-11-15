@@ -26,13 +26,13 @@ import { Meta } from "@storybook/addon-docs/blocks";
 
 ## 글리치·스캔·점 모션 적용 (v4)
 
-안드로이드 터미널의 신호 느낌을 내는 모션은 쓸 자리가 정해져 있습니다. 모두 컴포지터 속성(transform, opacity, clip-path)만 쓰고, `reduced`에서는 변위와 글리치 없이 투명도만, `off`에서는 즉시 바뀝니다.
+안드로이드 터미널의 신호 느낌을 내는 모션은 쓸 자리가 정해져 있습니다. 모든 움직임은 부드럽습니다(`steps()` 없음, 픽셀 성격은 정지한 형태에 둠). 컴포지터 속성(transform, opacity, clip-path)만 쓰고, `reduced`에서는 변위와 글리치 없이 투명도만, `off`에서는 즉시 바뀝니다.
 
 | 효과 | 쓰는 곳 | 쓰지 않는 곳 |
 |---|---|---|
 | `yorha-glitch` + `runFx(el)` | 시스템 오류 제목(표시 글자) | 읽거나 입력 중인 글자 |
 | `yorha-flicker` + `runFx(el)` | 오류 아이콘 상자, 놓을 수 없는 슬롯 같은 글자 없는 표시 | 본문 |
-| `yorha-dissolve` | 작은 대화상자 입장 | 큰 화면(마스크는 메인 스레드) |
+| `yorha-unfold` | 대화상자 입장·퇴장(선에서 펼침, 구 `yorha-dissolve`) | 스크림, 드로어 |
 | `yorha-pop`, `yorha-panel`, `yorha-collapse` | 팝업·패널·접기의 열림/닫힘 | - |
 | `yorha-stream` | 행이 차례로 도착하는 목록 | 한 번에 보이는 표 |
 | 라우트 `scan` | 페이지 이동([페이지 전환](?path=/docs/가이드-페이지-전환--docs)) | 탭 전환(슬라이드) |

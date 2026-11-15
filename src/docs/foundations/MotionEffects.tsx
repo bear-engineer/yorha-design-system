@@ -104,18 +104,18 @@ function Pop() {
   return (
     <Cell name="yorha-pop (data-side=bottom)" action={<Replay label="열기" locked={locked} onClick={open} />}>
       <div className="yorha-pop yorha-surface w-40 px-pad-sm py-2 text-yorha-xs" data-side="bottom" data-starting-style={starting ? "" : undefined}>
-        팝업이 앵커 가장자리에서 단계적으로 열립니다.
+        팝업이 앵커 가장자리에서 부드럽게 열립니다.
       </div>
     </Cell>
   );
 }
 
-function Dissolve() {
+function Unfold() {
   const [open, setOpen] = useState(true);
   return (
-    <Cell name="yorha-dissolve" action={<Replay label={open ? "닫기" : "열기"} locked={false} onClick={() => setOpen((value) => !value)} />}>
-      <div className="yorha-dissolve min-h-14 w-48 border border-yorha-border bg-yorha-panel px-pad-sm py-2 text-yorha-xs" data-open={open ? "" : undefined} data-closed={open ? undefined : ""}>
-        다이얼로그: 2px 디더 마스크로 나타나고 사라집니다.
+    <Cell name="yorha-unfold" action={<Replay label={open ? "닫기" : "열기"} locked={false} onClick={() => setOpen((value) => !value)} />}>
+      <div className="yorha-unfold min-h-14 w-48 border border-yorha-border bg-yorha-panel px-pad-sm py-2 text-yorha-xs" data-open={open ? "" : undefined} data-closed={open ? undefined : ""}>
+        다이얼로그: 가운데 선에서 펼쳐지고 선으로 접힙니다.
       </div>
     </Cell>
   );
@@ -161,7 +161,7 @@ export function MotionEffects() {
           <Caret />
           <Stream />
           <Pop />
-          <Dissolve />
+          <Unfold />
           <Wipe />
           <Pixel />
         </section>

@@ -364,11 +364,11 @@ export const MotionUtilities: Story = {
     await expect(running).toContain("yorha-stagger-in");
 
     // The spec table and the stylesheet agree: every listed utility resolves to a real class.
-    await expect(tokens.motion.utilities).toHaveLength(16); // + yorha-wipe (design review M15), v4: dissolve, glitch, flicker, caret, stream
+    await expect(tokens.motion.utilities).toHaveLength(16); // + yorha-wipe (design review M15), v4: unfold, glitch, flicker, caret, stream
     for (const name of tokens.motion.utilities) await expect(findStyleRule(`.${name}`, () => true), name).toBeDefined();
 
     // full: token durations, exit faster than enter, spatial start values.
-    await expect(style("pop-open", "full").transitionProperty).toBe("opacity, clip-path"); // V4-004: stepped clip, no scale
+    await expect(style("pop-open", "full").transitionProperty).toBe("opacity, clip-path"); // V4-004: smooth clip, no scale
     await expect(durations("pop-open", "full")).toEqual([token("popover") / 4, token("popover")]);
     await expect(durations("pop-end", "full")).toEqual([token("popover-exit"), token("popover-exit")]);
     await expect(style("pop-start", "full").opacity).toBe("0");

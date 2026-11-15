@@ -42,7 +42,7 @@ async function stopRecording(page: Page): Promise<Seen[]> {
 const names = (seen: Seen[]) => seen.map((s) => s.name);
 const pseudoName = (pseudo: string) => /\((.*)\)/.exec(pseudo)?.[1] ?? "";
 
-// v4 (V4-010): entry is a stepped clip scan plus a short fade; exit is a fade. Old yorha-route-in-*/out-* names are gone.
+// v4 (V4-010): entry is a smooth clip wipe plus a short fade (no steps()); exit is a fade. Old yorha-route-in-*/out-* names are gone.
 test("push scans forward, POP scans back", async ({ page }) => {
   await page.goto(home());
   await expect(page.getByRole("heading", { name: "Units" })).toBeVisible();
