@@ -5,20 +5,26 @@
       "name": "timeline",
       "type": "registry:ui",
       "title": "Timeline",
-      "description": "Item timeline in SVG + CSS without chart dependencies: TimelineGraph (time axis, lanes, bars and instant markers, dependency arrows, now line, zoom, keyboard navigation in time order, real table view) and a vertical Timeline event list with info/success/warn/danger status.",
+      "description": "Item timeline without chart dependencies: TimelineGraph (HTML items over an SVG grid; two-tier time axis, lanes with sub-lane stacking, bars and milestones, status shapes, dependency connectors, live now line, continuous zoom with ladder/fit, pan, keyboard navigation, readout strip, collapsible lane groups, real table view with sorting) and a vertical Timeline event list with dot-glyph markers. timeline-layout exports the pure time/px geometry.",
       "registryDependencies": [
         "@yorha/utils",
         "@yorha/base",
-        "@yorha/icons"
+        "@yorha/glyph",
+        "@yorha/toggle-group"
       ],
       "files": [
         {
           "path": "timeline.tsx",
           "type": "registry:ui",
           "target": "@ui/timeline.tsx"
+        },
+        {
+          "path": "timeline-layout.ts",
+          "type": "registry:ui",
+          "target": "@ui/timeline-layout.ts"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Pure SVG and CSS. TimelineGraph needs a label; dates accept Date, ISO string or epoch ms; locale defaults to ko-KR. Set lang on the wrapper for CJK leading."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Migration v3 -> v4: scale/onScaleChange -> zoom/defaultZoom/onZoomChange (week density 128 px/week -> 168 px/week); items are HTML buttons (selectors on svg [data-item-id] / [data-part=shape] change; SVG is decorative, [data-part=grid]); the lane-label column is outside the scroller; Up/Down change lane; now omitted = live clock; items/defaultItems props. TimelineGraph needs a label; dates accept Date, ISO string or epoch ms; locale defaults to ko-KR."
     }
   ]
 }

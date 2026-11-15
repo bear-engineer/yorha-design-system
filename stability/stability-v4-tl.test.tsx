@@ -18,6 +18,14 @@ import {
 
 /** v4 timeline (f-tl): V4-050..067. Geometry and computed style, not roles. Seams for f-tl-dnd: timeline-layout exports. */
 
+/** The graph root is a size container (intrinsic width 0), so a shrink-to-fit flex stage collapses it: give the decorator a real width like Storybook's block canvas does. */
+async function mountTl(name: string) {
+  const root = await mountStory("timeline", name, { stage: "top" });
+  const deco = root.firstElementChild as HTMLElement | null;
+  if (deco) deco.style.width = "min(100vw, 56rem)";
+  await frames(6);
+  return root;
+}
 const q = <T extends Element = HTMLElement>(root: ParentNode, sel: string) => root.querySelector<T>(sel)!;
 const qa = <T extends Element = HTMLElement>(root: ParentNode, sel: string) => [...root.querySelectorAll<T>(sel)];
 const r = (el: Element) => el.getBoundingClientRect();
@@ -95,7 +103,7 @@ describe("V4-050/052 layout module (pure)", () => {
 
 describe("V4-050/051 layer split and sub-lanes", () => {
   test("items are HTML buttons, the SVG grid has no focusable child, lane labels sit outside the scroller", async () => {
-    const root = await mountStory("timeline", "Default");
+    const root = await mountTl("Default");
     const svg = q(root, "svg[data-part='grid']");
     expect(svg.getAttribute("aria-hidden")).toBe("true");
     expect(svg.querySelectorAll("[tabindex], a, button").length).toBe(0);
@@ -105,7 +113,7 @@ describe("V4-050/051 layer split and sub-lanes", () => {
     expect(q(root, "[data-part='scroller']").contains(q(root, "[data-part='lane-labels']"))).toBe(false);
   });
   test("same-lane item rects never intersect; dev lane = 2 sub-rows; row height formula", async () => {
-    const root = await mountStory("timeline", "Default");
+    const root = await mountTl("Default");
     await frames(20);
     const wrappers = qa(root, "[data-part='item']");
     for (const a of wrappers) for (const b of wrappers) {
@@ -119,7 +127,7 @@ describe("V4-050/051 layer split and sub-lanes", () => {
     expect(heights[1]).toBe(44);
   });
   test("time -> x within 1 px (day preset = 4 px/h)", async () => {
-    const root = await mountStory("timeline", "Default");
+    const root = await mountTl("Default");
     await frames(20);
     const canvas = r(q(root, "[data-part='canvas']"));
     const wire = r(q(root, "[data-item-id='wire']"));
@@ -133,7 +141,7 @@ describe("V4-050/051 layer split and sub-lanes", () => {
 describe("V4-052/053 axis and now", () => {
   for (const zoom of ["Hour", "Day", "Week", "Fit"]) {
     test(`${zoom}: tick labels never intersect each other or the now line`, async () => {
-      const root = await mountStory("timeline", `Zoom${zoom}`);
+      const root = await mountTl(`Zoom${zoom}`);
       await frames(20);
       const labels = qa(root, "[data-part='axis'] [data-part='tick-label']").filter((l) => r(l).width > 0);
       expect(labels.length).toBeGreaterThan(0);
@@ -145,7 +153,7 @@ describe("V4-052/053 axis and now", () => {
     });
   }
   test("now line is 2 px alert, aria-hidden, at the time; initialScroll=now centres it", async () => {
-    const root = await mountStory("timeline", "InitialScrollNow");
+    const root = await mountTl("InitialScrollNow");
     await frames(20);
     const now = q(root, "[data-part='now']");
     expect(now.getAttribute("aria-hidden")).toBe("true");
@@ -156,7 +164,7 @@ describe("V4-052/053 axis and now", () => {
     expect(Math.abs(r(now).left - canvas.left - (4 * 24 + 14) * 4)).toBeLessThanOrEqual(1);
   });
   test("jump-to-now button + apiRef-free zoom buttons walk the ladder", async () => {
-    const root = await mountStory("timeline", "Default");
+    const root = await mountTl("Default");
     const group = q(root, "[role='group'][data-slot='timeline-graph']");
     expect(group.getAttribute("data-px-per-hour")).toBe("4");
     await userEvent.click(q(root, "button[aria-label='확대']"));
@@ -171,13 +179,13 @@ describe("V4-052/053 axis and now", () => {
 
 describe("V4-054/055 labels, hover, selection", () => {
   test("bars truncate with a real ellipsis; narrow bars put the label outside", async () => {
-    const root = await mountStory("timeline", "Default");
+    const root = await mountTl("Default");
     await frames(20);
     for (const b of qa(root, "[data-part='item-button']")) {
       const text = b.querySelector("[data-part='item-label']");
       if (text) expect(getComputedStyle(text).textOverflow).toBe("ellipsis");
     }
-    const narrow = await mountStory("timeline", "NarrowBars");
+    const narrow = await mountTl("NarrowBars");
     await frames(20);
     const tiny = q(narrow, "[data-item-id='blip']");
     expect(r(tiny).width).toBeLessThan(40);
@@ -185,7 +193,7 @@ describe("V4-054/055 labels, hover, selection", () => {
     expect(r(out).left).toBeGreaterThanOrEqual(r(tiny).right - 0.5);
   });
   test("readout has a constant height with none / hover / selected; selection never moves the item", async () => {
-    const root = await mountStory("timeline", "Default");
+    const root = await mountTl("Default");
     await frames(20);
     const readout = q(root, "[data-part='readout']");
     const h0 = r(readout).height;
@@ -207,7 +215,7 @@ describe("V4-054/055 labels, hover, selection", () => {
     expect(qa(root, "[aria-pressed='true'][data-part='item-button']")).toHaveLength(1);
   });
   test("aria-current=time on the item that contains now", async () => {
-    const root = await mountStory("timeline", "Default");
+    const root = await mountTl("Default");
     const cur = qa(root, "[data-part='item-button'][aria-current='time']").map((b) => b.closest("[data-item-id]")!.getAttribute("data-item-id"));
     expect(cur.sort()).toEqual(["api", "wire"]);
   });
@@ -215,7 +223,7 @@ describe("V4-054/055 labels, hover, selection", () => {
 
 describe("V4-056 keyboard", () => {
   test("Down lands on the max-overlap item of the next lane, Up returns; Home/End; t; +/-", async () => {
-    const root = await mountStory("timeline", "Default");
+    const root = await mountTl("Default");
     const wire = itemBtn(root, "wire");
     wire.focus();
     await userEvent.keyboard("{ArrowDown}");
@@ -245,16 +253,16 @@ describe("V4-056 keyboard", () => {
 
 describe("V4-057 glyph markers", () => {
   test("milestones are diamond glyph SVGs on integer rects, no rotation", async () => {
-    const root = await mountStory("timeline", "Default");
+    const root = await mountTl("Default");
     await frames(10);
     const marks = qa(root, "[data-part='item'][data-instant] svg[data-slot='glyph'][data-glyph='diamond']");
     expect(marks).toHaveLength(3);
     for (const g of marks) {
-      expect(getComputedStyle(g).shapeRendering).toBe("crispEdges");
+      expect(getComputedStyle(g).shapeRendering).toBe("crispedges");
       expect(getComputedStyle(g).transform).toBe("none");
       expect(Number.isInteger(g.getBoundingClientRect().width)).toBe(true);
     }
-    const v = await mountStory("timeline", "VerticalTimeline");
+    const v = await mountTl("VerticalTimeline");
     const kinds = qa(v, "li svg[data-slot='glyph']").map((g) => g.getAttribute("data-glyph"));
     expect(kinds).toEqual(["diamond-target", "diamond", "triangle-up", "square-x", "diamond-ring"]);
     for (const li of qa(v, "li")) for (const el of qa(li, "span, svg")) expect(getComputedStyle(el).transform).not.toMatch(/matrix\(0\.7/);
@@ -264,14 +272,14 @@ describe("V4-057 glyph markers", () => {
 
 describe("V4-058 table", () => {
   test("first column is th[scope=row]; region is focusable only while it overflows", async () => {
-    const root = await mountStory("timeline", "TableView");
+    const root = await mountTl("TableView");
     for (const tr of qa(root, "tbody tr")) expect(tr.firstElementChild!.tagName).toBe("TH");
     for (const tr of qa(root, "tbody tr")) expect(tr.firstElementChild!.getAttribute("scope")).toBe("row");
     const region = q(root, "[role='region']");
     expect(region.getAttribute("aria-label")).toBeTruthy();
     const overflow = region.scrollWidth > region.clientWidth;
     expect(region.hasAttribute("tabindex")).toBe(overflow);
-    const narrow = await mountStory("timeline", "TableNarrow");
+    const narrow = await mountTl("TableNarrow");
     await frames(10);
     const reg = q(narrow, "[role='region']");
     expect(reg.scrollWidth > reg.clientWidth).toBe(true);
@@ -281,7 +289,7 @@ describe("V4-058 table", () => {
 
 describe("V4-059..067 extensions", () => {
   test("V4-059 label rail under 28 rem; V4-061 plot >= 60 % of width at 360", async () => {
-    const root = await mountStory("timeline", "Narrow360");
+    const root = await mountTl("Narrow360");
     await frames(20);
     const labels = r(q(root, "[data-part='lane-labels']"));
     const group = r(q(root, "[data-slot='timeline-graph']"));
@@ -291,24 +299,24 @@ describe("V4-059..067 extensions", () => {
     expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth + 1);
   });
   test("V4-061 maxHeight keeps the axis stuck at the top while scrolled; empty row", async () => {
-    const root = await mountStory("timeline", "ManyLanes");
+    const root = await mountTl("ManyLanes");
     await frames(20);
     const sc = q(root, "[data-part='scroller']");
     sc.scrollTop = 400;
     await frames(4);
     expect(Math.abs(r(q(root, "[data-part='axis']")).top - r(sc).top)).toBeLessThanOrEqual(1);
-    const empty = await mountStory("timeline", "Empty");
+    const empty = await mountTl("Empty");
     expect(q(empty, "[data-part='empty']").textContent).toContain("일정이 없습니다");
     expect(q(empty, "[data-part='empty']").getAttribute("role")).toBe("status");
   });
   test("V4-061 out-of-range count; off-screen now side on the jump button", async () => {
-    const root = await mountStory("timeline", "OutOfRange");
+    const root = await mountTl("OutOfRange");
     expect(q(root, "[data-part='out-before']").textContent).toContain("1");
     expect(q(root, "[data-part='out-after']").textContent).toContain("2");
     expect(q(root, "[data-item-id='before']")).toBeNull();
   });
   test("V4-063 Ctrl+wheel keeps the time under the pointer within 1 px", async () => {
-    const root = await mountStory("timeline", "Default");
+    const root = await mountTl("Default");
     await frames(10);
     const sc = q(root, "[data-part='scroller']");
     const canvas = q(root, "[data-part='canvas']");
@@ -323,7 +331,7 @@ describe("V4-059..067 extensions", () => {
     expect(canvas).toBeTruthy();
   });
   test("V4-064 status shapes: done check, warn triangle, danger square-x, pending dither; bands", async () => {
-    const root = await mountStory("timeline", "Statuses");
+    const root = await mountTl("Statuses");
     await frames(10);
     const glyph = (id: string) => qa(q(root, `[data-item-id='${id}']`), "svg[data-slot='glyph']").map((g) => g.getAttribute("data-glyph"));
     expect(glyph("done")).toContain("check");
@@ -331,12 +339,12 @@ describe("V4-059..067 extensions", () => {
     expect(glyph("danger")).toContain("square-x");
     expect(getComputedStyle(q(root, "[data-item-id='pending'] [data-part='dither']")).maskImage).not.toBe("none");
     expect(qa(root, "[data-part='band']").length).toBeGreaterThan(0);
-    const compact = await mountStory("timeline", "Compact");
-    const row = q(compact, "[data-part='lane-labels'] [data-lane]");
+    const compact = await mountTl("Compact");
+    const row = q(compact, "[data-part='lane-labels'] [data-lane='design']");
     expect(Math.round(r(row).height)).toBe(28);
   });
   test("V4-065 groups: header button toggles aria-expanded and hides rows", async () => {
-    const root = await mountStory("timeline", "Groups");
+    const root = await mountTl("Groups");
     await frames(10);
     const head = q(root, "button[aria-expanded]");
     expect(head.getAttribute("aria-expanded")).toBe("true");
@@ -348,14 +356,14 @@ describe("V4-059..067 extensions", () => {
   });
   test("V4-066 entry uses yorha-stream: 2 animations, capped delay", async () => {
     document.documentElement.setAttribute("data-motion", "full");
-    const root = await mountStory("timeline", "Default");
+    const root = await mountTl("Default");
     const el = q(root, "[data-item-id='rel']");
     const cs = getComputedStyle(el);
     expect(cs.animationName.split(",").length).toBe(2);
     expect(parseFloat(cs.animationDelay)).toBeLessThanOrEqual(0.4);
   });
   test("V4-067 view toggle is one tab stop; table sorts by a column", async () => {
-    const root = await mountStory("timeline", "TableView");
+    const root = await mountTl("TableView");
     const group = q(root, "[role='group'][aria-label='보기']");
     expect(qa(group, "button").filter((b) => b.tabIndex === 0)).toHaveLength(1);
     const titles = () => qa(root, "tbody tr").map((tr) => tr.children[1]!.textContent);
