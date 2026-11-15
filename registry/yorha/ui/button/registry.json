@@ -12,7 +12,8 @@
       "registryDependencies": [
         "@yorha/utils",
         "@yorha/base",
-        "@yorha/glyph"
+        "@yorha/glyph",
+        "@yorha/fx"
       ],
       "files": [
         {
