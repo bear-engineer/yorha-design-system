@@ -77,7 +77,7 @@ function Table({ selected = [] as number[], loading = false, children = null as 
           <DataTableHeadCell numeric>Count</DataTableHeadCell>
         </tr>
       </DataTableHeader>
-      <DataTableBody loading={loading} loadingRows={3} loadingColumns={3} stream={false}>
+      <DataTableBody loading={loading} loadingRows={3} loadingColumns={2} loadingSelect stream={false}>
         {children ??
           ROWS.map(([n, c], i) => (
             <DataTableRow key={n} data-selected={selected.includes(i) ? "" : undefined}>
@@ -303,7 +303,8 @@ describe("V4-221 stream", () => {
     const td = full.host.querySelector("tbody td")!;
     expect(getComputedStyle(td).animationName).toContain("yorha-stream-clip");
     const off = await mount(node, { motion: "off" });
-    expect(getComputedStyle(off.host.querySelector("tbody td")!).animationName === "none" || getComputedStyle(off.host.querySelector("tbody td")!).animationDuration === "0s").toBe(true);
+    const style = getComputedStyle(off.host.querySelector("tbody td")!);
+    expect(style.animationName === "none" || style.animationDuration.split(",").every((d) => parseFloat(d) === 0)).toBe(true);
   });
 });
 
@@ -313,7 +314,8 @@ describe("V4-214 / 217 Progress", () => {
     const ind = host.querySelector<HTMLElement>("[data-yorha-sweep]")!;
     const anim = ind.getAnimations()[0]!;
     const timing = anim.effect!.getTiming();
-    expect(String(timing.easing)).toBe(getComputedStyle(document.documentElement).getPropertyValue("--yorha-step-loop").trim());
+    const token = getComputedStyle(document.documentElement).getPropertyValue("--yorha-step-loop").trim();
+    expect(String(timing.easing)).toBe(token.replace(/, end\)$/, ")")); // the engine serialises steps(n, end) as steps(n)
     expect(String(timing.easing)).toMatch(/^steps\(/);
   });
 
@@ -359,10 +361,12 @@ describe("V4-218 dots variant", () => {
     const ok = await mount(<Meter label="HP" value={80} variant="dots" low={30} critical={10} />);
     const low = await mount(<Meter label="HP" value={25} variant="dots" low={30} critical={10} />);
     const crit = await mount(<Meter label="HP" value={5} variant="dots" low={30} critical={10} />);
-    const pitch = (h: HTMLElement) => parseFloat(getComputedStyle(dots(h)).maskSize);
+    const pitch = (h: HTMLElement) => Number(dots(h).dataset.pitch);
     expect(pitch(ok.host)).toBe(4);
     expect(pitch(low.host)).toBe(8);
     expect(pitch(crit.host)).toBeGreaterThan(8);
+    expect(rect(dots(low.host)).width % 8).toBe(0);
+    expect(getComputedStyle(dots(low.host)).maskImage).toContain("repeating-linear-gradient");
   });
 });
 

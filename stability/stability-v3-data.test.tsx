@@ -93,7 +93,7 @@ describe("FD-03/04/05 data-table", () => {
     await wait(300);
     expect(getComputedStyle(row).backgroundColor, "hover bg").not.toBe(idle);
     await userEvent.unhover(row);
-    row.setAttribute("aria-selected", "true");
+    row.setAttribute("data-selected", "");
     await wait(300);
     const sel = getComputedStyle(row);
     expect(contrast(sel.color, sel.backgroundColor)).toBeGreaterThan(4.5);
