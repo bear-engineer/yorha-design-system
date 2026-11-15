@@ -9,6 +9,8 @@ import {
   useMotion,
   useSoundPreference,
   useTheme,
+  type Density,
+  type Motion,
   type Theme,
 } from "./yorha-provider";
 
@@ -99,7 +101,106 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const THEME_LABEL: Record<Theme, string> = { light: "라이트", dark: "다크", authentic: "오센틱", "high-contrast": "고대비" };
+const MOTION_OPTIONS: { id: Motion; label: string }[] = [
+  { id: "full", label: "전체" },
+  { id: "reduced", label: "줄임" },
+  { id: "off", label: "끔" },
+];
+const DENSITY_OPTIONS: { id: Density; label: string }[] = [
+  { id: "compact", label: "촘촘" },
+  { id: "default", label: "기본" },
+  { id: "comfortable", label: "여유" },
+];
+
+/** One labelled segmented row: 1px frame, ink fill on the active segment, fixed cell widths (no shift). */
+function Segmented<T extends string>({
+  label,
+  value,
+  options,
+  onChange,
+}: {
+  label: string;
+  value: T;
+  options: { id: T; label: string }[];
+  onChange: (id: T) => void;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="w-12 shrink-0 text-yorha-sm text-yorha-fg-muted">{label}</span>
+      <div role="group" aria-label={label} className="inline-flex border border-yorha-border">
+        {options.map((o) => (
+          <button
+            key={o.id}
+            type="button"
+            aria-pressed={value === o.id}
+            onClick={() => onChange(o.id)}
+            className="min-w-16 border-r border-yorha-border px-3 py-1 text-yorha-sm last:border-r-0 aria-pressed:bg-yorha-ink aria-pressed:text-yorha-on-ink"
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/** Hero: the provider's controls wired to one provider, with a sample card that reacts to theme, density and motion. */
+function ProviderOverview() {
+  const { theme, setTheme } = useTheme();
+  const { motion, setMotion } = useMotion();
+  const { density, setDensity } = useDensity();
+  const pad = density === "compact" ? "p-2" : density === "comfortable" ? "p-6" : "p-4";
+  return (
+    <div className="grid w-[720px] max-w-full grid-cols-[1fr_260px] border border-yorha-border bg-yorha-bg text-yorha-fg">
+      <section aria-label="설정" className="flex flex-col gap-4 border-r border-yorha-border p-5">
+        <h3 className="m-0 text-yorha-base font-medium">표시 설정</h3>
+        <Segmented
+          label="테마"
+          value={theme}
+          options={THEMES.map((t) => ({ id: t, label: THEME_LABEL[t] }))}
+          onChange={setTheme}
+        />
+        <Segmented label="모션" value={motion} options={MOTION_OPTIONS} onChange={setMotion} />
+        <Segmented label="밀도" value={density} options={DENSITY_OPTIONS} onChange={setDensity} />
+        <p className="m-0 border-t border-yorha-border pt-3 text-yorha-xs text-yorha-fg-muted">
+          선택은 <code className="font-yorha-mono">html[data-theme · data-motion · data-density]</code>로 반영되고 저장됩니다. 사운드는 기본으로 꺼져 있습니다.
+        </p>
+      </section>
+      <section aria-label="미리보기" className="flex items-start bg-yorha-panel p-5">
+        <article data-testid="sample-card" className={`flex w-full flex-col gap-2 border border-yorha-border bg-yorha-bg ${pad}`}>
+          <span className="font-yorha-mono text-yorha-xs text-yorha-fg-muted">UNIT 2B · 정비 기록</span>
+          <strong className="text-yorha-base font-medium">회복 모듈 점검 완료</strong>
+          <span className="text-yorha-sm">수리 3건, 대기 1건. 다음 점검은 06:00입니다.</span>
+          <div className="mt-1 flex gap-2">
+            <Readout label="테마"><output data-testid="theme">{theme}</output></Readout>
+            <Readout label="밀도"><output data-testid="density">{density}</output></Readout>
+          </div>
+        </article>
+      </section>
+    </div>
+  );
+}
+
+export const Overview: Story = {
+  name: "개요",
+  render: (args) => (
+    <YorhaProvider {...args}>
+      <ProviderOverview />
+    </YorhaProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "다크" }));
+    await waitFor(() => expect(root().dataset.theme).toBe("dark"));
+    await userEvent.click(c.getByRole("button", { name: "촘촘" }));
+    await waitFor(() => expect(root().dataset.density).toBe("compact"));
+    expect(c.getByTestId("sample-card")).toBeTruthy();
+  },
+};
+
 export const ThemeSwitch: Story = {
+  tags: ["!autodocs"],
   name: "테마 전환",
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -113,6 +214,7 @@ export const ThemeSwitch: Story = {
 };
 
 export const InitialProps: Story = {
+  tags: ["!autodocs"],
   name: "초기값 props",
   args: { theme: "dark", density: "compact", motion: "off" },
   play: async () => {
@@ -123,6 +225,7 @@ export const InitialProps: Story = {
 };
 
 export const ReducedPreference: Story = {
+  tags: ["!autodocs"],
   name: "시스템 감소 모션 선호",
   decorators: [emulateReducedPreference],
   play: async ({ canvasElement }) => {
@@ -132,6 +235,7 @@ export const ReducedPreference: Story = {
 };
 
 export const MotionPersisted: Story = {
+  tags: ["!autodocs"],
   name: "모션 설정 저장",
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole("button", { name: "모션 끄기" }));
@@ -141,6 +245,7 @@ export const MotionPersisted: Story = {
 };
 
 export const SoundDisabledByDefault: Story = {
+  tags: ["!autodocs"],
   name: "사운드 기본 꺼짐",
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -158,6 +263,7 @@ function DirectionProbe() {
 }
 
 export const DirectionDefault: Story = {
+  tags: ["!autodocs"],
   name: "방향 기본 ltr",
   render: (args) => (
     <YorhaProvider {...args}>
@@ -170,6 +276,7 @@ export const DirectionDefault: Story = {
 };
 
 export const DirectionRtl: Story = {
+  tags: ["!autodocs"],
   name: "방향 rtl",
   args: { direction: "rtl" },
   render: (args) => (
@@ -186,6 +293,7 @@ const NONCE = "yorha-test-nonce";
 
 /** CSPProvider: Base UI ScrollArea emits its inline `<style>` with the nonce. */
 export const CspNonce: Story = {
+  tags: ["!autodocs"],
   name: "CSP nonce",
   args: { nonce: NONCE },
   render: (args) => (

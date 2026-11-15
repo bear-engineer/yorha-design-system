@@ -97,6 +97,7 @@ class FakeAudioContext {
 function withMockAudio(Story: () => React.ReactElement) {
   (window as unknown as { __soundMock: SoundMock }).__soundMock = { constructed: 0, gains: [], oscillators: 0, noise: 0 };
   (window as unknown as { AudioContext: unknown }).AudioContext = FakeAudioContext;
+  window.localStorage.removeItem("yorha:sound");
   resetSoundEngineForTests();
   return <Story />;
 }
@@ -136,6 +137,52 @@ function SoundPanel() {
   );
 }
 
+/** Hero: a settings row with the mute toggle, the master volume and a cue preview. Sound is off by default. */
+function SoundOverview() {
+  const { play } = useSound();
+  const { enabled, setEnabled, volume, setVolume } = useSoundPreference();
+  return (
+    <section aria-label="사운드 설정" className="flex w-[560px] max-w-full flex-col border border-yorha-border bg-yorha-bg text-yorha-fg">
+      <header className="flex items-center justify-between border-b border-yorha-border px-4 py-2">
+        <h3 className="m-0 text-yorha-base font-medium">사운드</h3>
+        <span className="inline-flex items-stretch border border-yorha-border font-yorha-mono text-yorha-xs">
+          <span className="bg-yorha-ink px-2 py-1 text-yorha-on-ink">상태</span>
+          <output data-testid="sound-state" className="min-w-10 px-2 py-1 text-center">{enabled ? "ON" : "OFF"}</output>
+        </span>
+      </header>
+      <div className="flex items-center justify-between gap-4 border-b border-yorha-border px-4 py-3">
+        <span className="text-yorha-sm">효과음 사용</span>
+        <button
+          type="button"
+          aria-pressed={enabled}
+          onClick={() => setEnabled(!enabled)}
+          className="min-w-20 border border-yorha-border px-3 py-1 text-yorha-sm aria-pressed:bg-yorha-ink aria-pressed:text-yorha-on-ink"
+        >
+          {enabled ? "켜짐" : "꺼짐"}
+        </button>
+      </div>
+      <div className="flex items-end gap-4 border-b border-yorha-border px-4 py-3">
+        <Slider
+          label="마스터 볼륨"
+          min={0}
+          max={1}
+          step={0.05}
+          value={volume}
+          onValueChange={(v) => setVolume(Array.isArray(v) ? (v[0] ?? 0) : v)}
+          className="flex-1"
+        />
+        <output data-testid="overview-volume" className="min-w-10 pb-0.5 text-right font-yorha-mono text-yorha-xs">{Math.round(volume * 100)}%</output>
+      </div>
+      <div className="flex items-center justify-between gap-4 px-4 py-3">
+        <span className="text-yorha-sm text-yorha-fg-muted">확인음을 들어봅니다. 효과음을 켜야 재생됩니다.</span>
+        <button type="button" onClick={() => play("confirm")} className="border border-yorha-border px-3 py-1 text-yorha-sm">
+          확인음 재생
+        </button>
+      </div>
+    </section>
+  );
+}
+
 const meta = {
   title: "사운드/Sound",
   tags: ["autodocs"],
@@ -151,7 +198,27 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+export const Overview: Story = {
+  name: "개요",
+  render: (args) => (
+    <YorhaProvider {...args}>
+      <SoundOverview />
+    </YorhaProvider>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    expect(c.getByTestId("sound-state")).toHaveTextContent("OFF");
+    await userEvent.click(c.getByRole("button", { name: "확인음 재생" }));
+    expect(mockState().constructed).toBe(0);
+    await userEvent.click(c.getByRole("button", { name: "꺼짐" }));
+    await waitFor(() => expect(c.getByTestId("sound-state")).toHaveTextContent("ON"));
+    await userEvent.click(c.getByRole("button", { name: "확인음 재생" }));
+    await waitFor(() => expect(mockState().oscillators).toBeGreaterThan(0));
+  },
+};
+
 export const DisabledByDefault: Story = {
+  tags: ["!autodocs"],
   name: "기본 꺼짐: 첫 렌더에서 AudioContext 없음",
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -164,6 +231,7 @@ export const DisabledByDefault: Story = {
 };
 
 export const PlaysOneSharedContext: Story = {
+  tags: ["!autodocs"],
   name: "활성화 시 공유 컨텍스트 하나 재사용",
   args: { sound: { enabled: true } },
   play: async ({ canvasElement }) => {
@@ -181,6 +249,7 @@ export const PlaysOneSharedContext: Story = {
 };
 
 export const MutesOnWindowBlur: Story = {
+  tags: ["!autodocs"],
   name: "창 포커스 해제 시 음소거",
   args: { sound: { enabled: true, volume: 0.5 } },
   play: async ({ canvasElement }) => {
@@ -198,6 +267,7 @@ export const MutesOnWindowBlur: Story = {
 };
 
 export const MuteToggleAndVolume: Story = {
+  tags: ["!autodocs"],
   name: "음소거 토글과 마스터 볼륨",
   args: { sound: { enabled: true } },
   play: async ({ canvasElement }) => {
