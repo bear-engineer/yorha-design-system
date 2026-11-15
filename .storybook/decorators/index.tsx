@@ -1,5 +1,6 @@
 import { useEffect, useState, type ComponentType, type ReactElement } from "react";
 import type { Decorator } from "@storybook/react-vite";
+import { applyToRoot, useEmbeddedGlobals } from "../docs-globals";
 import { createMemoryRouter, RouterProvider, type RouteObject } from "react-router";
 
 /** Toolbar values; keep in sync with tokens/yorha.resolver.json modifiers. */
@@ -20,24 +21,27 @@ export interface StoryRouteParameter {
   routes?: RouteObject[];
 }
 
-/** Writes the toolbar globals on <html>. Stories that own <html> set `parameters.yorha.manageRoot = false`. */
-function RootAttributes({ theme, motion, density, children }: { theme: string; motion: string; density: string; children: ReactElement }) {
+/**
+ * Writes the toolbar globals on <html>. Stories that own <html> set `parameters.yorha.manageRoot = false`: outside
+ * docs they keep full control, but embedded in a docs page (child iframe) they still receive the page's globals on
+ * <html>, so their own sections inherit the theme the toolbar selected. Embedded stories follow the docs page's
+ * globals (live), because the iframe URL carries none.
+ */
+function RootAttributes({ own, manage, children }: { own: { theme: string; motion: string; density: string }; manage: boolean; children: ReactElement }) {
+  const { globals, embedded } = useEmbeddedGlobals(own);
+  const { theme, motion, density } = globals;
   useEffect(() => {
-    const el = document.documentElement;
-    el.setAttribute("data-theme", theme);
-    if (motion === "system") el.removeAttribute("data-motion");
-    else el.setAttribute("data-motion", motion);
-    el.setAttribute("data-density", density);
-  }, [theme, motion, density]);
+    if (!manage && !embedded) return;
+    applyToRoot(document.documentElement, { theme, motion, density });
+  }, [manage, embedded, theme, motion, density]);
   return children;
 }
 
 export const withGlobals: Decorator = (Story, context) => {
   const manage = (context.parameters.yorha as { manageRoot?: boolean } | undefined)?.manageRoot !== false;
-  if (!manage) return <Story />;
   const { theme = "light", motion = "system", density = "comfortable" } = context.globals as Record<string, string>;
   return (
-    <RootAttributes theme={theme} motion={motion} density={density}>
+    <RootAttributes own={{ theme, motion, density }} manage={manage}>
       <Story />
     </RootAttributes>
   );

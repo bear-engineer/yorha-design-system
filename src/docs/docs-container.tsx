@@ -1,9 +1,43 @@
 import { DocsContainer, type DocsContainerProps } from "@storybook/addon-docs/blocks";
 import { type PropsWithChildren, useEffect, useRef } from "react";
+import { addons } from "storybook/preview-api";
 import { themes } from "storybook/theming";
+import { useDocsGlobals } from "../../.storybook/docs-globals";
 
 /** Storybook's light docs theme with a muted text colour that passes AA on white (default #73828C does not). */
-const DOCS_THEME = { ...themes.light, textMutedColor: "#566069" };
+const LIGHT_THEME = { ...themes.light, textMutedColor: "#566069" };
+
+/**
+ * Docs chrome follows the toolbar theme: the page ground is the kit ground (tokens `--yorha-bg`) so dark and
+ * high-contrast frames sit on their own colour instead of a white canvas. Values are the sRGB of the generated tokens;
+ * Storybook's theme colours go through colour maths and cannot take `var()`.
+ */
+const DOCS_THEMES: Record<string, typeof LIGHT_THEME> = {
+  dark: {
+    ...themes.dark,
+    appBg: "#302e29",
+    appContentBg: "#302e29",
+    appPreviewBg: "#302e29",
+    appBorderColor: "#8c8878",
+    textColor: "#cec9b1",
+    textMutedColor: "#b3ae98",
+    barBg: "#3f3d36",
+    inputBg: "#3f3d36",
+    inputBorder: "#8c8878",
+    inputTextColor: "#cec9b1",
+  },
+  "high-contrast": {
+    ...themes.light,
+    textMutedColor: "#4a4a42",
+    appBg: "#ebe7d6",
+    appContentBg: "#ebe7d6",
+    appPreviewBg: "#ebe7d6",
+    appBorderColor: "#524f45",
+    textColor: "#24231e",
+    barBg: "#ebe7d6",
+    inputBg: "#f3efe2",
+  },
+};
 
 /**
  * Wraps every docs page (MDX and autodocs) in one `<main lang="ko">` landmark, so pages need no
@@ -12,6 +46,7 @@ const DOCS_THEME = { ...themes.light, textMutedColor: "#566069" };
  */
 export function YorhaDocsContainer({ children, ...props }: PropsWithChildren<DocsContainerProps>) {
   const ref = useRef<HTMLElement>(null);
+  const { theme } = useDocsGlobals(addons.getChannel());
 
   useEffect(() => {
     // Storybook's iframe.html has no lang; some docs pages never get one from a story (axe html-has-lang).
@@ -46,7 +81,7 @@ export function YorhaDocsContainer({ children, ...props }: PropsWithChildren<Doc
   }, []);
 
   return (
-    <DocsContainer {...props} theme={DOCS_THEME}>
+    <DocsContainer {...props} theme={DOCS_THEMES[theme] ?? LIGHT_THEME}>
       <main lang="ko" ref={ref}>
         {children}
       </main>

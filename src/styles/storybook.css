@@ -3,3 +3,17 @@
 @import "./route-transition.generated.css";
 @source "../../registry";
 @source "../../src";
+
+/* Docs pages (data-docs-theme = toolbar, immune to stories that own data-theme): ground follows the toolbar theme (R7). Light keeps Storybook's white page. */
+html[data-docs-theme="dark"] body.sb-show-main:has(#storybook-docs:not([hidden])),
+html[data-docs-theme="dark"] #storybook-docs .sbdocs-wrapper,
+html[data-docs-theme="dark"] #storybook-docs .sbdocs-content {
+  background-color: var(--yorha-bg);
+  color: var(--yorha-fg);
+}
+html[data-docs-theme="high-contrast"] body.sb-show-main:has(#storybook-docs:not([hidden])),
+html[data-docs-theme="high-contrast"] #storybook-docs .sbdocs-wrapper,
+html[data-docs-theme="high-contrast"] #storybook-docs .sbdocs-content {
+  background-color: var(--yorha-bg);
+  color: var(--yorha-fg);
+}

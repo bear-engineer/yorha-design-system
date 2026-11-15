@@ -20,6 +20,7 @@
     "build-storybook": "storybook build -o storybook-static --quiet",
     "docs:axe": "node scripts/docs-axe.mjs",
     "docs:scroll": "node scripts/docs-scroll.mjs",
+    "docs:theme": "node scripts/docs-theme.mjs",
     "tokens:build": "node scripts/build-tokens.mjs",
     "scaffold:paths": "node scripts/sync-paths.mjs",
     "registry:validate": "shadcn registry validate",

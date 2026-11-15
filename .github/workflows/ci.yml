@@ -105,6 +105,9 @@ jobs:
       - name: Docs scroll (no docs page scrolls by itself)
         run: pnpm docs:scroll
 
+      - name: Docs theme (every docs page and story iframe follows the toolbar theme)
+        run: pnpm docs:theme
+
       - name: Text spacing (WCAG 1.4.12, no clipped text)
         run: pnpm test:text-spacing
 
