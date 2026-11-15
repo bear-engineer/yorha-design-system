@@ -1,7 +1,7 @@
 import { createElement, useState, type ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
-import { afterEach, describe, expect, test } from "vitest";
+import { afterEach, describe, expect, onTestFinished, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import "./mount"; // global css (tokens, utilities, storybook annotations)
 import { frames } from "./mount";
@@ -304,7 +304,9 @@ describe("V4-158 create row, +N chip, Esc", () => {
     const row = q("[data-slot=combobox-create]")!;
     expect(row.getAttribute("role")).toBe("option");
     expect(row.textContent).toContain("라임");
-    await userEvent.keyboard("{ArrowDown}{Enter}");
+    await userEvent.keyboard("{ArrowDown}");
+    await frames(3);
+    await userEvent.keyboard("{Enter}");
     await until(() => created.length === 1, "created");
     expect(created).toEqual(["라임"]);
   });
@@ -339,15 +341,17 @@ describe("V4-158 create row, +N chip, Esc", () => {
   test("Esc with the popup closed clears a non-empty input (autocomplete keeps its text) and an empty input bubbles it", { timeout: 60_000 }, async () => {
     let bubbled = 0;
     const Root = AC.Autocomplete as unknown as (p: Record<string, unknown>) => ReactNode;
-    const host = await mount(
+    await mount(
       createElement(Root, { items: FRUITS }, [
         <AC.AutocompleteInputGroup key="g"><AC.AutocompleteInput aria-label="과일" /></AC.AutocompleteInputGroup>,
         <AC.AutocompleteContent key="c"><AC.AutocompleteList>{(i: string) => <AC.AutocompleteItem key={i} value={i}>{i}</AC.AutocompleteItem>}</AC.AutocompleteList></AC.AutocompleteContent>,
       ]),
     );
-    host.addEventListener("keydown", (e) => {
-      if ((e as KeyboardEvent).key === "Escape") bubbled += 1;
-    });
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") bubbled += 1;
+    };
+    document.body.addEventListener("keydown", onKey); // an ancestor above the React root, like a Dialog
+    onTestFinished(() => document.body.removeEventListener("keydown", onKey));
     const input = q<HTMLInputElement>("[data-slot=autocomplete-input]")!;
     input.focus();
     await userEvent.keyboard("복");
@@ -366,10 +370,12 @@ describe("V4-158 create row, +N chip, Esc", () => {
 
   test("combobox input: empty + closed Esc bubbles; typed text is cleared by Esc", { timeout: 60_000 }, async () => {
     let bubbled = 0;
-    const host = await mount(<Combo multiple defaultValue={["사과"]} />);
-    host.addEventListener("keydown", (e) => {
-      if ((e as KeyboardEvent).key === "Escape") bubbled += 1;
-    });
+    await mount(<Combo multiple />);
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") bubbled += 1;
+    };
+    document.body.addEventListener("keydown", onKey); // an ancestor above the React root, like a Dialog
+    onTestFinished(() => document.body.removeEventListener("keydown", onKey));
     const input = q<HTMLInputElement>("[data-slot=combobox-input]")!;
     input.focus();
     await userEvent.keyboard("{Escape}");

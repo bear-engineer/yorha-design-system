@@ -1,10 +1,48 @@
-import type { ComponentProps } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ComponentProps } from "react";
 import { Select as SelectPrimitive } from "@base-ui/react/select";
 import { ChevronIcon, TriangleIcon } from "@/components/ui/icons";
+import { Glyph } from "@/components/ui/glyph";
 import { cnState } from "@/lib/utils";
 
-/** Root: re-export of the Base UI Select root (value, items, onValueChange, disabled, ...). */
-const Select = SelectPrimitive.Root;
+const SelectContext = createContext<{ clearable: boolean; required: boolean; clear: () => void; reset: () => void }>({
+  clearable: false,
+  required: false,
+  clear: () => {},
+  reset: () => {},
+});
+
+/**
+ * Root: Base UI Select root (value, items, onValueChange, disabled, name, required, ...) plus:
+ * - `clearable`: Backspace / Delete on the closed trigger sets the value to null (`[]` with `multiple`); ignored when `required`.
+ * - Form reset: an uncontrolled select goes back to its `defaultValue` when the owning form resets (Base UI alone leaves the chosen value).
+ */
+function Select<Value, Multiple extends boolean | undefined = false>({
+  clearable = false,
+  value: valueProp,
+  defaultValue,
+  onValueChange,
+  ...props
+}: SelectPrimitive.Root.Props<Value, Multiple> & { clearable?: boolean }) {
+  const empty = (props.multiple ? [] : null) as unknown;
+  const [inner, setInner] = useState<unknown>(defaultValue ?? empty);
+  const value = valueProp !== undefined ? valueProp : inner;
+  const change = (next: unknown, details?: never) => {
+    setInner(next);
+    (onValueChange as ((v: unknown, d?: never) => void) | undefined)?.(next, details);
+  };
+  const ctx = {
+    clearable,
+    required: Boolean(props.required),
+    clear: () => change(empty),
+    // Controlled selects (`value` prop) are reset by their owner's state, not here.
+    reset: () => valueProp === undefined && setInner(defaultValue ?? empty),
+  };
+  return (
+    <SelectContext value={ctx}>
+      <SelectPrimitive.Root {...(props as object)} value={value as never} onValueChange={change as never} />
+    </SelectContext>
+  );
+}
 
 type TriggerProps = ComponentProps<typeof SelectPrimitive.Trigger>;
 
@@ -14,9 +52,34 @@ type TriggerProps = ComponentProps<typeof SelectPrimitive.Trigger>;
  * and body-size text (`text-yorha-base`, same as Input) instead of the raised panel fill and 14px. The open state
  * still inverts to the control fill. Pass `className` to restore the old look.
  */
-function SelectTrigger({ className, children, ...props }: TriggerProps) {
+function SelectTrigger({ className, children, onKeyDown, ref, ...props }: TriggerProps) {
+  const { clearable, required, clear, reset } = useContext(SelectContext);
+  const own = useRef<HTMLButtonElement | null>(null);
+  const resetRef = useRef(reset);
+  resetRef.current = reset;
+  useEffect(() => {
+    const form = own.current?.closest("form");
+    if (!form) return;
+    const onReset = () => resetRef.current();
+    form.addEventListener("reset", onReset);
+    return () => form.removeEventListener("reset", onReset);
+  }, []);
   return (
     <SelectPrimitive.Trigger
+      ref={(el: HTMLButtonElement | null) => {
+        own.current = el;
+        if (typeof ref === "function") ref(el);
+        else if (ref) (ref as { current: HTMLButtonElement | null }).current = el;
+      }}
+      onKeyDown={(event) => {
+        if (clearable && !required && (event.key === "Backspace" || event.key === "Delete") && event.currentTarget.getAttribute("aria-expanded") !== "true") {
+          event.preventBaseUIHandler();
+          event.preventDefault();
+          clear();
+          return;
+        }
+        onKeyDown?.(event);
+      }}
       data-slot="select-trigger"
       className={cnState(
         [
@@ -138,16 +201,20 @@ function SelectItem({ className, children, ...props }: ItemProps) {
   );
 }
 
+// Pixel arrow: one 12px triangle glyph per side (crispEdges, no rotation), stacked in one 12px box and shown by the Base UI arrow's `data-side`.
 const ARROW =
-  "relative block h-1.5 w-3 overflow-clip " +
-  "data-[side=bottom]:top-[-6px] data-[side=top]:bottom-[-6px] data-[side=top]:rotate-180 " +
-  "data-[side=left]:right-[-9px] data-[side=left]:rotate-90 data-[side=right]:left-[-9px] data-[side=right]:-rotate-90 " +
-  "before:absolute before:bottom-0 before:left-1/2 before:size-[calc(6px*1.4142)] before:border before:border-yorha-border " +
-  "before:bg-yorha-panel before:content-[''] before:[transform:translate(-50%,50%)_rotate(45deg)]";
+  "group/arrow block size-3 text-yorha-border data-[side=bottom]:top-[-8px] data-[side=top]:bottom-[-8px] data-[side=left]:right-[-8px] data-[side=right]:left-[-8px]";
 
-/** Pointer from the popup to the trigger. Not shown while the popup aligns over the trigger (`alignItemWithTrigger`). */
+/** Pointer from the popup to the trigger (pixel triangle per side, never rotated). Not shown while the popup aligns over the trigger (`alignItemWithTrigger`). */
 function SelectArrow({ className, ...props }: ComponentProps<typeof SelectPrimitive.Arrow>) {
-  return <SelectPrimitive.Arrow data-slot="select-arrow" className={cnState(ARROW, className)} {...props} />;
+  return (
+    <SelectPrimitive.Arrow data-slot="select-arrow" className={cnState(ARROW, className)} {...props}>
+      <Glyph name="triangle-up" className="absolute inset-0 opacity-0 group-data-[side=bottom]/arrow:opacity-100" />
+      <Glyph name="triangle-down" className="absolute inset-0 opacity-0 group-data-[side=top]/arrow:opacity-100" />
+      <Glyph name="triangle-right" className="absolute inset-0 opacity-0 group-data-[side=left]/arrow:opacity-100" />
+      <Glyph name="triangle-left" className="absolute inset-0 opacity-0 group-data-[side=right]/arrow:opacity-100" />
+    </SelectPrimitive.Arrow>
+  );
 }
 
 // Popup scrims fade with the popover tokens (not the 400ms panel ones); `pointer-events-none` while ending so a click
