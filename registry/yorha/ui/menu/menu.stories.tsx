@@ -421,3 +421,50 @@ export const StatesFilterable: Story = {
     await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull(), { timeout: 5000 });
   },
 };
+
+/** V4-169: `shortcut` renders a KbdCombo and sets `aria-keyshortcuts` (display only; bind the key yourself with `useShortcut`). */
+export const Shortcuts: Story = {
+  render: () => (
+    <Menu>
+      <MenuTrigger>파일</MenuTrigger>
+      <MenuContent>
+        <MenuItem shortcut="mod+S">저장</MenuItem>
+        <MenuItem shortcut="mod+shift+S">다른 이름으로 저장</MenuItem>
+        <MenuItem>닫기</MenuItem>
+      </MenuContent>
+    </Menu>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "파일" }));
+    const menu = await body(canvasElement).findByRole("menu");
+    const save = within(menu).getAllByRole("menuitem", { name: /저장/ })[0]!;
+    await expect(save.getAttribute("aria-keyshortcuts")).toMatch(/^(Meta|Control)\+S$/);
+    await expect(menu.querySelectorAll('[data-slot="kbd-combo"]')).toHaveLength(2);
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull(), { timeout: 5000 });
+  },
+};
+
+/** V4-166 + V4-173: a long menu scrolls inside the available height with a bottom rule until the end; the arrow is a pixel triangle. */
+export const LongWithArrow: Story = {
+  render: () => (
+    <Menu>
+      <MenuTrigger>긴 목록</MenuTrigger>
+      <MenuContent>
+        <MenuArrow />
+        {Array.from({ length: 40 }, (_, i) => (
+          <MenuItem key={i}>항목 {i + 1}</MenuItem>
+        ))}
+      </MenuContent>
+    </Menu>
+  ),
+  play: async ({ canvasElement }) => {
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "긴 목록" }));
+    const menu = await body(canvasElement).findByRole("menu");
+    const scroll = menu.querySelector<HTMLElement>('[data-slot="menu-scroll"]')!;
+    await expect(scroll.scrollHeight).toBeGreaterThan(scroll.clientHeight);
+    await expect(menu.querySelector('[data-slot="menu-arrow"] svg')).not.toBeNull();
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(body(canvasElement).queryByRole("menu")).toBeNull(), { timeout: 5000 });
+  },
+};

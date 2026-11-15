@@ -23,7 +23,7 @@
           "target": "@ui/context-menu.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose ContextMenu, ContextMenuTrigger (focusable area: give it aria-label or text), ContextMenuContent, ContextMenuItem, ContextMenuLinkItem, ContextMenuSeparator, ContextMenuSub + ContextMenuSubTrigger, ContextMenuCheckboxItem, ContextMenuRadioGroup + ContextMenuRadioItem, ContextMenuGroup + ContextMenuLabel, ContextMenuShortcut. Styles are self-contained (no menu item needed). Popup uses yorha-pop."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose ContextMenu, ContextMenuTrigger (focusable area: give it aria-label or text), ContextMenuContent, ContextMenuItem, ContextMenuLinkItem, ContextMenuSeparator, ContextMenuSub + ContextMenuSubTrigger, ContextMenuCheckboxItem, ContextMenuRadioGroup + ContextMenuRadioItem, ContextMenuGroup + ContextMenuLabel, ContextMenuShortcut. Styles are self-contained (no menu item needed). Popup uses yorha-pop. V4: scroll body with cue, pixel arrow, shortcut prop (display only), -webkit-touch-callout none on the trigger."
     }
   ]
 }

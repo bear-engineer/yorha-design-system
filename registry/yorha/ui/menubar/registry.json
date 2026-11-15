@@ -21,7 +21,7 @@
           "target": "@ui/menubar.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Menubar > MenubarMenu > MenubarTrigger + MenubarContent with MenubarItem, MenubarSub, MenubarCheckboxItem and friends (aliases of the Menu parts)."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose Menubar > MenubarMenu > MenubarTrigger + MenubarContent with MenubarItem, MenubarSub, MenubarCheckboxItem and friends (aliases of the Menu parts). V4: F10 focuses the first enabled trigger."
     }
   ]
 }

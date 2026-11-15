@@ -288,3 +288,13 @@ export const PopupMotionMatchesMenu: Story = {
     }
   },
 };
+
+/** V4-170: F10 focuses the first enabled trigger. */
+export const F10FocusesBar: Story = {
+  play: async ({ canvasElement }) => {
+    (document.activeElement as HTMLElement | null)?.blur();
+    await userEvent.keyboard("{F10}");
+    const first = canvasElement.querySelector<HTMLElement>('[data-slot="menubar-trigger"]')!;
+    await expect(document.activeElement).toBe(first);
+  },
+};

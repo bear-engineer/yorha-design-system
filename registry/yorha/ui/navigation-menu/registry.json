@@ -22,7 +22,7 @@
           "target": "@ui/navigation-menu.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose NavigationMenu > NavigationMenuList > NavigationMenuItem > NavigationMenuTrigger + NavigationMenuContent, or an Item with a NavigationMenuLink. The shared popup (Portal, Positioner, Popup, Arrow, Viewport) is rendered by NavigationMenu; pass viewport={false} to place NavigationMenuViewport yourself. Use render={<NavLink to=... />} on NavigationMenuLink (install @yorha/nav-link). Reduced motion: no morph or slide."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Compose NavigationMenu > NavigationMenuList > NavigationMenuItem > NavigationMenuTrigger + NavigationMenuContent, or an Item with a NavigationMenuLink. The shared popup (Portal, Positioner, Popup, Arrow, Viewport) is rendered by NavigationMenu; pass viewport={false} to place NavigationMenuViewport yourself. Use render={<NavLink to=... />} on NavigationMenuLink (install @yorha/nav-link). Reduced motion: no morph or slide. V4: popup uses the stepped yorha-pop reveal, pixel arrow; delay and closeDelay (ms, default 50) hover timing props on the root."
     }
   ]
 }
