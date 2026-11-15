@@ -1575,7 +1575,7 @@ export function TimelineGraph({
                         </>
                       ) : null}
                       {b.labelOutside ? (
-                        <span data-part="item-label-out" aria-hidden="true" className="pointer-events-none absolute top-1/2 left-full ml-1 -translate-y-1/2 bg-yorha-bg px-0.5 text-yorha-xs leading-4 whitespace-nowrap text-yorha-fg">
+                        <span data-part="item-label-out" aria-hidden="true" title={n.title} className="pointer-events-none absolute top-1/2 left-full ml-1 -translate-y-1/2 truncate bg-yorha-bg px-0.5 text-yorha-xs leading-4 whitespace-nowrap text-yorha-fg" style={{ maxWidth: Math.max(0, canvasW - b.left - b.width - 4) }}>
                           {n.title}
                         </span>
                       ) : null}
