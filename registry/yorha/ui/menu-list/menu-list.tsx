@@ -181,7 +181,8 @@ export interface MenuListItemProps extends Omit<React.HTMLAttributes<HTMLElement
 
 const ROW = cn(
   "group relative flex min-h-row w-full cursor-pointer items-center gap-2 py-1 pl-2 pr-3 text-left text-yorha-base uppercase tracking-yorha-wide text-yorha-fg",
-  "border-y-[length:var(--menu-rule)] border-solid border-transparent",
+  // Every row draws a 1px bottom rule; the top edge is reserved (transparent) so selecting never shifts anything.
+  "border-y-[length:var(--menu-rule)] border-solid border-t-transparent border-b-yorha-border",
   "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-no-repeat [background-size:0%_100%]",
   "yorha-stream",
   "data-[selected]:text-yorha-on-ink data-[selected]:border-yorha-ink data-[selected]:[background-size:100%_100%]",

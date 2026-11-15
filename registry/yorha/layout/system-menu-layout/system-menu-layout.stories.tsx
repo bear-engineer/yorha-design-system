@@ -78,8 +78,7 @@ const SECTIONS: SystemMenuSection[] = [
 function Screen({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-[480px] w-[880px] max-w-full flex-col border border-yorha-border bg-yorha-bg text-yorha-fg shadow-yorha-md">
-      {/* Every list row gets the same 1px rule (selected and disabled rows keep their own state colour). */}
-      <div className="flex-1 p-6 [&_[data-menu-item]:not([data-selected],[data-disabled])]:border-yorha-border">{children}</div>
+      <div className="flex-1 p-6">{children}</div>
       <footer className="flex items-center gap-4 border-t border-yorha-border px-6 py-2 text-yorha-xs text-yorha-fg-muted">
         <span><Kbd>↑</Kbd> <Kbd>↓</Kbd> 이동</span>
         <span><Kbd>Enter</Kbd> 선택</span>
@@ -195,6 +194,7 @@ function RouteTabs() {
 
 /** 탭 하나가 라우트 하나. 경로가 바뀌면 선택된 탭이 따라간다. */
 export const RouteSync: Story = {
+  tags: ["!autodocs"],
   decorators: [withRouter],
   parameters: { route: { initialEntries: ["/items"], routes: [{ path: "/*", element: <RouteTabs /> }] } },
   play: async ({ canvasElement }) => {
