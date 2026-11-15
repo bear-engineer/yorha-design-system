@@ -19,7 +19,7 @@
           "target": "@ui/icons.tsx"
         }
       ],
-      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Icons render through @ui/glyph and are decorative (aria-hidden); put them in a `grid place-items-center` box and label the control, not the icon."
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Icons render through @ui/glyph and are decorative (aria-hidden); put them in a `grid place-items-center` box and label the control, not the icon. v4 migration: no strokes any more, so `strokeWidth`/`stroke`/`solid` have no effect; the svg is `display:block`."
     }
   ]
 }

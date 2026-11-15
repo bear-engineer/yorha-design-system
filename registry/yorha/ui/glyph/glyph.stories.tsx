@@ -54,10 +54,10 @@ export const Gallery: Story = {
       {THEMES.map((t) => (
         <section key={t} data-theme={t} className="bg-yorha-panel p-4 text-yorha-fg">
           <h3 className="mb-2 text-yorha-sm">{t}</h3>
-          <ul className="grid grid-cols-[repeat(auto-fill,minmax(10rem,1fr))] gap-x-4 gap-y-3">
+          <ul className="grid grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] gap-x-4 gap-y-3">
             {GLYPH_NAMES.map((name) => (
-              <li key={name} className="flex items-center gap-2 text-yorha-xs">
-                <span className="flex items-end gap-2">
+              <li key={name} className="flex flex-col items-start gap-1 text-yorha-xs">
+                <span className="flex flex-wrap items-end gap-2">
                   {BOXES.filter((b) => b >= nativeBox(name)).flatMap((b) => [1, 2].map((s) => <Glyph key={`${b}${s}`} name={name} box={b} scale={s as 1 | 2} />))}
                 </span>
                 <code>{name}</code>
