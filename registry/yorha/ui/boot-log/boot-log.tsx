@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState, type HTMLAttributes } from "react";
+import { useEffect, useRef, useState, type HTMLAttributes, type KeyboardEvent } from "react";
+import { Glyph, type GlyphName } from "@/components/ui/glyph";
+import { Glitch } from "@/components/ui/decipher";
 import { Typer, useInstantMotion } from "@/components/ui/typer";
 import { cn } from "@/lib/utils";
 
@@ -36,6 +38,9 @@ const TAG: Record<BootStatus, { label: string; className: string }> = {
   info: { label: "INFO", className: "text-yorha-fg-soft" },
 };
 
+// Status marks are a glyph plus the text tag, never colour alone (V4-266).
+const STATUS_GLYPH: Record<BootStatus, GlyphName> = { ok: "check", warn: "alert", fail: "cross", info: "info" };
+
 function stampsOf(lines: readonly BootLogLine[]): number[] {
   let t = 0;
   return lines.map((line, i) => {
@@ -52,9 +57,22 @@ function formatStamp(ms: number): string {
 const controlClass =
   "inline-flex h-control-sm items-center border border-yorha-border px-pad-sm text-yorha-sm text-yorha-fg hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus yorha-disabled";
 
+/** A fault line: shown at once through Glitch, once. Reports done on mount so the run moves on (V4-263). */
+function FaultLine({ text, onDone }: { text: string; onDone: () => void }) {
+  const doneRef = useRef(onDone);
+  useEffect(() => {
+    doneRef.current = onDone;
+  });
+  useEffect(() => {
+    doneRef.current();
+  }, []);
+  return <Glitch text={text} className="whitespace-pre-wrap" />;
+}
+
 /**
- * Boot sequence: lines are typed one after another. Only the visible lines are mounted; the
- * log is a polite live region, and controls appear when the whole run would exceed 5 s.
+ * Boot sequence: lines are typed one after another. Every line is mounted from the first frame; lines not yet
+ * reached are hidden (visibility), so the final height is reserved (V4-260). A click or any key on the focused
+ * log skips the run. Controls appear when the whole run would exceed 5 s. The log is a polite live region.
  * Reduced or off motion prints every line at once with no controls.
  */
 function BootLog({ lines, speed = DEFAULT_SPEED, gap = DEFAULT_GAP, label = "부팅 로그", sound = false, onComplete, className, ...props }: BootLogProps) {
@@ -68,6 +86,7 @@ function BootLog({ lines, speed = DEFAULT_SPEED, gap = DEFAULT_GAP, label = "부
   const all = instant || skipped;
   const visible = all ? total : Math.min(shown, total);
   const finished = visible >= total && (all || lineDone);
+  const doneUpTo = all ? total : lineDone ? visible : Math.max(0, visible - 1);
 
   useEffect(() => {
     if (paused || all || !lineDone || shown >= total) return;
@@ -89,27 +108,60 @@ function BootLog({ lines, speed = DEFAULT_SPEED, gap = DEFAULT_GAP, label = "부
     onCompleteRef.current?.();
   }, [finished]);
 
+  const skip = () => {
+    if (!finished) setSkipped(true);
+  };
+  const onLogKey = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (finished) return;
+    e.preventDefault();
+    skip();
+  };
+
   const stamps = stampsOf(lines);
   const runMs = lines.reduce((sum, line) => sum + Array.from(line.text).length, 0) * speed + Math.max(0, total - 1) * gap;
   const longRun = !instant && runMs > LONG_RUN_MS;
 
   return (
     <div data-slot="boot-log" className={cn("flex flex-col gap-3", className)} {...props}>
-      <div role="log" aria-label={label} aria-live="polite" aria-relevant="additions" className="flex flex-col gap-1">
-        {lines.slice(0, visible).map((line, i) => {
+      <div
+        role="log"
+        aria-label={label}
+        aria-live="polite"
+        aria-relevant="additions"
+        tabIndex={finished ? undefined : 0}
+        onClick={skip}
+        onKeyDown={onLogKey}
+        className="flex flex-col gap-1 focus-visible:yorha-focus"
+      >
+        {lines.map((line, i) => {
           const status = line.status ?? "info";
+          const hidden = i >= visible;
           return (
-            <div key={i} data-slot="boot-log-line" data-status={status} className="flex gap-3">
+            <div
+              key={i}
+              data-slot="boot-log-line"
+              data-status={status}
+              data-done={i < doneUpTo ? "" : undefined}
+              className={cn("flex gap-3", hidden && "invisible")}
+            >
               <span className="shrink-0 tabular-nums text-yorha-fg-soft">[{formatStamp(stamps[i] ?? 0)}]</span>
-              <span className={cn("shrink-0", TAG[status].className)}>[{TAG[status].label}]</span>
-              <Typer
-                text={line.text}
-                speed={speed}
-                paused={paused}
-                revealAll={all}
-                sound={sound}
-                onComplete={i === visible - 1 ? () => setLineDone(true) : undefined}
-              />
+              <span className={cn("inline-flex shrink-0 items-center gap-1.5", TAG[status].className)}>
+                <Glyph name={STATUS_GLYPH[status]} />
+                [{TAG[status].label}]
+              </span>
+              {status === "fail" ? (
+                !hidden && <FaultLine text={line.text} onDone={i === visible - 1 ? () => setLineDone(true) : () => {}} />
+              ) : (
+                <Typer
+                  text={line.text}
+                  speed={speed}
+                  paused={paused || hidden}
+                  revealAll={all}
+                  sound={sound}
+                  caret={i === visible - 1}
+                  onComplete={i === visible - 1 ? () => setLineDone(true) : undefined}
+                />
+              )}
             </div>
           );
         })}

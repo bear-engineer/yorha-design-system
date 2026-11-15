@@ -1,4 +1,4 @@
-import type { ComponentProps, HTMLAttributes, ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type ComponentProps, type HTMLAttributes, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 // Measure, paragraph gap and body leading come from base (.yorha-prose, --yorha-measure, --yorha-paragraph-gap).
@@ -46,9 +46,44 @@ export interface ProseTableProps extends ComponentProps<"table"> {
  * so keyboard users can scroll a wide table. Numerals use tabular figures.
  */
 export function ProseTable({ label, caption, className, children, ...rest }: ProseTableProps) {
+  const regionRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<HTMLTableElement>(null);
+  const [overflowing, setOverflowing] = useState(false);
+
+  // The region is a tab stop only while the table is wider than it (V4-264).
+  useLayoutEffect(() => {
+    const region = regionRef.current;
+    const table = tableRef.current;
+    if (!region || !table) return;
+    const measure = () => setOverflowing(region.scrollWidth > region.clientWidth + 1);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(region);
+    ro.observe(table);
+    return () => ro.disconnect();
+  }, []);
+
+  // Dev only: a <th> without scope is ambiguous for screen readers (V4-268).
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+    const table = tableRef.current;
+    if (!table) return;
+    const bad = Array.from(table.querySelectorAll("th")).filter((th) => !th.hasAttribute("scope"));
+    if (bad.length > 0) console.warn(`ProseTable "${label}": ${bad.length} <th> without scope. Add scope="col" or scope="row".`);
+  }, [label]);
+
   return (
-    <div role="region" aria-label={label} tabIndex={0} className="yorha-scroll-cue-x my-4 w-full overflow-x-auto rounded-yorha">
+    <div
+      ref={regionRef}
+      data-slot="prose-table-scroll"
+      data-overflow={overflowing ? "" : undefined}
+      role="region"
+      aria-label={label}
+      tabIndex={overflowing ? 0 : undefined}
+      className="yorha-scroll-cue-x my-4 w-full overflow-x-auto rounded-yorha"
+    >
       <table
+        ref={tableRef}
         className={cn(
           "yorha-tabular w-full border-collapse text-left text-yorha-sm",
           "[&_th]:border-b [&_th]:border-yorha-border [&_th]:px-2 [&_th]:py-1.5 [&_th]:font-yorha-bold [&_th]:whitespace-nowrap",

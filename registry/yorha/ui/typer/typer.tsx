@@ -15,6 +15,8 @@ export interface TyperProps extends Omit<HTMLAttributes<HTMLSpanElement>, "child
   onComplete?: () => void;
   /** Plays the typing-tick cue per revealed character. Off by default; needs a YorhaProvider. */
   sound?: boolean;
+  /** Block caret after the typed text. Solid while typing; blinks 6 times once the reveal is done. Default true. */
+  caret?: boolean;
 }
 
 const DEFAULT_SPEED = 35;
@@ -69,8 +71,12 @@ function TypingTick({ count, enabled }: { count: number; enabled: boolean }) {
   return null;
 }
 
-/** Typing reveal: the full text is a visually hidden node; the typed portion is aria-hidden. */
-function Typer({ text, speed = DEFAULT_SPEED, paused = false, revealAll = false, onComplete, sound = false, className, ...props }: TyperProps) {
+/**
+ * Typing reveal. The final text reserves the box from the first frame: an invisible copy sits in the same grid cell
+ * as the typed text, so the height never changes while typing (V4-261). The full text is also a visually hidden node,
+ * and the typed portion is aria-hidden.
+ */
+function Typer({ text, speed = DEFAULT_SPEED, paused = false, revealAll = false, onComplete, sound = false, caret = true, className, ...props }: TyperProps) {
   const chars = Array.from(text);
   const total = chars.length;
   const instant = useInstantMotion();
@@ -98,12 +104,15 @@ function Typer({ text, speed = DEFAULT_SPEED, paused = false, revealAll = false,
   }, [done, text]);
 
   return (
-    <span data-slot="typer" data-state={done ? "done" : "typing"} className={cn("whitespace-pre-wrap", className)} {...props}>
+    <span data-slot="typer" data-state={done ? "done" : "typing"} className={cn("inline-grid whitespace-pre-wrap", className)} {...props}>
       <span className="sr-only">{text}</span>
-      <span aria-hidden="true" data-yorha-typed="">
-        {chars.slice(0, shown).join("")}
+      <span aria-hidden="true" data-yorha-reserve="" className="invisible [grid-area:1/1]">
+        {text}
       </span>
-      {!done && <span aria-hidden="true" data-yorha-caret="" className="ml-px inline-block h-[1em] w-2 align-[-2px] bg-yorha-fg-strong" />}
+      <span aria-hidden="true" data-yorha-typed="" className="[grid-area:1/1]">
+        {chars.slice(0, shown).join("")}
+        {caret && <span data-yorha-caret="" data-blink={done && !instant ? "" : undefined} className="yorha-caret" />}
+      </span>
       {sound && <TypingTick count={tickCount(chars, shown)} enabled={!instant && !paused} />}
     </span>
   );

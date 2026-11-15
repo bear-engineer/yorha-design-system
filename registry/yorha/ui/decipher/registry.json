@@ -10,16 +10,22 @@
       "registryDependencies": [
         "@yorha/base",
         "@yorha/utils",
-        "@yorha/yorha-provider"
+        "@yorha/yorha-provider",
+        "@yorha/fx"
       ],
       "files": [
         {
           "path": "decipher.tsx",
           "type": "registry:ui",
           "target": "@ui/decipher.tsx"
+        },
+        {
+          "path": "glitch.tsx",
+          "type": "registry:ui",
+          "target": "@ui/glitch.tsx"
         }
       ],
-      "docs": "Unofficial fan project. Runs once on mount and whenever `text` changes. Reads data-motion on <html>: reduced/off renders the final text synchronously."
+      "docs": "Unofficial fan project. Runs once on mount and whenever `text` changes; `trigger=\"inview\"` runs once when first visible (idle before). Reads data-motion on <html>: reduced/off renders the final text synchronously. Also ships `Glitch` (one-shot RGB channel-split on display text, string only, `replay()` ref handle, 1 s lockout).\n\nMigration (v4): Decipher gained `trigger` and `data-state` (idle | running | done); no prop was removed. Glitch is new: use it for system-fault display text only, never on text the user reads or types."
     }
   ]
 }

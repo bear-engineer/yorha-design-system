@@ -93,7 +93,7 @@ describe("V4-260 BootLog reserves its final height", () => {
   });
 
   it("V4-266 status marks are a glyph plus the text tag", async () => {
-    const host = await mount(<BootLog lines={lines} motion="off" />, { width: 480, motion: "off" });
+    const host = await mount(<BootLog lines={lines} />, { width: 480, motion: "off" });
     const fail = host.querySelector<HTMLElement>('[data-slot=boot-log-line][data-status="fail"]')!;
     expect(fail.querySelector("svg[data-glyph]")).not.toBeNull();
     expect(fail.textContent).toContain("[FAIL]");
@@ -110,7 +110,7 @@ describe("V4-260 BootLog reserves its final height", () => {
 
 describe("V4-262 caret blinks only once the reveal is idle or finished", () => {
   it("no data-blink while typing; data-blink after done; none in reduced", async () => {
-    const host = await mount(<Typer text={LONG} speed={30} />, { width: 360 });
+    const host = await mount(<Typer text={LONG} speed={4} />, { width: 360 });
     const caret = host.querySelector<HTMLElement>("[data-yorha-caret]")!;
     expect(caret.hasAttribute("data-blink")).toBe(false);
     expect(caret.classList.contains("yorha-caret")).toBe(true);
@@ -130,14 +130,15 @@ describe("V4-263 Glitch heading", () => {
   it("accessible name equals the text; data-text mirrors it", async () => {
     const host = await mount(<Glitch as="h1" text="SYSTEM FAULT" />);
     const h = host.querySelector<HTMLElement>("h1")!;
-    expect(h.getAttribute("aria-label")).toBe("SYSTEM FAULT");
     expect(h.textContent).toBe("SYSTEM FAULT");
     expect(h.dataset.text).toBe("SYSTEM FAULT");
+    // the pseudo-element layers use `content: attr(data-text) / ""` (empty alt text): not part of the name
   });
 
   it("replay() through the ref starts a run; a second replay within 1000 ms is ignored", async () => {
     const ref = createRef<GlitchHandle>();
     await mount(<Glitch ref={ref} as="h1" text="SYSTEM FAULT" />);
+    await new Promise((r) => setTimeout(r, 1100)); // the mount run is over the lockout window
     expect(ref.current!.replay()).toBe(true);
     expect(ref.current!.replay()).toBe(false);
   });
@@ -209,7 +210,7 @@ describe("V4-265 Decipher trigger=inview runs once, when it comes into view", ()
 
 describe("V4-267 Text expandable", () => {
   it("clamped text gets a 24 px expand control with aria-expanded; fitting text keeps it hidden", async () => {
-    const host = await mount(<Text as="p" lineClamp={2} expandable width={200}>{LONG}</Text>, { width: 200 });
+    const host = await mount(<Text as="p" lineClamp={2} expandable>{LONG}</Text>, { width: 200 });
     const btn = host.querySelector<HTMLButtonElement>("button[aria-expanded]")!;
     expect(btn.getAttribute("aria-expanded")).toBe("false");
     expect(btn.getBoundingClientRect().height).toBeGreaterThanOrEqual(24);

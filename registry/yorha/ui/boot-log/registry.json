@@ -11,7 +11,9 @@
         "@yorha/utils",
         "@yorha/base",
         "@yorha/typer",
-        "@yorha/sound"
+        "@yorha/sound",
+        "@yorha/glyph",
+        "@yorha/decipher"
       ],
       "files": [
         {

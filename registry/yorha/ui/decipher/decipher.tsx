@@ -3,6 +3,8 @@ import * as React from "react";
 import { MAX_FLASH_HZ } from "@/components/yorha-provider";
 import { cn } from "@/lib/utils";
 
+export { Glitch, type GlitchHandle, type GlitchProps } from "./glitch";
+
 const POOLS = {
   hangul: Array.from("가나다라마바사아자차카타파하고노도로모보소오조초코토포호구누두루무부수우주추쿠투푸후"),
   katakana: Array.from("アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン"),
@@ -78,6 +80,8 @@ function initial(text: string, graphemes: string[], animate: boolean): RunState 
 export interface DecipherProps extends Omit<React.ComponentProps<"span">, "children"> {
   /** Final text. Always exposed to assistive tech. */
   text: string;
+  /** `mount` (default) runs on mount; `inview` runs once when the element first scrolls into view (idle until then). */
+  trigger?: "mount" | "inview";
 }
 
 /**
@@ -87,13 +91,33 @@ export interface DecipherProps extends Omit<React.ComponentProps<"span">, "child
  * wrapping, so a wide scramble glyph can neither widen the box nor push a line over. Latin
  * words stay in one nowrap group so line breaks match plain text.
  */
-export function Decipher({ text, className, ...props }: DecipherProps) {
+export function Decipher({ text, trigger = "mount", className, ...props }: DecipherProps) {
   const graphemes = React.useMemo(() => splitGraphemes(text), [text]);
+  const rootRef = React.useRef<HTMLSpanElement>(null);
+  const [started, setStarted] = React.useState(trigger === "mount");
   const [state, setState] = React.useState<RunState>(() =>
     initial(text, graphemes, motionAllowsAnimation()),
   );
 
+  React.useEffect(() => {
+    if (trigger !== "inview" || started) return;
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setStarted(true);
+      return;
+    }
+    const io = new IntersectionObserver((entries) => {
+      if (entries.some((e) => e.isIntersecting)) {
+        setStarted(true);
+        io.disconnect();
+      }
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [trigger, started]);
+
   React.useLayoutEffect(() => {
+    if (!started) return;
     if (!motionAllowsAnimation()) {
       setState({ text, revealed: graphemes.length, glyphs: graphemes });
       return;
@@ -118,9 +142,16 @@ export function Decipher({ text, className, ...props }: DecipherProps) {
       if (revealed >= n) window.clearInterval(id);
     }, step);
     return () => window.clearInterval(id);
-  }, [text, graphemes]);
+  }, [text, graphemes, started]);
 
-  const current = state.text === text ? state : initial(text, graphemes, false);
+  // Idle (inview, not yet visible): resting glyphs only, the final text is not shown yet.
+  const idle = trigger === "inview" && !started && motionAllowsAnimation();
+  const current = idle
+    ? { text, revealed: 0, glyphs: restingGlyphs(graphemes) }
+    : state.text === text
+      ? state
+      : initial(text, graphemes, false);
+  const dataState = idle ? "idle" : current.revealed >= graphemes.length ? "done" : "running";
   const shown = graphemes.map((g, i) => (i < current.revealed ? g : (current.glyphs[i] ?? g)));
 
   const nodes: React.ReactNode[] = [];
@@ -158,7 +189,7 @@ export function Decipher({ text, className, ...props }: DecipherProps) {
   flush(graphemes.length);
 
   return (
-    <span className={cn("relative inline-block whitespace-pre-wrap", className)} {...props}>
+    <span ref={rootRef} data-slot="decipher" data-state={dataState} className={cn("relative inline-block whitespace-pre-wrap", className)} {...props}>
       <span className="sr-only">{text}</span>
       <span
         aria-hidden="true"
