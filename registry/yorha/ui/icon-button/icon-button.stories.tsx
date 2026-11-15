@@ -161,3 +161,15 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+export const TooltipFromLabel: Story = {
+  name: "Tooltip (V4-087)",
+  args: { "aria-label": "복사", shortcut: "C" },
+  play: async ({ canvasElement }) => {
+    const btn = within(canvasElement).getByRole("button", { name: "복사" });
+    await userEvent.hover(btn);
+    const tip = await within(document.body).findByRole("tooltip", undefined, { timeout: 3000 });
+    await expect(tip).toHaveTextContent("복사");
+    await expect(btn).not.toHaveAttribute("aria-describedby");
+  },
+};

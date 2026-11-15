@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
-import { Kbd } from "./kbd";
+import { Kbd, KbdCombo } from "./kbd";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -66,5 +66,15 @@ export const Authentic: Story = {
   ),
   play: async ({ canvasElement }) => {
     await expect(canvasElement.querySelectorAll("kbd")).toHaveLength(2);
+  },
+};
+
+export const ModCombo: Story = {
+  name: "KbdCombo (V4-091)",
+  render: () => <KbdCombo keys={["mod", "shift", "K"]} />,
+  play: async ({ canvasElement }) => {
+    const keys = [...canvasElement.querySelectorAll("kbd")].map((k) => k.textContent);
+    await expect(keys).toHaveLength(3);
+    await expect(keys.at(-1)).toBe("K");
   },
 };

@@ -238,3 +238,25 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+export const AsyncResult: Story = {
+  name: "Promise onClick (V4-085)",
+  render: () => {
+    const save = () => new Promise<void>((r) => setTimeout(r, 300));
+    return (
+      <div lang="ko" className="flex gap-3 bg-yorha-panel p-6 text-yorha-fg">
+        <Button onClick={save}>저장</Button>
+        <Button variant="danger" result="error">실패 상태</Button>
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const btn = within(canvasElement).getByRole("button", { name: "저장" });
+    const before = btn.getBoundingClientRect().width;
+    await userEvent.click(btn);
+    await expect(btn).toHaveAttribute("aria-busy", "true");
+    await waitFor(() => expect(btn).toHaveAttribute("data-result", "success"));
+    await expect(btn.getBoundingClientRect().width).toBe(before);
+    await waitFor(() => expect(btn).not.toHaveAttribute("data-result"), { timeout: 3000 });
+  },
+};

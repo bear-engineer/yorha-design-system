@@ -1,7 +1,8 @@
 import { expectTargetSize } from "../../../../.storybook/preview";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
-import { Chip } from "./chip";
+import { useState } from "react";
+import { Chip, ChipGroup } from "./chip";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -105,5 +106,26 @@ export const States: Story = {
     await expect(c.getByRole("button", { name: /선택형/ })).toHaveAttribute("aria-pressed", "false");
     await expect(c.getByRole("button", { name: /선택됨/ })).toHaveAttribute("aria-pressed", "true");
     await expectTargetSize(canvasElement);
+  },
+};
+
+export const Group: Story = {
+  name: "ChipGroup (V4-090)",
+  render: () => {
+    const [items, setItems] = useState(["가", "나", "다"]);
+    return (
+      <ChipGroup aria-label="태그">
+        {items.map((l) => (
+          <Chip key={l} label={l} onRemove={() => setItems((s) => s.filter((x) => x !== l))} />
+        ))}
+      </ChipGroup>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.tab();
+    await userEvent.keyboard("{ArrowRight}{Delete}");
+    await expect(c.queryByRole("group", { name: "나" })).toBeNull();
+    await expect(c.getByRole("group", { name: "다" })).toHaveFocus();
   },
 };

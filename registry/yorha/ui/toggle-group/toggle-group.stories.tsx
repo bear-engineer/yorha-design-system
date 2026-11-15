@@ -79,7 +79,7 @@ export const KeyboardHorizontal: Story = {
     await userEvent.keyboard(" ");
     await expect(pressed()).toEqual(["오른쪽"]);
     await userEvent.keyboard("{Enter}");
-    await expect(pressed()).toEqual([]);
+    await expect(pressed()).toEqual(["오른쪽"]); // V4-089: required (default) keeps one pressed
   },
 };
 
@@ -143,5 +143,27 @@ export const States: Story = {
     await expect(buttons.some((b) => b.getAttribute("aria-pressed") === "true")).toBe(true);
     await expect(buttons.some((b) => b.hasAttribute("disabled") || b.getAttribute("aria-disabled") === "true")).toBe(true);
     await expectTargetSize(canvasElement);
+  },
+};
+
+export const RequiredSingle: Story = {
+  name: "required (V4-089)",
+  render: () => (
+    <div lang="ko" className="flex flex-col gap-4 bg-yorha-panel p-6 text-yorha-fg">
+      <Demo defaultValue={["left"]} />
+      <ToggleGroup aria-label="필터" required={false} defaultValue={["a"]}>
+        <ToggleGroupItem value="a">A</ToggleGroupItem>
+        <ToggleGroupItem value="b">B</ToggleGroupItem>
+      </ToggleGroup>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const left = c.getByRole("button", { name: "왼쪽" });
+    await userEvent.click(left);
+    await expect(left).toHaveAttribute("aria-pressed", "true");
+    const a = c.getByRole("button", { name: "A" });
+    await userEvent.click(a);
+    await expect(a).toHaveAttribute("aria-pressed", "false");
   },
 };

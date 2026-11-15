@@ -127,7 +127,7 @@ export interface ButtonProps extends Omit<ComponentProps<typeof BaseButton>, "on
    * May return a Promise: the button then blocks re-entry while it is pending (busy bar, aria-busy), shows a `check` (resolved) or
    * `alert` (rejected) glyph in a trailing cell for 1200ms and announces "완료" / "실패" politely. The size never changes.
    */
-  onClick?: (event: MouseEvent<HTMLButtonElement>) => void | Promise<unknown>;
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => unknown;
   /** Controlled result mark (same cell and announcement as the Promise path). `loading` still wins. */
   result?: ButtonResult | null;
   /** Shows a pulsing 2px busy bar on the bottom inner edge (the size never changes), keeps the label, blocks activation, no wipe or press scale. */

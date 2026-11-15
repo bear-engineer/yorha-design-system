@@ -37,6 +37,7 @@ export const Alert: Story = {
     await expect(badge).toHaveAttribute("data-variant", "alert");
     // shape cue: alert carries a non-colour marker, so state is not conveyed by colour alone
     await expect(badge).toHaveAttribute("data-shape", "diamond");
+    await expect(badge.querySelector("svg[data-glyph=diamond]")).not.toBeNull(); // V4-092: a glyph, not a rotated square
     await expect(badge.querySelector('[aria-hidden="true"]')).not.toBeNull();
   },
 };

@@ -6,11 +6,15 @@
       "type": "registry:ui",
       "title": "IconButton",
       "description": "Square icon-only button; aria-label is required by its type. Same variants and sizes as Button.",
-      "dependencies": [],
+      "dependencies": [
+        "@base-ui/react@^1.9.0"
+      ],
       "registryDependencies": [
         "@yorha/utils",
         "@yorha/base",
-        "@yorha/button"
+        "@yorha/button",
+        "@yorha/tooltip",
+        "@yorha/kbd"
       ],
       "files": [
         {
