@@ -336,3 +336,45 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+/** v4: clear button, ArrowUp/Down (day) and Shift+Arrow / PageUp / PageDown (month) in the text field. */
+export const ClearAndKeys: Story = {
+  render: () => <DatePicker label="출발일" name="start" today={TODAY} defaultValue={TODAY} />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const input = c.getByRole("textbox", { name: "출발일" }) as HTMLInputElement;
+    const hidden = () => (canvasElement.querySelector("input[type=hidden]") as HTMLInputElement).value;
+    input.focus();
+    await userEvent.keyboard("{ArrowUp}");
+    await waitFor(() => expect(hidden()).toBe("2026-11-15"));
+    await userEvent.keyboard("{Shift>}{ArrowDown}{/Shift}");
+    await waitFor(() => expect(hidden()).toBe("2026-10-15"));
+    await userEvent.click(c.getByRole("button", { name: "지우기" }));
+    await waitFor(() => expect(input).toHaveValue(""));
+    await expect(hidden()).toBe("");
+    await expect(input).toHaveFocus();
+  },
+};
+
+/** v4: `required` blocks submit itself, marks the field invalid and focuses the text field; form reset restores the default. */
+export const RequiredInForm: Story = {
+  render: () => (
+    <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4">
+      <DatePicker label="출발일" name="start" required today={TODAY} />
+      <div className="flex gap-2">
+        <button type="submit" className="border border-yorha-border px-3 py-1">보내기</button>
+        <button type="reset" className="border border-yorha-border px-3 py-1">초기화</button>
+      </div>
+    </form>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "보내기" }));
+    const input = c.getByRole("textbox", { name: "출발일" });
+    await waitFor(() => expect(c.getByRole("alert")).toBeInTheDocument());
+    await expect(input).toHaveFocus();
+    await expect(input).toHaveAttribute("aria-invalid", "true");
+    await userEvent.click(c.getByRole("button", { name: "초기화" }));
+    await waitFor(() => expect(c.queryByRole("alert")).toBeNull());
+  },
+};

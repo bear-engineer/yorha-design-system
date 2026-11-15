@@ -206,3 +206,15 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+/** v4: `picker="auto"` (default) = kit Calendar on fine pointers, native picker on coarse pointers; focus a segment to see the ink block. */
+export const PickerAuto: Story = {
+  args: { label: "출발일", today: TODAY, defaultValue: "2026-11-14" },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "달력 열기" }));
+    await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  },
+};
