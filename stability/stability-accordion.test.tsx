@@ -34,17 +34,32 @@ async function setup(motion: "full" | "reduced") {
 }
 
 test("accordion: panel height animates smoothly, clicked trigger stays put (full motion)", async () => {
+  // V4-182: frame polling flaked once under load (1 of 3 runs). Drive the transition through getAnimations()/currentTime instead: deterministic.
   try {
     const { root, triggers } = await setup("full");
     const open = triggers[0]!;
     const panel = root.querySelector<HTMLElement>("[data-slot=accordion-panel]")!;
     const full = panel.getBoundingClientRect().height;
     expect(full).toBeGreaterThan(8);
-    const { hs, ys } = await heights(panel, open, () => userEvent.click(open));
-    const mid = hs.filter((h) => h > 1 && h < full - 1);
-    expect(mid.length, `no intermediate heights: ${hs.join(",")}`).toBeGreaterThan(1);
-    expect(Math.min(...hs)).toBeLessThan(1);
-    expect(Math.max(...ys) - Math.min(...ys), "clicked trigger moved").toBeLessThan(0.5);
+    const y0 = open.getBoundingClientRect().y;
+    await userEvent.click(open); // close
+    await frame();
+    const anim = panel.getAnimations().find((a) => (a as CSSTransition).transitionProperty === "height") as CSSTransition | undefined;
+    expect(anim, "no height transition on the panel").toBeDefined();
+    const total = Number(anim!.effect!.getComputedTiming().endTime);
+    expect(total).toBeGreaterThan(100);
+    anim!.pause();
+    const seen: number[] = [];
+    for (const f of [0.05, 0.15, 0.4]) {
+      anim!.currentTime = total * f;
+      seen.push(panel.getBoundingClientRect().height);
+      expect(Math.abs(open.getBoundingClientRect().y - y0), "clicked trigger moved").toBeLessThan(0.5);
+    }
+    expect(seen.every((h) => h > 0.05 && h < full - 0.5), `not intermediate: ${seen.join(",")}`).toBe(true);
+    expect(seen[0]! > seen[1]! && seen[1]! > seen[2]!, `closing must shrink monotonically: ${seen.join(",")}`).toBe(true);
+    anim!.finish();
+    await wait(50);
+    expect(panel.getBoundingClientRect().height).toBeLessThan(1);
   } finally {
     document.documentElement.removeAttribute("data-motion");
   }
