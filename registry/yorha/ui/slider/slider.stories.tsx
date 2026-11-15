@@ -166,3 +166,46 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+/** `formatValue` feeds the readout, the bubble and `aria-valuetext`; `marks` draw ticks on the track axis. */
+export const FormattedWithMarks: Story = {
+  args: {
+    label: "볼륨",
+    defaultValue: 40,
+    showValue: true,
+    formatValue: (v: number) => `${v}%`,
+    marks: [{ value: 0, label: "0" }, { value: 50, label: "50" }, { value: 100, label: "100" }],
+  },
+  play: async ({ canvasElement }) => {
+    const thumb = within(canvasElement).getByRole("slider", { name: "볼륨" });
+    await expect(thumb).toHaveAttribute("aria-valuetext", "40%");
+    thumb.focus();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(thumb).toHaveAttribute("aria-valuetext", "41%");
+  },
+};
+
+/** Inside a form: `name` is submitted (FormData) and reset restores the default value. */
+export const InForm: Story = {
+  args: { label: "밝기", name: "brightness", defaultValue: 30 },
+  render: (args) => (
+    <form
+      onSubmit={(e) => e.preventDefault()}
+      className="flex flex-col gap-4"
+    >
+      <Slider {...args} />
+      <button type="reset" className="w-fit text-yorha-base underline">
+        초기화
+      </button>
+    </form>
+  ),
+  play: async ({ canvasElement }) => {
+    const form = canvasElement.querySelector("form")!;
+    await expect(new FormData(form).get("brightness")).toBe("30");
+    within(canvasElement).getByRole("slider").focus();
+    await userEvent.keyboard("{ArrowRight}");
+    await expect(new FormData(form).get("brightness")).toBe("31");
+    await userEvent.click(within(canvasElement).getByRole("button", { name: "초기화" }));
+    await waitFor(() => expect(new FormData(form).get("brightness")).toBe("30"));
+  },
+};

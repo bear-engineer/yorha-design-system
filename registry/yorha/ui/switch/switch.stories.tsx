@@ -165,3 +165,14 @@ export const ReducedMotion: Story = {
     });
   },
 };
+
+/** `pending`: aria-busy, toggling ignored, a 4 px mark pulses on the thumb (two-state); track and thumb never resize. */
+export const Pending: Story = {
+  args: { children: "동기화", pending: true, defaultChecked: true },
+  play: async ({ canvasElement }) => {
+    const sw = within(canvasElement).getByRole("switch", { name: "동기화" });
+    await expect(sw).toHaveAttribute("aria-busy", "true");
+    await userEvent.click(sw);
+    await expect(sw).toHaveAttribute("aria-checked", "true");
+  },
+};

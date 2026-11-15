@@ -171,3 +171,24 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+/** Shift+click toggles the whole range since the previously clicked item. */
+export const ShiftRange: Story = {
+  args: { "aria-label": "범위 선택", defaultValue: [] },
+  render: (args) => (
+    <CheckboxGroup {...args}>
+      {["a", "b", "c", "d", "e"].map((v, i) => (
+        <Checkbox key={v} value={v}>{`항목 ${i + 1}`}</Checkbox>
+      ))}
+    </CheckboxGroup>
+  ),
+  play: async ({ canvasElement }) => {
+    const user = userEvent.setup(); // one instance keeps the Shift state between calls
+    const boxes = within(canvasElement).getAllByRole("checkbox");
+    await user.click(boxes[0]!);
+    await user.keyboard("{Shift>}");
+    await user.click(boxes[3]!);
+    await user.keyboard("{/Shift}");
+    await expect(boxes.map((b) => b.getAttribute("aria-checked"))).toEqual(["true", "true", "true", "true", "false"]);
+  },
+};
