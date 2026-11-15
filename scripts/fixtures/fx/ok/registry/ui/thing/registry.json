@@ -26,11 +26,6 @@
               "opacity": "1"
             }
           },
-          "@keyframes yorha-dissolve-mask-x": {
-            "0%": {
-              "mask-image": "none"
-            }
-          },
           "@keyframes yorha-fx-move": {
             "0%": {
               "transform": "none",

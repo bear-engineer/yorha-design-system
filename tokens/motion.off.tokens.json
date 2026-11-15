@@ -116,6 +116,36 @@
           "unit": "ms"
         }
       },
+      "modal-backdrop": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "modal-backdrop-exit": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "modal-fade": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "modal-content": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "modal-content-delay": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
       "drawer-exit": {
         "$value": {
           "value": 0,
@@ -152,6 +182,14 @@
       "$value": 0
     },
     "easing": {
+      "out": {
+        "$type": "string",
+        "$value": "linear"
+      },
+      "move": {
+        "$type": "string",
+        "$value": "linear"
+      },
       "step-reveal": {
         "$type": "string",
         "$value": "linear"

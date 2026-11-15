@@ -11,8 +11,7 @@
 // `lint-allow layout-transition: <reason>` comment on the line or the line above allows an unavoidable layout transition. Use --motion-* tokens, ease-yorha-* and the yorha-* motion utilities.
 // v4 motion rules (errors under YORHA_MOTION_STRICT=1, like `motion`): fx-keyframes-mix (L1: a @keyframes set that sets clip-path or
 // mask-image together with opacity falls off the compositor; split it), fx-keyframes-props (L2: @keyframes may animate only opacity,
-// transform, translate, scale, rotate, clip-path and, in yorha-dissolve-*, mask-image), raw `steps(` in .tsx (L3, use --yorha-step-* /
-// ease-yorha-step-*), fx-on-control (L4: yorha-glitch / yorha-flicker next to yorha-wipe, yorha-press, hover: or focus-visible:).
+// transform, translate, scale, rotate, clip-path and), raw `steps(` and any --yorha-step-* / ease-yorha-step-* in .tsx (L3, flipped: motion is smooth, use ease-yorha-out / ease-yorha-move), fx-on-control (L4: yorha-glitch / yorha-flicker next to yorha-wipe, yorha-press, hover: or focus-visible:).
 // Rule `pixel` (L6; warning, error with env YORHA_PIXEL_STRICT=1 or options.pixelStrict): rotate-45 / rotate-[...], <svg> without
 // shapeRendering="crispEdges", a scale transition class on a line that renders a Glyph or *Icon. `lint-allow pixel: <reason>` allows it.
 // Rule `craft` (G16; warning, error with env YORHA_CRAFT_STRICT=1 or options.craftStrict - the sweeps that fix the existing
@@ -53,6 +52,7 @@ const LAYOUT_HINT = "animate transform, opacity or colour; allow only with a `li
 const FX_KEYFRAME_PROPS = new Set(["opacity", "transform", "translate", "scale", "rotate", "clip-path"]);
 const FX_MASK = /^(?:-webkit-)?mask-image$/;
 const RAW_STEPS = /(?<![\w-])steps\s*\(/g;
+const STEP_TOKEN = /(?:--yorha-step-|ease-yorha-step-)[a-z]+/;
 const FX_ONE_SHOT = /(?<![\w-])yorha-(?:glitch|flicker)(?![\w-])/;
 const FX_CONTROL = /(?<![\w-])yorha-(?:wipe|press)(?![\w-])|(?<![\w-])(?:[\w[\]=&>/-]+:)*(?:hover|focus-visible):/;
 const PIXEL_ALLOW = /lint-allow pixel:\s*\S/;
@@ -78,8 +78,8 @@ const keyframeFindings = (css) =>
     });
     if (mixed) out.push(`css @keyframes ${name}: fx-keyframes-mix: "${mixed[0]}" sets opacity together with clip-path or mask-image (split into two keyframes sets so each stays on the compositor)`);
     for (const prop of props) {
-      const allowed = FX_KEYFRAME_PROPS.has(prop) || (FX_MASK.test(prop) && name.startsWith("yorha-dissolve-"));
-      if (!allowed) out.push(`css @keyframes ${name}: fx-keyframes-props: animates "${prop}" (allowed: opacity, transform, translate, scale, rotate, clip-path; mask-image only in yorha-dissolve-*)`);
+      const allowed = FX_KEYFRAME_PROPS.has(prop);
+      if (!allowed) out.push(`css @keyframes ${name}: fx-keyframes-props: animates "${prop}" (allowed: opacity, transform, translate, scale, rotate, clip-path)`);
     }
     return out;
   });
@@ -165,8 +165,9 @@ function motionFindings(code, raw = code) {
     for (const list of line.matchAll(TRANSITION_LIST)) {
       if ((list[1] ?? list[2]).split(/[,_\s]+/).includes("background-size")) findings.push(`${index + 1} motion: ad-hoc background-size transition (${WIPE_HINT})`);
     }
-    if (RAW_STEPS.test(line)) findings.push(`${index + 1} motion: raw steps() (use --yorha-step-* or ease-yorha-step-*)`);
+    if (RAW_STEPS.test(line)) findings.push(`${index + 1} motion: raw steps() (motion is smooth: use ease-yorha-out / ease-yorha-move)`);
     RAW_STEPS.lastIndex = 0;
+    if (STEP_TOKEN.test(line)) findings.push(`${index + 1} motion: step token (deprecated, motion is smooth: use ease-yorha-out / ease-yorha-move)`);
     if (FX_ONE_SHOT.test(line) && FX_CONTROL.test(line)) findings.push(`${index + 1} motion: fx-on-control: yorha-glitch / yorha-flicker next to yorha-wipe, yorha-press, hover: or focus-visible: (no glitch or flicker on a control)`);
     const allowed = LAYOUT_ALLOW.test(rawLines[index] ?? "") || LAYOUT_ALLOW.test(rawLines[index - 1] ?? "");
     if (!allowed) {

@@ -164,11 +164,11 @@ describe("lintRegistry v4 fx rules (L1-L4, L6)", () => {
   const FX = [
     ["fx/keyframes-mix", [/css @keyframes yorha-fx-mixed: fx-keyframes-mix/]],
     ["fx/keyframes-props", [/yorha-fx-shadow: fx-keyframes-props: animates "text-shadow"/, /yorha-fx-shadow: fx-keyframes-props: animates "mask-image"/]],
-    ["fx/steps", [/thing\.tsx:2 motion: raw steps\(\)/]],
+    ["fx/steps", [/thing\.tsx:2 motion: raw steps\(\)/, /thing\.tsx:5 motion: step token/]],
     ["fx/on-control", [/thing\.tsx:4 motion: fx-on-control/, /thing\.tsx:5 motion: fx-on-control/]],
   ] as const;
 
-  it("accepts the passing fixture: allowed props, mask-image in yorha-dissolve-*, step tokens, comments", () => {
+  it("accepts the passing fixture: allowed props, smooth tokens, comments", () => {
     const result = lintRegistry(fixture("fx/ok"), { motionStrict: true, pixelStrict: true });
     expect(result.errors).toEqual([]);
     expect(result.warnings).toEqual([]);

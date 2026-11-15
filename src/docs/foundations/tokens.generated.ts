@@ -1428,9 +1428,9 @@ export const tokens = {
         "cssVar": "--yorha-motion-modal",
         "alias": "--motion-modal",
         "utility": "",
-        "value": "280ms",
-        "description": "Modal dialog and alert dialog enter, scrim fades with it.",
-        "full": "280ms",
+        "value": "220ms",
+        "description": "Modal dialog and alert dialog popup enter (yorha-unfold: clip unfolds from a centred line).",
+        "full": "220ms",
         "reduced": "0ms",
         "off": "0ms"
       },
@@ -1439,9 +1439,64 @@ export const tokens = {
         "cssVar": "--yorha-motion-modal-exit",
         "alias": "--motion-modal-exit",
         "utility": "",
+        "value": "150ms",
+        "description": "Modal popup exit (faster than enter).",
+        "full": "150ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "modal-backdrop",
+        "cssVar": "--yorha-motion-modal-backdrop",
+        "alias": "--motion-modal-backdrop",
+        "utility": "",
+        "value": "160ms",
+        "description": "Dialog and alert dialog backdrop fade, enter.",
+        "full": "160ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "modal-backdrop-exit",
+        "cssVar": "--yorha-motion-modal-backdrop-exit",
+        "alias": "--motion-modal-backdrop-exit",
+        "utility": "",
+        "value": "140ms",
+        "description": "Dialog and alert dialog backdrop fade, exit.",
+        "full": "140ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "modal-fade",
+        "cssVar": "--yorha-motion-modal-fade",
+        "alias": "--motion-modal-fade",
+        "utility": "",
+        "value": "90ms",
+        "description": "Dialog popup opacity fade-in (yorha-unfold), linear; 120ms linear when reduced.",
+        "full": "90ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "modal-content",
+        "cssVar": "--yorha-motion-modal-content",
+        "alias": "--motion-modal-content",
+        "utility": "",
         "value": "200ms",
-        "description": "Modal exit (faster than enter).",
+        "description": "Dialog content rises 4px and fades in (yorha-unfold).",
         "full": "200ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "modal-content-delay",
+        "cssVar": "--yorha-motion-modal-content-delay",
+        "alias": "--motion-modal-content-delay",
+        "utility": "",
+        "value": "60ms",
+        "description": "Delay before the dialog content starts (yorha-unfold).",
+        "full": "60ms",
         "reduced": "0ms",
         "off": "0ms"
       },
@@ -1461,9 +1516,9 @@ export const tokens = {
         "cssVar": "--yorha-motion-glitch",
         "alias": "--motion-glitch",
         "utility": "",
-        "value": "240ms",
-        "description": "RGB channel-split burst on one line of display text (yorha-glitch). One burst.",
-        "full": "240ms",
+        "value": "260ms",
+        "description": "RGB channel-split burst on one line of display text (yorha-glitch). The channel offset and slice decay smoothly. One burst.",
+        "full": "260ms",
         "reduced": "0ms",
         "off": "0ms"
       },
@@ -1472,9 +1527,9 @@ export const tokens = {
         "cssVar": "--yorha-motion-flicker",
         "alias": "--motion-flicker",
         "utility": "",
-        "value": "240ms",
-        "description": "Opacity-step burst on a non-text mark (yorha-flicker). One burst.",
-        "full": "240ms",
+        "value": "220ms",
+        "description": "One smooth opacity pulse 1 -> 0.35 -> 1 on a non-text mark (yorha-flicker).",
+        "full": "220ms",
         "reduced": "0ms",
         "off": "0ms"
       },
@@ -1484,7 +1539,7 @@ export const tokens = {
         "alias": "--motion-stream",
         "utility": "",
         "value": "320ms",
-        "description": "One data row arriving (yorha-stream), stepped reveal.",
+        "description": "One data row arriving (yorha-stream): opacity and a 4px translate, staggered.",
         "full": "320ms",
         "reduced": "0ms",
         "off": "0ms"
@@ -1515,8 +1570,16 @@ export const tokens = {
         "cssVar": "--yorha-ease-out",
         "alias": "",
         "utility": "ease-yorha-out",
-        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
-        "description": "Enter."
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "description": "Entrance and exit curve: strong ease-out. Dialog, popups, panels, route, toggles."
+      },
+      {
+        "name": "move",
+        "cssVar": "--yorha-ease-move",
+        "alias": "",
+        "utility": "ease-yorha-move",
+        "value": "cubic-bezier(0.77, 0, 0.175, 1)",
+        "description": "Movement of an element already on screen (ease-in-out)."
       },
       {
         "name": "in",
@@ -1547,32 +1610,32 @@ export const tokens = {
         "cssVar": "--yorha-step-reveal",
         "alias": "",
         "utility": "ease-yorha-step-reveal",
-        "value": "steps(4, end)",
-        "description": "Stepped reveal: popup scan (40ms per step at 160ms), stream, short reveals."
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "description": "Deprecated alias (v4 motion-smooth): motion is smooth, there are no stepped easings. Kept for one release; use ease-yorha-out."
       },
       {
         "name": "step-scan",
         "cssVar": "--yorha-step-scan",
         "alias": "",
         "utility": "ease-yorha-step-scan",
-        "value": "steps(6, end)",
-        "description": "Stepped scan: selection wipe (180ms), route entry (200ms)."
+        "value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "description": "Deprecated alias (v4 motion-smooth): motion is smooth, there are no stepped easings. Kept for one release; use ease-yorha-out."
       },
       {
         "name": "step-loop",
         "cssVar": "--yorha-step-loop",
         "alias": "",
         "utility": "ease-yorha-step-loop",
-        "value": "steps(16, end)",
-        "description": "Stepped travelling loaders."
+        "value": "linear",
+        "description": "Deprecated alias (v4 motion-smooth): motion is smooth, there are no stepped easings. Kept for one release; use ease-yorha-out."
       },
       {
         "name": "step-flip",
         "cssVar": "--yorha-step-flip",
         "alias": "",
         "utility": "ease-yorha-step-flip",
-        "value": "steps(1, end)",
-        "description": "Two-state changes: glitch, flicker, caret, dot chase."
+        "value": "ease-in-out",
+        "description": "Deprecated alias (v4 motion-smooth): motion is smooth, there are no stepped easings. Kept for one release; use ease-yorha-out."
       }
     ],
     "parameters": [
@@ -1688,7 +1751,7 @@ export const tokens = {
       "yorha-wipe",
       "yorha-press",
       "yorha-stagger",
-      "yorha-dissolve",
+      "yorha-unfold",
       "yorha-glitch",
       "yorha-flicker",
       "yorha-caret",

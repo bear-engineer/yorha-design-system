@@ -215,13 +215,38 @@ function slide([x, y]) {
   };
 }
 
+const UNFOLD_BLEED = "-6px";
+const UNFOLD_LINE = `inset(calc(${UNFOLD_BLEED} + (50% - 1px - ${UNFOLD_BLEED}) * var(--motion-spatial)) ${UNFOLD_BLEED})`;
+const UNFOLD_OPEN = `${"inset(" + UNFOLD_BLEED + ")"}`;
+const UNFOLD = {
+  "&:is([data-open], [data-run=in])": {
+    "animation-name": "yorha-unfold-clip-in, yorha-unfold-fade-in",
+    "animation-duration": "var(--motion-modal), max(var(--motion-modal-fade), var(--motion-reduced-fade))",
+    "animation-timing-function": "var(--yorha-ease-out), linear",
+    "animation-fill-mode": "backwards",
+  },
+  "&:is([data-open], [data-run=in]) > *": {
+    "animation-name": "yorha-unfold-content-in",
+    "animation-duration": "var(--motion-modal-content)",
+    "animation-delay": "var(--motion-modal-content-delay)",
+    "animation-timing-function": "var(--yorha-ease-out)",
+    "animation-fill-mode": "backwards",
+  },
+  "&:is([data-closed], [data-run=out])": {
+    "animation-name": "yorha-unfold-clip-out, yorha-unfold-fade-out",
+    "animation-duration": "var(--motion-modal-exit), max(var(--motion-modal-exit), var(--motion-reduced-fade))",
+    "animation-timing-function": "var(--yorha-ease-out)",
+    "animation-fill-mode": "both",
+  },
+};
+
 const MOTION_CSS = {
-  // Stepped scan from the anchor edge (V4-004). Rest = a negative inset so the arrow, focus ring and hard shadow are never clipped.
+  // Smooth clip reveal from the anchor edge (V4-004, motion-smooth). Rest = a negative inset so the arrow, focus ring and hard shadow are never clipped.
   // Starting style closes the edge next to the anchor (--motion-spatial 0 keeps it at the rest inset: reduced = opacity only).
   "@utility yorha-pop": {
     "transition-property": "opacity, clip-path",
-    "transition-duration": `max(calc(var(--motion-popover) / 4), var(--motion-reduced-fade)), ${fade("popover")}`,
-    "transition-timing-function": "linear, var(--yorha-step-reveal)",
+    "transition-duration": `max(calc(var(--motion-popover) * 0.6), var(--motion-reduced-fade)), ${fade("popover")}`,
+    "transition-timing-function": "linear, var(--yorha-ease-out)",
     "clip-path": popClip(),
     "&[data-starting-style]": { opacity: "0", "clip-path": popClip("bottom") },
     "&[data-starting-style][data-side=top]": { "clip-path": popClip("top") },
@@ -231,7 +256,7 @@ const MOTION_CSS = {
     "&[data-starting-style][data-side=inline-end]": { "clip-path": popClip("right") },
     "&[data-starting-style][data-side=inline-start]:where([dir=rtl], [dir=rtl] *)": { "clip-path": popClip("right") },
     "&[data-starting-style][data-side=inline-end]:where([dir=rtl], [dir=rtl] *)": { "clip-path": popClip("left") },
-    [EXIT]: { opacity: "0", "transition-duration": `${fade("popover-exit")}, ${fade("popover-exit")}`, "transition-timing-function": "linear, var(--yorha-step-reveal)" },
+    [EXIT]: { opacity: "0", "transition-duration": `${fade("popover-exit")}, ${fade("popover-exit")}`, "transition-timing-function": "linear, var(--yorha-ease-out)" },
     ...INSTANT,
   },
   "@utility yorha-panel": {
@@ -279,8 +304,8 @@ const MOTION_CSS = {
     "transition-property": "background-size, color",
     "transition-duration": "var(--yorha-wipe-exit, var(--motion-select-exit)), var(--motion-press)",
     "transition-delay": "0s, calc(var(--motion-select) * 0.35)",
-    // The ink front steps (background-size); the colour keeps the smooth ease (a hard flip would show 60ms of light text on beige).
-    "transition-timing-function": "var(--yorha-step-scan), var(--yorha-ease-out)",
+    // The ink front grows smoothly (background-size); the colour follows with the same ease.
+    "transition-timing-function": "var(--yorha-ease-out), var(--yorha-ease-out)",
     "&:is([data-highlighted], [data-panel-open], [data-popup-open], [data-checked], [data-selected], [aria-current=page], :has([data-checked]), :hover)": {
       "transition-duration": "var(--motion-select), var(--motion-press)",
     },
@@ -291,7 +316,7 @@ const MOTION_CSS = {
     "transition-property": "scale, color, background-color, border-color, background-size",
     "transition-duration": ["press", "press", "select", "select", "select"].map((token) => `var(--motion-${token})`).join(", "),
     "transition-delay": "0s, calc(var(--motion-select) * 0.35), 0s, 0s, 0s",
-    "transition-timing-function": "var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-step-scan)",
+    "transition-timing-function": "var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out)",
     "&:active:not(:disabled, [data-disabled], [aria-disabled=true], [data-loading], [aria-busy=true])": { scale: scaleTo("press") },
   },
   "@utility yorha-stagger": {
@@ -301,27 +326,10 @@ const MOTION_CSS = {
     "animation-fill-mode": "backwards",
     "animation-delay": "calc(var(--motion-stagger) * min(var(--yorha-stagger-index, 0), var(--motion-stagger-max)))",
   },
-  // Dialog arrives / leaves as a Bayer dither (V4-005). Two animations per direction: a mask and an opacity fade never share a keyframes set.
-  // Reduced / off: the mask tokens are `none` and its duration 0, so only the 120ms fade remains (reduced) or nothing (off).
-  "@utility yorha-dissolve": {
-    "mask-size": "8px 8px",
-    "-webkit-mask-size": "8px 8px",
-    "mask-repeat": "repeat",
-    "-webkit-mask-repeat": "repeat",
-    "&:is([data-open], [data-run=in])": {
-      "animation-name": "yorha-dissolve-mask-in, yorha-dissolve-fade-in",
-      "animation-duration": "var(--motion-modal), max(calc(var(--motion-modal) / 5), var(--motion-reduced-fade))",
-      "animation-timing-function": "var(--yorha-step-flip)",
-      "animation-fill-mode": "backwards",
-    },
-    "&:is([data-closed], [data-run=out])": {
-      "animation-name": "yorha-dissolve-mask-out, yorha-dissolve-fade-out",
-      "animation-duration": "var(--motion-modal-exit), max(calc(var(--motion-modal-exit) / 5), var(--motion-reduced-fade))",
-      "animation-delay": "0s, calc(var(--motion-modal-exit) * 0.8 * var(--motion-spatial))",
-      "animation-timing-function": "var(--yorha-step-flip)",
-      "animation-fill-mode": "both",
-    },
-  },
+  // Dialog unfolds from a centred line (motion-smooth). Popup: clip-path from a 2px band to the negative inset (6px bleed keeps the hard shadow and
+  // focus ring unclipped), a short linear opacity fade, and the direct children rise 4px with a 60ms delay. Exit: opacity + clip closing to a line.
+  // Reduced / off: the spatial factor collapses the clip and the delay, durations are 0 (off) or only the 120ms linear fade remains (reduced).
+  "@utility yorha-unfold": UNFOLD,
   // One burst of two displaced colour channels on one line of display text (V4-006). Host: `data-text` = its text, `data-run` plays it.
   // The layers have no plain `content` fallback: a browser without the alt-text syntax shows no layers instead of doubled text.
   "@utility yorha-glitch": {
@@ -331,14 +339,14 @@ const MOTION_CSS = {
     "&::before, &::after": { content: 'attr(data-text) / ""', position: "absolute", inset: "0", "pointer-events": "none", opacity: "0" },
     "&::before": { color: "var(--yorha-glitch-a)" },
     "&::after": { color: "var(--yorha-glitch-b)" },
-    "&[data-run]": { "animation-name": "yorha-glitch-core", "animation-duration": fade("glitch"), "animation-timing-function": "var(--yorha-step-flip)", "animation-fill-mode": "backwards" },
-    "&[data-run]::before": { "animation-name": "yorha-glitch-a-move, yorha-glitch-a-fade", "animation-duration": "var(--motion-glitch)", "animation-timing-function": "var(--yorha-step-flip)" },
-    "&[data-run]::after": { "animation-name": "yorha-glitch-b-move, yorha-glitch-b-fade", "animation-duration": "var(--motion-glitch)", "animation-timing-function": "var(--yorha-step-flip)" },
+    "&[data-run]": { "animation-name": "yorha-glitch-core", "animation-duration": fade("glitch"), "animation-timing-function": "var(--yorha-ease-out)", "animation-fill-mode": "backwards" },
+    "&[data-run]::before": { "animation-name": "yorha-glitch-a-move, yorha-glitch-a-fade", "animation-duration": "var(--motion-glitch)", "animation-timing-function": "var(--yorha-ease-out)" },
+    "&[data-run]::after": { "animation-name": "yorha-glitch-b-move, yorha-glitch-b-fade", "animation-duration": "var(--motion-glitch)", "animation-timing-function": "var(--yorha-ease-out)" },
     "@media (forced-colors: active)": { "&::before, &::after": { display: "none" } },
   },
-  // Signal flicker on a non-text mark with its own box (V4-007): two dips per burst in full, a single monotone fade in reduced.
+  // Signal flicker on a non-text mark with its own box (V4-007): one smooth opacity pulse 1 -> 0.35 -> 1 in full, a single monotone fade in reduced.
   "@utility yorha-flicker": {
-    "&[data-run]": { "animation-name": "yorha-flicker", "animation-duration": fade("flicker"), "animation-timing-function": "var(--yorha-step-flip)", "animation-fill-mode": "backwards" },
+    "&[data-run]": { "animation-name": "yorha-flicker", "animation-duration": fade("flicker"), "animation-timing-function": "ease-in-out", "animation-fill-mode": "backwards" },
   },
   // Block caret in its own aria-hidden span (V4-008). Solid unless [data-blink]; blinks 6 cycles, then solid (WCAG 2.2.2). 0 cycles when reduced / off.
   "@utility yorha-caret": {
@@ -350,17 +358,16 @@ const MOTION_CSS = {
     "&[data-blink]": {
       "animation-name": "yorha-caret-blink",
       "animation-duration": "var(--motion-caret)",
-      "animation-timing-function": "var(--yorha-step-flip)",
+      "animation-timing-function": "step-end", // the standard hard caret blink: the one allowed discrete change
       "animation-iteration-count": "calc(6 * var(--motion-spatial))",
     },
     "@media (forced-colors: active)": { "forced-color-adjust": "none", "background-color": "CanvasText" },
   },
-  // Data arrived (V4-009): stepped reveal from the inline start plus a stepped fade, staggered by the same index variable as yorha-stagger.
-  // The clip animation has no reduced fade, so reduced runs the opacity animation alone.
+  // Data arrived (V4-009): opacity plus a 4px translate, staggered by the same index variable as yorha-stagger.
   "@utility yorha-stream": {
-    "animation-name": "yorha-stream-clip, yorha-stream-fade",
-    "animation-duration": `var(--motion-stream), ${fade("stream")}`,
-    "animation-timing-function": "var(--yorha-step-reveal)",
+    "animation-name": "yorha-stream-in",
+    "animation-duration": fade("stream"),
+    "animation-timing-function": "var(--yorha-ease-out)",
     "animation-fill-mode": "backwards",
     "animation-delay": "calc(var(--motion-stagger) * min(var(--yorha-stagger-index, 0), var(--motion-stagger-max)))",
   },
@@ -368,34 +375,29 @@ const MOTION_CSS = {
 // Emitted inside `@layer base`: the shadcn CLI moves a top-level @keyframes into `@theme inline`, where Tailwind
 // drops it unless an --animate-* variable uses it, and the consumer's yorha-stagger would silently not animate.
 const GLITCH_DX = "3px";
-const glitchMove = (sign) => ({
-  "0%": { transform: `translateX(${spatial(`${GLITCH_DX} * ${-sign}`)})`, "clip-path": "inset(0 0 55% 0)" },
-  "25%": { transform: `translateX(${spatial(`${GLITCH_DX} * ${sign}`)})`, "clip-path": "inset(40% 0 20% 0)" },
-  "50%": { transform: `translateX(${spatial(`${GLITCH_DX} * ${-sign / 2}`)})`, "clip-path": "inset(0 0 0 0)" },
-  "75%": { transform: `translateX(${spatial(`${GLITCH_DX} * ${sign / 2}`)})`, "clip-path": "inset(65% 0 0 0)" },
+const glitchMove = (sign, slice) => ({
+  "0%": { transform: `translateX(${spatial(`${GLITCH_DX} * ${sign}`)})`, "clip-path": slice },
   "100%": { transform: "none", "clip-path": "inset(0 0 0 0)" },
 });
 const glitchFade = { "0%": { opacity: spatial("1") }, "100%": { opacity: "0" } };
-const MASKS = { 25: "var(--motion-fx-mask-25)", 50: "var(--motion-fx-mask-50)", 75: "var(--motion-fx-mask-75)", none: "none" };
 const MOTION_KEYFRAMES = {
   "@keyframes yorha-stagger-in": {
     from: { opacity: "0", translate: `0 ${spatial("var(--motion-shift)")}` },
   },
-  // Dissolve: the mask steps through the dither levels; the fade is its own set (clip/mask and opacity never share one).
-  "@keyframes yorha-dissolve-mask-in": { "0%": { "mask-image": MASKS[25] }, "20%": { "mask-image": MASKS[50] }, "40%": { "mask-image": MASKS[75] }, "60%, 100%": { "mask-image": MASKS.none } },
-  "@keyframes yorha-dissolve-mask-out": { "0%": { "mask-image": MASKS.none }, "20%": { "mask-image": MASKS[75] }, "40%": { "mask-image": MASKS[50] }, "60%, 100%": { "mask-image": MASKS[25] } },
-  "@keyframes yorha-dissolve-fade-in": { from: { opacity: "0" }, to: { opacity: "1" } },
-  "@keyframes yorha-dissolve-fade-out": { from: { opacity: "1" }, to: { opacity: "0" } },
+  "@keyframes yorha-unfold-clip-in": { from: { "clip-path": UNFOLD_LINE }, to: { "clip-path": UNFOLD_OPEN } },
+  "@keyframes yorha-unfold-clip-out": { from: { "clip-path": UNFOLD_OPEN }, to: { "clip-path": UNFOLD_LINE } },
+  "@keyframes yorha-unfold-fade-in": { from: { opacity: "0" }, to: { opacity: "1" } },
+  "@keyframes yorha-unfold-fade-out": { from: { opacity: "1" }, to: { opacity: "0" } },
+  "@keyframes yorha-unfold-content-in": { from: { opacity: "0", translate: `0 ${spatial("4px")}` }, to: { opacity: "1", translate: "0 0" } },
   "@keyframes yorha-glitch-core": { "0%": { opacity: "0.35" }, "100%": { opacity: "1" } },
-  "@keyframes yorha-glitch-a-move": glitchMove(1),
-  "@keyframes yorha-glitch-b-move": glitchMove(-1),
+  "@keyframes yorha-glitch-a-move": glitchMove(1, "inset(0 0 55% 0)"),
+  "@keyframes yorha-glitch-b-move": glitchMove(-1, "inset(60% 0 0 0)"),
   "@keyframes yorha-glitch-a-fade": glitchFade,
   "@keyframes yorha-glitch-b-fade": glitchFade,
-  "@keyframes yorha-flicker": { "0%": { opacity: "0.25" }, "20%": { opacity: "1" }, "40%": { opacity: "calc(1 - 0.55 * var(--motion-spatial))" }, "60%, 100%": { opacity: "1" } },
+  "@keyframes yorha-flicker": { "0%": { opacity: "calc(1 - 0.65 * (1 - var(--motion-spatial)))" }, "50%": { opacity: "calc(1 - 0.65 * var(--motion-spatial))" }, "100%": { opacity: "1" } },
   "@keyframes yorha-caret-blink": { "50%": { opacity: "0" } },
-  "@keyframes yorha-stream-clip": { from: { "clip-path": "inset(0 calc(100% * var(--motion-spatial)) 0 0)" }, to: { "clip-path": "inset(0)" } },
-  "@keyframes yorha-stream-fade": { from: { opacity: "0" }, to: { opacity: "1" } },
-  // Route entry: a stepped scan, its own opacity set. Reduced: the clip duration is 0, the fade stays.
+  "@keyframes yorha-stream-in": { from: { opacity: "0", translate: `0 ${spatial("4px")}` }, to: { opacity: "1", translate: "0 0" } },
+  // Route entry: a smooth clip wipe, its own opacity set. Reduced: the clip duration is 0, the fade stays.
   "@keyframes yorha-route-scan-forward": { from: { "clip-path": "inset(0 0 calc(100% * var(--motion-spatial)) 0)" }, to: { "clip-path": "inset(0)" } },
   "@keyframes yorha-route-scan-back": { from: { "clip-path": "inset(calc(100% * var(--motion-spatial)) 0 0 0)" }, to: { "clip-path": "inset(0)" } },
   "@keyframes yorha-route-fade-in": { from: { opacity: "0" }, to: { opacity: "1" } },
@@ -405,8 +407,8 @@ const MOTION_KEYFRAMES = {
 // Root pseudos: without `animation: none` the UA's 250ms crossfade of the whole page still runs in off mode.
 const ROUTE_ENTER = (name) => ({
   "animation-name": `${name}, yorha-route-fade-in`,
-  "animation-duration": "var(--motion-route), max(calc(var(--motion-route) / 4), var(--motion-reduced-fade))",
-  "animation-timing-function": "var(--yorha-step-scan), linear",
+  "animation-duration": "var(--motion-route), max(calc(var(--motion-route) * 0.5), var(--motion-reduced-fade))",
+  "animation-timing-function": "var(--yorha-ease-out), linear",
   "animation-fill-mode": "backwards",
 });
 const ROUTE_EXIT = { "animation-name": "yorha-route-fade-out", "animation-duration": fade("route-exit"), "animation-timing-function": "linear", "animation-fill-mode": "both" };

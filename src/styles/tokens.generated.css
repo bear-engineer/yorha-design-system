@@ -150,6 +150,7 @@
   --text-shadow-yorha: var(--yorha-text-shadow);
   --ease-yorha: var(--yorha-ease);
   --ease-yorha-out: var(--yorha-ease-out);
+  --ease-yorha-move: var(--yorha-ease-move);
   --ease-yorha-in: var(--yorha-ease-in);
   --ease-yorha-emphasized: var(--yorha-ease-emphasized);
   --ease-yorha-decelerate: var(--yorha-ease-decelerate);
@@ -249,29 +250,40 @@
   --motion-shared-element: 360ms;
   --yorha-motion-press: 90ms;
   --motion-press: 90ms;
-  --yorha-motion-modal: 280ms;
-  --motion-modal: 280ms;
-  --yorha-motion-modal-exit: 200ms;
-  --motion-modal-exit: 200ms;
+  --yorha-motion-modal: 220ms;
+  --motion-modal: 220ms;
+  --yorha-motion-modal-exit: 150ms;
+  --motion-modal-exit: 150ms;
+  --yorha-motion-modal-backdrop: 160ms;
+  --motion-modal-backdrop: 160ms;
+  --yorha-motion-modal-backdrop-exit: 140ms;
+  --motion-modal-backdrop-exit: 140ms;
+  --yorha-motion-modal-fade: 90ms;
+  --motion-modal-fade: 90ms;
+  --yorha-motion-modal-content: 200ms;
+  --motion-modal-content: 200ms;
+  --yorha-motion-modal-content-delay: 60ms;
+  --motion-modal-content-delay: 60ms;
   --yorha-motion-drawer-exit: 280ms;
   --motion-drawer-exit: 280ms;
-  --yorha-motion-glitch: 240ms;
-  --motion-glitch: 240ms;
-  --yorha-motion-flicker: 240ms;
-  --motion-flicker: 240ms;
+  --yorha-motion-glitch: 260ms;
+  --motion-glitch: 260ms;
+  --yorha-motion-flicker: 220ms;
+  --motion-flicker: 220ms;
   --yorha-motion-stream: 320ms;
   --motion-stream: 320ms;
   --yorha-motion-caret: 1000ms;
   --motion-caret: 1000ms;
   --yorha-ease: cubic-bezier(0.2, 0, 0, 1);
-  --yorha-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --yorha-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --yorha-ease-move: cubic-bezier(0.77, 0, 0.175, 1);
   --yorha-ease-in: cubic-bezier(0.4, 0, 1, 1);
   --yorha-ease-emphasized: cubic-bezier(0.32, 0.72, 0, 1);
   --yorha-ease-decelerate: cubic-bezier(0, 0, 0.2, 1);
-  --yorha-step-reveal: steps(4, end);
-  --yorha-step-scan: steps(6, end);
-  --yorha-step-loop: steps(16, end);
-  --yorha-step-flip: steps(1, end);
+  --yorha-step-reveal: cubic-bezier(0.23, 1, 0.32, 1);
+  --yorha-step-scan: cubic-bezier(0.23, 1, 0.32, 1);
+  --yorha-step-loop: linear;
+  --yorha-step-flip: ease-in-out;
   --yorha-motion-reduced-fade: 0ms;
   --motion-reduced-fade: 0ms;
   --yorha-motion-spatial: 1;
@@ -536,6 +548,16 @@
     --motion-modal: 0ms;
     --yorha-motion-modal-exit: 0ms;
     --motion-modal-exit: 0ms;
+    --yorha-motion-modal-backdrop: 0ms;
+    --motion-modal-backdrop: 0ms;
+    --yorha-motion-modal-backdrop-exit: 0ms;
+    --motion-modal-backdrop-exit: 0ms;
+    --yorha-motion-modal-fade: 0ms;
+    --motion-modal-fade: 0ms;
+    --yorha-motion-modal-content: 0ms;
+    --motion-modal-content: 0ms;
+    --yorha-motion-modal-content-delay: 0ms;
+    --motion-modal-content-delay: 0ms;
     --yorha-motion-drawer-exit: 0ms;
     --motion-drawer-exit: 0ms;
     --yorha-motion-glitch: 0ms;
@@ -546,6 +568,8 @@
     --motion-stream: 0ms;
     --yorha-motion-caret: 0ms;
     --motion-caret: 0ms;
+    --yorha-ease-out: linear;
+    --yorha-ease-move: linear;
     --yorha-step-reveal: linear;
     --yorha-step-scan: linear;
     --yorha-step-loop: linear;
@@ -598,24 +622,36 @@
   --motion-shared-element: 360ms;
   --yorha-motion-press: 90ms;
   --motion-press: 90ms;
-  --yorha-motion-modal: 280ms;
-  --motion-modal: 280ms;
-  --yorha-motion-modal-exit: 200ms;
-  --motion-modal-exit: 200ms;
+  --yorha-motion-modal: 220ms;
+  --motion-modal: 220ms;
+  --yorha-motion-modal-exit: 150ms;
+  --motion-modal-exit: 150ms;
+  --yorha-motion-modal-backdrop: 160ms;
+  --motion-modal-backdrop: 160ms;
+  --yorha-motion-modal-backdrop-exit: 140ms;
+  --motion-modal-backdrop-exit: 140ms;
+  --yorha-motion-modal-fade: 90ms;
+  --motion-modal-fade: 90ms;
+  --yorha-motion-modal-content: 200ms;
+  --motion-modal-content: 200ms;
+  --yorha-motion-modal-content-delay: 60ms;
+  --motion-modal-content-delay: 60ms;
   --yorha-motion-drawer-exit: 280ms;
   --motion-drawer-exit: 280ms;
-  --yorha-motion-glitch: 240ms;
-  --motion-glitch: 240ms;
-  --yorha-motion-flicker: 240ms;
-  --motion-flicker: 240ms;
+  --yorha-motion-glitch: 260ms;
+  --motion-glitch: 260ms;
+  --yorha-motion-flicker: 220ms;
+  --motion-flicker: 220ms;
   --yorha-motion-stream: 320ms;
   --motion-stream: 320ms;
   --yorha-motion-caret: 1000ms;
   --motion-caret: 1000ms;
-  --yorha-step-reveal: steps(4, end);
-  --yorha-step-scan: steps(6, end);
-  --yorha-step-loop: steps(16, end);
-  --yorha-step-flip: steps(1, end);
+  --yorha-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --yorha-ease-move: cubic-bezier(0.77, 0, 0.175, 1);
+  --yorha-step-reveal: cubic-bezier(0.23, 1, 0.32, 1);
+  --yorha-step-scan: cubic-bezier(0.23, 1, 0.32, 1);
+  --yorha-step-loop: linear;
+  --yorha-step-flip: ease-in-out;
   --yorha-motion-reduced-fade: 0ms;
   --motion-reduced-fade: 0ms;
   --yorha-motion-spatial: 1;
@@ -667,6 +703,16 @@
   --motion-modal: 0ms;
   --yorha-motion-modal-exit: 0ms;
   --motion-modal-exit: 0ms;
+  --yorha-motion-modal-backdrop: 0ms;
+  --motion-modal-backdrop: 0ms;
+  --yorha-motion-modal-backdrop-exit: 0ms;
+  --motion-modal-backdrop-exit: 0ms;
+  --yorha-motion-modal-fade: 0ms;
+  --motion-modal-fade: 0ms;
+  --yorha-motion-modal-content: 0ms;
+  --motion-modal-content: 0ms;
+  --yorha-motion-modal-content-delay: 0ms;
+  --motion-modal-content-delay: 0ms;
   --yorha-motion-drawer-exit: 0ms;
   --motion-drawer-exit: 0ms;
   --yorha-motion-glitch: 0ms;
@@ -677,6 +723,8 @@
   --motion-stream: 0ms;
   --yorha-motion-caret: 0ms;
   --motion-caret: 0ms;
+  --yorha-ease-out: linear;
+  --yorha-ease-move: linear;
   --yorha-step-reveal: linear;
   --yorha-step-scan: linear;
   --yorha-step-loop: linear;
@@ -732,6 +780,16 @@
   --motion-modal: 0ms;
   --yorha-motion-modal-exit: 0ms;
   --motion-modal-exit: 0ms;
+  --yorha-motion-modal-backdrop: 0ms;
+  --motion-modal-backdrop: 0ms;
+  --yorha-motion-modal-backdrop-exit: 0ms;
+  --motion-modal-backdrop-exit: 0ms;
+  --yorha-motion-modal-fade: 0ms;
+  --motion-modal-fade: 0ms;
+  --yorha-motion-modal-content: 0ms;
+  --motion-modal-content: 0ms;
+  --yorha-motion-modal-content-delay: 0ms;
+  --motion-modal-content-delay: 0ms;
   --yorha-motion-drawer-exit: 0ms;
   --motion-drawer-exit: 0ms;
   --yorha-motion-glitch: 0ms;
@@ -742,6 +800,8 @@
   --motion-stream: 0ms;
   --yorha-motion-caret: 0ms;
   --motion-caret: 0ms;
+  --yorha-ease-out: linear;
+  --yorha-ease-move: linear;
   --yorha-step-reveal: linear;
   --yorha-step-scan: linear;
   --yorha-step-loop: linear;
@@ -992,8 +1052,8 @@
 
 @utility yorha-pop {
   transition-property: opacity, clip-path;
-  transition-duration: max(calc(var(--motion-popover) / 4), var(--motion-reduced-fade)), max(var(--motion-popover), var(--motion-reduced-fade));
-  transition-timing-function: linear, var(--yorha-step-reveal);
+  transition-duration: max(calc(var(--motion-popover) * 0.6), var(--motion-reduced-fade)), max(var(--motion-popover), var(--motion-reduced-fade));
+  transition-timing-function: linear, var(--yorha-ease-out);
   clip-path: inset(calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)));
   &[data-starting-style] {
     opacity: 0;
@@ -1023,7 +1083,7 @@
   &[data-ending-style] {
     opacity: 0;
     transition-duration: max(var(--motion-popover-exit), var(--motion-reduced-fade)), max(var(--motion-popover-exit), var(--motion-reduced-fade));
-    transition-timing-function: linear, var(--yorha-step-reveal);
+    transition-timing-function: linear, var(--yorha-ease-out);
   }
   &[data-instant] {
     transition-duration: 0s;
@@ -1157,7 +1217,7 @@
   transition-property: background-size, color;
   transition-duration: var(--yorha-wipe-exit, var(--motion-select-exit)), var(--motion-press);
   transition-delay: 0s, calc(var(--motion-select) * 0.35);
-  transition-timing-function: var(--yorha-step-scan), var(--yorha-ease-out);
+  transition-timing-function: var(--yorha-ease-out), var(--yorha-ease-out);
   &:is([data-highlighted], [data-panel-open], [data-popup-open], [data-checked], [data-selected], [aria-current=page], :has([data-checked]), :hover) {
     transition-duration: var(--motion-select), var(--motion-press);
   }
@@ -1167,7 +1227,7 @@
   transition-property: scale, color, background-color, border-color, background-size;
   transition-duration: var(--motion-press), var(--motion-press), var(--motion-select), var(--motion-select), var(--motion-select);
   transition-delay: 0s, calc(var(--motion-select) * 0.35), 0s, 0s, 0s;
-  transition-timing-function: var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-step-scan);
+  transition-timing-function: var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out);
   &:active:not(:disabled, [data-disabled], [aria-disabled=true], [data-loading], [aria-busy=true]) {
     scale: calc(1 - (1 - var(--motion-scale-press)) * var(--motion-spatial));
   }
@@ -1181,22 +1241,24 @@
   animation-delay: calc(var(--motion-stagger) * min(var(--yorha-stagger-index, 0), var(--motion-stagger-max)));
 }
 
-@utility yorha-dissolve {
-  mask-size: 8px 8px;
-  -webkit-mask-size: 8px 8px;
-  mask-repeat: repeat;
-  -webkit-mask-repeat: repeat;
+@utility yorha-unfold {
   &:is([data-open], [data-run=in]) {
-    animation-name: yorha-dissolve-mask-in, yorha-dissolve-fade-in;
-    animation-duration: var(--motion-modal), max(calc(var(--motion-modal) / 5), var(--motion-reduced-fade));
-    animation-timing-function: var(--yorha-step-flip);
+    animation-name: yorha-unfold-clip-in, yorha-unfold-fade-in;
+    animation-duration: var(--motion-modal), max(var(--motion-modal-fade), var(--motion-reduced-fade));
+    animation-timing-function: var(--yorha-ease-out), linear;
+    animation-fill-mode: backwards;
+  }
+  &:is([data-open], [data-run=in]) > * {
+    animation-name: yorha-unfold-content-in;
+    animation-duration: var(--motion-modal-content);
+    animation-delay: var(--motion-modal-content-delay);
+    animation-timing-function: var(--yorha-ease-out);
     animation-fill-mode: backwards;
   }
   &:is([data-closed], [data-run=out]) {
-    animation-name: yorha-dissolve-mask-out, yorha-dissolve-fade-out;
-    animation-duration: var(--motion-modal-exit), max(calc(var(--motion-modal-exit) / 5), var(--motion-reduced-fade));
-    animation-delay: 0s, calc(var(--motion-modal-exit) * 0.8 * var(--motion-spatial));
-    animation-timing-function: var(--yorha-step-flip);
+    animation-name: yorha-unfold-clip-out, yorha-unfold-fade-out;
+    animation-duration: var(--motion-modal-exit), max(var(--motion-modal-exit), var(--motion-reduced-fade));
+    animation-timing-function: var(--yorha-ease-out);
     animation-fill-mode: both;
   }
 }
@@ -1224,18 +1286,18 @@
   &[data-run] {
     animation-name: yorha-glitch-core;
     animation-duration: max(var(--motion-glitch), var(--motion-reduced-fade));
-    animation-timing-function: var(--yorha-step-flip);
+    animation-timing-function: var(--yorha-ease-out);
     animation-fill-mode: backwards;
   }
   &[data-run]::before {
     animation-name: yorha-glitch-a-move, yorha-glitch-a-fade;
     animation-duration: var(--motion-glitch);
-    animation-timing-function: var(--yorha-step-flip);
+    animation-timing-function: var(--yorha-ease-out);
   }
   &[data-run]::after {
     animation-name: yorha-glitch-b-move, yorha-glitch-b-fade;
     animation-duration: var(--motion-glitch);
-    animation-timing-function: var(--yorha-step-flip);
+    animation-timing-function: var(--yorha-ease-out);
   }
 }
 
@@ -1243,7 +1305,7 @@
   &[data-run] {
     animation-name: yorha-flicker;
     animation-duration: max(var(--motion-flicker), var(--motion-reduced-fade));
-    animation-timing-function: var(--yorha-step-flip);
+    animation-timing-function: ease-in-out;
     animation-fill-mode: backwards;
   }
 }
@@ -1257,7 +1319,7 @@
   &[data-blink] {
     animation-name: yorha-caret-blink;
     animation-duration: var(--motion-caret);
-    animation-timing-function: var(--yorha-step-flip);
+    animation-timing-function: step-end;
     animation-iteration-count: calc(6 * var(--motion-spatial));
   }
   @media (forced-colors: active) {
@@ -1267,9 +1329,9 @@
 }
 
 @utility yorha-stream {
-  animation-name: yorha-stream-clip, yorha-stream-fade;
-  animation-duration: var(--motion-stream), max(var(--motion-stream), var(--motion-reduced-fade));
-  animation-timing-function: var(--yorha-step-reveal);
+  animation-name: yorha-stream-in;
+  animation-duration: max(var(--motion-stream), var(--motion-reduced-fade));
+  animation-timing-function: var(--yorha-ease-out);
   animation-fill-mode: backwards;
   animation-delay: calc(var(--motion-stagger) * min(var(--yorha-stagger-index, 0), var(--motion-stagger-max)));
 }
@@ -1329,15 +1391,15 @@
 
 :root::view-transition-new(.yorha-route-forward) {
   animation-name: yorha-route-scan-forward, yorha-route-fade-in;
-  animation-duration: var(--motion-route), max(calc(var(--motion-route) / 4), var(--motion-reduced-fade));
-  animation-timing-function: var(--yorha-step-scan), linear;
+  animation-duration: var(--motion-route), max(calc(var(--motion-route) * 0.5), var(--motion-reduced-fade));
+  animation-timing-function: var(--yorha-ease-out), linear;
   animation-fill-mode: backwards;
 }
 
 :root::view-transition-new(.yorha-route-back) {
   animation-name: yorha-route-scan-back, yorha-route-fade-in;
-  animation-duration: var(--motion-route), max(calc(var(--motion-route) / 4), var(--motion-reduced-fade));
-  animation-timing-function: var(--yorha-step-scan), linear;
+  animation-duration: var(--motion-route), max(calc(var(--motion-route) * 0.5), var(--motion-reduced-fade));
+  animation-timing-function: var(--yorha-ease-out), linear;
   animation-fill-mode: backwards;
 }
 
@@ -1436,35 +1498,23 @@
       translate: 0 calc(var(--motion-shift) * var(--motion-spatial));
     }
   }
-  @keyframes yorha-dissolve-mask-in {
-    0% {
-      mask-image: var(--motion-fx-mask-25);
+  @keyframes yorha-unfold-clip-in {
+    from {
+      clip-path: inset(calc(-6px + (50% - 1px - -6px) * var(--motion-spatial)) -6px);
     }
-    20% {
-      mask-image: var(--motion-fx-mask-50);
-    }
-    40% {
-      mask-image: var(--motion-fx-mask-75);
-    }
-    60%, 100% {
-      mask-image: none;
+    to {
+      clip-path: inset(-6px);
     }
   }
-  @keyframes yorha-dissolve-mask-out {
-    0% {
-      mask-image: none;
+  @keyframes yorha-unfold-clip-out {
+    from {
+      clip-path: inset(-6px);
     }
-    20% {
-      mask-image: var(--motion-fx-mask-75);
-    }
-    40% {
-      mask-image: var(--motion-fx-mask-50);
-    }
-    60%, 100% {
-      mask-image: var(--motion-fx-mask-25);
+    to {
+      clip-path: inset(calc(-6px + (50% - 1px - -6px) * var(--motion-spatial)) -6px);
     }
   }
-  @keyframes yorha-dissolve-fade-in {
+  @keyframes yorha-unfold-fade-in {
     from {
       opacity: 0;
     }
@@ -1472,12 +1522,22 @@
       opacity: 1;
     }
   }
-  @keyframes yorha-dissolve-fade-out {
+  @keyframes yorha-unfold-fade-out {
     from {
       opacity: 1;
     }
     to {
       opacity: 0;
+    }
+  }
+  @keyframes yorha-unfold-content-in {
+    from {
+      opacity: 0;
+      translate: 0 calc(4px * var(--motion-spatial));
+    }
+    to {
+      opacity: 1;
+      translate: 0 0;
     }
   }
   @keyframes yorha-glitch-core {
@@ -1490,20 +1550,8 @@
   }
   @keyframes yorha-glitch-a-move {
     0% {
-      transform: translateX(calc(3px * -1 * var(--motion-spatial)));
-      clip-path: inset(0 0 55% 0);
-    }
-    25% {
       transform: translateX(calc(3px * 1 * var(--motion-spatial)));
-      clip-path: inset(40% 0 20% 0);
-    }
-    50% {
-      transform: translateX(calc(3px * -0.5 * var(--motion-spatial)));
-      clip-path: inset(0 0 0 0);
-    }
-    75% {
-      transform: translateX(calc(3px * 0.5 * var(--motion-spatial)));
-      clip-path: inset(65% 0 0 0);
+      clip-path: inset(0 0 55% 0);
     }
     100% {
       transform: none;
@@ -1512,20 +1560,8 @@
   }
   @keyframes yorha-glitch-b-move {
     0% {
-      transform: translateX(calc(3px * 1 * var(--motion-spatial)));
-      clip-path: inset(0 0 55% 0);
-    }
-    25% {
       transform: translateX(calc(3px * -1 * var(--motion-spatial)));
-      clip-path: inset(40% 0 20% 0);
-    }
-    50% {
-      transform: translateX(calc(3px * 0.5 * var(--motion-spatial)));
-      clip-path: inset(0 0 0 0);
-    }
-    75% {
-      transform: translateX(calc(3px * -0.5 * var(--motion-spatial)));
-      clip-path: inset(65% 0 0 0);
+      clip-path: inset(60% 0 0 0);
     }
     100% {
       transform: none;
@@ -1550,15 +1586,12 @@
   }
   @keyframes yorha-flicker {
     0% {
-      opacity: 0.25;
+      opacity: calc(1 - 0.65 * (1 - var(--motion-spatial)));
     }
-    20% {
-      opacity: 1;
+    50% {
+      opacity: calc(1 - 0.65 * var(--motion-spatial));
     }
-    40% {
-      opacity: calc(1 - 0.55 * var(--motion-spatial));
-    }
-    60%, 100% {
+    100% {
       opacity: 1;
     }
   }
@@ -1567,20 +1600,14 @@
       opacity: 0;
     }
   }
-  @keyframes yorha-stream-clip {
-    from {
-      clip-path: inset(0 calc(100% * var(--motion-spatial)) 0 0);
-    }
-    to {
-      clip-path: inset(0);
-    }
-  }
-  @keyframes yorha-stream-fade {
+  @keyframes yorha-stream-in {
     from {
       opacity: 0;
+      translate: 0 calc(4px * var(--motion-spatial));
     }
     to {
       opacity: 1;
+      translate: 0 0;
     }
   }
   @keyframes yorha-route-scan-forward {

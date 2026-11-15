@@ -10,11 +10,11 @@ const LEADINGS = ["tight", "snug", "body", "latin", "body-cjk"];
 const SPACINGS = ["control-sm", "control-md", "control-lg", "row", "pad-sm", "pad-md", "pad-lg", "indicator", "bullet", "icon-sm", "icon-md", "icon-lg"];
 const TRACKINGS = ["body", "wide", "heading"];
 const SHADOWS = ["sm", "md", "lg"];
-const EASES = ["", "out", "in", "emphasized", "decelerate", "step-reveal", "step-scan", "step-loop", "step-flip"];
+const EASES = ["", "out", "move", "in", "emphasized", "decelerate", "step-reveal", "step-scan", "step-loop", "step-flip"];
 const FONTS = ["", "ja", "mono"];
 const FONT_WEIGHTS = ["light", "regular", "medium", "bold"];
 /** Transition motion utilities: they all own transition-property/duration/timing, so the last one wins. */
-const MOTION = ["pop", "panel", "fade", "slide-up", "slide-down", "slide-left", "slide-right", "collapse", "press", "dissolve", "glitch", "flicker", "caret", "stream"];
+const MOTION = ["pop", "panel", "fade", "slide-up", "slide-down", "slide-left", "slide-right", "collapse", "press", "unfold", "glitch", "flicker", "caret", "stream"];
 
 const pre = (names: string[]) => names.map((name) => (name ? `yorha-${name}` : "yorha"));
 

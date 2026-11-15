@@ -645,17 +645,52 @@
       },
       "modal": {
         "$value": {
-          "value": 280,
+          "value": 220,
           "unit": "ms"
         },
-        "$description": "Modal dialog and alert dialog enter, scrim fades with it."
+        "$description": "Modal dialog and alert dialog popup enter (yorha-unfold: clip unfolds from a centred line)."
       },
       "modal-exit": {
+        "$value": {
+          "value": 150,
+          "unit": "ms"
+        },
+        "$description": "Modal popup exit (faster than enter)."
+      },
+      "modal-backdrop": {
+        "$value": {
+          "value": 160,
+          "unit": "ms"
+        },
+        "$description": "Dialog and alert dialog backdrop fade, enter."
+      },
+      "modal-backdrop-exit": {
+        "$value": {
+          "value": 140,
+          "unit": "ms"
+        },
+        "$description": "Dialog and alert dialog backdrop fade, exit."
+      },
+      "modal-fade": {
+        "$value": {
+          "value": 90,
+          "unit": "ms"
+        },
+        "$description": "Dialog popup opacity fade-in (yorha-unfold), linear; 120ms linear when reduced."
+      },
+      "modal-content": {
         "$value": {
           "value": 200,
           "unit": "ms"
         },
-        "$description": "Modal exit (faster than enter)."
+        "$description": "Dialog content rises 4px and fades in (yorha-unfold)."
+      },
+      "modal-content-delay": {
+        "$value": {
+          "value": 60,
+          "unit": "ms"
+        },
+        "$description": "Delay before the dialog content starts (yorha-unfold)."
       },
       "drawer-exit": {
         "$value": {
@@ -666,24 +701,24 @@
       },
       "glitch": {
         "$value": {
-          "value": 240,
+          "value": 260,
           "unit": "ms"
         },
-        "$description": "RGB channel-split burst on one line of display text (yorha-glitch). One burst."
+        "$description": "RGB channel-split burst on one line of display text (yorha-glitch). The channel offset and slice decay smoothly. One burst."
       },
       "flicker": {
         "$value": {
-          "value": 240,
+          "value": 220,
           "unit": "ms"
         },
-        "$description": "Opacity-step burst on a non-text mark (yorha-flicker). One burst."
+        "$description": "One smooth opacity pulse 1 -> 0.35 -> 1 on a non-text mark (yorha-flicker)."
       },
       "stream": {
         "$value": {
           "value": 320,
           "unit": "ms"
         },
-        "$description": "One data row arriving (yorha-stream), stepped reveal."
+        "$description": "One data row arriving (yorha-stream): opacity and a 4px translate, staggered."
       },
       "caret": {
         "$value": {
@@ -706,12 +741,21 @@
       },
       "out": {
         "$value": [
-          0.16,
+          0.23,
           1,
-          0.3,
+          0.32,
           1
         ],
-        "$description": "Enter."
+        "$description": "Entrance and exit curve: strong ease-out. Dialog, popups, panels, route, toggles."
+      },
+      "move": {
+        "$value": [
+          0.77,
+          0,
+          0.175,
+          1
+        ],
+        "$description": "Movement of an element already on screen (ease-in-out)."
       },
       "in": {
         "$value": [
@@ -742,23 +786,23 @@
       },
       "step-reveal": {
         "$type": "string",
-        "$value": "steps(4, end)",
-        "$description": "Stepped reveal: popup scan (40ms per step at 160ms), stream, short reveals."
+        "$value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "$description": "Deprecated alias (v4 motion-smooth): motion is smooth, there are no stepped easings. Kept for one release; use ease-yorha-out."
       },
       "step-scan": {
         "$type": "string",
-        "$value": "steps(6, end)",
-        "$description": "Stepped scan: selection wipe (180ms), route entry (200ms)."
+        "$value": "cubic-bezier(0.23, 1, 0.32, 1)",
+        "$description": "Deprecated alias (v4 motion-smooth): motion is smooth, there are no stepped easings. Kept for one release; use ease-yorha-out."
       },
       "step-loop": {
         "$type": "string",
-        "$value": "steps(16, end)",
-        "$description": "Stepped travelling loaders."
+        "$value": "linear",
+        "$description": "Deprecated alias (v4 motion-smooth): motion is smooth, there are no stepped easings. Kept for one release; use ease-yorha-out."
       },
       "step-flip": {
         "$type": "string",
-        "$value": "steps(1, end)",
-        "$description": "Two-state changes: glitch, flicker, caret, dot chase."
+        "$value": "ease-in-out",
+        "$description": "Deprecated alias (v4 motion-smooth): motion is smooth, there are no stepped easings. Kept for one release; use ease-yorha-out."
       }
     },
     "reduced-fade": {
