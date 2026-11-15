@@ -66,15 +66,16 @@ function emulatePointer(kind: "fine" | "coarse") {
   vi.stubGlobal("matchMedia", (query: string) => {
     const m = /\(pointer:\s*(fine|coarse)\)/.exec(query);
     if (!m) return real(query);
-    const mql = real("all");
-    return Object.assign(Object.create(mql), {
+    return {
       matches: m[1] === kind,
       media: query,
+      onchange: null,
       addEventListener: () => {},
       removeEventListener: () => {},
       addListener: () => {},
       removeListener: () => {},
-    }) as MediaQueryList;
+      dispatchEvent: () => false,
+    } as MediaQueryList;
   });
 }
 
@@ -89,11 +90,11 @@ describe("V4-245 native date segments", () => {
       }
       expect(getComputedStyle(input).fontVariantNumeric).toContain("tabular-nums");
     }
-    const rules = allRules().filter((r) => r.cssText.includes("webkit-datetime-edit-day-field") && r.cssText.includes(":focus"));
+    const rules = allRules().filter((r) => "selectorText" in r && r.cssText.includes("webkit-datetime-edit-day-field") && r.cssText.includes(":focus"));
     expect(rules.length).toBeGreaterThan(0);
     const text = rules.map((r) => r.cssText).join(" ");
-    expect(text).toMatch(/background-color:\s*var\(--color-yorha-ink/);
-    expect(text).toMatch(/color:\s*var\(--color-yorha-on-ink/);
+    expect(text).toMatch(/background-color:\s*var\(--yorha-ink/);
+    expect(text).toMatch(/color:\s*var\(--yorha-on-ink/);
     expect(text).not.toMatch(/highlight|#[0-9a-f]{3,8}\b/i);
   });
 });
@@ -155,7 +156,7 @@ describe("V4-247 DatePicker required", () => {
     const input = q<HTMLInputElement>("[data-date-input]", c)!;
     expect(document.activeElement).toBe(input);
     expect(input.getAttribute("aria-invalid")).toBe("true");
-    const err = q("[data-slot=field-error]", c)!;
+    const err = q("[role=alert]", c)!;
     expect(err).toBeTruthy();
     expect(rect(err).height).toBeGreaterThan(0);
     for (const h of qa("input[type=hidden]", c)) expect(h.hasAttribute("form")).toBe(false);
@@ -196,7 +197,7 @@ describe("V4-248 form reset", () => {
 
   it("DatePicker returns text, value and hidden input to its defaultValue; typed errors clear", async () => {
     const c = await render(
-      <form>
+      <form onSubmit={(e) => e.preventDefault()}>
         <DatePicker label="출발일" name="start" defaultValue={new Date(2026, 10, 1)} today={TODAY} />
       </form>,
     );
@@ -212,7 +213,7 @@ describe("V4-248 form reset", () => {
     await frames(3);
     expect(input.value).toMatch(/2026\.\s*11\.\s*01\./);
     expect(q<HTMLInputElement>("input[type=hidden]", c)!.value).toBe("2026-11-01");
-    expect(q("[data-slot=field-error]", c)).toBeNull();
+    expect(q("[role=alert]", c)).toBeNull();
   });
 });
 
@@ -244,7 +245,7 @@ describe("V4-249 DatePicker clear and arrow keys", () => {
     expect(q("[aria-label=지우기]", c)).toBeNull();
   });
 
-  it("ArrowUp/Down move a day, Shift+Arrow and PageUp/Down a month; the frame never moves", async () => {
+  it("ArrowUp/Down add/subtract a day (like a spinner), Shift+Arrow and PageUp/Down a month; the frame never moves", async () => {
     const c = await render(<DatePicker label="출발일" name="start" defaultValue={TODAY} today={TODAY} />);
     const input = q<HTMLInputElement>("[data-date-input]", c)!;
     const frame = rect(q(FRAME, c)!);
@@ -256,7 +257,7 @@ describe("V4-249 DatePicker clear and arrow keys", () => {
     await userEvent.keyboard("{Shift>}{ArrowDown}{/Shift}");
     await frames(2);
     expect(hidden()).toBe("2026-10-15");
-    await userEvent.keyboard("{PageDown}");
+    await userEvent.keyboard("{PageUp}");
     await frames(2);
     expect(hidden()).toBe("2026-11-15");
     await userEvent.keyboard("{ArrowDown}{ArrowDown}");

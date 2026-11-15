@@ -296,7 +296,7 @@ describe("date picker field and popup (FCAL-04, 05, 06, 07, 19, 20)", () => {
     const c = await render(<DatePicker label="출발일" today={TODAY} />);
     const frame = q(FRAME, c)!;
     const input = q("input[data-date-input]", c)!;
-    const trigger = q("[data-slot=input-group-button]", c)!;
+    const trigger = q("[data-slot=input-group-button][aria-label=\"달력 열기\"]", c)!;
     expect(rect(frame).height).toBe(controlMd());
     expectSameHeight(input, trigger);
     expect(rect(trigger).width).toBe(rect(trigger).height);
@@ -311,8 +311,8 @@ describe("date picker field and popup (FCAL-04, 05, 06, 07, 19, 20)", () => {
   it("FCAL-05: a disabled picker looks disabled (cursor, colour) and keeps its geometry", async () => {
     const a = await render(<DatePicker label="가" today={TODAY} />);
     const b = await render(<DatePicker label="나" today={TODAY} disabled />);
-    const on = q("[data-slot=input-group-button]", a)!;
-    const off = q("[data-slot=input-group-button]", b)!;
+    const on = q("[data-slot=input-group-button][aria-label=\"달력 열기\"]", a)!;
+    const off = q("[data-slot=input-group-button][aria-label=\"달력 열기\"]", b)!;
     expect(off.hasAttribute("disabled")).toBe(true);
     expect(getComputedStyle(off).cursor).toBe("not-allowed");
     expect(getComputedStyle(off).color).not.toBe(getComputedStyle(on).color);
@@ -322,7 +322,7 @@ describe("date picker field and popup (FCAL-04, 05, 06, 07, 19, 20)", () => {
 
   it("FCAL-06/07: the popup opens below the field, start-aligned, 8px gap, inside the viewport and content-wide", async () => {
     const c = await render(<DatePicker label="출발일" today={TODAY} />);
-    await userEvent.click(q("[data-slot=input-group-button]", c)!);
+    await userEvent.click(q("[data-slot=input-group-button][aria-label=\"달력 열기\"]", c)!);
     await until(() => !!q("[data-slot=popover-content] [data-slot=calendar]"));
     await frames(8);
     await settled();
@@ -441,7 +441,7 @@ describe("calendar c2 fixes (C2-101, C2-102, C2-104)", () => {
     await page.viewport(1280, 360);
     try {
       const c = await render(<DatePicker label="출발일" today={TODAY} />);
-      await userEvent.click(q("[data-slot=input-group-button]", c)!);
+      await userEvent.click(q("[data-slot=input-group-button][aria-label=\"달력 열기\"]", c)!);
       await until(() => !!q("[data-slot=popover-content] [data-slot=calendar]"));
       await frames(8);
       await settled();

@@ -11,6 +11,20 @@ const FIELD_POPUP_COLLISION = { side: "flip", align: "shift", fallbackAxisSide: 
 
 export type DateInputType = "date" | "datetime-local" | "month" | "week" | "time";
 
+/** Focused native segment: ink block with on-ink text (replaces the UA blue highlight). Chromium and Safari pseudos. */
+const SEGMENT_FOCUS = "[&::-webkit-datetime-edit-year-field:focus]:bg-yorha-ink [&::-webkit-datetime-edit-year-field:focus]:text-yorha-on-ink [&::-webkit-datetime-edit-month-field:focus]:bg-yorha-ink [&::-webkit-datetime-edit-month-field:focus]:text-yorha-on-ink [&::-webkit-datetime-edit-day-field:focus]:bg-yorha-ink [&::-webkit-datetime-edit-day-field:focus]:text-yorha-on-ink [&::-webkit-datetime-edit-hour-field:focus]:bg-yorha-ink [&::-webkit-datetime-edit-hour-field:focus]:text-yorha-on-ink [&::-webkit-datetime-edit-minute-field:focus]:bg-yorha-ink [&::-webkit-datetime-edit-minute-field:focus]:text-yorha-on-ink [&::-webkit-datetime-edit-second-field:focus]:bg-yorha-ink [&::-webkit-datetime-edit-second-field:focus]:text-yorha-on-ink [&::-webkit-datetime-edit-millisecond-field:focus]:bg-yorha-ink [&::-webkit-datetime-edit-millisecond-field:focus]:text-yorha-on-ink [&::-webkit-datetime-edit-meridiem-field:focus]:bg-yorha-ink [&::-webkit-datetime-edit-meridiem-field:focus]:text-yorha-on-ink [&::-webkit-datetime-edit-week-field:focus]:bg-yorha-ink [&::-webkit-datetime-edit-week-field:focus]:text-yorha-on-ink";
+
+/** `(pointer: fine)` as an external store; the server snapshot assumes a fine pointer (calendar). */
+function subscribePointer(onChange: () => void) {
+  const mql = window.matchMedia("(pointer: fine)");
+  mql.addEventListener?.("change", onChange);
+  return () => mql.removeEventListener?.("change", onChange);
+}
+const finePointer = () => window.matchMedia("(pointer: fine)").matches;
+function useFinePointer(): boolean {
+  return React.useSyncExternalStore(subscribePointer, finePointer, () => true);
+}
+
 const pad = (n: number, w = 2) => String(n).padStart(w, "0");
 /** `2026-11-14` to a local Date, or null. */
 function fromIso(text: string | undefined): Date | null {
@@ -32,8 +46,12 @@ export interface DateInputProps {
   max?: string;
   /** Native step: days for date, seconds for time and datetime-local, months for month, weeks for week. */
   step?: number;
-  /** type=date only: the end button opens the kit Calendar instead of the native picker. */
-  picker?: boolean;
+  /**
+   * type=date only. `auto` (default): the end button opens the kit Calendar on fine pointers (mouse, trackpad) and the
+   * native picker on coarse pointers (phones, tablets). `calendar` / `native` force one. `true` / `false` are
+   * accepted as `calendar` / `native`. Other types always use the native picker.
+   */
+  picker?: "auto" | "calendar" | "native" | boolean;
   /** Accessible name of the end button. Default `달력 열기` (`시간 선택` for type=time). */
   pickerLabel?: string;
   name?: string;
@@ -49,8 +67,11 @@ export interface DateInputProps {
 
 /**
  * Native date/time input in one InputGroup frame with a YoRHa icon button at the end (the native indicator is hidden
- * for every type). The button opens the browser's picker (`showPicker()`); with `picker` and type=date it opens the
- * kit Calendar below the field instead, and picking a day writes the ISO value and returns focus to the button.
+ * for every type). The native segments stay (best mobile pickers, segment a11y, min/max/step validation); the focused
+ * segment is an ink block. The button opens the kit Calendar below the field for type=date on fine pointers
+ * (`picker="auto"`), otherwise the browser's picker (`showPicker()`); picking a day writes the ISO value and returns
+ * focus to the button. The control inherits `color-scheme` from the theme, so any UA popup follows light/dark.
+ * v4 BREAKING: `picker` defaults to `auto` (was off), so type=date now opens the kit Calendar with a mouse.
  * The native control's segment order and month/weekday words follow the browser UI locale, not `lang`: use
  * DatePicker when the text must be Korean.
  */
@@ -63,7 +84,7 @@ export function DateInput({
   min,
   max,
   step,
-  picker = false,
+  picker = "auto",
   pickerLabel,
   name,
   disabled,
@@ -80,7 +101,9 @@ export function DateInput({
   const calendarRef = React.useRef<HTMLDivElement>(null);
   const frameRef = React.useRef<HTMLDivElement>(null);
   const inputRef = React.useRef<HTMLInputElement>(null);
-  const showPicker = picker && type === "date";
+  const fine = useFinePointer();
+  const mode = picker === true ? "calendar" : picker === false ? "native" : picker;
+  const showPicker = type === "date" && (mode === "calendar" || (mode === "auto" && fine));
   const selected = fromIso(current);
   const buttonLabel = pickerLabel ?? (type === "time" ? "시간 선택" : "달력 열기");
   const icon = type === "time" ? <ClockIcon /> : <CalendarIcon />;
@@ -89,6 +112,19 @@ export function DateInput({
     setInner(next);
     onValueChange?.(next);
   };
+  // form.reset(): the native input would fall back to the last rendered `value` attribute, so restore defaultValue ourselves
+  const setRef = React.useRef(set);
+  setRef.current = set;
+  React.useEffect(() => {
+    const form = inputRef.current?.form;
+    if (!form) return;
+    const onReset = (e: Event) =>
+      queueMicrotask(() => {
+        if (!e.defaultPrevented) setRef.current(defaultValue);
+      });
+    form.addEventListener("reset", onReset);
+    return () => form.removeEventListener("reset", onReset);
+  }, [defaultValue]);
 
   const field = (
     <InputGroup ref={frameRef} invalid={Boolean(error)} disabled={disabled}>
@@ -104,7 +140,7 @@ export function DateInput({
         required={required}
         value={current}
         onChange={(e) => set(e.currentTarget.value)}
-        className="yorha-tabular [&::-webkit-calendar-picker-indicator]:hidden"
+        className={`yorha-tabular [&::-webkit-calendar-picker-indicator]:hidden ${SEGMENT_FOCUS}`}
       />
       {showPicker ? (
         <PopoverPrimitive.Trigger

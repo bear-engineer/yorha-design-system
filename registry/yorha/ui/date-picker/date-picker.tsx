@@ -1,7 +1,8 @@
 import * as React from "react";
-import { Calendar, type CalendarProps, type DateRange, isSameDay, startOfDay } from "@/components/ui/calendar";
+import { Calendar, type CalendarProps, type DateRange, addDays, addMonths, isSameDay, startOfDay } from "@/components/ui/calendar";
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover";
 import { CalendarIcon } from "@/components/ui/icons";
+import { Glyph } from "@/components/ui/glyph";
 import { Field, FieldDescription, FieldError, FieldGroupControl, FieldLabel } from "@/components/ui/field";
 import { InputGroup, InputGroupButton, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
 import { Popover, PopoverContent } from "@/components/ui/popover";
@@ -89,6 +90,9 @@ function isoOf(date: Date | null): string {
   return `${String(date.getFullYear()).padStart(4, "0")}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
+/** Submit events already answered by a picker (the first empty required picker takes focus). */
+const focusedSubmits = new WeakSet<Event>();
+
 /* ---------- shared picker ---------- */
 
 type CalendarPassThrough = Pick<
@@ -115,8 +119,14 @@ interface PickerCommonProps extends CalendarPassThrough {
   outOfRangeMessage?: string;
   /** Range only: message when the end is before the start. */
   rangeOrderMessage?: string;
+  /** Message when `required` and the field is empty at submit. */
+  requiredMessage?: string;
   /** Accessible name of the trigger button. */
   triggerLabel?: string;
+  /** Clear button inside the frame. Default: on unless `required`. It stays mounted and is hidden while empty. */
+  clearable?: boolean;
+  /** Accessible name of the clear button. */
+  clearLabel?: string;
   className?: string;
   id?: string;
 }
@@ -158,6 +168,8 @@ function PickerImpl(props: PickerImplProps) {
     outOfRangeMessage = "선택할 수 없는 날짜다.",
     rangeOrderMessage = "종료일이 시작일보다 빠릅니다",
     triggerLabel = "달력 열기",
+    requiredMessage = "날짜를 입력해야 한다.",
+    clearLabel = "지우기",
     className,
     id,
     minDate,
@@ -171,6 +183,7 @@ function PickerImpl(props: PickerImplProps) {
     labels,
   } = props;
   const isRange = mode === "range";
+  const clearable = props.clearable ?? !required;
 
   const [inner, setInner] = React.useState<Date | null | DateRange>(props.defaultValue ?? (isRange ? EMPTY_RANGE : null));
   const controlled = props.value !== undefined;
@@ -188,6 +201,7 @@ function PickerImpl(props: PickerImplProps) {
   React.useEffect(() => {
     setText({ from: fromFormatted, to: toFormatted });
     setTypedError(null);
+    setRequiredSide(null);
   }, [fromFormatted, toFormatted]);
 
   const min = minDate ? startOfDay(minDate) : undefined;
@@ -231,9 +245,90 @@ function PickerImpl(props: PickerImplProps) {
     setTypedError(null);
     setText((t) => ({ ...t, [side]: masked }));
   };
+  /**
+   * Spinner keys in the text field: ArrowUp/Down add or subtract a day, Shift+Arrow and PageUp/PageDown a month
+   * (up = later). Starts from the typed date, else the committed one, else today; unavailable days are skipped.
+   */
+  const stepText = (side: Side, e: React.KeyboardEvent<HTMLInputElement>): boolean => {
+    const dir = e.key === "ArrowUp" || e.key === "PageUp" ? 1 : e.key === "ArrowDown" || e.key === "PageDown" ? -1 : 0;
+    if (!dir || e.altKey || e.ctrlKey || e.metaKey) return false;
+    const monthly = e.key.startsWith("Page") || e.shiftKey;
+    const typed = text[side].trim();
+    const typedDate = typed ? parseDate(typed, locale) : null;
+    if (typed && !typedDate) return false;
+    const committed = isRange ? range[side] : (value as Date | null);
+    const base = typedDate ?? committed ?? startOfDay(today ?? new Date());
+    let next = monthly ? addMonths(base, dir) : addDays(base, dir);
+    for (let i = 0; i < 62 && unavailable(next); i++) next = addDays(next, dir);
+    if (unavailable(next)) return false;
+    if (isRange) {
+      const other = side === "from" ? range.to : range.from;
+      if (other && (side === "from" ? next > other : next < other)) return false;
+    }
+    e.preventDefault();
+    setTypedError(null);
+    setRequiredSide(null);
+    setText((t) => ({ ...t, [side]: formatDate(next, locale) }));
+    if (!isSameDay(isRange ? range[side] : (value as Date | null), next)) commit(isRange ? { ...range, [side]: next } : next);
+    return true;
+  };
   const onTextKeyDown = (side: Side, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") commitText(side);
+    else stepText(side, e);
   };
+  const hasValue = Boolean(text.from || text.to || (isRange ? range.from || range.to : value));
+  const frameInput = (index: number) => frameRef.current?.querySelectorAll<HTMLInputElement>("[data-date-input]")[index];
+  const clear = () => {
+    setTypedError(null);
+    setRequiredSide(null);
+    setText({ from: "", to: "" });
+    commit(isRange ? EMPTY_RANGE : null);
+    frameInput(0)?.focus();
+  };
+
+  // form integration: required submit check (hidden inputs never validate natively) and reset
+  const latest = React.useRef({ missing: (): Side | null => null, reset: () => {} });
+  latest.current = {
+    missing: () => (!required ? null : isRange ? (!range.from ? "from" : !range.to ? "to" : null) : !value ? "from" : null),
+    reset: () => {
+      const d = props.defaultValue ?? (isRange ? EMPTY_RANGE : null);
+      const r = isRange ? (d as DateRange) : EMPTY_RANGE;
+      setText({
+        from: isRange ? (r.from ? formatDate(r.from, locale) : "") : d ? formatDate(d as Date, locale) : "",
+        to: isRange && r.to ? formatDate(r.to, locale) : "",
+      });
+      setTypedError(null);
+      setRequiredSide(null);
+      setDraft(null);
+      commit(d);
+    },
+  };
+  React.useEffect(() => {
+    const form = frameRef.current?.closest("form");
+    if (!form) return;
+    const onSubmit = (e: Event) => {
+      const missing = latest.current.missing();
+      if (!missing) return;
+      e.preventDefault();
+      e.stopPropagation();
+      setRequiredSide(missing);
+      if (!focusedSubmits.has(e)) {
+        focusedSubmits.add(e);
+        frameInput(missing === "to" ? 1 : 0)?.focus();
+      }
+    };
+    const onReset = (e: Event) =>
+      queueMicrotask(() => {
+        if (!e.defaultPrevented) latest.current.reset();
+      });
+    form.addEventListener("submit", onSubmit, true);
+    form.addEventListener("reset", onReset);
+    return () => {
+      form.removeEventListener("submit", onSubmit, true);
+      form.removeEventListener("reset", onReset);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const [open, setOpenState] = React.useState(false);
   /** Range: the start picked in the popup stays a draft until the end is chosen; Escape restores the committed range. */
@@ -244,10 +339,11 @@ function PickerImpl(props: PickerImplProps) {
   };
   const calendarRef = React.useRef<HTMLDivElement | null>(null);
   const frameRef = React.useRef<HTMLDivElement | null>(null);
-  const shownError = error || typedError?.message;
+  const [requiredSide, setRequiredSide] = React.useState<Side | null>(null);
+  const shownError = error || typedError?.message || (requiredSide ? requiredMessage : undefined);
   const iso = isRange ? [isoOf(range.from), isoOf(range.to)] : [isoOf(value as Date | null)];
   const fieldPlaceholder = placeholder ?? placeholderOf(locale);
-  const invalidSide = typedError?.side ?? null;
+  const invalidSide = typedError?.side ?? requiredSide ?? null;
 
   const calendarProps = {
     minDate,
@@ -284,6 +380,17 @@ function PickerImpl(props: PickerImplProps) {
       <CalendarIcon />
     </PopoverPrimitive.Trigger>
   );
+  const clearButton = clearable ? (
+    <InputGroupButton
+      data-size-exempt={isRange ? "" : undefined}
+      aria-label={clearLabel}
+      disabled={disabled}
+      onClick={clear}
+      className={cn(isRange && "h-[calc(var(--yorha-control-md)-2px)]", !hasValue && "invisible")}
+    >
+      <Glyph name="cross" />
+    </InputGroupButton>
+  ) : null;
   const fieldId = id;
 
   return (
@@ -311,7 +418,7 @@ function PickerImpl(props: PickerImplProps) {
                 disabled={disabled}
                 autoComplete="off"
                 inputMode="numeric"
-                required={required}
+                aria-required={required || undefined}
                 lang={locale}
                 value={text.from}
                 placeholder={placeholderOf(locale)}
@@ -325,6 +432,7 @@ function PickerImpl(props: PickerImplProps) {
                 data-date-input=""
                 data-size-exempt=""
                 aria-label="종료일"
+                aria-required={required || undefined}
                 aria-invalid={invalidSide === "to" ? true : undefined}
                 disabled={disabled}
                 autoComplete="off"
@@ -337,6 +445,7 @@ function PickerImpl(props: PickerImplProps) {
                 onKeyDown={(e) => onTextKeyDown("to", e)}
                 className="yorha-tabular h-[calc(var(--yorha-control-md)-2px)] flex-1"
               />
+              {clearButton}
               {trigger}
             </>
           ) : (
@@ -346,7 +455,7 @@ function PickerImpl(props: PickerImplProps) {
                 data-date-input=""
                 autoComplete="off"
                 inputMode="numeric"
-                required={required}
+                aria-required={required || undefined}
                 lang={locale}
                 value={text.from}
                 placeholder={fieldPlaceholder}
@@ -355,6 +464,7 @@ function PickerImpl(props: PickerImplProps) {
                 onKeyDown={(e) => onTextKeyDown("from", e)}
                 className="yorha-tabular"
               />
+              {clearButton}
               {trigger}
             </>
           )}
