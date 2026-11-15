@@ -41,7 +41,7 @@ export const drawerStyles = {
     "tracking-yorha-heading text-yorha-on-ink " +
     "before:size-2 before:shrink-0 before:bg-current before:content-[''] " +
     "after:h-px after:flex-1 after:bg-yorha-on-ink-soft after:content-['']",
-  body: "min-h-0 flex-1 touch-auto overflow-y-auto overscroll-contain px-4 py-5 sm:px-6",
+  body: "yorha-scroll min-h-0 flex-1 touch-auto overflow-x-hidden px-4 py-5 sm:px-6",
   description: "text-yorha-base leading-yorha-body text-yorha-fg-strong",
   footer:
     "flex shrink-0 flex-wrap justify-end gap-3 border-t border-dotted border-yorha-separator px-4 py-4 sm:px-6 " +

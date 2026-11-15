@@ -76,8 +76,25 @@ const withMotion = async (mode: string, run: () => Promise<void>) => {
   }
 };
 
-/** Day preset = 4 px per hour (96 px per day). Items are HTML buttons over an aria-hidden SVG grid; overlapping items stack in sub-lanes. */
+/** Docs hero: zoom is `fit`, so every lane and the whole range sit inside the frame with no scrolling. Zoom controls still step the ladder. */
 export const Default: Story = {
+  args: { defaultZoom: "fit", range: { start: d(16), end: d(30, 20) } },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const group = c.getByRole("group", { name: "결제 모듈 출시 일정" });
+    await expect(group).toHaveAttribute("data-zoom", "fit");
+    const sc = q(canvasElement, "[data-part='scroller']");
+    await expect(q(canvasElement, "[data-part='canvas']").getBoundingClientRect().width).toBeLessThanOrEqual(sc.clientWidth + 0.5);
+    await expect(sc.scrollLeft).toBe(0);
+    await expect(qa(canvasElement, "[data-part='item-button']")).toHaveLength(items.length);
+    await expect(c.getByRole("button", { name: /^배포: 운영 배포, / })).toBeInTheDocument();
+  },
+};
+
+/** Day preset = 4 px per hour (96 px per day). Items are HTML buttons over an aria-hidden SVG grid; overlapping items stack in sub-lanes. */
+export const DayGeometry: Story = {
+  tags: ["!autodocs"],
+  args: { defaultZoom: "day" },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const group = c.getByRole("group", { name: "결제 모듈 출시 일정" });

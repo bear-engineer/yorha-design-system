@@ -13,14 +13,31 @@ const rootFontSize = () => parseFloat(getComputedStyle(document.documentElement)
 /** "180ms" -> "0.18s", the form getComputedStyle reports. */
 const toSeconds = (ms: string) => `${parseFloat(ms) / 1000}s`;
 
+const SPACING_STEPS = [1, 2, 3, 4, 6, 8, 10, 12] as const;
+
 function DensityDemo() {
   return (
-    <div className="flex flex-wrap items-start gap-4 font-yorha text-yorha-fg">
+    <div className="grid grid-cols-1 gap-4 font-yorha text-yorha-fg min-[640px]:grid-cols-3 [&>*]:min-w-0">
       {DENSITIES.map((density) => (
         <div key={density} role="group" aria-label={`밀도 ${density}`} data-density={density} className="border border-yorha-border bg-yorha-panel">
-          <div data-testid={`spacing-${density}`} className="p-4" />
-          <div data-testid={`box-${density}`} className="grid h-control-md place-items-center px-pad-md">
-            <p className="text-yorha-sm tracking-yorha-wide uppercase">{density}</p>
+          <div data-testid={`spacing-${density}`} className="p-4">
+            <p className="m-0 font-yorha-mono text-yorha-xs text-yorha-fg-soft">p-4 = 16px · 4px grid</p>
+          </div>
+          <div data-testid={`box-${density}`} className="grid h-control-md place-items-center border-y border-yorha-border bg-yorha-ink px-pad-md text-yorha-on-ink">
+            <p className="m-0 text-yorha-sm tracking-yorha-wide uppercase">{density}</p>
+          </div>
+          <div className="flex flex-col gap-2 p-4" aria-hidden="true">
+            {(["sm", "md", "lg"] as const).map((size) => (
+              <div key={size} className="flex items-center justify-between border border-yorha-border px-pad-sm font-yorha-mono text-yorha-xs" style={{ height: `var(--yorha-control-${size})` }}>
+                <span>control.{size}</span>
+                <span className="text-yorha-fg-soft">row</span>
+              </div>
+            ))}
+            <div className="mt-2 grid grid-cols-8 gap-1">
+              {SPACING_STEPS.map((step) => (
+                <span key={step} className="block aspect-square bg-yorha-ink" style={{ opacity: 0.25 + step * 0.06 }} />
+              ))}
+            </div>
           </div>
         </div>
       ))}

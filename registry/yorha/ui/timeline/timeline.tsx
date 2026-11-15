@@ -472,7 +472,7 @@ export function TimelineGraph({
       full: mk({ month: "long", day: "numeric", hour: "numeric", minute: "2-digit" }),
       cell: mk({ dateStyle: "medium", timeStyle: "short" }),
       time: hm,
-      minor: { "1h": hm, "6h": hm, "12h": hm, "1d": mk({ day: "numeric", weekday: "short" }), "1w": mk({ month: "short", day: "numeric" }) } as Record<string, Intl.DateTimeFormat>,
+      minor: { "1h": hm, "6h": hm, "12h": hm, "1d": mk({ day: "numeric", weekday: "short" }), "1dn": mk({ day: "numeric" }), "1w": mk({ month: "short", day: "numeric" }) } as Record<string, Intl.DateTimeFormat>,
       major: { "1d": mk({ month: "short", day: "numeric", weekday: "short" }), "1w": mk({ month: "short", day: "numeric" }), "1mo": mk({ year: "numeric", month: "long" }) } as Record<string, Intl.DateTimeFormat>,
     };
   }, [locale, timeZone]);
@@ -1344,7 +1344,7 @@ export function TimelineGraph({
             data-part="scroller"
             data-pan={panReady ? "ready" : undefined}
             {...(visible.length ? {} : { role: "region", "aria-label": label, tabIndex: 0 })}
-            className={cn("relative min-w-0 overflow-auto overscroll-x-contain [touch-action:pan-x_pan-y]", panReady && "cursor-grab")}
+            className={cn("yorha-scroll relative min-w-0 overscroll-x-contain [touch-action:pan-x_pan-y]", panReady && "cursor-grab")}
             style={maxHeight !== undefined ? { maxHeight } : undefined}
             onScroll={(e) => {
               if (labelsRef.current) labelsRef.current.scrollTop = e.currentTarget.scrollTop;
@@ -1392,16 +1392,18 @@ export function TimelineGraph({
               </svg>
               <div data-part="axis" className="sticky top-0 z-30 bg-yorha-panel" style={{ height: AXIS.height, width: canvasW }}>
                 <div className="absolute inset-x-0 bottom-0 border-b border-yorha-border" />
-                {majorSegs.map((s) => (
+                {majorSegs.map((s, si) => (
                   <div key={s.ms} data-part="tick-major" className="absolute overflow-hidden" style={{ left: s.x0, width: s.x1 - s.x0, top: AXIS.guides, height: AXIS.major }}>
                     {(() => {
                       const at = Math.max(s.ms, startMs);
+                      // The last segment can be clipped by the range end to a sliver (< 72 px, the longest label): leave it unlabelled rather than ellipsize.
+                      const sliver = si === majorSegs.length - 1 && s.x1 - s.x0 < 72 && majorSegs.length > 1;
                       const full = f.major[ticks.major.unit]!.format(at);
                       // A day column under 120 px (8 px/h and below) cannot hold "11월 16일 (월)" once text spacing widens it: drop the month, keep the full date in title.
                       // One format for the whole axis: decided by the full day width, never by this segment's (an edge day is clipped by the range and would mix formats).
                       const short = ticks.major.unit === "1d" && 24 * px < 120 ? f.minor["1d"]!.format(at) : full;
                       return (
-                        <span data-part="tick-label" title={short === full ? undefined : full} className="sticky left-0 block max-w-full truncate px-1.5 text-yorha-xs leading-5 font-yorha-bold text-yorha-fg">
+                        <span data-part="tick-label" title={short === full ? undefined : full} className={cn("sticky left-0 block max-w-full truncate px-1.5 text-yorha-xs leading-5 font-yorha-bold text-yorha-fg", sliver && "hidden")}>
                           {short}
                         </span>
                       );
@@ -1411,10 +1413,17 @@ export function TimelineGraph({
                 {minorXs.map((tk, i) => {
                   const next = minorXs[i + 1]?.x ?? tk.x + Math.round(ticks.minor!.pitchPx);
                   const w = Math.min(next, canvasW) - tk.x;
+                  // The last cell can be clipped by the range end to a sliver; a label there would ellipsize, so the cell stays empty (the grid line still marks it).
+                  const sliver = i === minorXs.length - 1 && w < ticks.minor!.pitchPx * 0.75;
                   return w > 0 ? (
                     <div key={tk.ms} data-part="tick-minor" className="absolute overflow-hidden border-l border-yorha-border" style={{ left: tk.x, width: w, top: AXIS.guides + AXIS.major, height: AXIS.minor }}>
-                      <span data-part="tick-label" className="yorha-tabular block truncate px-1 text-yorha-xs leading-5 text-yorha-fg-soft">
-                        {f.minor[ticks.minor!.unit as TickUnit]!.format(tk.ms)}
+                      <span
+                        data-part="tick-label"
+                        title={ticks.minor!.unit === "1d" && ticks.minor!.pitchPx < 72 ? f.minor["1d"]!.format(tk.ms) : undefined}
+                        className="yorha-tabular block truncate px-1 text-yorha-xs leading-5 text-yorha-fg-soft"
+                      >
+                        {/* A day cell under 72 px cannot hold the weekday without an ellipsis: show the day number, the weekday stays in the title. */}
+                        {sliver ? null : f.minor[ticks.minor!.unit === "1d" && ticks.minor!.pitchPx < 72 ? "1dn" : (ticks.minor!.unit as TickUnit)]!.format(tk.ms)}
                       </span>
                     </div>
                   ) : null;

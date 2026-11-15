@@ -366,7 +366,7 @@ export function KanbanColumn({
           aria-labelledby={headingId}
           data-slot="kanban-list"
           className={cn(
-            "yorha-scroll-cue-y relative m-0 flex max-h-96 min-h-16 flex-col gap-3 overflow-y-auto p-0 [--yorha-scroll-ground:var(--yorha-panel)]",
+            "yorha-scroll yorha-scroll-cue-y relative m-0 flex max-h-96 min-h-16 flex-col gap-3 overflow-x-hidden overflow-y-auto p-0 [--yorha-scroll-ground:var(--yorha-panel)]",
             folded && "hidden",
           )}
         >
@@ -642,7 +642,7 @@ export function KanbanBoard({
         aria-label={label}
         style={holdHeight !== null ? { minHeight: holdHeight } : undefined}
         data-dragging={activeId !== null ? "" : undefined}
-        className={cn("relative flex snap-x snap-proximity data-[dragging]:snap-none scroll-px-1 items-start gap-4 overflow-x-auto overscroll-x-contain p-1", className)}
+        className={cn("yorha-scroll relative flex snap-x snap-proximity data-[dragging]:snap-none scroll-px-1 items-start gap-4 overflow-x-auto overscroll-x-contain p-1", className)}
       >
         {view.map((column) => (
           <KanbanColumn

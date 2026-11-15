@@ -127,7 +127,7 @@ describe("V4-050/051 layer split and sub-lanes", () => {
     expect(heights[1]).toBe(44);
   });
   test("time -> x within 1 px (day preset = 4 px/h)", async () => {
-    const root = await mountTl("Default");
+    const root = await mountTl("DayGeometry");
     await frames(20);
     const canvas = r(q(root, "[data-part='canvas']"));
     const wire = r(q(root, "[data-item-id='wire']"));
@@ -164,7 +164,7 @@ describe("V4-052/053 axis and now", () => {
     expect(Math.abs(r(now).left - canvas.left - (4 * 24 + 14) * 4)).toBeLessThanOrEqual(1);
   });
   test("jump-to-now button + apiRef-free zoom buttons walk the ladder", async () => {
-    const root = await mountTl("Default");
+    const root = await mountTl("DayGeometry");
     const group = q(root, "[role='group'][data-slot='timeline-graph']");
     expect(group.getAttribute("data-px-per-hour")).toBe("4");
     await userEvent.click(q(root, "button[aria-label='확대']"));
@@ -223,7 +223,7 @@ describe("V4-054/055 labels, hover, selection", () => {
 
 describe("V4-056 keyboard", () => {
   test("Down lands on the max-overlap item of the next lane, Up returns; Home/End; t; +/-", async () => {
-    const root = await mountTl("Default");
+    const root = await mountTl("DayGeometry");
     const wire = itemBtn(root, "wire");
     wire.focus();
     await userEvent.keyboard("{ArrowDown}");
@@ -317,7 +317,7 @@ describe("V4-059..067 extensions", () => {
     expect(q(root, "[data-item-id='before']")).toBeNull();
   });
   test("V4-063 Ctrl+wheel keeps the time under the pointer within 1 px", async () => {
-    const root = await mountTl("Default");
+    const root = await mountTl("DayGeometry");
     await frames(10);
     const sc = q(root, "[data-part='scroller']");
     const canvas = q(root, "[data-part='canvas']");

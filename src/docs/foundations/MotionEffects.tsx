@@ -138,7 +138,7 @@ function Pixel() {
   const swatch = "block h-6 w-16";
   return (
     <Cell name="yorha-dither-12/25/50/75, yorha-dots, yorha-rail" action={null}>
-      <div className="flex items-center gap-2 text-yorha-ink" aria-hidden="true">
+      <div className="flex flex-wrap items-center gap-2 text-yorha-ink" aria-hidden="true">
         <span className={`${swatch} yorha-dither-12`} />
         <span className={`${swatch} yorha-dither-25`} />
         <span className={`${swatch} yorha-dither-50`} />
@@ -152,7 +152,7 @@ function Pixel() {
 
 export function MotionEffects() {
   return (
-    <div className="grid gap-4 font-yorha text-yorha-fg md:grid-cols-3" data-testid="motion-effects">
+    <div className="grid gap-4 font-yorha text-yorha-fg md:grid-cols-3 [&>*]:min-w-0" data-testid="motion-effects">
       {MODES.map((mode) => (
         <section key={mode} aria-label={`모션 ${mode}`} data-motion={mode} className="flex flex-col gap-3 border border-yorha-border bg-yorha-panel p-4">
           <h3 className="text-yorha-sm tracking-yorha-wide uppercase">data-motion={mode}</h3>

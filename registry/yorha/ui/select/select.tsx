@@ -166,7 +166,7 @@ function SelectContent({
           {...props}
         >
           <SelectScrollUpArrow />
-          <SelectPrimitive.List data-slot="select-list" className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <SelectPrimitive.List data-slot="select-list" className="yorha-scroll min-h-0 flex-1 overflow-x-hidden">
             {children}
           </SelectPrimitive.List>
           <SelectScrollDownArrow />

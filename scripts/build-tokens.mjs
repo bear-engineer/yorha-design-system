@@ -543,11 +543,18 @@ const SURFACE = {
   "border-radius": "var(--yorha-radius)",
   "box-shadow": "4px 4px 0 0 var(--yorha-shadow)",
 };
+// The one kit scrollbar: a hard 6px ink thumb (square, no radius) on the paper, a 1px rule for the track, per theme through the tokens.
+// Chromium ignores ::-webkit-scrollbar once scrollbar-width/color are set, so the standard pair is only for engines without the pseudo (Firefox).
 const SCROLL = {
   overflow: "auto",
   "overscroll-behavior": "contain",
-  "scrollbar-width": "thin",
-  "scrollbar-color": "var(--yorha-border) transparent",
+  "@supports not selector(::-webkit-scrollbar)": { "scrollbar-width": "thin", "scrollbar-color": "var(--yorha-ink) transparent" },
+  "&::-webkit-scrollbar": { width: "10px", height: "10px", "background-color": "transparent" },
+  "&::-webkit-scrollbar-track": { "background-color": "transparent" },
+  "&::-webkit-scrollbar-track:vertical": { "border-left": "1px solid var(--yorha-border)" },
+  "&::-webkit-scrollbar-track:horizontal": { "border-top": "1px solid var(--yorha-border)" },
+  "&::-webkit-scrollbar-thumb": { "background-color": "var(--yorha-ink)", "border-radius": "0", border: "2px solid transparent", "background-clip": "padding-box" },
+  "&::-webkit-scrollbar-corner": { "background-color": "transparent" },
 };
 // Edge hairlines that appear only while content is scrolled away from that edge (local covers hide the scroll-attached lines).
 // Set --yorha-scroll-ground to the host's background when it is not the page background.

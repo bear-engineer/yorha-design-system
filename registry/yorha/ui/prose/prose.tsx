@@ -7,6 +7,8 @@ import { cn } from "@/lib/utils";
 const ROOT =
   "yorha-prose font-yorha text-yorha-base text-yorha-fg [line-height:var(--yorha-leading-body)] " +
   "[&:lang(ja)]:[line-break:strict] " +
+  // measure: ~68ch of Latin, ~38em of Hangul/CJK (a ch is half an em, so the em cap is what holds Korean to about 38 characters per line)
+  "max-w-[min(var(--yorha-measure),68ch)]! [&:lang(ko)]:max-w-[38em]! [&:lang(ja)]:max-w-[38em]! [&:lang(zh)]:max-w-[38em]! " +
   // headings: Latin uppercase tracked, Korean keeps case and normal tracking (matches Heading)
   "[&_h2]:mt-8 [&_h2]:mb-3 [&_h2]:font-yorha-bold [&_h2]:text-yorha-xl [&_h2]:uppercase [&_h2]:tracking-yorha-heading " +
   "[&:lang(ko)_h2]:normal-case [&:lang(ko)_h2]:tracking-yorha-body " +
@@ -80,7 +82,7 @@ export function ProseTable({ label, caption, className, children, ...rest }: Pro
       role="region"
       aria-label={label}
       tabIndex={overflowing ? 0 : undefined}
-      className="yorha-scroll-cue-x my-4 w-full overflow-x-auto rounded-yorha"
+      className="yorha-scroll yorha-scroll-cue-x my-4 w-full overflow-y-hidden rounded-yorha"
     >
       <table
         ref={tableRef}

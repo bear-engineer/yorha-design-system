@@ -7,6 +7,8 @@ import { Sidebar, type SidebarProps, type SidebarSection } from "@/components/si
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Glyph } from "@/components/ui/glyph";
 import { PageHeader } from "@/components/page-header";
+import { Panel } from "@/components/ui/panel";
+import { Meter } from "@/components/ui/meter";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -70,7 +72,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** The sidebar docked in an app frame: column on the left, page header + content placeholder on the right (1280 x 720). */
-function Dock({ children, theme }: { children: ReactNode; theme?: string }) {
+function Dock({ children, theme, body }: { children: ReactNode; theme?: string; body?: ReactNode }) {
   return (
     <div data-theme={theme} className="flex h-[720px] w-[1280px] max-w-full overflow-hidden border border-yorha-border bg-yorha-bg text-yorha-fg">
       {children}
@@ -81,25 +83,57 @@ function Dock({ children, theme }: { children: ReactNode; theme?: string }) {
           title="유닛"
           description="본문 영역의 자리 표시자입니다. 사이드바는 256px 고정 열이고 높이를 끝까지 채웁니다."
         />
-        <div className="grid grid-cols-3 gap-4 p-6">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <div key={i} aria-hidden="true" className="h-28 border border-yorha-border bg-yorha-panel" />
-          ))}
-        </div>
+        {body ?? (
+          <div className="grid grid-cols-3 gap-4 p-6">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div key={i} aria-hidden="true" className="h-28 border border-yorha-border bg-yorha-panel" />
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-const docked = (extra: Partial<SidebarProps> = {}, theme?: string): Story["render"] => (args) => (
-  <Dock theme={theme}>
+/** A believable page body for the docs hero: status gauges, an activity list and a notes panel. */
+const PAGE_BODY = (
+  <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-3">
+    <Panel titleLevel={2} title="기체 상태" className="md:col-span-2">
+      <div className="flex flex-col gap-4">
+        <Meter label="내구도" value={82} max={100} low={40} critical={20} />
+        <Meter label="에너지" value={64} max={100} low={40} critical={20} />
+        <Meter label="통신 감도" value={31} max={100} low={40} critical={20} />
+      </div>
+    </Panel>
+    <Panel titleLevel={2} title="오늘의 작업">
+      <ul className="m-0 flex list-none flex-col gap-2 p-0 text-yorha-sm">
+        <li>정찰 보고서 검토</li>
+        <li>부품 보급 요청 승인</li>
+        <li>로그 동기화 확인</li>
+      </ul>
+    </Panel>
+    <Panel titleLevel={2} title="최근 로그" className="md:col-span-3">
+      <dl className="m-0 grid grid-cols-[auto_1fr] gap-x-6 gap-y-2 font-yorha-mono text-yorha-xs">
+        <dt className="text-yorha-fg-soft">09:12</dt>
+        <dd className="m-0">지휘 서버 연결 확립</dd>
+        <dt className="text-yorha-fg-soft">09:40</dt>
+        <dd className="m-0">A-2 기체 점검 완료, 이상 없음</dd>
+        <dt className="text-yorha-fg-soft">11:05</dt>
+        <dd className="m-0">보급 요청 3건 접수</dd>
+      </dl>
+    </Panel>
+  </div>
+);
+
+const docked = (extra: Partial<SidebarProps> = {}, theme?: string, body?: ReactNode): Story["render"] => (args) => (
+  <Dock theme={theme} body={body}>
     <Sidebar {...args} {...extra} />
   </Dock>
 );
 
 /** 주 메뉴 landmark, 섹션 제목(h2)마다 이름 붙은 목록, 활성 링크는 aria-current=page. 폭은 256px 고정이고 높이는 컨테이너를 채운다. */
 export const Default: Story = {
-  render: docked({ header: HEADER, footer: FOOTER }),
+  render: docked({ header: HEADER, footer: FOOTER }, undefined, PAGE_BODY),
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const nav = c.getByRole("navigation", { name: "주 메뉴" });

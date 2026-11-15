@@ -99,7 +99,7 @@ export const Multiple: Story = {
 
 export const Themes: Story = {
   render: () => (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 gap-4 min-[480px]:grid-cols-3 [&>*]:min-w-0">
       {THEMES.map((t) => (
         <div key={t} data-theme={t}>
           <Demo />

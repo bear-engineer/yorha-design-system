@@ -95,7 +95,7 @@ export function CommandPalette({ commands, onRun, triggerLabel = "명령 팔레�
           <p id={statusId} role="status" className="m-0 text-yorha-xs text-yorha-fg-soft">
             {rows.length === 0 ? "일치하는 명령이 없습니다" : `${rows.length}개 명령`}
           </p>
-          <div ref={listRef} className="max-h-72 overflow-y-auto">
+          <div ref={listRef} className="yorha-scroll max-h-72 overflow-x-hidden">
             {rows.length > 0 ? (
               <MenuList aria-label="명령 목록" value={current?.id ?? null} onValueChange={setValue} onActivate={(id) => run(String(id))}>
                 {rows.map((c) => (

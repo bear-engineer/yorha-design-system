@@ -617,7 +617,7 @@ describe("craft v3 recipes (G5-G10)", () => {
 
     it("yorha-scroll: contained thin scrollbar; yorha-scroll-cue-x: edge hairlines that show only when scrolled away", () => {
       const scroll = utility("yorha-scroll");
-      for (const rule of ["overflow: auto;", "overscroll-behavior: contain;", "scrollbar-width: thin;", "scrollbar-color: var(--yorha-border) transparent;"]) expect(scroll, rule).toContain(rule);
+      for (const rule of ["overflow: auto;", "overscroll-behavior: contain;", "scrollbar-width: thin;", "scrollbar-color: var(--yorha-ink) transparent;", "&::-webkit-scrollbar-thumb", "background-color: var(--yorha-ink);", "border-radius: 0;", "@supports not selector(::-webkit-scrollbar)"]) expect(scroll, rule).toContain(rule);
       const cue = utility("yorha-scroll-cue-x");
       expect(cue).toMatch(/background-attachment: local, local, scroll, scroll;/);
       expect(cue).toContain("var(--yorha-scroll-ground, var(--yorha-bg))");
