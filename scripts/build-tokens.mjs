@@ -521,6 +521,8 @@ const ROW = {
   "background-repeat": "no-repeat",
   "transition-property": "background-size, color",
   "transition-duration": "0s",
+  // Keyboard focus adds a 1px frame inside the ink band, so a hovered row (band only) and a focused row (band + frame) differ.
+  "&:focus-visible:not([data-disabled])": { outline: "1px solid var(--yorha-on-ink)", "outline-offset": "-3px" },
   "&[data-highlighted]:not([data-disabled])": {
     "background-size": "100% 100%",
     color: "var(--yorha-on-ink)",
@@ -668,7 +670,14 @@ function buildModel(tokens) {
   const css = {};
   for (const { pkg, files } of FONTS) for (const file of files) css[`@import "${pkg}/${file}"`] = {};
   css[`@custom-variant dark (${DARK_VARIANT})`] = {};
-  css[":root"] = { "color-scheme": scheme(theme.default), ...dashed(rootVars), ...dashed(PIXEL_VARS) };
+  css[":root"] = {
+    "color-scheme": scheme(theme.default),
+    ...dashed(rootVars),
+    ...dashed(PIXEL_VARS),
+    // Latin tracking kept under its own names so a lang="en" island inside a Korean page can restore it (see :lang(ko) below).
+    "--yorha-tracking-wide-latin": rootVars["yorha-tracking-wide"],
+    "--yorha-tracking-heading-latin": rootVars["yorha-tracking-heading"],
+  };
   css[".dark"] = { "color-scheme": "dark" };
   for (const context of themeNames) {
     css[`[data-theme=${context}]`] = {
@@ -683,11 +692,23 @@ function buildModel(tokens) {
   // `--yorha-leading-body` is declared where the lang matches (and on every density root), so a density subtree re-resolves it.
   css[":root, [data-density], :lang(en)"] = { "--yorha-leading-body": "var(--yorha-leading-latin)" };
   css[":lang(ko), :lang(ja)"] = { "--yorha-leading-body": "var(--yorha-leading-body-cjk)" };
+  // Tracking and case are for Latin: Hangul has no case and falls apart under wide tracking, so Korean text caps tracking at 0.02em.
+  // Unlayered on purpose: it must beat the `uppercase` utility. `lang="en"` islands inside a Korean page keep the Latin values.
+  css[":lang(ko), :lang(ja)"] = { ...css[":lang(ko), :lang(ja)"], "--yorha-tracking-wide": "0.02em", "--yorha-tracking-heading": "0.02em" };
+  css[":lang(ko):not(:lang(en)), :lang(ja):not(:lang(en))"] = { "text-transform": "none" };
+  css[":lang(en)"] = { "--yorha-tracking-wide": "var(--yorha-tracking-wide-latin)", "--yorha-tracking-heading": "var(--yorha-tracking-heading-latin)" };
   css["@media (prefers-reduced-motion: reduce)"] = { ":root:not([data-motion=full])": dashed(modifierBlocks.motion.reduced) };
   for (const [context, vars] of Object.entries(modifierBlocks.motion)) css[`[data-motion=${context}]`] = dashed(vars);
   css["@utility yorha-focus"] = focusRing;
   // Flush items inside a clipping or shared-border container: the ring sits inside the box (currentColor stays visible on ink).
   css["@utility yorha-focus-inset"] = { outline: "var(--yorha-ring-width) solid currentColor", "outline-offset": "calc(var(--yorha-ring-width) * -1)" };
+  // Non-prose link: 1px rule at 4px offset (like Breadcrumb); hover fills an ink block (background only, no box change).
+  css["@utility yorha-link"] = {
+    "text-decoration-line": "underline",
+    "text-decoration-thickness": "1px",
+    "text-underline-offset": "4px",
+    "&:hover": { "background-color": "var(--yorha-ink)", color: "var(--yorha-on-ink)" },
+  };
   css["@utility yorha-row"] = ROW;
   css["@utility yorha-surface"] = SURFACE;
   css["@utility yorha-scroll"] = SCROLL;

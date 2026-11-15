@@ -18,10 +18,8 @@ const SIZE: Record<HeadingLevel, string> = {
 };
 
 // Colour is inherited so the caller's surface decides it (panel header strip, page, etc.).
-// Korean: no uppercase transform and no wide tracking (CJK glyphs have no case and break apart).
-const BASE =
-  "font-yorha font-yorha-bold uppercase tracking-yorha-heading " +
-  "[&:lang(ko)]:normal-case [&:lang(ko)]:tracking-yorha-body";
+// Korean: the shared :lang(ko) rule drops uppercase and caps `--yorha-tracking-heading` at 0.02em (Hangul has no case and breaks apart under wide tracking).
+const BASE = "font-yorha font-yorha-bold uppercase tracking-yorha-heading";
 // The offset shadow is for the page title only (36px, Latin). Never on ink strips or below 36px, and CJK glyphs smear.
 const SHADOW = "text-shadow-yorha [&:lang(ko)]:text-shadow-none [&:lang(ja)]:text-shadow-none";
 

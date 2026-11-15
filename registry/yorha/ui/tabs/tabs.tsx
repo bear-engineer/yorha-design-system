@@ -93,7 +93,7 @@ function TabsPanel({ className, ...props }: ComponentProps<typeof TabsPrimitive.
           // enter = opacity only over --motion-select; exit = 0 (the leaving panel is display:none at once: never stacked above the new one, so no row growth and no overlap)
           "transition-opacity duration-(--motion-select) ease-yorha-out",
           "data-[starting-style]:opacity-0 data-[ending-style]:hidden",
-          "focus-visible:yorha-focus",
+          "focus-visible:yorha-focus-inset",
         ],
         className,
       )}

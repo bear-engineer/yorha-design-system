@@ -226,8 +226,9 @@ export function DataTableRow({ className, ...props }: ComponentPropsWithoutRef<"
     <tr
       className={cn(
         "transition-colors duration-(--motion-select) ease-yorha-out",
-        "[tbody>&]:yorha-tint [tbody>&]:data-[selected]:bg-yorha-ink [tbody>&]:data-[selected]:text-yorha-on-ink",
-        "[tbody>&[data-selected]>td]:text-yorha-on-ink [tbody>&[data-selected]>th]:text-yorha-on-ink",
+        // Selected = paper-dark tint + 2px ink marker on the first cell (the ink fill belongs to the header row).
+        "[tbody>&]:yorha-tint [tbody>&]:data-[selected]:bg-[color-mix(in_srgb,var(--yorha-ink)_11%,var(--yorha-bg))] [tbody>&]:data-[selected]:text-yorha-fg-strong",
+        "[tbody>&[data-selected]>:first-child]:shadow-[inset_2px_0_0_var(--yorha-ink)]",
         className,
       )}
       {...props}
@@ -383,8 +384,8 @@ export function DataTableHeadCell({
           onPointerCancel={() => (drag.current = null)}
           className={cn(
             "absolute inset-y-0 -right-3 z-10 w-6 cursor-col-resize touch-none outline-none",
-            "after:absolute after:inset-y-1 after:left-[11px] after:w-0.5 after:bg-yorha-on-ink/40 after:content-['']",
-            "hover:after:bg-yorha-on-ink focus-visible:after:bg-yorha-alert-on-ink focus-visible:yorha-focus-inset",
+            "after:absolute after:inset-y-1 after:left-[10px] after:w-0.5 after:bg-yorha-on-ink/40 after:content-['']",
+            "hover:after:bg-yorha-on-ink focus-visible:after:inset-y-0 focus-visible:after:bg-yorha-on-ink",
           )}
         />
       ) : null}
@@ -444,7 +445,7 @@ interface SelectProps {
 export function DataTableSelectCell({ label, checked, onCheckedChange, disabled, className }: SelectProps) {
   return (
     // The kit Checkbox row is one text line tall; pin it to the 24 px box so the row height is the same loading and loaded.
-    <td className={cn("w-12 px-3 align-top [&>label>span:first-child]:h-6 [tr[data-selected]>&]:bg-yorha-bg [tr[data-selected]>&]:text-yorha-fg", CELL_PAD, className)}>
+    <td className={cn("w-12 px-3 align-top [&>label>span:first-child]:h-6", CELL_PAD, className)}>
       <Checkbox checked={checked} disabled={disabled} onCheckedChange={(next) => onCheckedChange?.(next)}>
         <span className="sr-only">{label}</span>
       </Checkbox>

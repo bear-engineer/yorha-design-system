@@ -24,7 +24,7 @@ const ARROW_POS =
  */
 export const previewCardStyles = {
   trigger:
-    "cursor-pointer text-yorha-fg underline decoration-dotted underline-offset-4 focus-visible:yorha-focus " +
+    "cursor-pointer text-yorha-fg yorha-link focus-visible:yorha-focus " +
     "-mx-1 px-1 box-decoration-clone data-[popup-open]:bg-yorha-ink data-[popup-open]:text-yorha-on-ink data-[popup-open]:decoration-transparent",
   popup:
     "yorha-pop max-w-[min(20rem,calc(100vw-1rem))] min-w-56 rounded-yorha border border-yorha-border bg-yorha-panel p-4 text-yorha-fg shadow-yorha-md " +

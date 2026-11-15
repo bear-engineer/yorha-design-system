@@ -184,8 +184,10 @@ const ROW = cn(
   "border-y-[length:var(--menu-rule)] border-solid border-transparent",
   "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-no-repeat [background-size:0%_100%]",
   "yorha-stream",
-  "data-[selected]:text-yorha-on-ink data-[selected]:border-yorha-border data-[selected]:[background-size:100%_100%]",
-  "outline-none forced-colors:focus-visible:outline-2 forced-colors:focus-visible:-outline-offset-2 forced-colors:focus-visible:outline-[Highlight]",
+  "data-[selected]:text-yorha-on-ink data-[selected]:border-yorha-ink data-[selected]:[background-size:100%_100%]",
+  // hover (not yet selected) = 2px left marker; current page = 2px left marker that stays; keyboard focus = 1px inset frame inside the band.
+  "[&:hover:not([data-selected],[data-disabled])]:shadow-[inset_2px_0_0_var(--yorha-ink)] aria-[current=page]:shadow-[inset_2px_0_0_var(--yorha-ink)]",
+  "outline-none focus-visible:outline-1 focus-visible:-outline-offset-3 focus-visible:outline-[var(--yorha-on-ink)] forced-colors:focus-visible:outline-2 forced-colors:focus-visible:-outline-offset-2 forced-colors:focus-visible:outline-[Highlight]",
   "yorha-disabled",
 );
 

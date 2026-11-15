@@ -97,7 +97,7 @@ function UnitTable({ units }: { units: Unit[] }) {
         {units.map((unit) => (
           <DataTableRow key={unit.id}>
             <DataTableCell>
-              <Link to={{ search: `?unit=${unit.id}` }} className="rounded-yorha font-yorha-medium text-yorha-fg-strong underline focus-visible:yorha-focus">
+              <Link to={{ search: `?unit=${unit.id}` }} className="rounded-yorha font-yorha-medium text-yorha-fg-strong yorha-link focus-visible:yorha-focus">
                 <SharedElement name={`unit-${unit.id}`}>
                   <span>{unit.name}</span>
                 </SharedElement>
@@ -183,7 +183,7 @@ function UnitDetail({ id }: { id: string }) {
     return (
       <div className="flex flex-col gap-3">
         <Empty>유닛을 찾을 수 없습니다</Empty>
-        <Link to={{ search: "" }} className="w-fit underline focus-visible:yorha-focus">목록으로</Link>
+        <Link to={{ search: "" }} className="w-fit yorha-link focus-visible:yorha-focus">목록으로</Link>
       </div>
     );
   }
@@ -200,7 +200,7 @@ function UnitDetail({ id }: { id: string }) {
       </div>
       <Meter label="HP" value={unit.hp} />
       <Card title="임무" meta={unit.role} />
-      <Link to={{ search: "" }} className="w-fit underline focus-visible:yorha-focus">목록으로</Link>
+      <Link to={{ search: "" }} className="w-fit yorha-link focus-visible:yorha-focus">목록으로</Link>
     </article>
   );
 }

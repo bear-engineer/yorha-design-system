@@ -147,7 +147,7 @@ describe("token generator", () => {
     const MOTION_UTILITIES = ["yorha-pop", "yorha-panel", "yorha-fade", "yorha-slide-up", "yorha-slide-down", "yorha-slide-left", "yorha-slide-right", "yorha-collapse", "yorha-wipe", "yorha-press", "yorha-stagger", "yorha-unfold", "yorha-glitch", "yorha-flicker", "yorha-caret", "yorha-stream"];
     /** Open/close transition utilities that share the Base UI starting/ending-style shape. */
     const OPEN_CLOSE = ["yorha-panel", "yorha-fade", "yorha-slide-up", "yorha-slide-down", "yorha-slide-left", "yorha-slide-right"];
-    const OTHER_UTILITIES = ["yorha-focus", "yorha-tabular", "yorha-segments", "yorha-break", "yorha-focus-inset", "yorha-tint", "yorha-disabled", "yorha-readonly", "yorha-invalid", "yorha-row", "yorha-surface", "yorha-scroll", "yorha-scroll-cue-x", "yorha-scroll-cue-y", "yorha-dither-12", "yorha-dither-25", "yorha-dither-50", "yorha-dither-75", "yorha-dots", "yorha-rail"];
+    const OTHER_UTILITIES = ["yorha-focus", "yorha-tabular", "yorha-segments", "yorha-break", "yorha-focus-inset", "yorha-link", "yorha-tint", "yorha-disabled", "yorha-readonly", "yorha-invalid", "yorha-row", "yorha-surface", "yorha-scroll", "yorha-scroll-cue-x", "yorha-scroll-cue-y", "yorha-dither-12", "yorha-dither-25", "yorha-dither-50", "yorha-dither-75", "yorha-dots", "yorha-rail"];
     const utilityBlock = (name: string) => block(`@utility ${name}`);
 
     it.each(Object.entries(DURATIONS))("duration token %s is %s under both names", (name, value) => {

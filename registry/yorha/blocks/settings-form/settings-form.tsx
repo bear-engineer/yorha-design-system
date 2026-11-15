@@ -104,7 +104,7 @@ function SettingsFormBody() {
                     event.preventDefault();
                     focusControl(key);
                   }}
-                  className="rounded-yorha text-yorha-fg underline focus-visible:yorha-focus"
+                  className="rounded-yorha text-yorha-fg yorha-link focus-visible:yorha-focus"
                 >
                   {LABEL[key]}: {errors[key]}
                 </a>

@@ -123,7 +123,7 @@ export function Text({
         data-slot="text-expand"
         onClick={() => setExpanded((e) => !e)}
         style={{ visibility: showControl ? "visible" : "hidden" }}
-        className="inline-flex h-6 items-center px-1 text-yorha-sm text-yorha-fg-strong underline underline-offset-4 focus-visible:yorha-focus"
+        className="inline-flex h-6 items-center px-1 text-yorha-sm text-yorha-fg-strong yorha-link focus-visible:yorha-focus"
       >
         {expanded ? "접기" : "더 보기"}
       </button>
