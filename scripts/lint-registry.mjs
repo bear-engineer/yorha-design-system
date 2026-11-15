@@ -9,6 +9,12 @@
 // border-width/font-weight/inset...) and no `hidden` + `group-data-[..]:block` display switches for state indicators; a
 // Also: `transition-colors` on a line carrying `focus-visible:` classes.
 // `lint-allow layout-transition: <reason>` comment on the line or the line above allows an unavoidable layout transition. Use --motion-* tokens, ease-yorha-* and the yorha-* motion utilities.
+// v4 motion rules (errors under YORHA_MOTION_STRICT=1, like `motion`): fx-keyframes-mix (L1: a @keyframes set that sets clip-path or
+// mask-image together with opacity falls off the compositor; split it), fx-keyframes-props (L2: @keyframes may animate only opacity,
+// transform, translate, scale, rotate, clip-path and, in yorha-dissolve-*, mask-image), raw `steps(` in .tsx (L3, use --yorha-step-* /
+// ease-yorha-step-*), fx-on-control (L4: yorha-glitch / yorha-flicker next to yorha-wipe, yorha-press, hover: or focus-visible:).
+// Rule `pixel` (L6; warning, error with env YORHA_PIXEL_STRICT=1 or options.pixelStrict): rotate-45 / rotate-[...], <svg> without
+// shapeRendering="crispEdges", a scale transition class on a line that renders a Glyph or *Icon. `lint-allow pixel: <reason>` allows it.
 // Rule `craft` (G16; warning, error with env YORHA_CRAFT_STRICT=1 or options.craftStrict - the sweeps that fix the existing
 // components land first, then the gate flips): display:grid|flex on td/th; opacity-based disabled; text-shadow-yorha outside
 // heading.tsx; leading-yorha-tight|snug in components; inline <svg> in ui/ outside icons and timeline; text glyphs used as icons;
@@ -43,6 +49,58 @@ const DISPLAY_SWITCH = /(?<![\w-])((?:peer-|group-)?(?:data|aria)-\[[^\]]+\](?:\
 const WIPE_HINT = "use the yorha-wipe utility for the selection wipe";
 const LAYOUT_ALLOW = /lint-allow layout-transition:\s*\S/;
 const LAYOUT_HINT = "animate transform, opacity or colour; allow only with a `lint-allow layout-transition: <reason>` comment";
+
+const FX_KEYFRAME_PROPS = new Set(["opacity", "transform", "translate", "scale", "rotate", "clip-path"]);
+const FX_MASK = /^(?:-webkit-)?mask-image$/;
+const RAW_STEPS = /(?<![\w-])steps\s*\(/g;
+const FX_ONE_SHOT = /(?<![\w-])yorha-(?:glitch|flicker)(?![\w-])/;
+const FX_CONTROL = /(?<![\w-])yorha-(?:wipe|press)(?![\w-])|(?<![\w-])(?:[\w[\]=&>/-]+:)*(?:hover|focus-visible):/;
+const PIXEL_ALLOW = /lint-allow pixel:\s*\S/;
+const SCALE_TRANSITION = /(?<![\w-])(?:[\w[\]=&>/-]+:)*scale-[\w./[\]-]+|transition-\[[^\]]*\bscale\b/;
+const GLYPH_RENDER = /<(?:Glyph|\w+Icon)\b/;
+
+/** `@keyframes` blocks anywhere in a registry item's css object: [{ name, frames: { selector: { prop: value } } }]. */
+function keyframeBlocks(css, out = []) {
+  for (const [key, value] of Object.entries(css ?? {})) {
+    if (!value || typeof value !== "object") continue;
+    if (key.startsWith("@keyframes ")) out.push({ name: key.slice("@keyframes ".length).trim(), frames: value });
+    else keyframeBlocks(value, out);
+  }
+  return out;
+}
+const keyframeFindings = (css) =>
+  keyframeBlocks(css).flatMap(({ name, frames }) => {
+    const props = new Set(Object.values(frames).flatMap((body) => Object.keys(body ?? {})));
+    const out = [];
+    const mixed = Object.entries(frames).find(([, body]) => {
+      const set = Object.keys(body ?? {});
+      return set.some((prop) => prop === "clip-path" || FX_MASK.test(prop)) && set.includes("opacity");
+    });
+    if (mixed) out.push(`css @keyframes ${name}: fx-keyframes-mix: "${mixed[0]}" sets opacity together with clip-path or mask-image (split into two keyframes sets so each stays on the compositor)`);
+    for (const prop of props) {
+      const allowed = FX_KEYFRAME_PROPS.has(prop) || (FX_MASK.test(prop) && name.startsWith("yorha-dissolve-"));
+      if (!allowed) out.push(`css @keyframes ${name}: fx-keyframes-props: animates "${prop}" (allowed: opacity, transform, translate, scale, rotate, clip-path; mask-image only in yorha-dissolve-*)`);
+    }
+    return out;
+  });
+
+/** `pixel` findings for one file's comment-free source; `raw` keeps comments for the allow-list. */
+function pixelFindings(code, raw = code) {
+  const lineOf = (index) => code.slice(0, index).split("\n").length;
+  const rawLines = raw.split("\n");
+  const allowed = (line) => PIXEL_ALLOW.test(rawLines[line - 1] ?? "") || PIXEL_ALLOW.test(rawLines[line - 2] ?? "");
+  const out = [];
+  const add = (index, message) => {
+    const line = lineOf(index);
+    if (!allowed(line)) out.push(`${line} pixel: ${message}`);
+  };
+  for (const m of code.matchAll(/(?<![\w-])(?:[\w[\]=&>/-]+:)*-?rotate-(?:45|\[[^\]]+\])(?![\w-])/g)) add(m.index, `"${m[0]}" rotates off the pixel grid (draw the shape as a glyph or a clip-path polygon)`);
+  for (const m of code.matchAll(/<svg\b[^>]*>/g)) if (!/shapeRendering=["{]*["']?crispEdges/.test(m[0])) add(m.index, '<svg> without shapeRendering="crispEdges"');
+  code.split("\n").forEach((line, index) => {
+    if (GLYPH_RENDER.test(line) && SCALE_TRANSITION.test(line) && !allowed(index + 1)) out.push(`${index + 1} pixel: scale transition on a glyph or icon (use stepped clip-path or opacity)`);
+  });
+  return out;
+}
 
 const CLASS_TOKEN = (name) => new RegExp(`(?<![\\w-])${name}(?![\\w-])`);
 const TAG = /<([A-Za-z][\w.]*)\b([^<>]*?)\/?>/g;
@@ -107,6 +165,9 @@ function motionFindings(code, raw = code) {
     for (const list of line.matchAll(TRANSITION_LIST)) {
       if ((list[1] ?? list[2]).split(/[,_\s]+/).includes("background-size")) findings.push(`${index + 1} motion: ad-hoc background-size transition (${WIPE_HINT})`);
     }
+    if (RAW_STEPS.test(line)) findings.push(`${index + 1} motion: raw steps() (use --yorha-step-* or ease-yorha-step-*)`);
+    RAW_STEPS.lastIndex = 0;
+    if (FX_ONE_SHOT.test(line) && FX_CONTROL.test(line)) findings.push(`${index + 1} motion: fx-on-control: yorha-glitch / yorha-flicker next to yorha-wipe, yorha-press, hover: or focus-visible: (no glitch or flicker on a control)`);
     const allowed = LAYOUT_ALLOW.test(rawLines[index] ?? "") || LAYOUT_ALLOW.test(rawLines[index - 1] ?? "");
     if (!allowed) {
       for (const list of line.matchAll(TRANSITION_LIST)) {
@@ -126,11 +187,12 @@ function motionFindings(code, raw = code) {
   return findings;
 }
 
-export function lintRegistry(rootDir = process.cwd(), { motionStrict = process.env.YORHA_MOTION_STRICT === "1", craftStrict = process.env.YORHA_CRAFT_STRICT === "1" } = {}) {
+export function lintRegistry(rootDir = process.cwd(), { motionStrict = process.env.YORHA_MOTION_STRICT === "1", craftStrict = process.env.YORHA_CRAFT_STRICT === "1", pixelStrict = process.env.YORHA_PIXEL_STRICT === "1" } = {}) {
   const errors = [];
   const warnings = [];
   const motion = motionStrict ? errors : warnings;
   const craft = craftStrict ? errors : warnings;
+  const pixel = pixelStrict ? errors : warnings;
   const root = JSON.parse(readFileSync(join(rootDir, "registry.json"), "utf8"));
   const entries = []; // { item, dir }
   for (const inc of root.include ?? []) {
@@ -181,6 +243,7 @@ export function lintRegistry(rootDir = process.cwd(), { motionStrict = process.e
         errors.push(`${item.name}: ${f.path} (${f.type}) needs target "${alias}/${basename(f.path)}" for a flat consumer install`);
       }
     }
+    for (const finding of keyframeFindings(item.css)) motion.push(`${item.name}: ${finding}`);
     for (const f of files) {
       const abs = resolve(dir, f.path);
       if (!existsSync(abs) || extname(abs) !== ".tsx") continue;
@@ -190,6 +253,7 @@ export function lintRegistry(rootDir = process.cwd(), { motionStrict = process.e
       if (hex) errors.push(`${item.name}: ${f.path} hard-codes hex color ${[...new Set(hex)].join(", ")} (use tokens)`);
       if (OUTLINE_OFF.test(code) && !/focus-visible/.test(code)) errors.push(`${item.name}: ${f.path} removes outline without focus-visible replacement`);
       for (const finding of motionFindings(code, src)) motion.push(`${item.name}: ${f.path}:${finding}`);
+      for (const finding of pixelFindings(code, src)) pixel.push(`${item.name}: ${f.path}:${finding}`);
       for (const finding of craftFindings(code, relative(rootDir, abs))) (finding.soft ? warnings : craft).push(`${item.name}: ${f.path}:${finding.line} ${finding.message}`);
       if (item.type === "registry:ui") {
         for (const m of src.matchAll(IMPORT)) {

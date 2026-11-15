@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "name": "thing",
+      "type": "registry:ui",
+      "title": "thing",
+      "description": "fixture",
+      "registryDependencies": [
+        "@yorha/base",
+        "@yorha/utils"
+      ],
+      "files": [
+        {
+          "path": "thing.tsx",
+          "type": "registry:ui",
+          "target": "@ui/thing.tsx"
+        }
+      ],
+      "css": {
+        "@keyframes yorha-fx-shadow": {
+          "from": {
+            "text-shadow": "0 0 0 red"
+          },
+          "to": {
+            "mask-image": "none"
+          }
+        }
+      }
+    }
+  ]
+}

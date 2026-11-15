@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { lintRegistry as lintRegistryUntyped } from "./lint-registry.mjs";
 
 // The motion rule adds `options` and `warnings`; typed here so the test does not depend on the declaration file.
-type LintRegistry = (rootDir?: string, options?: { motionStrict?: boolean; craftStrict?: boolean }) => { errors: string[]; warnings?: string[]; includes: number };
+type LintRegistry = (rootDir?: string, options?: { motionStrict?: boolean; craftStrict?: boolean; pixelStrict?: boolean }) => { errors: string[]; warnings?: string[]; includes: number };
 const lintRegistry = lintRegistryUntyped as unknown as LintRegistry;
 
 const fixture = (n: string) => fileURLToPath(new URL(`./fixtures/${n}`, import.meta.url));
@@ -157,5 +157,42 @@ describe("lintRegistry craft rules (G16)", () => {
       spawnSync(process.execPath, [cli], { cwd: fixture("craft/leading"), encoding: "utf8", env: { ...process.env, YORHA_MOTION_STRICT: "1", YORHA_CRAFT_STRICT: strict } });
     expect(run("").status).toBe(0);
     expect(run("1").status).toBe(1);
+  });
+});
+
+describe("lintRegistry v4 fx rules (L1-L4, L6)", () => {
+  const FX = [
+    ["fx/keyframes-mix", [/css @keyframes yorha-fx-mixed: fx-keyframes-mix/]],
+    ["fx/keyframes-props", [/yorha-fx-shadow: fx-keyframes-props: animates "text-shadow"/, /yorha-fx-shadow: fx-keyframes-props: animates "mask-image"/]],
+    ["fx/steps", [/thing\.tsx:2 motion: raw steps\(\)/]],
+    ["fx/on-control", [/thing\.tsx:4 motion: fx-on-control/, /thing\.tsx:5 motion: fx-on-control/]],
+  ] as const;
+
+  it("accepts the passing fixture: allowed props, mask-image in yorha-dissolve-*, step tokens, comments", () => {
+    const result = lintRegistry(fixture("fx/ok"), { motionStrict: true, pixelStrict: true });
+    expect(result.errors).toEqual([]);
+    expect(result.warnings).toEqual([]);
+  });
+
+  it.each(FX)("fixture %s: warning by default, error when strict", (name, messages) => {
+    const lax = lintRegistry(fixture(name), { motionStrict: false });
+    expect(lax.errors).toEqual([]);
+    const strict = lintRegistry(fixture(name), { motionStrict: true });
+    for (const message of messages) expect(strict.errors.join("\n")).toMatch(message);
+    expect(strict.errors).toHaveLength(messages.length);
+    for (const message of messages) expect((lax.warnings ?? []).join("\n")).toMatch(message);
+  });
+
+  it("L6 pixel: warns on rotate-45, <svg> without crispEdges and a scale transition on an icon; the lint-allow comment passes", () => {
+    const lax = lintRegistry(fixture("fx/pixel"), { motionStrict: false });
+    expect(lax.errors).toEqual([]);
+    const text = (lax.warnings ?? []).join("\n");
+    expect(text).toMatch(/thing\.tsx:4 pixel: "rotate-45"/);
+    expect(text).toMatch(/thing\.tsx:5 pixel: <svg> without shapeRendering="crispEdges"/);
+    expect(text).toMatch(/thing\.tsx:6 pixel: scale transition on a glyph or icon/);
+    expect(text).not.toMatch(/thing\.tsx:8 pixel/);
+    expect((lax.warnings ?? []).filter((warning) => warning.includes(" pixel: "))).toHaveLength(3);
+    const strict = lintRegistry(fixture("fx/pixel"), { motionStrict: false, pixelStrict: true });
+    expect(strict.errors).toHaveLength(3);
   });
 });
