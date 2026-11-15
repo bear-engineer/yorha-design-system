@@ -85,7 +85,7 @@ export function Slider({ label, showValue = false, formatValue, marks, className
               getAriaValueText={formatValue ? (_formatted, value) => formatValue(value) : undefined}
               className={cn(
                 // 24px hit area (SC 2.5.8); the square drawn is the ::before and carries the focus ring.
-                "group/thumb relative grid size-6 cursor-grab place-items-center rounded-yorha outline-none active:cursor-grabbing",
+                "group/thumb relative grid size-6 [&_input]:appearance-none cursor-grab place-items-center rounded-yorha outline-none active:cursor-grabbing",
                 "before:size-4 before:rounded-yorha before:border-2 before:border-yorha-bg before:bg-yorha-ink before:content-['']",
                 "before:transition-colors before:duration-(--motion-select) hover:before:border-yorha-control active:before:border-yorha-ink",
                 "has-[:focus-visible]:before:yorha-focus",

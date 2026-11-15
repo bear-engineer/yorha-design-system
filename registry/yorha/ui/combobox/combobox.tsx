@@ -3,7 +3,7 @@ import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
 import { ChevronIcon, CrossIcon, TriangleIcon } from "@/components/ui/icons";
 import { Glyph } from "@/components/ui/glyph";
 import { Spinner } from "@/components/ui/spinner";
-import { cnState } from "@/lib/utils";
+import { cn, cnState } from "@/lib/utils";
 
 const INPUT_MIN = 48; // typing area kept beside the chips (min-w-12)
 const MORE_W = 36; // room reserved for the "+N" chip
@@ -11,6 +11,8 @@ const MORE_W = 36; // room reserved for the "+N" chip
 type CreateSpec = { onCreate: (text: string) => void; label?: ReactNode | ((text: string) => ReactNode) };
 type Ctx = {
   loading: boolean;
+  /** id of the text input (the control); ComboboxLabel points its htmlFor at it. */
+  inputId: string | undefined;
   text: string;
   open: boolean;
   requestOpen: () => void;
@@ -21,6 +23,7 @@ type Ctx = {
 };
 const ComboboxContext = createContext<Ctx>({
   loading: false,
+  inputId: undefined,
   text: "",
   open: false,
   requestOpen: () => {},
@@ -54,6 +57,8 @@ function Combobox<Value, Multiple extends boolean | undefined = false>({
   defaultOpen = false,
   ...props
 }: RootProps<Value, Multiple>) {
+  const generatedId = useId();
+  const inputId = props.id ?? generatedId;
   const [text, setText] = useState<string>(String(props.inputValue ?? props.defaultInputValue ?? ""));
   const [openState, setOpenState] = useState(defaultOpen);
   const open = openProp ?? openState;
@@ -66,6 +71,7 @@ function Combobox<Value, Multiple extends boolean | undefined = false>({
   const ctx = useMemo<Ctx>(
     () => ({
       loading,
+      inputId,
       text: props.inputValue === undefined ? text : String(props.inputValue),
       open,
       requestOpen: () => changeOpen(true),
@@ -74,7 +80,7 @@ function Combobox<Value, Multiple extends boolean | undefined = false>({
       setCreateActive,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [loading, props.inputValue, text, open],
+    [loading, inputId, props.inputValue, text, open],
   );
   // One create option rides at the end of a flat `items` array, so the list's own keyboard model reaches it.
   const trimmed = ctx.text.trim();
@@ -88,6 +94,7 @@ function Combobox<Value, Multiple extends boolean | undefined = false>({
     <ComboboxContext value={ctx}>
       <ComboboxPrimitive.Root
         {...(props as object)}
+        id={inputId}
         items={withCreate as never}
         open={open}
         onOpenChange={changeOpen as never}
@@ -485,12 +492,17 @@ function ComboboxItemIndicator({ className, children = null, ...props }: Compone
   );
 }
 
-/** Visible label wired to the input by Base UI (no htmlFor needed inside the root). */
-function ComboboxLabel({ className, ...props }: ComponentProps<typeof ComboboxPrimitive.Label>) {
+/**
+ * Visible label. A native `<label htmlFor>` pointing at the text input (Base UI's own Combobox.Label labels the
+ * trigger only, and warns when the input is the control), so a click on it focuses the field.
+ */
+function ComboboxLabel({ className, htmlFor, ...props }: ComponentProps<"label">) {
+  const { inputId } = useContext(ComboboxContext);
   return (
-    <ComboboxPrimitive.Label
+    <label
       data-slot="combobox-label"
-      className={cnState("font-yorha text-yorha-sm font-yorha-bold tracking-yorha-heading text-yorha-fg", className)}
+      htmlFor={htmlFor ?? inputId}
+      className={cn("font-yorha text-yorha-sm font-yorha-bold tracking-yorha-heading text-yorha-fg", className)}
       {...props}
     />
   );

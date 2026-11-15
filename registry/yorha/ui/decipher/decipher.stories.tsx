@@ -4,6 +4,7 @@ import { expect, waitFor, within } from "storybook/test";
 import { useRef, useState } from "react";
 import { userEvent } from "storybook/test";
 
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { Decipher, Glitch, type GlitchHandle } from "@/components/ui/decipher";
 
 const meta = {
@@ -38,6 +39,29 @@ function Heading({ text }: { text: string }) {
     </h2>
   );
 }
+
+/** Docs hero: a boot-panel headline that deciphers into a finished line, with the three scripts it supports. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: (args) => (
+    <Sheet title="Decipher" wide>
+      <h2 className="text-yorha-xl font-yorha-medium text-yorha-fg-strong"><Decipher text={args.text} /></h2>
+      <Row label="한국어">{<Decipher text="기억 데이터 복구 중" />}</Row>
+      <Row label="日本語">{<Decipher text="システム起動シーケンス" />}</Row>
+      <Row label="Latin"><Decipher text="MEMORY UNIT 9S ONLINE" /></Row>
+    </Sheet>
+  ),
+  play: async ({ canvasElement }) => {
+    // every line settles into its final text and the box does not change width while it runs
+    const roots = Array.from(canvasElement.querySelectorAll<HTMLElement>('[data-slot="decipher"]'));
+    // measure after the webfonts settle: a font swap at mount resizes every line and is not the scramble
+    await document.fonts.ready;
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)));
+    const w0 = roots.map((r) => r.getBoundingClientRect().width);
+    await waitFor(() => expect(roots.every((r) => r.dataset.state === "done")).toBe(true), { timeout: 2500 });
+    roots.forEach((r, i) => expect(r.getBoundingClientRect().width).toBeCloseTo(w0[i]!, 1));
+  },
+};
 
 export const Korean: Story = {
   beforeEach: () => setMotion("full"),

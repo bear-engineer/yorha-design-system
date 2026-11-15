@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, waitFor, within } from "storybook/test";
 import { Avatar, AvatarFallback, AvatarGroup, AvatarImage, AvatarStatus } from "./avatar";
 
@@ -7,6 +8,8 @@ import { Avatar, AvatarFallback, AvatarGroup, AvatarImage, AvatarStatus } from "
 const PORTRAIT = `data:image/svg+xml;utf8,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="#8a8373"/><circle cx="32" cy="26" r="12" fill="#2c2a25"/><path d="M12 64c0-14 9-22 20-22s20 8 20 22z" fill="#2c2a25"/></svg>',
 )}`;
+/** Undecodable data URI: fires the image error (so the initials show) without a network 404. */
+const BROKEN = "data:image/png;base64,AAAA";
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
 function Demo({ src, initials = "2B" }: { src?: string; initials?: string }) {
@@ -29,7 +32,28 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Avatar">
+      <Row label="sm / md / lg">
+        {(["sm", "md", "lg"] as const).map((s) => (
+          <Avatar key={s} size={s}><AvatarImage src={PORTRAIT} alt={`2B ${s}`} /><AvatarFallback>2B</AvatarFallback></Avatar>
+        ))}
+        <Avatar size="md"><AvatarFallback>9S</AvatarFallback></Avatar>
+      </Row>
+      <Row label="상태">
+        {(["online", "away", "busy", "offline"] as const).map((st) => (
+          <div key={st} className="flex items-center gap-2"><Avatar size="md"><AvatarFallback>A2</AvatarFallback></Avatar><AvatarStatus status={st} /></div>
+        ))}
+      </Row>
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo src={PORTRAIT} />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -42,7 +66,7 @@ export const Default: Story = {
 };
 
 export const FallbackInitials: Story = {
-  render: () => <Demo src="/__yorha_missing_avatar__.png" initials="A2" />,
+  render: () => <Demo src={BROKEN} initials="A2" />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await waitFor(() => expect(c.getByText("A2")).toBeVisible());
