@@ -1,7 +1,8 @@
 import { createContext, useContext, useId, useState, type ComponentProps } from "react";
 import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip";
 import { buttonVariants } from "@/components/ui/button";
-import { cnState } from "@/lib/utils";
+import { Glyph } from "@/components/ui/glyph";
+import { cn, cnState } from "@/lib/utils";
 
 interface TooltipState {
   id: string;
@@ -97,7 +98,7 @@ function TooltipContent({
           className={cnState(
             [
               "max-w-72 rounded-yorha bg-yorha-ink px-2 py-1 font-yorha text-yorha-xs tracking-yorha-body text-yorha-on-ink shadow-yorha-sm",
-              "yorha-pop",
+              "yorha-fade [--motion-panel:var(--motion-popover)] [--motion-panel-exit:var(--motion-popover-exit)]",
             ],
             className,
           )}
@@ -108,16 +109,36 @@ function TooltipContent({
   );
 }
 
-const ARROW =
-  "relative block h-1.5 w-3 overflow-clip " +
-  "data-[side=bottom]:top-[-6px] data-[side=top]:bottom-[-6px] data-[side=top]:rotate-180 " +
-  "data-[side=left]:right-[-9px] data-[side=left]:rotate-90 data-[side=right]:left-[-9px] data-[side=right]:-rotate-90 " +
-  "before:absolute before:bottom-0 before:left-1/2 before:size-[calc(6px*1.4142)] before:bg-yorha-ink " +
-  "before:content-[''] before:[transform:translate(-50%,50%)_rotate(45deg)]";
+// Pixel arrow: one 12px triangle glyph per side (crispEdges, no rotation), stacked in one 12px box and shown by the Base UI arrow's `data-side`.
+// The glyph's base row sits 1px over the popup edge so it merges with the border; `text-*` picks the fill.
+function ArrowGlyphs() {
+  return (
+    <>
+      <Glyph name="triangle-up" className="absolute inset-0 opacity-0 group-data-[side=bottom]/arrow:opacity-100" />
+      <Glyph name="triangle-down" className="absolute inset-0 opacity-0 group-data-[side=top]/arrow:opacity-100" />
+      <Glyph name="triangle-right" className="absolute inset-0 opacity-0 group-data-[side=left]/arrow:opacity-100" />
+      <Glyph name="triangle-left" className="absolute inset-0 opacity-0 group-data-[side=right]/arrow:opacity-100" />
+    </>
+  );
+}
+const ARROW_POS =
+  "group/arrow block size-3 data-[side=bottom]:top-[-8px] data-[side=top]:bottom-[-8px] data-[side=left]:right-[-8px] data-[side=right]:left-[-8px]";
+
+const ARROW = ARROW_POS + " text-yorha-ink";
 
 /** Pointer from the tooltip to its trigger. Render it inside TooltipContent. */
 function TooltipArrow({ className, ...props }: ComponentProps<typeof TooltipPrimitive.Arrow>) {
-  return <TooltipPrimitive.Arrow data-slot="tooltip-arrow" className={cnState(ARROW, className)} {...props} />;
+  return <TooltipPrimitive.Arrow data-slot="tooltip-arrow" className={cnState(ARROW, className)} {...props}>
+      <ArrowGlyphs />
+    </TooltipPrimitive.Arrow>;
+}
+
+/**
+ * Keyboard shortcut slot inside TooltipContent: `<TooltipContent>Save <TooltipKbd>⌘S</TooltipKbd></TooltipContent>`.
+ * A tooltip is never the only label of a control, and touch devices show none; do not put information here that exists nowhere else.
+ */
+function TooltipKbd({ className, ...props }: ComponentProps<"kbd">) {
+  return <kbd data-slot="tooltip-kbd" className={cn("ml-2 inline-block border border-yorha-on-ink-soft px-1 font-yorha text-yorha-xs", className)} {...props} />;
 }
 
 /** Wrap the content of a tooltip with several triggers (one handle) so it cross-fades between them. */
@@ -149,6 +170,7 @@ export {
   TooltipTrigger,
   TooltipContent,
   TooltipArrow,
+  TooltipKbd,
   TooltipViewport,
   TooltipProvider,
   createTooltipHandle,

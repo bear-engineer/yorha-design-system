@@ -1,6 +1,22 @@
-import type { ComponentProps } from "react";
+import { useEffect, useRef, type ComponentProps } from "react";
 import { PreviewCard as PreviewCardPrimitive } from "@base-ui/react/preview-card";
+import { Glyph } from "@/components/ui/glyph";
 import { cn, cnState } from "@/lib/utils";
+
+// Pixel arrow: one 12px triangle glyph per side (crispEdges, no rotation), stacked in one 12px box and shown by the Base UI arrow's `data-side`.
+// The glyph's base row sits 1px over the popup edge so it merges with the border; `text-*` picks the fill.
+function ArrowGlyphs() {
+  return (
+    <>
+      <Glyph name="triangle-up" className="absolute inset-0 opacity-0 group-data-[side=bottom]/arrow:opacity-100" />
+      <Glyph name="triangle-down" className="absolute inset-0 opacity-0 group-data-[side=top]/arrow:opacity-100" />
+      <Glyph name="triangle-right" className="absolute inset-0 opacity-0 group-data-[side=left]/arrow:opacity-100" />
+      <Glyph name="triangle-left" className="absolute inset-0 opacity-0 group-data-[side=right]/arrow:opacity-100" />
+    </>
+  );
+}
+const ARROW_POS =
+  "group/arrow block size-3 data-[side=bottom]:top-[-8px] data-[side=top]:bottom-[-8px] data-[side=left]:right-[-8px] data-[side=right]:left-[-8px]";
 
 /**
  * Class strings shared by the parts and static previews (one definition).
@@ -15,16 +31,37 @@ export const previewCardStyles = {
     "font-yorha text-yorha-sm tracking-yorha-body",
   title: "mb-2 font-yorha-bold text-yorha-sm tracking-yorha-heading uppercase",
   description: "text-yorha-fg-soft",
-  arrow:
-    "size-2.5 rotate-45 border-yorha-border bg-yorha-panel " +
-    "data-[side=bottom]:top-[-6px] data-[side=bottom]:border-t data-[side=bottom]:border-l " +
-    "data-[side=top]:bottom-[-6px] data-[side=top]:border-r data-[side=top]:border-b " +
-    "data-[side=left]:right-[-6px] data-[side=left]:border-t data-[side=left]:border-r " +
-    "data-[side=right]:left-[-6px] data-[side=right]:border-b data-[side=right]:border-l",
+  arrow: ARROW_POS + " text-yorha-border",
 };
 
-/** Root: Base UI PreviewCard root (open, defaultOpen, onOpenChange, handle, ...). */
-const PreviewCard = PreviewCardPrimitive.Root;
+/**
+ * Root: Base UI PreviewCard root (open, defaultOpen, onOpenChange, handle, ...).
+ * A touch tap follows the link and opens no card: browsers replay hover after a tap, which would otherwise open the card
+ * under the finger and make the user tap twice to navigate (double-tap links are a known annoyance). The card stays reachable
+ * by keyboard focus and by mouse hover. Opens in the 1s after a touch pointerdown that come from hover are cancelled.
+ */
+function PreviewCard<Payload = unknown>({ onOpenChange, ...props }: PreviewCardPrimitive.Root.Props<Payload>) {
+  const lastTouch = useRef(Number.NEGATIVE_INFINITY);
+  useEffect(() => {
+    const down = (e: PointerEvent) => {
+      if (e.pointerType === "touch") lastTouch.current = performance.now();
+    };
+    document.addEventListener("pointerdown", down, true);
+    return () => document.removeEventListener("pointerdown", down, true);
+  }, []);
+  return (
+    <PreviewCardPrimitive.Root<Payload>
+      {...props}
+      onOpenChange={(open, details) => {
+        if (open && details.reason === "trigger-hover" && performance.now() - lastTouch.current < 1000) {
+          details.cancel();
+          return;
+        }
+        onOpenChange?.(open, details);
+      }}
+    />
+  );
+}
 
 /** Handle for triggers placed outside `<PreviewCard>` (several triggers, one card): pass the same handle to each trigger and the root. */
 const createPreviewCardHandle = PreviewCardPrimitive.createHandle;
@@ -82,7 +119,9 @@ function PreviewCardContent({
         className="z-(--yorha-z-popover)"
       >
         <PreviewCardPrimitive.Popup data-slot="preview-card-content" className={cnState(previewCardStyles.popup, className)} {...props}>
-          {arrow && <PreviewCardPrimitive.Arrow data-slot="preview-card-arrow" aria-hidden="true" className={previewCardStyles.arrow} />}
+          {arrow && <PreviewCardPrimitive.Arrow data-slot="preview-card-arrow" aria-hidden="true" className={previewCardStyles.arrow}>
+              <ArrowGlyphs />
+            </PreviewCardPrimitive.Arrow>}
           {viewport ? <PreviewCardPrimitive.Viewport data-slot="preview-card-viewport">{children}</PreviewCardPrimitive.Viewport> : children}
         </PreviewCardPrimitive.Popup>
       </PreviewCardPrimitive.Positioner>
