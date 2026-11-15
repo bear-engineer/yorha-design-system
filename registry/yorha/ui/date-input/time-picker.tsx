@@ -210,7 +210,7 @@ export function TimePicker({ value, onValueChange, onCommit, step, min, max, aut
     <div ref={rootRef} data-slot="time-picker" lang="ko" className={cn("flex w-full flex-col bg-yorha-panel p-2 font-yorha text-yorha-fg", className)}>
       <div className="flex">
         {columns.map((c, ci) => (
-          <div key={c.key} className={cn("flex min-w-[3.25rem] flex-1 flex-col", ci > 0 && "ml-1 border-l border-yorha-separator pl-1")}>
+          <div key={c.key} className={cn("flex min-w-13 flex-1 flex-col", ci > 0 && "ml-1 border-l border-yorha-separator pl-1")}>
             <div className="grid h-control-sm place-items-center font-yorha-bold text-yorha-sm text-yorha-fg-strong">{c.label}</div>
             <div
               role="listbox"
