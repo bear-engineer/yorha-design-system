@@ -1,9 +1,13 @@
 import * as React from "react";
+import { createPortal } from "react-dom";
+import { DndContext, DragOverlay, PointerSensor, TouchSensor, useDraggable, useSensor, useSensors, type DragStartEvent } from "@dnd-kit/core";
+import { DateInput } from "@/components/ui/date-input";
 import { Glyph, type GlyphName } from "@/components/ui/glyph";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import {
   AXIS,
+  DAY,
   HOUR,
   METRICS,
   buildRows,
@@ -13,7 +17,10 @@ import {
   packLanes,
   pickTicks,
   resolveZoom,
+  rowAtY,
   rowsHeight,
+  snapTime,
+  stepFor,
   timeToX,
   xToTime,
   zoneWeekday,
@@ -46,7 +53,27 @@ export interface TimelineGraphItem {
   dependsOn?: string[];
   /** Shape, not only colour: done = check, warn = triangle, danger = square-x, pending = dither fill. */
   status?: TimelineItemStatus;
+  /** Cannot be moved, resized or lifted (`aria-disabled`, lock glyph, no handles). */
+  locked?: boolean;
+  /** Per-item size limits in ms; they override the chart-level `minDuration` / `maxDuration`. */
+  minDuration?: number;
+  maxDuration?: number;
 }
+
+export type TimelineEditSource = "pointer" | "touch" | "keyboard" | "table";
+export interface TimelinePosition {
+  start: number;
+  end?: number;
+  lane: string;
+}
+export interface TimelineChange {
+  id: string;
+  type: "move" | "resize-start" | "resize-end" | "create" | "delete";
+  from: TimelinePosition;
+  to: TimelinePosition;
+  source: TimelineEditSource;
+}
+export type TimelineMoveResult = boolean | { ok: false; reason: string };
 
 export interface TimelineGraphHandle {
   scrollToTime(t: TimelineDate): void;
@@ -74,7 +101,53 @@ export interface TimelineGraphLabels {
   expand: string;
   zoom: Record<"hour" | "day" | "week" | "fit", string>;
   units: { d: string; h: string; m: string };
+  dnd: TimelineDndLabels;
 }
+
+export interface TimelineDndContext {
+  title: string;
+  lane: string;
+  start: string;
+  end?: string;
+  reason?: string;
+  other?: string;
+  mode?: "move" | "resize-start" | "resize-end";
+}
+/** Live-region strings of the edit gestures (Korean, same voice as the kanban board). */
+export interface TimelineDndLabels {
+  instructions: string;
+  roledescription: string;
+  locked: string;
+  grip: string;
+  invalidRange: string;
+  blocked: string;
+  pickup: (c: TimelineDndContext) => string;
+  move: (c: TimelineDndContext) => string;
+  mode: (c: TimelineDndContext) => string;
+  reject: (c: TimelineDndContext) => string;
+  drop: (c: TimelineDndContext) => string;
+  cancel: (c: TimelineDndContext) => string;
+  conflict: (c: TimelineDndContext) => string;
+  remove: (c: TimelineDndContext) => string;
+}
+const rangeText = (c: TimelineDndContext) => (c.end ? `${c.start}부터 ${c.end}까지` : c.start);
+const DEFAULT_DND: TimelineDndLabels = {
+  instructions:
+    "스페이스로 일정을 집습니다. 좌우 화살표는 한 단계, Shift와 좌우 화살표는 1시간, 페이지 위아래는 하루씩 시간을 옮기고, 위아래 화살표는 구분을 바꿉니다. 대괄호 열기는 시작, 닫기는 종료 시각 조절이고 M은 이동입니다. 스페이스나 엔터로 놓고 Esc로 취소합니다.",
+  roledescription: "이동 가능한 일정",
+  locked: "고정된 일정",
+  grip: "끌어서 옮기기",
+  invalidRange: "시작은 종료보다 앞이어야 합니다",
+  blocked: "다른 일정과 겹칩니다",
+  pickup: (c) => `${c.title}을(를) 집었습니다. ${c.lane} 구분, ${rangeText(c)}.`,
+  move: (c) => `${c.title}: ${c.lane} 구분, ${rangeText(c)}`,
+  mode: (c) => (c.mode === "resize-start" ? "시작 시각 조절" : c.mode === "resize-end" ? "종료 시각 조절" : "이동"),
+  reject: (c) => c.reason || "그 위치로는 옮길 수 없습니다",
+  drop: (c) => `${c.title}을(를) ${c.lane} 구분 ${rangeText(c)}에 놓았습니다.`,
+  cancel: (c) => `${c.title} 이동을 취소했습니다. 원래 위치로 돌아갔습니다.`,
+  conflict: (c) => `${c.other}와(과) 시간이 겹칩니다.`,
+  remove: (c) => `${c.title}을(를) 삭제했습니다.`,
+};
 
 const DEFAULT_LABELS: TimelineGraphLabels = {
   zoomIn: "확대",
@@ -97,6 +170,7 @@ const DEFAULT_LABELS: TimelineGraphLabels = {
   expand: "펼치기",
   zoom: { hour: "시간", day: "일", week: "주", fit: "맞춤" },
   units: { d: "일", h: "시간", m: "분" },
+  dnd: DEFAULT_DND,
 };
 
 const toMs = (d: TimelineDate) => (d instanceof Date ? d.getTime() : typeof d === "number" ? d : new Date(d).getTime());
@@ -104,10 +178,6 @@ const toMs = (d: TimelineDate) => (d instanceof Date ? d.getTime() : typeof d ==
 const btn =
   "yorha-press yorha-disabled inline-flex h-control-sm min-w-control-sm items-center justify-center gap-1 border border-yorha-border bg-yorha-bg px-pad-sm font-yorha text-yorha-sm text-yorha-fg hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus aria-pressed:bg-yorha-ink aria-pressed:text-yorha-on-ink";
 
-const firstGrapheme = (s: string) => {
-  const seg = typeof Intl !== "undefined" && "Segmenter" in Intl ? [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(s)] : null;
-  return seg?.[0]?.segment ?? [...s][0] ?? "";
-};
 const fmtNum = (n: number) => String(Math.round(n * 100) / 100);
 const isDev = () => (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.NODE_ENV !== "production";
 
@@ -119,6 +189,21 @@ interface Norm {
   start: number;
   end?: number;
   status: TimelineItemStatus;
+  locked: boolean;
+}
+
+interface Draft {
+  id: string;
+  type: "move" | "resize-start" | "resize-end";
+  source: TimelineEditSource;
+  from: TimelinePosition;
+  /** Last valid position (what a drop commits). */
+  to: TimelinePosition;
+  /** Last proposed position, valid or not. */
+  cand: TimelinePosition;
+  /** Set while the proposal is rejected: the reason (may be empty). */
+  invalid?: string;
+  flickers: number;
 }
 
 export interface TimelineGraphProps extends Omit<React.ComponentProps<"div">, "children" | "onSelect"> {
@@ -160,7 +245,71 @@ export interface TimelineGraphProps extends Omit<React.ComponentProps<"div">, "c
   emptyText?: string;
   onViewportChange?: (viewport: { start: Date; end: Date }) => void;
   apiRef?: React.Ref<TimelineGraphHandle>;
-  labels?: Partial<TimelineGraphLabels>;
+  labels?: Partial<Omit<TimelineGraphLabels, "dnd">> & { dnd?: Partial<TimelineDndLabels> };
+  /** Called once per committed gesture with the full next list and what changed. Never called for a cancelled gesture. */
+  onItemsChange?: (next: TimelineGraphItem[], change: TimelineChange) => void;
+  /** No dragging, resizing or lifting. Default: true when neither `onItemsChange` nor `defaultItems` is given. */
+  readOnly?: boolean;
+  /** Snap step in ms, or a function of px/h. Default 15 min from 4 px/h, else 1 h. */
+  step?: number | ((pxPerHour: number) => number);
+  minDuration?: number;
+  maxDuration?: number;
+  /** Veto a proposed position. `false` or `{ ok: false, reason }` clamps the draft to the last valid position. */
+  canMove?: (next: TimelineGraphItem, ctx: { change: TimelineChange; items: TimelineGraphItem[]; lanes: TimelineLane[] }) => TimelineMoveResult;
+  /** "allow" (default): overlaps stack after the drop and both items get `data-conflict`. "block": overlapping positions are rejected. */
+  collision?: "allow" | "block";
+}
+
+type Activation = { onActivation?: (a: { event: Event }) => void };
+/** Mouse and pen only; handles and pan gestures keep their own handlers. Touch starts from the grip (see below). */
+class EditPointerSensor extends PointerSensor {
+  static activators = [
+    {
+      eventName: "onPointerDown" as const,
+      handler: ({ nativeEvent: e }: React.PointerEvent, { onActivation }: Activation) => {
+        if (e.pointerType === "touch" || !e.isPrimary || e.button !== 0) return false;
+        const t = e.target as Element | null;
+        if (t?.closest("[data-handle]") || t?.closest("[data-pan='ready']")) return false;
+        onActivation?.({ event: e });
+        return true;
+      },
+    },
+  ] as unknown as typeof PointerSensor.activators;
+}
+/** The selected item's grip is the only touch activator; the bar body keeps `touch-action: pan-x pan-y`. */
+class GripTouchSensor extends TouchSensor {
+  static activators = [
+    {
+      eventName: "onTouchStart" as const,
+      handler: ({ nativeEvent: e }: React.TouchEvent, { onActivation }: Activation) => {
+        if (e.touches.length > 1 || !(e.target as Element | null)?.closest("[data-grip]")) return false;
+        onActivation?.({ event: e });
+        return true;
+      },
+    },
+  ] as unknown as typeof TouchSensor.activators;
+}
+
+const asKind = (orig: TimelineDate | undefined, ms: number): TimelineDate => (orig instanceof Date || orig === undefined ? new Date(ms) : typeof orig === "number" ? ms : new Date(ms).toISOString());
+const pad2 = (n: number) => String(n).padStart(2, "0");
+const toInput = (ms: number) => {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+};
+const pointOf = (e: Event | undefined) => {
+  const t = e && "touches" in e ? (e as TouchEvent).touches[0] ?? (e as TouchEvent).changedTouches[0] : (e as PointerEvent | undefined);
+  return { x: t?.clientX ?? 0, y: t?.clientY ?? 0 };
+};
+const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), Math.max(lo, hi));
+
+/** Draggable item shell: dnd-kit listeners sit on the wrapper, so the button, handles and grip all bubble to it. */
+function DraggableItem({ id, disabled, children, ...rest }: { id: string; disabled: boolean } & React.ComponentProps<"div">) {
+  const { setNodeRef, listeners, isDragging } = useDraggable({ id, disabled });
+  return (
+    <div ref={setNodeRef} data-dragging={isDragging ? "" : undefined} {...listeners} {...rest}>
+      {children}
+    </div>
+  );
 }
 
 type SortKey = "lane" | "title" | "start" | "end";
@@ -197,6 +346,13 @@ export function TimelineGraph({
   onViewportChange,
   apiRef,
   labels: labelsProp,
+  onItemsChange,
+  readOnly: readOnlyProp,
+  step: stepProp,
+  minDuration: minDurationProp,
+  maxDuration: maxDurationProp,
+  canMove,
+  collision = "allow",
   className,
   onKeyDown,
   ...props
@@ -206,9 +362,10 @@ export function TimelineGraph({
     ...labelsProp,
     zoom: { ...DEFAULT_LABELS.zoom, ...labelsProp?.zoom },
     units: { ...DEFAULT_LABELS.units, ...labelsProp?.units },
+    dnd: { ...DEFAULT_DND, ...labelsProp?.dnd },
   };
   const m = METRICS[density];
-  const [innerItems] = React.useState(defaultItems ?? []);
+  const [innerItems, setInnerItems] = React.useState(defaultItems ?? []);
   const rawItems = itemsProp ?? innerItems;
   const [zoomState, setZoomState] = React.useState<TimelineZoom>(defaultZoom);
   const zoomValue = zoomProp ?? zoomState;
@@ -270,7 +427,7 @@ export function TimelineGraph({
           if (isDev()) console.warn(`TimelineGraph: item "${src.id}" ends before it starts; swapped.`);
           [s, e] = [e, s];
         }
-        return { src, id: src.id, lane: src.lane, title: src.title, start: s, end: e, status: src.status ?? "default" };
+        return { src, id: src.id, lane: src.lane, title: src.title, start: s, end: e, status: src.status ?? "default", locked: Boolean(src.locked) };
       }),
     [rawItems],
   );
@@ -513,7 +670,340 @@ export function TimelineGraph({
     onItemSelect?.(n.src);
   };
 
-  const readoutItem = norm.find((n) => n.id === (hoverId ?? focusId ?? selectedId));
+  // ---- editing: pointer (dnd-kit), resize handles, keyboard reducer, table; one draft, one callback per commit ----
+  const readOnly = readOnlyProp ?? (!onItemsChange && defaultItems === undefined);
+  const editable = !readOnly && !(itemsProp !== undefined && !onItemsChange);
+  const stepMs = Math.max(60_000, typeof stepProp === "function" ? stepProp(px) : (stepProp ?? stepFor(px)));
+  const minDur = (n: Norm) => n.src.minDuration ?? minDurationProp ?? stepMs;
+  const maxDur = (n: Norm) => n.src.maxDuration ?? maxDurationProp ?? Number.POSITIVE_INFINITY;
+  const canvasRef = React.useRef<HTMLDivElement>(null);
+  const slotRef = React.useRef<HTMLDivElement>(null);
+  const [draft, setDraftState] = React.useState<Draft | null>(null);
+  const draftRef = React.useRef<Draft | null>(null);
+  const setDraft = (d: Draft | null) => {
+    draftRef.current = d;
+    setDraftState(d);
+  };
+  const [liveText, setLiveText] = React.useState("");
+  const announceTimer = React.useRef(0);
+  const announce = (text: string, delay = 0) => {
+    window.clearTimeout(announceTimer.current);
+    if (delay) announceTimer.current = window.setTimeout(() => setLiveText(text), delay);
+    else setLiveText(text);
+  };
+  React.useEffect(() => () => window.clearTimeout(announceTimer.current), []);
+  const lastFlicker = React.useRef(-1e9);
+  const ptrRef = React.useRef({ x: 0, y: 0 });
+  const grabRef = React.useRef(0);
+  const modsRef = React.useRef({ shift: false, alt: false });
+  const sensors = useSensors(useSensor(EditPointerSensor, { activationConstraint: { distance: 4 } }), useSensor(GripTouchSensor, { activationConstraint: { distance: 4 } }));
+  const instructionsId = `${React.useId()}-dnd`;
+  const [overlayHost, setOverlayHost] = React.useState<HTMLElement | null>(null);
+  const [overlayScope, setOverlayScope] = React.useState<{ theme?: string; density?: string; lang?: string }>({});
+  React.useEffect(() => setOverlayHost(document.body), []);
+
+  const normById = (id: string) => norm.find((n) => n.id === id);
+  const posOf = (n: Norm): TimelinePosition => ({ start: n.start, end: n.end, lane: n.lane });
+  const samePos = (a: TimelinePosition, b: TimelinePosition) => a.start === b.start && a.end === b.end && a.lane === b.lane;
+  const toSrc = (n: Norm, p: TimelinePosition): TimelineGraphItem => ({ ...n.src, lane: p.lane, start: asKind(n.src.start, p.start), ...(p.end === undefined ? {} : { end: asKind(n.src.end, p.end) }) });
+  const overlapsAt = (id: string, p: TimelinePosition) => visible.find((o) => o.id !== id && o.lane === p.lane && p.start < (o.end ?? o.start + 1) && o.start < (p.end ?? p.start + 1));
+  const ctxOf = (n: Norm, p: TimelinePosition, extra: Partial<TimelineDndContext> = {}): TimelineDndContext => ({
+    title: n.title,
+    lane: laneLabel(p.lane),
+    start: f.time.format(p.start),
+    end: p.end === undefined ? undefined : f.time.format(p.end),
+    ...extra,
+  });
+  const changeOf = (n: Norm, dr: Pick<Draft, "type" | "from" | "source">, to: TimelinePosition): TimelineChange => ({ id: n.id, type: dr.type, from: dr.from, to, source: dr.source });
+
+  /** Rules in one place: collision, then the host's `canMove`. */
+  const verdict = (n: Norm, dr: Draft, cand: TimelinePosition): { ok: boolean; reason?: string } => {
+    if (collision === "block" && overlapsAt(n.id, cand)) return { ok: false, reason: t.dnd.blocked };
+    if (canMove) {
+      const res = canMove(toSrc(n, cand), { change: changeOf(n, dr, cand), items: rawItems, lanes });
+      if (res === false) return { ok: false };
+      if (typeof res === "object") return { ok: false, reason: res.reason };
+    }
+    return { ok: true };
+  };
+  const setCandidate = (dr: Draft, cand: TimelinePosition) => {
+    const n = normById(dr.id);
+    if (!n || samePos(cand, dr.cand)) return;
+    const v = verdict(n, dr, cand);
+    const next: Draft = { ...dr, cand };
+    if (v.ok) {
+      next.to = cand;
+      next.invalid = undefined;
+      announce(t.dnd.move(ctxOf(n, cand)), dr.source === "keyboard" ? 0 : 250);
+    } else {
+      next.invalid = v.reason ?? "";
+      if (dr.invalid === undefined) {
+        announce(t.dnd.reject(ctxOf(n, cand, { reason: v.reason })));
+        const at = performance.now();
+        if (at - lastFlicker.current >= 1000) {
+          lastFlicker.current = at;
+          next.flickers = dr.flickers + 1;
+        }
+      }
+    }
+    setDraft(next);
+  };
+
+  const commit = (override?: TimelineEditSource) => {
+    const dr = draftRef.current;
+    if (!dr) return;
+    setDraft(null);
+    const n = normById(dr.id);
+    if (!n) return;
+    if (samePos(dr.to, dr.from)) {
+      announce(t.dnd.cancel(ctxOf(n, dr.from)));
+      return;
+    }
+    const nextItems = rawItems.map((it) => (it.id === dr.id ? toSrc(n, dr.to) : it));
+    if (itemsProp === undefined) setInnerItems(nextItems);
+    onItemsChange?.(nextItems, changeOf(n, { ...dr, source: override ?? dr.source }, dr.to));
+    const other = overlapsAt(n.id, dr.to);
+    announce(`${t.dnd.drop(ctxOf(n, dr.to))}${other ? ` ${t.dnd.conflict(ctxOf(n, dr.to, { other: other.title }))}` : ""}`);
+  };
+  const cancelDraft = () => {
+    const dr = draftRef.current;
+    if (!dr) return;
+    const n = normById(dr.id);
+    setDraft(null);
+    if (n) announce(t.dnd.cancel(ctxOf(n, dr.from)));
+  };
+  const removeItem = (n: Norm) => {
+    const from = posOf(n);
+    const nextItems = rawItems.filter((it) => it.id !== n.id);
+    if (itemsProp === undefined) setInnerItems(nextItems);
+    onItemsChange?.(nextItems, { id: n.id, type: "delete", from, to: from, source: "keyboard" });
+    announce(t.dnd.remove(ctxOf(n, from)));
+  };
+
+  /** Pointer move: time from the pointer's canvas x minus where the bar was grabbed (so scrolling while held keeps it exact), lane from y. */
+  const recompute = () => {
+    const dr = draftRef.current;
+    const cv = canvasRef.current;
+    const n = dr && normById(dr.id);
+    if (!dr || !n || !cv || dr.type !== "move" || dr.source === "keyboard") return;
+    const cr = cv.getBoundingClientRect();
+    const raw = xToTime(ptrRef.current.x - cr.left - grabRef.current, startMs, px);
+    const unit = modsRef.current.alt ? 60_000 : stepMs;
+    const delta = Math.round((raw - dr.from.start) / unit) * unit;
+    const dur = (dr.from.end ?? dr.from.start) - dr.from.start;
+    const start = clamp(dr.from.start + delta, startMs, endMs - dur);
+    let lane = dr.cand.lane;
+    if (modsRef.current.shift) lane = dr.from.lane;
+    else {
+      const body = ptrRef.current.y - cr.top - AXIS.height;
+      const first = rows.find((r) => r.kind === "lane");
+      const last = [...rows].reverse().find((r) => r.kind === "lane");
+      lane = (body < 0 ? first : body >= rowsHeight(rows) ? last : rowAtY(rows, body))?.id ?? lane;
+    }
+    setCandidate(dr, { start, end: dr.from.end === undefined ? undefined : start + dur, lane });
+  };
+  const latest = React.useRef({ recompute, commit, cancelDraft });
+  latest.current = { recompute, commit, cancelDraft };
+
+  const activeNorm = draft ? normById(draft.id) : undefined;
+  const pointerMove = draft?.type === "move" && draft.source !== "keyboard";
+  React.useEffect(() => {
+    if (!pointerMove) return;
+    const onMove = (e: Event) => {
+      ptrRef.current = pointOf(e);
+      latest.current.recompute();
+    };
+    const mods = (e: KeyboardEvent) => {
+      modsRef.current = { shift: e.shiftKey, alt: e.altKey };
+      latest.current.recompute();
+    };
+    // Own edge autoscroll: dnd-kit's keys off the dragged rect, which is wrong for bars wider than the viewport. Zone 12 % of the scroller, by pointer.
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const el = scrollRef.current;
+      const dt = Math.min(now - last, 64) / 1000;
+      last = now;
+      if (el) {
+        const r = el.getBoundingClientRect();
+        const axis = (pos: number, lo: number, hi: number) => {
+          const zone = (hi - lo) * 0.12;
+          if (pos > hi - zone) return 150 + 1050 * Math.min(1, (pos - (hi - zone)) / zone);
+          if (pos < lo + zone) return -(150 + 1050 * Math.min(1, (lo + zone - pos) / zone));
+          return 0;
+        };
+        const vx = axis(ptrRef.current.x, r.left, r.right) * dt;
+        const vy = el.scrollHeight > el.clientHeight + 1 ? axis(ptrRef.current.y, r.top + AXIS.height, r.bottom) * dt : 0;
+        if (vx || vy) {
+          const before = el.scrollLeft + el.scrollTop;
+          el.scrollLeft += vx;
+          el.scrollTop += vy;
+          if (el.scrollLeft + el.scrollTop !== before) latest.current.recompute();
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    document.addEventListener("pointermove", onMove, true);
+    document.addEventListener("touchmove", onMove, { capture: true, passive: true });
+    window.addEventListener("keydown", mods);
+    window.addEventListener("keyup", mods);
+    return () => {
+      cancelAnimationFrame(raf);
+      document.removeEventListener("pointermove", onMove, true);
+      document.removeEventListener("touchmove", onMove, true);
+      window.removeEventListener("keydown", mods);
+      window.removeEventListener("keyup", mods);
+      modsRef.current = { shift: false, alt: false };
+    };
+  }, [pointerMove]);
+
+  const onDragStart = ({ active, activatorEvent }: DragStartEvent) => {
+    const n = normById(String(active.id));
+    const el = canvasRef.current?.querySelector<HTMLElement>(`[data-item-id="${CSS.escape(String(active.id))}"]`);
+    if (!n || !el) return;
+    const p = pointOf(activatorEvent);
+    ptrRef.current = p;
+    grabRef.current = p.x - el.getBoundingClientRect().left;
+    const el0 = scrollRef.current;
+    const scope = (sel: string, attr: string) => el0?.closest(sel)?.getAttribute(attr) ?? undefined;
+    setOverlayScope({ theme: scope("[data-theme]", "data-theme"), density: scope("[data-density]", "data-density"), lang: scope("[lang]", "lang") });
+    const from = posOf(n);
+    announce(t.dnd.pickup(ctxOf(n, from)));
+    setDraft({ id: n.id, type: "move", source: "touches" in activatorEvent ? "touch" : "pointer", from, to: from, cand: from, flickers: 0 });
+  };
+
+  const startResize = (n: Norm, edge: "start" | "end", e: React.PointerEvent) => {
+    if (e.button !== 0 || !e.isPrimary || !editable || n.locked) return;
+    if (e.pointerType === "touch" && selectedId !== n.id) return;
+    e.stopPropagation();
+    e.preventDefault();
+    const from = posOf(n);
+    const source: TimelineEditSource = e.pointerType === "touch" ? "touch" : "pointer";
+    const type = edge === "start" ? "resize-start" : "resize-end";
+    const x0 = e.clientX;
+    const sc0 = scrollRef.current?.scrollLeft ?? 0;
+    announce(t.dnd.pickup(ctxOf(n, from)));
+    setDraft({ id: n.id, type, source, from, to: from, cand: from, flickers: 0 });
+    const move = (ev: PointerEvent) => {
+      const dr = draftRef.current;
+      if (!dr) return;
+      const dx = ev.clientX - x0 + ((scrollRef.current?.scrollLeft ?? 0) - sc0);
+      const unit = ev.altKey ? 60_000 : stepMs;
+      const d = Math.round(((dx / px) * HOUR) / unit) * unit;
+      const end0 = from.end ?? from.start;
+      const cand: TimelinePosition =
+        edge === "end"
+          ? { ...from, end: clamp(end0 + d, from.start + minDur(n), Math.min(endMs, from.start + maxDur(n))) }
+          : { ...from, start: clamp(from.start + d, Math.max(startMs, end0 - maxDur(n)), end0 - minDur(n)) };
+      setCandidate(dr, cand);
+    };
+    const end = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      window.removeEventListener("pointercancel", abort);
+      window.removeEventListener("keydown", key);
+    };
+    const up = () => {
+      end();
+      latest.current.commit();
+    };
+    const abort = () => {
+      end();
+      latest.current.cancelDraft();
+    };
+    const key = (ev: KeyboardEvent) => {
+      if (ev.key === "Escape") abort();
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+    window.addEventListener("pointercancel", abort);
+    window.addEventListener("keydown", key);
+  };
+
+  const lift = (n: Norm) => {
+    const from = posOf(n);
+    announce(t.dnd.pickup(ctxOf(n, from)));
+    setDraft({ id: n.id, type: "move", source: "keyboard", from, to: from, cand: from, flickers: 0 });
+  };
+  /** Lifted keyboard mode. Returns true when the key was consumed (everything but Tab, so `navigate` and the root zoom never see it). */
+  const editKey = (n: Norm, e: React.KeyboardEvent): boolean => {
+    const dr = draftRef.current;
+    if (dr && dr.source === "keyboard" && dr.id === n.id) {
+      if (e.key === "Tab") return false;
+      e.preventDefault();
+      const to = dr.to;
+      const end0 = to.end ?? to.start;
+      const dir = e.key === "ArrowRight" || e.key === "PageDown" ? 1 : e.key === "ArrowLeft" || e.key === "PageUp" ? -1 : 0;
+      const dt = dir * (e.key.startsWith("Page") ? DAY : e.shiftKey ? HOUR : stepMs);
+      if (e.key === " " || e.key === "Enter") commit();
+      else if (e.key === "Escape") cancelDraft();
+      else if (e.key === "[" || e.key === "]" || e.key.toLowerCase() === "m") {
+        const type = e.key === "[" ? "resize-start" : e.key === "]" ? "resize-end" : "move";
+        if (type !== "move" && n.end === undefined) return true;
+        announce(t.dnd.mode(ctxOf(n, to, { mode: type })));
+        setDraft({ ...dr, type });
+      } else if (dt) {
+        if (dr.type === "move") {
+          const dur = end0 - to.start;
+          const start = clamp(to.start + dt, startMs, endMs - dur);
+          setCandidate(dr, { start, end: to.end === undefined ? undefined : start + dur, lane: to.lane });
+        } else if (dr.type === "resize-end") setCandidate(dr, { ...to, end: clamp(end0 + dt, to.start + minDur(n), Math.min(endMs, to.start + maxDur(n))) });
+        else setCandidate(dr, { ...to, start: clamp(to.start + dt, Math.max(startMs, end0 - maxDur(n)), end0 - minDur(n)) });
+      } else if (e.key === "ArrowUp" || e.key === "ArrowDown") {
+        const next = laneOrder[laneOrder.indexOf(to.lane) + (e.key === "ArrowDown" ? 1 : -1)];
+        if (next && dr.type === "move") setCandidate(dr, { ...to, lane: next });
+      }
+      return true;
+    }
+    if (!editable || n.locked) return false;
+    if (e.key === " " && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      lift(n);
+      return true;
+    }
+    if (e.key === "Delete" && selectedId === n.id) {
+      e.preventDefault();
+      removeItem(n);
+      return true;
+    }
+    return false;
+  };
+  React.useEffect(() => {
+    if (draft?.source === "keyboard") slotRef.current?.scrollIntoView({ inline: "nearest", block: "nearest" });
+  }, [draft?.to.start, draft?.to.end, draft?.to.lane, draft?.source]);
+
+  /** Table edit path: the same rules and callback shape as the gestures. Returns an error text or undefined. */
+  const [tableErr, setTableErr] = React.useState<Record<string, string>>({});
+  const editFromTable = (n: Norm, field: "start" | "end" | "lane", value: string) => {
+    const from = posOf(n);
+    const cand: TimelinePosition = { ...from };
+    if (field === "lane") cand.lane = value;
+    else {
+      const ms = new Date(value).getTime();
+      if (Number.isNaN(ms)) return;
+      if (field === "start") cand.start = ms;
+      else cand.end = ms;
+    }
+    const type = field === "lane" || n.end === undefined ? "move" : field === "start" ? "resize-start" : "resize-end";
+    const key = `${n.id}:${field}`;
+    const fail = (msg: string) => setTableErr((s) => ({ ...s, [key]: msg }));
+    if (n.end !== undefined && (cand.end! - cand.start < minDur(n) || cand.end! - cand.start > maxDur(n))) return fail(t.dnd.invalidRange);
+    if (n.end === undefined) cand.end = undefined;
+    const dr: Draft = { id: n.id, type, source: "table", from, to: from, cand, flickers: 0 };
+    const v = verdict(n, dr, cand);
+    if (!v.ok) return fail(v.reason ?? t.dnd.reject({ ...ctxOf(n, cand) }));
+    setTableErr((s) => ({ ...s, [key]: "" }));
+    const nextItems = rawItems.map((it) => (it.id === n.id ? toSrc(n, cand) : it));
+    if (itemsProp === undefined) setInnerItems(nextItems);
+    onItemsChange?.(nextItems, changeOf(n, dr, cand));
+  };
+
+  const conflicts = new Set<string>();
+  for (const a of visible) for (const b of visible) if (a.id < b.id && a.lane === b.lane && a.start < (b.end ?? b.start + 1) && b.start < (a.end ?? a.start + 1)) (conflicts.add(a.id), conflicts.add(b.id));
+
+  const readoutBase = norm.find((n) => n.id === (draft?.id ?? hoverId ?? focusId ?? selectedId));
+  const readoutItem = readoutBase && draft?.id === readoutBase.id ? { ...readoutBase, start: draft.to.start, end: draft.to.end, lane: draft.to.lane } : readoutBase;
   const nowSide = !showNow ? null : nowX < viewX.left ? "before" : nowX > viewX.left + viewX.width ? "after" : null;
 
   // ---- connectors ----
@@ -595,7 +1085,7 @@ export function TimelineGraph({
 
   const itemClass = (n: Norm, instant: boolean) =>
     cn(
-      "absolute inset-0 cursor-pointer text-left font-yorha text-yorha-xs outline-none focus-visible:yorha-focus",
+      "absolute inset-0 cursor-pointer text-left font-yorha text-yorha-xs outline-none [touch-action:pan-x_pan-y] focus-visible:yorha-focus",
       instant
         ? cn("grid place-items-center text-yorha-ink outline-current aria-pressed:outline-solid aria-pressed:outline-2 aria-pressed:-outline-offset-2", "[@media(hover:hover)_and_(pointer:fine)]:hover:outline-solid [@media(hover:hover)_and_(pointer:fine)]:hover:outline-1 [@media(hover:hover)_and_(pointer:fine)]:hover:-outline-offset-2")
         : cn(
@@ -605,6 +1095,25 @@ export function TimelineGraph({
             n.status === "danger" && "border-2 border-yorha-alert-ui",
           ),
     );
+  const slotGeo = (() => {
+    const n = draft ? normById(draft.id) : undefined;
+    const row = draft ? rowOf.get(draft.to.lane) : undefined;
+    if (!draft || !n || !row) return null;
+    const g = itemGeometry({ ...n, start: draft.to.start, end: draft.to.end }, { startMs, pxPerHour: px });
+    const sub = draft.to.lane === n.lane ? (packed.sub[n.id] ?? 0) : 0;
+    return { left: g.left, width: g.width, top: AXIS.height + itemTop(row, sub, m), height: g.instant ? 24 : m.barH, instant: g.instant };
+  })();
+  const tableEdit = editable && !timeZone;
+  const dateField = (n: Norm, field: "start" | "end") => (
+    <DateInput
+      type="datetime-local"
+      label={<span className="sr-only">{`${field === "start" ? t.start : t.end}: ${n.title}`}</span>}
+      value={toInput(field === "start" ? n.start : n.end!)}
+      step={Math.round(stepMs / 1000)}
+      onValueChange={(v) => v && editFromTable(n, field, v)}
+      error={tableErr[`${n.id}:${field}`] || undefined}
+    />
+  );
   const statusGlyph: Partial<Record<TimelineItemStatus, GlyphName>> = { done: "check", warn: "triangle-up", danger: "square-x" };
 
   return (
@@ -637,6 +1146,14 @@ export function TimelineGraph({
       }}
       {...props}
     >
+      <div data-part="live" role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {liveText}
+      </div>
+      {editable ? (
+        <span id={instructionsId} className="sr-only">
+          {t.dnd.instructions}
+        </span>
+      ) : null}
       <div data-part="toolbar" className="flex flex-wrap items-center justify-between gap-2 border-b border-yorha-border pb-2">
         <div className="flex flex-wrap items-center gap-1">
           <button type="button" className={btn} aria-label={t.zoomOut} disabled={view !== "graph" || ladderStep(px, -1, maxPx, minPx) === undefined} onClick={() => zoomBy(-1)}>
@@ -652,6 +1169,7 @@ export function TimelineGraph({
             <span aria-hidden="true" className="relative block size-3 shrink-0">
               <Glyph name="chevron-left" className={cn("absolute inset-0", nowSide === "before" ? "opacity-100" : "opacity-0")} />
               <Glyph name="chevron-right" className={cn("absolute inset-0", nowSide === "after" ? "opacity-100" : "opacity-0")} />
+              <Glyph name="diamond-target" className={cn("absolute inset-0", nowSide === null ? "opacity-100" : "opacity-0")} />
             </span>
             {t.jumpToNow}
           </button>
@@ -666,7 +1184,7 @@ export function TimelineGraph({
       </div>
       <div className="flex h-6 items-center gap-3 text-yorha-xs text-yorha-fg-soft" data-part="readout-row">
         <div data-part="readout" aria-live="off" className="h-6 min-w-0 flex-1 truncate leading-6 text-yorha-fg">
-          {readoutItem ? `${readoutItem.title} · ${laneLabel(readoutItem.lane)} · ${when(readoutItem)}${readoutItem.end === undefined ? "" : ` · ${duration(readoutItem)}`}` : ""}
+          {readoutItem ? `${readoutItem.title} · ${laneLabel(readoutItem.lane)} · ${when(readoutItem)}${readoutItem.end === undefined ? "" : ` · ${duration(readoutItem)}`}${draft?.invalid ? ` · ${draft.invalid}` : ""}` : ""}
         </div>
         {(
           [
@@ -718,7 +1236,23 @@ export function TimelineGraph({
               {sortedTable.map((n) => (
                 <tr key={n.id} className="border-b border-yorha-border" data-item-id={n.id}>
                   <th scope="row" className="px-3 py-2 text-left font-yorha-medium">
-                    {laneLabel(n.lane)}
+                    {tableEdit && !n.locked ? (
+                      <select
+                        aria-label={`${t.lane}: ${n.title}`}
+                        value={n.lane}
+                        onChange={(e) => editFromTable(n, "lane", e.target.value)}
+                        className="h-control-sm border border-yorha-border bg-yorha-bg px-2 font-yorha text-yorha-sm text-yorha-fg focus-visible:yorha-focus"
+                      >
+                        {lanes.map((l) => (
+                          <option key={l.id} value={l.id}>
+                            {l.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      laneLabel(n.lane)
+                    )}
+                    {tableErr[`${n.id}:lane`] ? <span className="block text-yorha-xs text-yorha-alert-ui">{tableErr[`${n.id}:lane`]}</span> : null}
                   </th>
                   <td className="px-3 py-2">
                     {onItemSelect ? (
@@ -729,8 +1263,8 @@ export function TimelineGraph({
                       n.title
                     )}
                   </td>
-                  <td className="yorha-tabular px-3 py-2">{f.cell.format(n.start)}</td>
-                  <td className="yorha-tabular px-3 py-2">{n.end === undefined ? "—" : f.cell.format(n.end)}</td>
+                  <td className="yorha-tabular px-3 py-2">{tableEdit && !n.locked ? dateField(n, "start") : f.cell.format(n.start)}</td>
+                  <td className="yorha-tabular px-3 py-2">{n.end === undefined ? "—" : tableEdit && !n.locked ? dateField(n, "end") : f.cell.format(n.end)}</td>
                   <td className="px-3 py-2">{(n.src.dependsOn ?? []).map((id) => norm.find((i) => i.id === id)?.title ?? id).join(", ") || "—"}</td>
                 </tr>
               ))}
@@ -738,11 +1272,23 @@ export function TimelineGraph({
           </table>
         </div>
       ) : (
+        <DndContext
+          sensors={sensors}
+          autoScroll={false}
+          accessibility={{
+            announcements: { onDragStart: () => undefined, onDragOver: () => undefined, onDragMove: () => undefined, onDragEnd: () => undefined, onDragCancel: () => undefined },
+            screenReaderInstructions: { draggable: "" },
+            restoreFocus: false,
+          }}
+          onDragStart={onDragStart}
+          onDragEnd={() => latest.current.commit()}
+          onDragCancel={() => latest.current.cancelDraft()}
+        >
         <div data-part="body" className="grid grid-cols-[auto_minmax(0,1fr)] border border-yorha-border bg-yorha-bg">
-          <div ref={labelsRef} data-part="lane-labels" className="w-7 shrink-0 overflow-hidden border-r border-yorha-border bg-yorha-panel @md:w-36" style={maxHeight !== undefined ? { maxHeight } : undefined}>
+          <div ref={labelsRef} data-part="lane-labels" className="w-22 shrink-0 overflow-hidden border-r border-yorha-border bg-yorha-panel @md:w-36" style={maxHeight !== undefined ? { maxHeight } : undefined}>
             <div style={{ paddingBottom: sbH }}>
-              <div style={{ height: AXIS.height }} className="flex items-end px-2 pb-2 text-yorha-xs tracking-yorha-wide text-yorha-fg-soft @max-md:justify-center @max-md:px-0">
-                <span className="@max-md:sr-only">{t.lane}</span>
+              <div style={{ height: AXIS.height }} className="flex items-end px-2 pb-2 text-yorha-xs tracking-yorha-wide text-yorha-fg-soft">
+                <span className="truncate">{t.lane}</span>
               </div>
               {rows.map((row) => {
                 if (row.kind === "group") {
@@ -763,10 +1309,10 @@ export function TimelineGraph({
                           return next;
                         })
                       }
-                      className="flex w-full items-center gap-1 border-t border-yorha-border bg-yorha-panel px-1 text-left text-yorha-xs font-yorha-bold tracking-yorha-wide focus-visible:yorha-focus-inset @md:px-2"
+                      className="flex w-full items-center gap-1 border-t border-yorha-border bg-yorha-panel px-1.5 text-left text-yorha-xs font-yorha-bold tracking-yorha-wide focus-visible:yorha-focus-inset @md:px-2"
                     >
                       <Glyph name={row.collapsed ? "chevron-right" : "chevron-down"} />
-                      <span className="truncate @max-md:sr-only">{row.id}</span>
+                      <span className="truncate">{row.id}</span>
                     </button>
                   );
                 }
@@ -777,12 +1323,9 @@ export function TimelineGraph({
                     data-lane={lane.id}
                     title={lane.label}
                     style={{ height: row.height }}
-                    className={cn("flex items-center border-t border-yorha-border px-2 text-yorha-sm font-yorha-medium tracking-yorha-wide @max-md:justify-center @max-md:px-0", lane.group !== undefined && "@md:pl-5")}
+                    className={cn("flex items-center border-t border-yorha-border px-2 text-yorha-sm font-yorha-medium tracking-yorha-wide", lane.group !== undefined && "pl-3 @md:pl-5")}
                   >
-                    <span className="truncate @max-md:sr-only">{lane.label}</span>
-                    <span aria-hidden="true" className="hidden @max-md:block">
-                      {firstGrapheme(lane.label)}
-                    </span>
+                    <span className="truncate">{lane.label}</span>
                   </div>
                 );
               })}
@@ -798,13 +1341,14 @@ export function TimelineGraph({
             onScroll={(e) => {
               if (labelsRef.current) labelsRef.current.scrollTop = e.currentTarget.scrollTop;
               reportViewport();
+              latest.current.recompute();
             }}
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerUp}
             onPointerCancel={onPointerUp}
           >
-            <div data-part="canvas" className="relative overflow-clip text-yorha-fg" style={{ width: canvasW, height: canvasH }}>
+            <div ref={canvasRef} data-part="canvas" className="relative overflow-clip text-yorha-fg" style={{ width: canvasW, height: canvasH }}>
               <svg data-part="grid" aria-hidden="true" width={canvasW} height={canvasH} shapeRendering="crispEdges" className="pointer-events-none absolute inset-0 block text-yorha-fg">
                 <defs>
                   <marker id={arrowId} viewBox="0 0 8 8" refX="8" refY="4" markerWidth="8" markerHeight="8" orient="auto">
@@ -858,14 +1402,47 @@ export function TimelineGraph({
                     </div>
                   ) : null;
                 })}
+                {draft && slotGeo ? (
+                  <>
+                    <div data-part="guide-label" data-edge="start" aria-hidden="true" className="yorha-tabular absolute top-0 w-11 bg-yorha-ink text-center text-yorha-xs leading-4 text-yorha-on-ink" style={{ left: slotGeo.left, height: AXIS.guides }}>
+                      {f.time.format(draft.to.start)}
+                    </div>
+                    {draft.to.end !== undefined ? (
+                      <div data-part="guide-label" data-edge="end" aria-hidden="true" className="yorha-tabular absolute top-0 w-11 -translate-x-full bg-yorha-ink text-center text-yorha-xs leading-4 text-yorha-on-ink" style={{ left: slotGeo.left + slotGeo.width, height: AXIS.guides }}>
+                        {f.time.format(draft.to.end)}
+                      </div>
+                    ) : null}
+                  </>
+                ) : null}
                 {showNow ? (
-                  <div data-part="now-tag" className={cn("absolute top-0 flex items-center gap-0.5 bg-yorha-ink px-1 text-yorha-xs leading-4 font-yorha-bold whitespace-nowrap text-yorha-on-ink", nowX > canvasW - 110 && "-translate-x-full")} style={{ left: nowX, height: AXIS.guides }}>
+                  <div data-part="now-tag" className={cn("absolute top-0 flex items-center gap-0.5 bg-yorha-ink px-1 text-yorha-xs leading-4 font-yorha-bold whitespace-nowrap text-yorha-on-ink", nowX > canvasW - 110 && "-translate-x-full", draft && "invisible")} style={{ left: nowX, height: AXIS.guides }}>
                     <Glyph name="triangle-right" />
                     {t.now} {f.time.format(nowMs)}
                   </div>
                 ) : null}
               </div>
               {showNow ? <div data-part="now" aria-hidden="true" className="pointer-events-none absolute z-[5] w-0.5 bg-yorha-alert-ui" style={{ left: nowX - 1, top: AXIS.height, height: bodyH }} /> : null}
+              {draft && slotGeo ? (
+                <>
+                  {(draft.type === "move" || draft.source === "keyboard") && (
+                    <div
+                      key={draft.flickers}
+                      ref={slotRef}
+                      data-part="slot"
+                      data-invalid={draft.invalid !== undefined ? "" : undefined}
+                      data-flickers={draft.flickers}
+                      aria-hidden="true"
+                      className={cn("pointer-events-none absolute z-[8] border border-dashed bg-yorha-ink/10", draft.invalid !== undefined ? "border-yorha-alert-ui" : "border-yorha-ink", draft.flickers > 0 && draft.invalid !== undefined && "yorha-flicker")}
+                      style={{ left: slotGeo.left, top: slotGeo.top, width: slotGeo.width, height: slotGeo.height }}
+                    >
+                      {draft.invalid !== undefined ? <span className="yorha-dither-25 absolute inset-0 bg-yorha-alert-ui" /> : null}
+                    </div>
+                  )}
+                  {[slotGeo.left, draft.to.end !== undefined ? slotGeo.left + slotGeo.width : null].map((x, i) =>
+                    x === null ? null : <div key={i} data-part="guide" aria-hidden="true" className="pointer-events-none absolute z-[8] w-px bg-yorha-ink" style={{ left: x, top: AXIS.height, height: bodyH }} />,
+                  )}
+                </>
+              ) : null}
               {!norm.length ? (
                 <div data-part="empty" role="status" className="absolute z-10 flex items-center px-3 text-yorha-sm text-yorha-fg-soft" style={{ left: 0, top: AXIS.height, height: m.rowMin, width: Math.min(canvasW, viewportPx || canvasW) }}>
                   {emptyText ?? t.empty}
@@ -879,19 +1456,31 @@ export function TimelineGraph({
                     return span ? <div key={r.id} data-part="group-span" aria-hidden="true" className="absolute h-1 bg-yorha-fg-soft" style={{ left: span.x0, width: span.x1 - span.x0, top: AXIS.height + r.top + Math.floor((r.height - 4) / 2) }} /> : null;
                   })}
                 {visible.map((n) => {
-                  const b = boxes.get(n.id)!;
+                  const b0 = boxes.get(n.id)!;
+                  // A resize follows its draft on the bar itself; packing stays frozen, so neighbours never move.
+                  const resizing = draft && draft.id === n.id && draft.type !== "move";
+                  const b = resizing ? { ...b0, ...itemGeometry({ ...n, start: draft.to.start, end: draft.to.end }, { startMs, pxPerHour: px }) } : b0;
+                  const canEdit = editable && !n.locked;
+                  const lifted = draft?.source === "keyboard" && draft.id === n.id;
+                  const dragging = draft?.id === n.id && draft.type === "move";
+                  const sel = selectedId === n.id;
+                  const hw = Math.max(8, Math.min(24, Math.floor(b.width / 2)));
                   const current = n.end !== undefined && n.start <= nowMs && nowMs <= n.end;
                   const glyph = statusGlyph[n.status];
                   return (
-                    <div
+                    <DraggableItem
                       key={n.id}
+                      id={n.id}
+                      disabled={!canEdit}
                       data-part="item"
                       data-item-id={n.id}
                       data-lane={n.lane}
                       data-status={n.status}
                       data-instant={b.instant ? "" : undefined}
+                      data-conflict={conflicts.has(n.id) ? "" : undefined}
+                      data-lifted={lifted ? "" : undefined}
                       style={{ left: b.left, top: b.top, width: b.width, height: b.height, "--yorha-stagger-index": Math.min(laneIndex.get(n.lane) ?? 0, 8) } as React.CSSProperties}
-                      className="yorha-stream pointer-events-none absolute"
+                      className={cn("yorha-stream group/item pointer-events-none absolute", (dragging || lifted) && "opacity-35")}
                       onPointerEnter={(e) => e.pointerType !== "touch" && setHoverId(n.id)}
                       onPointerLeave={() => setHoverId((h) => (h === n.id ? null : h))}
                     >
@@ -906,23 +1495,36 @@ export function TimelineGraph({
                         data-lane={n.lane}
                         tabIndex={n.id === tabbableId ? 0 : -1}
                         aria-label={`${laneLabel(n.lane)}: ${n.title}, ${when(n)}`}
-                        aria-pressed={selectedId === n.id}
+                        aria-pressed={sel}
                         aria-current={current ? "time" : undefined}
+                        aria-disabled={editable && n.locked ? true : undefined}
+                        aria-roledescription={canEdit ? t.dnd.roledescription : undefined}
+                        aria-keyshortcuts={canEdit ? "Space" : undefined}
+                        aria-describedby={canEdit ? instructionsId : undefined}
                         title={b.labelOutside || b.width < 120 ? n.title : undefined}
                         className={cn(itemClass(n, b.instant), "pointer-events-auto")}
                         onFocus={() => {
                           setActiveId(n.id);
                           setFocusId(n.id);
                         }}
-                        onBlur={() => setFocusId((x) => (x === n.id ? null : x))}
+                        onBlur={() => {
+                          setFocusId((x) => (x === n.id ? null : x));
+                          if (draftRef.current?.source === "keyboard" && draftRef.current.id === n.id) latest.current.cancelDraft();
+                        }}
                         onClick={() => select(n)}
-                        onKeyDown={(e) => navigate(n, e)}
+                        onKeyDown={(e) => {
+                          if (!editKey(n, e)) navigate(n, e);
+                        }}
+                        onKeyUp={(e) => {
+                          if (e.key === " " && editable && !n.locked) e.preventDefault();
+                        }}
                       >
                         {b.instant ? (
                           <Glyph name="diamond" />
                         ) : (
                           <>
                             {n.status === "pending" ? <span data-part="dither" aria-hidden="true" className="yorha-dither-25 pointer-events-none absolute inset-0 bg-yorha-ink" /> : null}
+                            {n.locked ? <Glyph name="lock" className="relative" /> : null}
                             {glyph && !b.labelOutside ? <Glyph name={glyph} className="relative" /> : null}
                             {b.labelOutside ? null : (
                               <span data-part="item-label" className={cn("relative min-w-0 flex-1 truncate", n.status === "pending" && "bg-yorha-panel px-1")}>
@@ -932,18 +1534,63 @@ export function TimelineGraph({
                           </>
                         )}
                       </button>
+                      {canEdit && !b.instant ? (
+                        <>
+                          {(["start", "end"] as const).map((edge) => (
+                            <span
+                              key={edge}
+                              data-handle={edge}
+                              aria-hidden="true"
+                              onPointerDown={(e) => startResize(n, edge, e)}
+                              className={cn("pointer-events-auto absolute inset-y-0 flex cursor-ew-resize items-center [@media(pointer:coarse)]:w-11", edge === "start" ? "left-0 justify-start pl-0.5" : "right-0 justify-end pr-0.5", sel && "touch-none")}
+                              style={{ width: hw }}
+                            >
+                              <span className={cn("block h-3 w-2 bg-yorha-on-ink opacity-0 [@media(hover:hover)_and_(pointer:fine)]:group-hover/item:opacity-100 group-focus-within/item:opacity-100", sel && "opacity-100")} />
+                            </span>
+                          ))}
+                          <span
+                            data-grip=""
+                            aria-hidden="true"
+                            title={t.dnd.grip}
+                            className={cn("absolute top-1/2 left-1/2 grid size-6 -translate-x-1/2 -translate-y-1/2 touch-none place-items-center border border-yorha-ink bg-yorha-bg text-yorha-ink", sel ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0")}
+                          >
+                            <Glyph name="grip" />
+                          </span>
+                        </>
+                      ) : null}
                       {b.labelOutside ? (
                         <span data-part="item-label-out" aria-hidden="true" className="pointer-events-none absolute top-1/2 left-full ml-1 -translate-y-1/2 bg-yorha-bg px-0.5 text-yorha-xs leading-4 whitespace-nowrap text-yorha-fg">
                           {n.title}
                         </span>
                       ) : null}
-                    </div>
+                    </DraggableItem>
                   );
                 })}
               </div>
             </div>
           </div>
         </div>
+        {overlayHost
+          ? createPortal(
+              <DragOverlay dropAnimation={null}>
+                {draft && activeNorm && draft.type === "move" && draft.source !== "keyboard" ? (
+                  <div data-slot="timeline-overlay" data-theme={overlayScope.theme} data-density={overlayScope.density} lang={overlayScope.lang} className="relative size-full cursor-grabbing font-yorha text-yorha-fg shadow-yorha-lg">
+                    {boxes.get(activeNorm.id)?.instant ? (
+                      <div className="absolute inset-0 grid place-items-center bg-yorha-bg text-yorha-ink outline-solid outline-2 -outline-offset-2 outline-current">
+                        <Glyph name="diamond" />
+                      </div>
+                    ) : (
+                      <div className={cn(itemClass(activeNorm, false), "flex")}>
+                        <span className="relative min-w-0 flex-1 truncate">{activeNorm.title}</span>
+                      </div>
+                    )}
+                  </div>
+                ) : null}
+              </DragOverlay>,
+              overlayHost,
+            )
+          : null}
+        </DndContext>
       )}
     </div>
   );

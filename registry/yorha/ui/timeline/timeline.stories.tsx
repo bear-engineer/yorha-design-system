@@ -2,7 +2,7 @@ import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { expectTargetSize } from "../../../../.storybook/preview";
-import { Timeline, TimelineGraph, type TimelineGraphHandle, type TimelineGraphItem, type TimelineLane } from "./timeline";
+import { Timeline, TimelineGraph, type TimelineChange, type TimelineGraphHandle, type TimelineGraphItem, type TimelineLane } from "./timeline";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const d = (day: number, h = 0, m = 0) => new Date(2026, 10, day, h, m);
@@ -285,7 +285,8 @@ export const Narrow360: Story = {
   decorators: [(Story) => <div lang="ko" className="w-full max-w-[360px] bg-yorha-panel p-0 text-yorha-fg"><Story /></div>],
   play: async ({ canvasElement }) => {
     const labels = q(canvasElement, "[data-part='lane-labels']");
-    await expect(labels.getBoundingClientRect().width).toBeLessThanOrEqual(29);
+    await expect(labels.getBoundingClientRect().width).toBeLessThanOrEqual(89);
+    await expect(labels.getBoundingClientRect().width).toBeGreaterThanOrEqual(64);
     await expect(q(labels, "[data-lane]")).toHaveAttribute("title", "기획");
     const group = q(canvasElement, "[data-slot='timeline-graph']").getBoundingClientRect().width;
     await expect((group - labels.getBoundingClientRect().width) / group).toBeGreaterThanOrEqual(0.6);
@@ -439,6 +440,106 @@ export const MotionTokens: Story = {
     await withMotion("off", async () => {
       await waitFor(() => expect(Math.max(...cs().animationDuration.split(",").map(parseFloat))).toBe(0));
     });
+  },
+};
+
+
+// ---- editing: drag and drop (f-tl-dnd) ----
+
+/** Host-owned state: `onItemsChange` gets the full next list, the story keeps it (controlled). History / undo is the host's: `change.from` is the undo payload (see the docs: undo recipe with Toast). */
+function Editable(props: React.ComponentProps<typeof TimelineGraph> & { log?: (c: TimelineChange) => void }) {
+  const { log, items: initial = items, ...rest } = props;
+  const [list, setList] = React.useState(initial);
+  const [last, setLast] = React.useState("");
+  return (
+    <div className="grid gap-2">
+      <TimelineGraph
+        {...rest}
+        items={list}
+        onItemsChange={(next, change) => {
+          setList(next);
+          setLast(`${change.type} · ${change.source}`);
+          log?.(change);
+        }}
+      />
+      <p data-testid="last-change" className="m-0 h-5 text-yorha-xs text-yorha-fg-soft">
+        {last}
+      </p>
+    </div>
+  );
+}
+const lift = async (c: ReturnType<typeof within>, title: string) => {
+  const el = itemEl(c, title);
+  el.focus();
+  await userEvent.keyboard(" ");
+  return el;
+};
+
+/** Drag a bar by its body (mouse / pen), drag the end handles to resize, or lift it with Space and use the arrows. 15-minute snap at 4 px/h; the chart never re-packs while you drag. */
+export const DnD: Story = {
+  args: { zoom: { pxPerHour: 8 } },
+  render: (args) => <Editable {...args} />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const el = await lift(c, "와이어프레임");
+    await expect(el).toHaveAttribute("aria-roledescription", "이동 가능한 일정");
+    await userEvent.keyboard("{ArrowRight}{ArrowRight}{ArrowDown} ");
+    await waitFor(() => expect(c.getByTestId("last-change")).toHaveTextContent("move · keyboard"));
+    await expect(q(canvasElement, "[data-item-id='wire']")).toHaveAttribute("data-lane", "dev");
+    await expect(qa(canvasElement, "[data-handle]").length).toBeGreaterThan(0);
+  },
+};
+
+/** `canMove` vetoes a position: nothing earlier than now. The draft stops at the last valid position, the slot is hatched, the reason is announced and shown in the readout. `locked` items stay put. */
+export const Constrained: Story = {
+  args: { zoom: { pxPerHour: 8 }, collision: "block" },
+  render: (args) => (
+    <Editable
+      {...args}
+      items={[...items, { id: "hold", lane: "qa", title: "고정 점검", start: d(22, 9), end: d(22, 18), locked: true }]}
+      canMove={(next) => (next.start < now ? { ok: false, reason: "지난 시각으로는 옮길 수 없습니다" } : true)}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const lock = itemEl(c, "고정 점검");
+    await expect(lock).toHaveAttribute("aria-disabled", "true");
+    await expect(qa(q(canvasElement, "[data-item-id='hold']"), "[data-handle]")).toHaveLength(0);
+    await lift(c, "PG사 연동");
+    await userEvent.keyboard("{PageUp}{PageUp}{PageUp}{PageUp}");
+    await waitFor(() => expect(q(canvasElement, "[data-part='live']")).toHaveTextContent("지난 시각으로는 옮길 수 없습니다"));
+    await expect(q(canvasElement, "[data-part='slot']")).toHaveAttribute("data-invalid");
+    await userEvent.keyboard("{Escape}");
+    await expect(c.getByTestId("last-change")).toHaveTextContent("");
+  },
+};
+
+/** Resize handles on both ends (8 px mark, 24 px hit area, 44 px on touch). 1 h step, 2 h minimum. `[` / `]` pick the start / end with the keyboard, `M` goes back to move. */
+export const Resize: Story = {
+  args: { zoom: { pxPerHour: 8 }, step: 60 * 60_000, minDuration: 2 * 60 * 60_000 },
+  render: (args) => <Editable {...args} />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const wire = q(canvasElement, "[data-item-id='wire']");
+    const w0 = wire.getBoundingClientRect().width;
+    await lift(c, "와이어프레임");
+    await userEvent.keyboard("]{ArrowRight}{ArrowRight} ");
+    await waitFor(() => expect(c.getByTestId("last-change")).toHaveTextContent("resize-end · keyboard"));
+    await expect(Math.round(wire.getBoundingClientRect().width - w0)).toBe(16);
+  },
+};
+
+/** Editing props are present but `readOnly` wins: no handles, no lift, Space selects. */
+export const ReadOnly: Story = {
+  args: { readOnly: true, zoom: { pxPerHour: 8 }, onItemsChange: fn() },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(qa(canvasElement, "[data-handle]")).toHaveLength(0);
+    const el = itemEl(c, "와이어프레임");
+    el.focus();
+    await userEvent.keyboard(" ");
+    await expect(el).toHaveAttribute("aria-pressed", "true");
+    await expect(el).not.toHaveAttribute("aria-roledescription");
   },
 };
 

@@ -3,7 +3,6 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import { frames, mountStory } from "./mount";
-import "../src/styles/storybook.css";
 import { TimelineGraph, type TimelineChange, type TimelineGraphItem, type TimelineLane } from "../registry/yorha/ui/timeline/timeline";
 
 /** v4 timeline drag and drop (f-tl-dnd): V4-070..082. Real pointer events (same sequence as the kanban tests), geometry assertions. */
@@ -66,6 +65,8 @@ const laneMid = (root: ParentNode, id: string) => {
   return b.top + b.height / 2;
 };
 const centre = (el: Element) => ({ x: r(el).left + r(el).width / 2, y: r(el).top + r(el).height / 2 });
+/** A grab point 48 px inside the bar (past the 24 px start handle), so the drag does not start in the autoscroll zone. */
+const grab = (el: Element) => ({ x: r(el).left + 48, y: r(el).top + r(el).height / 2 });
 
 const ptr = (target: EventTarget, type: string, x: number, y: number, pointerType = "mouse") =>
   target.dispatchEvent(
@@ -89,7 +90,7 @@ describe("V4-071 pointer move", () => {
   test("T4: +101 px / +90 px -> overlay under the pointer, slot on a step multiple, lane +2, one callback", async () => {
     const { el, changes } = await mountGraph();
     const b = btn(el, "wire");
-    const c = centre(b);
+    const c = grab(b);
     const r0 = r(wrap(el, "wire"));
     const canvas0 = r(q(el, "[data-part='canvas']"));
     await dragTo(b, c.x, c.y, c.x + 101, c.y + 90, () => {
@@ -120,7 +121,7 @@ describe("V4-071 pointer move", () => {
   test("T5: overlay stays under the pointer inside a transformed ancestor", async () => {
     const { el } = await mountGraph({ ancestor: "translate(37px, 23px)" });
     const b = btn(el, "wire");
-    const c = centre(b);
+    const c = grab(b);
     const r0 = r(wrap(el, "wire"));
     await dragTo(b, c.x, c.y, c.x + 140, c.y + 40, () => {
       const ov = q(document.body, "[data-slot='timeline-overlay']");
@@ -133,12 +134,12 @@ describe("V4-071 pointer move", () => {
   test("T8: variable row heights, pointer on the middle of the 2-sub-row dev lane and of ship", async () => {
     const { el, changes } = await mountGraph();
     const b = btn(el, "wire");
-    const c = centre(b);
+    const c = grab(b);
     await dragTo(b, c.x, c.y, c.x, laneMid(el, "dev"));
     await drop(c.x, laneMid(el, "dev"));
     expect(changes.at(-1)!.to.lane).toBe("dev");
     const b2 = btn(el, "wire");
-    const c2 = centre(b2);
+    const c2 = grab(b2);
     await dragTo(b2, c2.x, c2.y, c2.x, laneMid(el, "ship"));
     await drop(c2.x, laneMid(el, "ship"));
     expect(changes.at(-1)!.to.lane).toBe("ship");
@@ -150,7 +151,7 @@ describe("V4-071 pointer move", () => {
     const before = others.map((id) => r(wrap(el, id)));
     const labels = qa(el, "[data-part='lane-labels'] [data-lane]").map((l) => r(l).height);
     const b = btn(el, "wire");
-    const c = centre(b);
+    const c = grab(b);
     await dragTo(b, c.x, c.y, c.x + 200, c.y + 70, () => {
       others.forEach((id, i) => {
         const a = r(wrap(el, id));
@@ -164,7 +165,7 @@ describe("V4-071 pointer move", () => {
   test("a read-only chart, a locked item and a stray click never start a drag", async () => {
     const ro = await mountGraph({ props: { readOnly: true } });
     const b = btn(ro.el, "wire");
-    const c = centre(b);
+    const c = grab(b);
     await dragTo(b, c.x, c.y, c.x + 80, c.y);
     expect(q(document.body, "[data-slot='timeline-overlay']")).toBeNull();
     await drop(c.x + 80, c.y);
@@ -176,11 +177,11 @@ describe("V4-071 pointer move", () => {
     const lk = btn(el, "lock");
     expect(lk.getAttribute("aria-disabled")).toBe("true");
     expect(qa(wrap(el, "lock"), "[data-handle]")).toHaveLength(0);
-    const cl = centre(lk);
+    const cl = grab(lk);
     await dragTo(lk, cl.x, cl.y, cl.x + 80, cl.y);
     expect(q(document.body, "[data-slot='timeline-overlay']")).toBeNull();
     await drop(cl.x + 80, cl.y);
-    const cw = centre(btn(el, "wire"));
+    const cw = grab(btn(el, "wire"));
     ptr(btn(el, "wire"), "pointerdown", cw.x, cw.y);
     ptr(document, "pointerup", cw.x, cw.y);
     await frames(3);
@@ -190,7 +191,7 @@ describe("V4-071 pointer move", () => {
   test("Esc during a pointer drag restores and fires nothing", async () => {
     const { el, changes } = await mountGraph();
     const b = btn(el, "wire");
-    const c = centre(b);
+    const c = grab(b);
     const r0 = r(wrap(el, "wire"));
     await dragTo(b, c.x, c.y, c.x + 90, c.y + 50);
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", code: "Escape", bubbles: true }));
@@ -304,7 +305,7 @@ describe("V4-074 autoscroll", () => {
     const { el, changes } = await mountGraph();
     const sc = q(el, "[data-part='scroller']");
     const b = btn(el, "wire");
-    const c = centre(b);
+    const c = grab(b);
     const x1 = r(sc).right - 14;
     const left0 = r(wrap(el, "wire")).left;
     await dragTo(b, c.x, c.y, x1, c.y);
@@ -317,12 +318,10 @@ describe("V4-074 autoscroll", () => {
     ptr(document, "pointerup", x1, c.y);
     await frames(4);
     const ch = changes[0]!;
-    const grab = c.x - left0;
-    const expected = ch.from.start + ((x1 - r(sc).left + scrollNow - grab - (left0 - r(sc).left + 0)) / 8) * 3_600_000;
-    void expected;
-    const wantPx = x1 - r(sc).left + scrollNow - grab;
+    const grabX = c.x - left0;
+    const wantPx = x1 - r(sc).left + scrollNow - grabX;
     const wantStart = D(16).getTime() + (wantPx / 8) * 3_600_000;
-    expect(Math.abs(ch.to.start - wantStart)).toBeLessThanOrEqual(15 * MIN + (60_000 * 60) / 8);
+    expect(Math.abs(ch.to.start - wantStart)).toBeLessThanOrEqual(15 * MIN);
   });
 });
 
@@ -331,12 +330,12 @@ describe("V4-075 canMove", () => {
     const reason = "배포 구간에는 옮길 수 없습니다";
     const { el, changes } = await mountGraph({ props: { canMove: (next: TimelineGraphItem) => (next.lane === "ship" ? { ok: false as const, reason } : true) } });
     const b = btn(el, "wire");
-    const c = centre(b);
+    const c = grab(b);
     ptr(b, "pointerdown", c.x, c.y);
     const t0 = performance.now();
     for (let i = 0; i < 10; i++) {
       ptr(document, "pointermove", c.x + 20, i % 2 ? c.y : laneMid(el, "ship"));
-      await frames(2);
+      await new Promise((res) => setTimeout(res, 30));
     }
     expect(performance.now() - t0).toBeLessThan(1000);
     ptr(document, "pointermove", c.x + 20, laneMid(el, "ship"));
@@ -354,7 +353,7 @@ describe("V4-075 canMove", () => {
   test("overlap stacks after the drop and both items get data-conflict (collision allow)", async () => {
     const { el, changes } = await mountGraph();
     const b = btn(el, "wire");
-    const c = centre(b);
+    const c = grab(b);
     await dragTo(b, c.x, c.y, c.x + 8 * 40, laneMid(el, "dev"));
     await drop(c.x + 8 * 40, laneMid(el, "dev"));
     expect(changes).toHaveLength(1);
@@ -365,7 +364,7 @@ describe("V4-075 canMove", () => {
   test("collision=block: an overlapping drop is clamped to the last valid position", async () => {
     const { el, changes } = await mountGraph({ props: { collision: "block" } });
     const b = btn(el, "wire");
-    const c = centre(b);
+    const c = grab(b);
     await dragTo(b, c.x, c.y, c.x + 8 * 40, laneMid(el, "dev"));
     await drop(c.x + 8 * 40, laneMid(el, "dev"));
     expect(changes.every((x) => x.to.lane !== "dev")).toBe(true);
@@ -413,7 +412,44 @@ describe("stories (V4-078)", () => {
   test("Editable story mounts editable and read-only story has no handles", async () => {
     const root = await mountStory("timeline", "DnD", { stage: "top" });
     expect(root.querySelectorAll("[data-handle]").length).toBeGreaterThan(0);
-    const ro = await mountStory("timeline", "ReadOnlyEditable", { stage: "top" });
+    const ro = await mountStory("timeline", "ReadOnly", { stage: "top" });
     expect(ro.querySelectorAll("[data-handle]")).toHaveLength(0);
+  });
+});
+
+describe("f-tl visual defects found by the parent", () => {
+  test("'현재로' button: the leading glyph cell paints a glyph (in view and off screen), light and dark", async () => {
+    for (const theme of ["light", "dark"]) {
+      const { el } = await mountGraph();
+      (el.firstElementChild as HTMLElement).setAttribute("data-theme", theme);
+      await frames(3);
+      const b = qa(el, "[data-part='toolbar'] button").find((x) => x.textContent?.includes("현재로"))!;
+      const cell = q(b, "span[aria-hidden='true']");
+      const glyphs = qa<SVGElement>(cell, "svg");
+      const visible = glyphs.filter((g) => getComputedStyle(g).opacity === "1");
+      expect(visible, `${theme}: exactly one visible glyph`).toHaveLength(1);
+      const g = r(visible[0]!);
+      expect(g.width).toBeGreaterThan(8);
+      expect(g.height).toBeGreaterThan(8);
+      expect(visible[0]!.querySelectorAll("rect,path,circle").length).toBeGreaterThan(0);
+      expect(getComputedStyle(visible[0]!).color).not.toBe(getComputedStyle(b).backgroundColor);
+      mounted.pop()!.root.unmount();
+    }
+  });
+
+  test("360 px: lane labels stay readable (>= 2 characters visible), no page overflow", async () => {
+    const root = await mountStory("timeline", "Narrow360", { stage: "top" });
+    await frames(10);
+    const labels = qa(root, "[data-part='lane-labels'] [data-lane] span");
+    expect(labels.length).toBeGreaterThanOrEqual(5);
+    for (const l of labels) {
+      expect(r(l).width, l.textContent ?? "").toBeGreaterThan(20);
+      expect(l.scrollWidth, `${l.textContent} is not clipped to one glyph`).toBeGreaterThan(0);
+      expect(getComputedStyle(l).position).not.toBe("absolute");
+    }
+    expect(root.querySelector("[data-part='lane-labels'] [data-lane='design']")!.getAttribute("title")).toBe("디자인");
+    const design = labels.find((l) => l.textContent === "디자인")!;
+    expect(design.scrollWidth).toBeLessThanOrEqual(design.clientWidth + 1);
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth + 1);
   });
 });

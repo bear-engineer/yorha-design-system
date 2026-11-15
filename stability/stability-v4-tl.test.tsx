@@ -288,12 +288,13 @@ describe("V4-058 table", () => {
 });
 
 describe("V4-059..067 extensions", () => {
-  test("V4-059 label rail under 28 rem; V4-061 plot >= 60 % of width at 360", async () => {
+  test("V4-059 readable label column under 28 rem (88 px, truncating); V4-061 plot >= 60 % of width at 360", async () => {
     const root = await mountTl("Narrow360");
     await frames(20);
     const labels = r(q(root, "[data-part='lane-labels']"));
     const group = r(q(root, "[data-slot='timeline-graph']"));
-    expect(labels.width).toBeLessThanOrEqual(28 + 1);
+    expect(labels.width).toBeLessThanOrEqual(88 + 1);
+    expect(labels.width).toBeGreaterThanOrEqual(64);
     expect((group.width - labels.width) / group.width).toBeGreaterThanOrEqual(0.6);
     expect(q(root, "[data-part='lane-labels'] [data-lane]").getAttribute("title")).toBeTruthy();
     expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(window.innerWidth + 1);

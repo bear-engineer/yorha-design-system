@@ -5,12 +5,13 @@
       "name": "timeline",
       "type": "registry:ui",
       "title": "Timeline",
-      "description": "Item timeline without chart dependencies: TimelineGraph (HTML items over an SVG grid; two-tier time axis, lanes with sub-lane stacking, bars and milestones, status shapes, dependency connectors, live now line, continuous zoom with ladder/fit, pan, keyboard navigation, readout strip, collapsible lane groups, real table view with sorting) and a vertical Timeline event list with dot-glyph markers. timeline-layout exports the pure time/px geometry.",
+      "description": "Item timeline without chart dependencies: TimelineGraph (HTML items over an SVG grid; two-tier time axis, lanes with sub-lane stacking, bars and milestones, status shapes, dependency connectors, live now line, continuous zoom with ladder/fit, pan, keyboard navigation, readout strip, collapsible lane groups, editable: drag and drop with dnd-kit, resize handles, keyboard lift, canMove, table edit path; real table view with sorting) and a vertical Timeline event list with dot-glyph markers. timeline-layout exports the pure time/px geometry.",
       "registryDependencies": [
         "@yorha/utils",
         "@yorha/base",
         "@yorha/glyph",
-        "@yorha/toggle-group"
+        "@yorha/toggle-group",
+        "@yorha/date-input"
       ],
       "files": [
         {
@@ -24,7 +25,11 @@
           "target": "@ui/timeline-layout.ts"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Migration v3 -> v4: scale/onScaleChange -> zoom/defaultZoom/onZoomChange (week density 128 px/week -> 168 px/week); items are HTML buttons (selectors on svg [data-item-id] / [data-part=shape] change; SVG is decorative, [data-part=grid]); the lane-label column is outside the scroller; Up/Down change lane; now omitted = live clock; items/defaultItems props. TimelineGraph needs a label; dates accept Date, ISO string or epoch ms; locale defaults to ko-KR."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Migration v3 -> v4: scale/onScaleChange -> zoom/defaultZoom/onZoomChange (week density 128 px/week -> 168 px/week); items are HTML buttons (selectors on svg [data-item-id] / [data-part=shape] change; SVG is decorative, [data-part=grid]); the lane-label column is outside the scroller; Up/Down change lane; now omitted = live clock; items/defaultItems props. TimelineGraph needs a label; dates accept Date, ISO string or epoch ms; locale defaults to ko-KR. Editing (v4): items/defaultItems + onItemsChange(next, change) once per committed gesture (change.from is the undo payload; keep history in the host, e.g. a Toast with an Undo action that restores change.from); readOnly defaults to true without onItemsChange/defaultItems; canMove(next, ctx) vetoes, step/minDuration/maxDuration/collision tune it. Space lifts instead of selecting when editable (Left/Right step, Shift 1 h, PageUp/PageDown 1 day, Up/Down lane, [ ] resize start/end, M move, Space/Enter drop, Esc cancel, Delete removes the selected item). Touch drags start only from the selected item's grip and handles; the bar body keeps pan-x/pan-y. Touch is verified with emulated events only, not on a real device. dnd-kit is a dependency: @dnd-kit/core@^6.3.1, @dnd-kit/utilities@^3.2.2.",
+      "dependencies": [
+        "@dnd-kit/core@^6.3.1",
+        "@dnd-kit/utilities@^3.2.2"
+      ]
     }
   ]
 }
