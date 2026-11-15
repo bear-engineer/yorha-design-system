@@ -165,7 +165,7 @@ export function FieldCounter({ value, max, className, ...props }: FieldCounterPr
         data-slot="field-counter"
         data-alert={level > 0 ? "" : undefined}
         style={{ width }}
-        className={cn("yorha-tabular inline-block text-right", level > 0 ? "text-yorha-alert" : "text-yorha-fg-soft", className)}
+        className={cn("yorha-tabular inline-block text-left", level > 0 ? "text-yorha-alert" : "text-yorha-fg-soft", className)}
         {...props}
       >
         {n}/{max}
