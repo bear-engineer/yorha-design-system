@@ -29,7 +29,9 @@ export const Default: Story = {
     const status = c.getByRole("status", { name: "불러오는 중" });
     await expect(status).toHaveTextContent("불러오는 중");
     const dots = dotsOf(status);
-    await expect(dots.length).toBe(3);
+    await expect(dots.length).toBe(8);
+    const box = status.getBoundingClientRect();
+    await expect([box.width, box.height]).toEqual([12, 12]);
     for (const dot of dots) {
       await expect(dot).toHaveAttribute("aria-hidden", "true");
     }
@@ -46,9 +48,9 @@ export const ReducedMotion: Story = {
     const running = () => status.getAnimations({ subtree: true }).filter((a) => a.playState === "running");
     try {
       html.dataset.motion = "full";
-      await waitFor(() => expect(running().length).toBe(3));
+      await waitFor(() => expect(running().length).toBe(8));
       await new Promise((r) => setTimeout(r, 6200));
-      await expect(running().length).toBe(3);
+      await expect(running().length).toBe(8);
       html.dataset.motion = "reduced";
       await waitFor(() => expect(status.getAnimations({ subtree: true }).length).toBe(1));
       const [only] = status.getAnimations({ subtree: true });
@@ -86,8 +88,8 @@ export const Authentic: Story = {
   ),
 };
 
-/** Dots use the emphasized motion-token easing, not the raw `ease-in-out` keyword. */
-export const DotEasingToken: Story = {
+/** Each dot hops with the step-flip token (hard on/off), never a fade. */
+export const DotStepFlip: Story = {
   args: { label: "불러오는 중" },
   play: async ({ canvasElement }) => {
     const html = document.documentElement;
@@ -96,9 +98,9 @@ export const DotEasingToken: Story = {
       html.dataset.motion = "full";
       const dot = canvasElement.querySelector<HTMLElement>("[data-yorha-dot]")!;
       await waitFor(() => expect(dot.getAnimations().length).toBeGreaterThan(0));
-      const easing = (dot.getAnimations()[0]!.effect as KeyframeEffect).getTiming().easing;
-      await expect(easing).toMatch(/^cubic-bezier\(/);
-      await expect(easing).not.toBe("ease-in-out");
+      const frames = (dot.getAnimations()[0]!.effect as KeyframeEffect).getKeyframes();
+      await expect(String(frames[0]!.easing)).toMatch(/^steps\(1/);
+      await expect(new Set(frames.map((f) => Number(f.opacity)))).toEqual(new Set([1, 0.15]));
     } finally {
       html.dataset.motion = previous ?? "full";
     }

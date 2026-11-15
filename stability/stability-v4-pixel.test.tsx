@@ -16,6 +16,7 @@ import { Skeleton, SkeletonGroup } from "../registry/yorha/ui/skeleton/skeleton"
 const hosts: HTMLElement[] = [];
 const roots: ReturnType<typeof createRoot>[] = [];
 afterEach(() => {
+  delete document.documentElement.dataset.motion;
   for (const r of roots.splice(0)) r.unmount();
   for (const h of hosts.splice(0)) h.remove();
 });
@@ -23,6 +24,7 @@ afterEach(() => {
 async function mount(node: React.ReactNode, motion = "full", css = ""): Promise<HTMLElement> {
   const host = document.createElement("div");
   host.dataset.motion = motion;
+  document.documentElement.dataset.motion = motion; // Spinner / Skeleton read the root attribute
   host.style.cssText = `position:absolute;left:8px;top:8px;width:400px;color:#000;background:#fff;${css}`;
   document.body.append(host);
   hosts.push(host);
@@ -71,7 +73,7 @@ describe("Glyph (V4-030)", () => {
     for (const svg of svgs) {
       const cs = getComputedStyle(svg);
       const r = svg.getBoundingClientRect();
-      expect(cs.shapeRendering, svg.dataset.glyph).toBe("crispEdges");
+      expect(cs.shapeRendering.toLowerCase(), svg.dataset.glyph).toBe("crispedges");
       expect(cs.transform).toBe("none");
       expect(isInt(r.width) && isInt(r.height) && isInt(r.left) && isInt(r.top), `${svg.dataset.glyph} ${JSON.stringify(r)}`).toBe(true);
       expect(r.width).toBe(Number(svg.getAttribute("width")));
@@ -127,7 +129,7 @@ describe("Spinner (V4-032)", () => {
     for (const d of dots) {
       const b = d.getBoundingClientRect();
       expect([b.width, b.height]).toEqual([2, 2]);
-      expect(isInt(b.left) && isInt(b.top)).toBe(true);
+      expect(isInt(b.left) && isInt(b.top), JSON.stringify(b)).toBe(true);
     }
     expect(new Set(dots.map((d) => `${d.getBoundingClientRect().left}:${d.getBoundingClientRect().top}`)).size).toBe(8);
     const anims = el.getAnimations({ subtree: true });
@@ -145,9 +147,7 @@ describe("Spinner (V4-032)", () => {
     const el = host.querySelector<HTMLElement>("[data-slot=spinner]")!;
     await frames(2);
     expect(el.getAnimations({ subtree: true }).length).toBe(0);
-    document.documentElement.dataset.motion = "off";
     const lit = [...el.querySelectorAll<HTMLElement>("[data-yorha-dot]")].filter((d) => Number(getComputedStyle(d).opacity) === 1);
-    delete document.documentElement.dataset.motion;
     expect(lit.length).toBe(3);
   });
 });
