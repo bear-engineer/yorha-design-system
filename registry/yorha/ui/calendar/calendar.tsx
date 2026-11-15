@@ -39,6 +39,34 @@ function startOfMonth(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), 1);
 }
 
+/** Monday of the ISO week that contains the date. */
+export function startOfIsoWeek(date: Date): Date {
+  return addDays(startOfDay(date), -((date.getDay() + 6) % 7));
+}
+/** ISO 8601 week-year and week number (weeks start on Monday, week 1 holds the first Thursday). */
+export function getIsoWeek(date: Date): { year: number; week: number } {
+  const thursday = addDays(startOfIsoWeek(date), 3);
+  const jan1 = new Date(thursday.getFullYear(), 0, 1);
+  const week = Math.floor((thursday.getTime() - jan1.getTime()) / 86400000 / 7) + 1;
+  return { year: thursday.getFullYear(), week };
+}
+/** `2026-W46`, the value format of `<input type="week">`. */
+export function toIsoWeekKey(date: Date): string {
+  const { year, week } = getIsoWeek(date);
+  return `${String(year).padStart(4, "0")}-W${String(week).padStart(2, "0")}`;
+}
+/** Monday of a `2026-W46` week, or null. */
+export function fromIsoWeekKey(key: string | undefined): Date | null {
+  const m = /^(\d{4})-W(\d{2})$/.exec(key ?? "");
+  if (!m) return null;
+  const year = Number(m[1]);
+  const week = Number(m[2]);
+  // 4 January is always in week 1
+  const monday = startOfIsoWeek(new Date(year, 0, 4));
+  const date = addDays(monday, (week - 1) * 7);
+  return week >= 1 && getIsoWeek(date).year === year && getIsoWeek(date).week === week ? date : null;
+}
+
 /** First weekday of the locale as a JS weekday (0 = Sunday ... 6 = Saturday). Falls back to Monday. */
 export function getWeekStart(locale: string): number {
   try {
@@ -75,8 +103,19 @@ export interface CalendarLabels {
   nextMonth: string;
   today: string;
   pendingRange: string;
+  /** Week-number column header (week mode). */
+  week: string;
+  /** Footer clear button (shown when `onClear` is set). */
+  clear: string;
 }
-const DEFAULT_LABELS: CalendarLabels = { previousMonth: "이전 달", nextMonth: "다음 달", today: "오늘", pendingRange: "종료일 선택" };
+const DEFAULT_LABELS: CalendarLabels = {
+  previousMonth: "이전 달",
+  nextMonth: "다음 달",
+  today: "오늘",
+  pendingRange: "종료일 선택",
+  week: "주",
+  clear: "지우기",
+};
 
 interface CalendarCommonProps {
   /** Visible (first) month, controlled. */
@@ -109,6 +148,16 @@ interface CalendarCommonProps {
   showToday?: boolean;
   /** 1px frame. Default true; turn it off inside a surface that already has one. */
   bordered?: boolean;
+  /**
+   * Week mode (single only, default off): ISO 8601 weeks starting on Monday with a week-number column. Hover and the
+   * selection mark the whole row as one band; clicking or pressing Enter on any day selects its week and reports the
+   * Monday of that week. Days of the neighbouring months stay selectable. `value` may be any day of the week.
+   */
+  weekMode?: boolean;
+  /** Footer "today" action. Called instead of only showing today's month (the picker commits it). Needs `showToday`. */
+  onToday?: (today: Date) => void;
+  /** Adds a clear button to the footer (needs `showToday`). */
+  onClear?: () => void;
   labels?: Partial<CalendarLabels>;
   className?: string;
   "aria-label"?: string;
@@ -145,6 +194,7 @@ const EMPTY_RANGE: DateRange = { from: null, to: null };
 
 /** Week-row width: 7 cells of the container-derived cell edge. */
 const GRID_WIDTH = "w-[calc(var(--yorha-cal-cell)*7)]";
+const GRID_WIDTH_WEEK = "w-[calc(var(--yorha-cal-cell)*8)]";
 
 /**
  * Cell edge, from the calendar's own container (not the viewport): the wrapper is an inline-size container, the cell is
@@ -156,6 +206,9 @@ const GRID_WIDTH = "w-[calc(var(--yorha-cal-cell)*7)]";
 const CELL_VAR =
   "[--yorha-cal-cell:clamp(1.5rem,round(down,calc((100cqi_-_18px_-_(var(--n)_-_1)_*_25px_+_0.01px)_/_(7_*_var(--n))),1px),var(--yorha-control-sm))]";
 /** The wrapper keeps the natural width and yields to its container. */
+const CELL_VAR_WEEK =
+  "[--yorha-cal-cell:clamp(1.5rem,round(down,calc((100cqi_-_18px_+_0.01px)_/_8),1px),var(--yorha-control-sm))]";
+const WRAP_WIDTH_WEEK = "w-[calc(8_*_var(--yorha-control-sm)_+_18px)] max-w-full";
 const WRAP_WIDTH = "w-[calc(var(--n)_*_7_*_var(--yorha-control-sm)_+_(var(--n)_-_1)_*_25px_+_18px)] max-w-full";
 
 /** One numeral box for in-month and outside days, so the digits never move between kinds. */
@@ -178,10 +231,18 @@ const DAY_BUTTON = cn(
   // the end of a preview: 1px inset ink outline
   "data-[preview-end]:outline data-[preview-end]:outline-1 data-[preview-end]:-outline-offset-1 data-[preview-end]:outline-yorha-ink",
   "data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-disabled",
+  // week mode: days of the neighbouring months
+  "data-[outside]:text-yorha-fg-soft data-[outside]:data-[selected]:text-yorha-on-ink data-[outside]:data-[disabled]:text-yorha-disabled",
   "focus-visible:yorha-focus focus-visible:z-10",
   "forced-colors:data-[selected]:before:bg-[Highlight] forced-colors:data-[selected]:text-[HighlightText] forced-colors:data-[selected]:[forced-color-adjust:none]",
   "forced-colors:data-[today]:after:bg-[CanvasText] forced-colors:data-[disabled]:text-[GrayText]",
 );
+
+/** Week mode: the row band replaces the per-cell hover tint. */
+const WEEK_DAY_BUTTON = DAY_BUTTON.replace("yorha-tint ", "");
+
+/** Week mode: the row is one band; hover and keyboard focus tint every cell of the row, the selection is ink. */
+const WEEK_CELL = "size-[var(--yorha-cal-cell)] p-0 group-hover/row:bg-yorha-hover group-focus-within/row:bg-yorha-hover";
 
 /** Band cell: range fill and the dashed preview lines never touch the cell box. */
 const BAND_CELL = cn(
@@ -263,13 +324,15 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
     className,
   } = props;
   const isRange = props.mode === "range";
+  const weekMode = !isRange && !!props.weekMode;
   const labels = { ...DEFAULT_LABELS, ...props.labels };
   const today = React.useMemo(() => startOfDay(props.today ?? new Date()), [props.today]);
   const min = minDate ? startOfDay(minDate) : undefined;
   const max = maxDate ? startOfDay(maxDate) : undefined;
   const count = Math.max(1, Math.floor(numberOfMonths));
   const showOutside = count === 1 && (props.showOutsideDays ?? true);
-  const weekStart = weekStartsOn ?? getWeekStart(locale);
+  const weekStart = weekMode ? 1 : (weekStartsOn ?? getWeekStart(locale));
+  const gridWidth = weekMode ? GRID_WIDTH_WEEK : GRID_WIDTH;
   const baseId = React.useId();
   const rootRef = React.useRef<HTMLDivElement | null>(null);
   const setRefs = (node: HTMLDivElement | null) => {
@@ -372,7 +435,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
   const select = (d: Date) => {
     if (disabledAt(d)) return;
     if (!isRange) {
-      setSelection(d);
+      setSelection(weekMode ? startOfIsoWeek(d) : d);
       return;
     }
     const { from, to } = range;
@@ -460,6 +523,10 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
     setMonth(new Date(month.getFullYear(), month.getMonth() + n, 1), pointer);
   };
   const goToday = () => {
+    if (props.onToday) {
+      props.onToday(today);
+      return;
+    }
     setFocusedState(today);
     setMonth(today, true);
     pendingFocus.current = true;
@@ -481,11 +548,11 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
         data-slot="calendar-month"
         className={cn(
           "flex flex-col",
-          GRID_WIDTH,
+          gridWidth,
           offset > 0 && "max-sm:mt-3 max-sm:border-t max-sm:border-yorha-separator max-sm:pt-3 sm:ml-3 sm:border-l sm:border-yorha-separator sm:pl-3 sm:box-content",
         )}
       >
-        <div data-slot="calendar-header" className={cn("grid h-control-sm grid-cols-[1fr_auto_auto] items-center", GRID_WIDTH)}>
+        <div data-slot="calendar-header" className={cn("grid h-control-sm grid-cols-[1fr_auto_auto] items-center", gridWidth)}>
           <div id={titleId} aria-live="polite" className={cn("truncate font-yorha-bold text-yorha-base yorha-tabular text-yorha-fg-strong", FADE_ITEM)}>
             {monthNames.format(first)}
           </div>
@@ -522,10 +589,15 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
           onBlur={(e) => {
             if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setPreviewDate(null);
           }}
-          className={cn("table-fixed border-separate border-spacing-0", GRID_WIDTH, SLIDE_ITEM)}
+          className={cn("table-fixed border-separate border-spacing-0", gridWidth, SLIDE_ITEM)}
         >
           <thead>
             <tr>
+              {weekMode ? (
+                <th scope="col" abbr="ISO 주 번호" className="h-6 border-b border-yorha-separator p-0 font-yorha-medium text-yorha-xs text-yorha-fg-soft">
+                  {labels.week}
+                </th>
+              ) : null}
               {weekdays.map((w) => (
                 <th
                   key={w.long}
@@ -540,10 +612,19 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
           </thead>
           <tbody>
             {weeks.map((week, wi) => (
-              <tr key={wi}>
+              <tr key={wi} className={weekMode ? "group/row" : undefined}>
+                {weekMode ? (
+                  <th
+                    scope="row"
+                    data-slot="calendar-week-number"
+                    className={cn(WEEK_CELL, "yorha-tabular pb-1 text-center align-middle font-yorha-medium text-yorha-xs text-yorha-fg-soft")}
+                  >
+                    {getIsoWeek(week[0] as Date).week}
+                  </th>
+                ) : null}
                 {week.map((date, di) => {
                   const inMonth = date.getMonth() === first.getMonth();
-                  if (!inMonth) {
+                  if (!inMonth && !weekMode) {
                     if (!showOutside) return <td key={di} role="presentation" className="size-[var(--yorha-cal-cell)] p-0" />;
                     return (
                       <td key={di} role="gridcell" aria-disabled="true" data-outside="" className="size-[var(--yorha-cal-cell)] cursor-default p-0">
@@ -557,7 +638,11 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
                   const isStart = isRange ? isSameDay(date, range.from) : false;
                   const isEnd = isRange ? isSameDay(date, range.to) : false;
                   const inRange = isRange && !!range.from && !!range.to && date > range.from && date < range.to;
-                  const selected = isRange ? isStart || isEnd || inRange : isSameDay(date, single);
+                  const selected = isRange
+                    ? isStart || isEnd || inRange
+                    : weekMode
+                      ? !!single && isSameDay(startOfIsoWeek(date), startOfIsoWeek(single))
+                      : isSameDay(date, single);
                   const isToday = isSameDay(date, today);
                   const preview = inPreview(date);
                   const state: CalendarDayState = {
@@ -581,7 +666,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
                       aria-current={isToday ? "date" : undefined}
                       data-in-range={inRange ? "" : undefined}
                       data-preview={preview ? "" : undefined}
-                      className={BAND_CELL}
+                      className={weekMode ? WEEK_CELL : BAND_CELL}
                     >
                       <button
                         type="button"
@@ -594,6 +679,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
                         data-range-start={isStart ? "" : undefined}
                         data-range-end={isEnd ? "" : undefined}
                         data-today={isToday ? "" : undefined}
+                        data-outside={weekMode && !inMonth ? "" : undefined}
                         data-disabled={disabled ? "" : undefined}
                         data-preview-end={pendingStart && previewDate && isSameDay(previewDate, date) && !isSameDay(date, pendingStart) ? "" : undefined}
                         onClick={() => {
@@ -608,7 +694,7 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
                           if (!disabled) setFocusedState(date);
                           setPreviewDate(date);
                         }}
-                        className={DAY_BUTTON}
+                        className={weekMode ? WEEK_DAY_BUTTON : DAY_BUTTON}
                       >
                         <span data-slot="calendar-day-number" className={cn(NUMBER, disabled && "line-through")}>
                           {date.getDate()}
@@ -634,12 +720,12 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
     <div
       data-slot="calendar-container"
       style={{ "--n": count } as React.CSSProperties}
-      className={cn("inline-block align-top [container-type:inline-size] max-sm:[--n:1]", WRAP_WIDTH, CELL_VAR)}
+      className={cn("inline-block align-top [container-type:inline-size] max-sm:[--n:1]", weekMode ? WRAP_WIDTH_WEEK : WRAP_WIDTH, weekMode ? CELL_VAR_WEEK : CELL_VAR)}
     >
     <div
       ref={setRefs}
       data-slot="calendar"
-      data-mode={isRange ? "range" : "single"}
+      data-mode={isRange ? "range" : weekMode ? "week" : "single"}
       lang={locale}
       aria-label={props["aria-label"]}
       className={cn("block bg-yorha-panel p-2 font-yorha text-yorha-fg", bordered && "border border-yorha-border", className)}
@@ -652,9 +738,15 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
           <button type="button" onClick={goToday} className={buttonVariants({ variant: "ghost", size: "sm" })}>
             {labels.today}
           </button>
-          <span aria-live="polite" className="truncate text-yorha-xs text-yorha-fg-soft">
-            {pendingStart ? labels.pendingRange : null}
-          </span>
+          {props.onClear ? (
+            <button type="button" onClick={props.onClear} className={buttonVariants({ variant: "ghost", size: "sm" })}>
+              {labels.clear}
+            </button>
+          ) : (
+            <span aria-live="polite" className="truncate text-yorha-xs text-yorha-fg-soft">
+              {pendingStart ? labels.pendingRange : null}
+            </span>
+          )}
         </div>
       ) : null}
     </div>

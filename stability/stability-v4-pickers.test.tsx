@@ -263,7 +263,7 @@ describe("week (ISO 8601)", () => {
     expect(day("2026-11-09").getAttribute("aria-disabled")).toBeNull();
     expect(day("2026-11-29").getAttribute("aria-disabled")).toBeNull();
     expect(day("2026-11-30").getAttribute("aria-disabled")).toBe("true");
-    await userEvent.click(day("2026-11-30"));
+    day("2026-11-30").click(); // a disabled control is not clickable for the driver: dispatch the event itself
     await frames(4);
     expect(q(POPUP)).toBeTruthy();
     expect(p.input.value).toBe("");
@@ -318,14 +318,18 @@ describe("month", () => {
     expect(document.activeElement).toBe(byText(popup(), "11월"));
     await userEvent.keyboard("{ArrowLeft}");
     expect(document.activeElement).toBe(byText(popup(), "10월"));
-    await userEvent.keyboard("{ArrowDown}");
-    expect(document.activeElement).toBe(byText(popup(), "12월"));
-    await userEvent.keyboard("{ArrowUp}{ArrowUp}{ArrowUp}");
-    expect(document.activeElement).toBe(byText(popup(), "3월"));
+    await userEvent.keyboard("{ArrowUp}{ArrowUp}");
+    expect(document.activeElement).toBe(byText(popup(), "4월"));
+    await userEvent.keyboard("{ArrowRight}");
+    expect(document.activeElement).toBe(byText(popup(), "5월"));
     expect(qa("[data-slot=month-picker-month][tabindex='0']", popup())).toHaveLength(1);
-    await userEvent.keyboard("{Enter}");
+    // moving past December continues in the next year
+    await userEvent.keyboard("{PageDown}{ArrowDown}");
+    expect(q("[data-slot=month-picker-year]", popup())!.textContent).toBe("2027");
+    expect(document.activeElement).toBe(byText(popup(), "8월"));
+    await userEvent.keyboard("{PageUp}{ArrowLeft}{Enter}");
     await until(() => !q(POPUP));
-    expect(p.input.value).toBe("2026-03");
+    expect(p.input.value).toBe("2026-07");
   });
 
   it("min/max disable months and the year buttons", async () => {
@@ -334,7 +338,7 @@ describe("month", () => {
     expect(byText(popup(), "8월").getAttribute("aria-disabled")).toBe("true");
     expect(byText(popup(), "9월").getAttribute("aria-disabled")).toBeNull();
     expect(q<HTMLButtonElement>("[aria-label='이전 해']", popup())!.disabled).toBe(true);
-    await userEvent.click(byText(popup(), "8월"));
+    byText(popup(), "8월").click();
     await frames(4);
     expect(p.input.value).toBe("2026-11");
     await userEvent.click(q("[aria-label='다음 해']", popup())!);
@@ -444,7 +448,7 @@ describe("time", () => {
     expect(option("시", "18").getAttribute("aria-disabled")).toBe("true");
     expect(option("분", "10").getAttribute("aria-disabled")).toBe("true");
     expect(option("분", "15").getAttribute("aria-disabled")).toBeNull();
-    await userEvent.click(option("시", "18"));
+    option("시", "18").click();
     await userEvent.click(byText(popup(), "확인"));
     await frames(4);
     expect(p.input.value).toBe("09:30");

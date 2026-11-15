@@ -13,13 +13,24 @@
         "@yorha/popover",
         "@yorha/calendar",
         "@yorha/icons",
-        "@yorha/input-group"
+        "@yorha/input-group",
+        "@yorha/button"
       ],
       "files": [
         {
           "path": "date-input.tsx",
           "type": "registry:ui",
           "target": "@ui/date-input.tsx"
+        },
+        {
+          "path": "month-picker.tsx",
+          "type": "registry:ui",
+          "target": "@ui/month-picker.tsx"
+        },
+        {
+          "path": "time-picker.tsx",
+          "type": "registry:ui",
+          "target": "@ui/time-picker.tsx"
         }
       ],
       "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Pick the control with `type` (date, datetime-local, month, week, time); values use the native formats. `picker` adds a calendar button for type=date only; Escape or picking a day closes the popup and returns focus to the button. min and max also disable days in the calendar. Set lang on the wrapper for CJK leading. v3 BREAKING: the input and an end button share one InputGroup frame; the native picker indicator is hidden for every type and the end button shows CalendarIcon (ClockIcon for type=time) and calls showPicker(); with `picker` and type=date it opens the kit Calendar anchored below the field. The button now exists for every type (name `달력 열기`, `시간 선택` for time; pickerLabel overrides). The native control's segment order and month/weekday words follow the browser UI locale, not `lang`: use DatePicker when the text must be Korean. v4: (V4-245) the focused segment is an ink block with on-ink text (Chromium/Safari `::-webkit-datetime-edit-*-field:focus`), numerals tabular; Firefox draws its own segment highlight. (V4-246) BREAKING: `picker` is `auto | calendar | native` and defaults to `auto`: type=date opens the kit Calendar on fine pointers and the native picker on coarse pointers (`true`/`false` still work as calendar/native). The control inherits `color-scheme` from the theme so any UA popup follows light/dark. (V4-248) form `reset` restores defaultValue. Native date inputs differ per browser (V4-254): Chromium shows year/month/day segments with a locale-ordered text and its own popup; Safari desktop has segments but no popup for some types; iOS/Android use OS wheels and pickers; Firefox shows a different segment highlight and its own popup. type=time, month, week and datetime-local always use the native picker (kit TimePicker and month/week pickers are not built: V4-252/253).",
