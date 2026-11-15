@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { userEvent } from "vitest/browser";
 import { expectPixelSnapped, expectSameHeight, expectWithinViewport } from "../.storybook/geometry";
 import { frames, mountStory } from "./mount";
+import { park } from "./measure";
 
 /**
  * v3 craft, family sel (menu, context-menu, menubar, menu-list, select, combobox, autocomplete, navigation-menu).
@@ -337,8 +338,14 @@ describe("menu-list rows (FSEL-03/04/10/14)", () => {
 describe("FSEL-10 triggers + FL-18 disabled row", () => {
   test("menubar and navigation-menu triggers drop the wipe at once; colour flips after the fill starts", { timeout: 60_000 }, async () => {
     for (const [item, slot] of [["menubar", "menubar-trigger"], ["navigation-menu", "navigation-menu-trigger"]] as const) {
+      await park();
       await mountStory(item, "Default", { stage: "top" });
-      const t = document.querySelector<HTMLElement>(`[data-slot=${slot}]`)!;
+      // Rest-state trigger only: an open, highlighted or hovered trigger reports the entry duration by design.
+      const t = document.querySelector<HTMLElement>(
+        `[data-slot=${slot}]:not([data-popup-open]):not([data-highlighted]):not([data-panel-open])`,
+      )!;
+      expect(t, `${item} has a trigger at rest`).toBeTruthy();
+      expect(t.matches(":hover"), `${item} trigger must be at rest`).toBe(false);
       const cs = getComputedStyle(t);
       const props = cs.transitionProperty.split(",").map((p) => p.trim());
       const dur = cs.transitionDuration.split(",").map((d) => parseFloat(d) * (d.trim().endsWith("ms") ? 0.001 : 1));

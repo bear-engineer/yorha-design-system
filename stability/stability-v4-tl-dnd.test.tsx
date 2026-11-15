@@ -443,7 +443,11 @@ describe("f-tl visual defects found by the parent", () => {
     const labels = qa(root, "[data-part='lane-labels'] [data-lane] span");
     expect(labels.length).toBeGreaterThanOrEqual(5);
     for (const l of labels) {
-      expect(r(l).width, l.textContent ?? "").toBeGreaterThan(20);
+      // Readable = the whole label fits (no clipping) and at least two glyphs wide. Measured against the label's
+      // own font size, not a fixed px, so the Latin-only tracking rule (1b3f2c1) does not change the verdict.
+      const fs = parseFloat(getComputedStyle(l).fontSize);
+      expect(r(l).width, l.textContent ?? "").toBeGreaterThanOrEqual(Math.min(l.textContent!.length, 2) * fs * 0.6);
+      expect(l.scrollWidth, `${l.textContent} fits its cell`).toBeLessThanOrEqual(l.clientWidth + 1);
       expect(l.scrollWidth, `${l.textContent} is not clipped to one glyph`).toBeGreaterThan(0);
       expect(getComputedStyle(l).position).not.toBe("absolute");
     }
