@@ -134,7 +134,7 @@ describe("C2-304 button type ramp", () => {
 });
 
 describe("C2-301 tabs focus ring is the kit ring", () => {
-  it("keyboard focus on a tab: 2px outline at +2px offset in the ring colour, same as a button", async () => {
+  it("keyboard focus on a tab: kit ring width and colour, inset by the button offset (V4-180 scrolling strip)", async () => {
     const host = await render(
       createElement("div", null,
         createElement(Button, null, "버튼"),
@@ -153,8 +153,10 @@ describe("C2-301 tabs focus ring is the kit ring", () => {
     const tab = document.activeElement as HTMLElement;
     expect(tab.getAttribute("role")).toBe("tab");
     expect(css(tab).outlineWidth).toBe(ring.w);
-    expect(css(tab).outlineOffset).toBe(ring.o);
-    expect(css(tab).outlineColor).toBe(ring.c);
+    // V4-180: the tab strip scrolls, so the ring is drawn inset (same width and colour, mirrored offset) to stay unclipped.
+    expect(css(tab).outlineOffset).toBe(`-${ring.o}`);
+    // yorha-focus-inset draws in currentColor so it reads on both the ink (selected) and paper tab fills.
+    expect(css(tab).outlineColor).toBe(css(tab).color);
   });
 });
 
