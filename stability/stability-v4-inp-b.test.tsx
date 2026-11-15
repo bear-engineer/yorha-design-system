@@ -151,7 +151,7 @@ describe("V4-144/146: reset, rejections accumulate, clear all", () => {
     expect(host.querySelectorAll("ul li").length).toBe(0);
     expect(host.querySelectorAll("[role=alert]").length).toBe(0);
   });
-  it("per-file status bar: 8 segments and the row height does not change", async () => {
+  it("per-file status bar: sm cell gauge, aria value, constant row height", async () => {
     const host = await mount(fileForm({ multiple: true }));
     drop(zoneOf(host), file("a.txt"));
     await frames(3);
@@ -162,9 +162,38 @@ describe("V4-144/146: reset, rejections accumulate, clear all", () => {
     drop(zoneOf(host2), file("a.txt"));
     await frames(3);
     const row2 = host2.querySelector<HTMLElement>("ul li")!;
-    expect(row2.querySelectorAll("[data-slot=file-progress] [data-segment]").length).toBe(8);
-    expect(row2.querySelectorAll("[data-segment][data-on]").length).toBe(4);
+    const bar = row2.querySelector<HTMLElement>("[data-slot=file-progress] [role=progressbar]")!;
+    expect(bar.getAttribute("aria-valuenow")).toBe("50");
+    expect(bar.getAttribute("aria-valuetext")).toBe("50%");
+    const track = bar.querySelector<HTMLElement>("[data-slot=progress-track]")!;
+    expect(track.getBoundingClientRect().width).toBe(54);
+    expect(track.getBoundingClientRect().height).toBe(10);
+    const cells = bar.querySelector<HTMLElement>("[data-slot=progress-cells]")!;
+    expect(cells.getBoundingClientRect().width).toBe(48);
+    expect(getComputedStyle(cells).maskSize).toContain("6px");
+    expect(bar.querySelector<HTMLElement>("[data-slot=progress-fill]")!.style.clipPath).toBe("inset(0px 24px 0px 0px)");
     expect(row2.getBoundingClientRect().height).toBe(h0);
+    const heights = new Set<number>();
+    for (const state of ["uploading", "done", "error"] as const) {
+      roots.splice(0).forEach((r) => r.unmount());
+      const h = await mount(fileForm({ multiple: true, status: () => ({ state, progress: 0.5 }) }));
+      drop(zoneOf(h), file("a.txt"));
+      await frames(3);
+      const li = h.querySelector<HTMLElement>("ul li")!;
+      heights.add(li.getBoundingClientRect().height);
+      const pb = li.querySelector<HTMLElement>("[data-slot=file-progress] [role=progressbar]")!;
+      if (state === "done") {
+        expect(pb.getAttribute("aria-valuenow")).toBe("100");
+        expect(pb.getAttribute("aria-valuetext")).toBe("업로드 완료");
+        expect(li.querySelector("[data-slot=file-progress-glyph] svg, [data-slot=file-progress-glyph] [data-slot=glyph]")).not.toBeNull();
+      }
+      if (state === "error") {
+        expect(pb.getAttribute("aria-valuetext")).toBe("업로드 실패");
+        expect(pb.querySelector("[data-slot=progress-track]")!.getAttribute("data-status")).toBe("error");
+      }
+    }
+    expect(heights.size).toBe(1);
+    expect([...heights][0]).toBe(h0);
   });
 });
 

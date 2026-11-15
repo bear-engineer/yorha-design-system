@@ -55,7 +55,7 @@ const TYPE: Record<ButtonSize, string> = {
 /**
  * One size map for every control of the family (Button, IconButton, Toggle, ToggleGroup, triggers, FormSubmit).
  * Heights come from the density-aware control scale (never from padding + line height); content is centred.
- * Migration (B8): the busy indicator is a 2px bar on the bottom inner edge (all sizes and variants), not the 8px square;
+ * Migration (B8): the busy indicator is a 2px bar on the bottom inner edge (all sizes and variants), not the 8px square (v4 progress: a smooth linear sweep inside a fixed 2px track, like Progress indeterminate; `[data-slot=button-busy]` is the static track, `button-busy-sweep` is the moving block);
  * a loading button neither wipes nor scales. Tests that looked for the square use `[data-slot=button-busy]`.
  * Migration (C2-106): pressing no longer scales the control (the yorha-press `scale` on :active is gone); pressed is the ink wipe / colour only.
  * Migration (C2-304): the label size ramp is base-2 / base / base+2 (14/16/18, or 15/17/19 where --yorha-text-base is 17px); was a fixed 14 / base / 18, which gave md and lg nearly the same size at 17px.
@@ -81,10 +81,10 @@ const LOOP_FALLBACK_MS = 1200; // used when the --motion-loop token is absent
 const RESULT_MS = 1200; // how long an internal result mark stays
 
 /**
- * Busy indicator pulse (opacity only, so the indicator never changes the button's box). A smooth ease-in-out pulse (linear in reduced, which is the slow soft pulse).
- * Duration is --motion-loop (1200ms full, 2400ms reduced). off = static and fully opaque.
+ * Busy indicator, the gauge's indeterminate language: a thin block sweeps smoothly (linear translateX, --motion-loop x ~1.2) along the
+ * bottom edge inside a fixed track, so the button's box never changes. reduced = opacity pulse of the whole bar, off = static cells.
  */
-function usePulse(ref: RefObject<HTMLSpanElement | null>, active: boolean) {
+function useSweep(ref: RefObject<HTMLSpanElement | null>, active: boolean) {
   useEffect(() => {
     const el = ref.current;
     if (!el || !active) return;
@@ -96,18 +96,14 @@ function usePulse(ref: RefObject<HTMLSpanElement | null>, active: boolean) {
       anim?.cancel();
       anim = undefined;
       const mode = motionOf();
+      el.dataset.mode = mode === "off" ? "off" : mode === "reduced" ? "reduced" : "full";
       if (mode === "off" || typeof el.animate !== "function") return;
       const style = getComputedStyle(html);
       const duration = parseFloat(style.getPropertyValue("--motion-loop")) || LOOP_FALLBACK_MS;
-      const easing = motionOf() === "reduced" ? "linear" : "ease-in-out";
-      anim = el.animate(
-        [
-          { opacity: 1, offset: 0, easing },
-          { opacity: 0.15, offset: 0.5, easing },
-          { opacity: 1, offset: 1 },
-        ],
-        { duration, iterations: Infinity, easing: "linear" },
-      );
+      anim =
+        mode === "reduced"
+          ? el.animate([{ opacity: 0.35 }, { opacity: 1 }, { opacity: 0.35 }], { duration: duration * 2, iterations: Infinity, easing: "ease-in-out" })
+          : el.animate([{ transform: "translateX(-100%)" }, { transform: "translateX(300%)" }], { duration: duration * 1.2, iterations: Infinity, easing: "linear" });
     };
     const observer = new MutationObserver(sync);
     observer.observe(html, { attributes: true, attributeFilter: ["data-motion"] });
@@ -157,7 +153,7 @@ export function Button({
   const [live, setLive] = useState<{ on: boolean; text: string }>({ on: resultProp !== undefined, text: "" });
   const busy = loading || pending;
   const result = busy ? null : resultProp !== undefined ? resultProp : own;
-  usePulse(indicatorRef, busy);
+  useSweep(indicatorRef, busy);
 
   useEffect(() => {
     mounted.current = true;
@@ -213,13 +209,18 @@ export function Button({
         {...props}
       >
         {busy ? (
-          // A 2px bar on the bottom inner edge, the same for every size and variant: it never resizes the control.
+          // A 2px track on the bottom inner edge, the same for every size and variant: the sweep moves inside it, the control never resizes.
           <span
-            ref={indicatorRef}
             aria-hidden="true"
             data-slot="button-busy"
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 bg-current"
-          />
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-0.5 overflow-hidden"
+          >
+            <span
+              ref={indicatorRef}
+              data-slot="button-busy-sweep"
+              className="absolute inset-y-0 left-0 block w-1/3 bg-current data-[mode=off]:w-full data-[mode=off]:bg-transparent data-[mode=reduced]:w-full data-[mode=off]:[background-image:repeating-linear-gradient(to_right,currentColor_0_6px,transparent_6px_8px)]"
+            />
+          </span>
         ) : null}
         {result ? (
           // Trailing 12px cell, absolutely positioned: the result mark never changes the control's box.

@@ -30,7 +30,7 @@ Components with a registry item: 40/40 · parts used: 269/271
 | otp-field | registry/yorha/ui/otp-field | 3/3 | — |
 | popover | registry/yorha/ui/color-input, registry/yorha/ui/date-input, registry/yorha/ui/date-picker, registry/yorha/ui/popover | 12/12 | — |
 | preview-card | registry/yorha/ui/preview-card | 9/9 | — |
-| progress | registry/yorha/ui/progress | 4/5 | — (waived: Indicator) |
+| progress | registry/yorha/ui/file-input, registry/yorha/ui/progress | 4/5 | — (waived: Indicator) |
 | radio | registry/yorha/ui/radio-group | 2/2 | — |
 | radio-group | registry/yorha/ui/radio-group | 0/0 | — |
 | scroll-area | registry/yorha/ui/scroll-area | 6/6 | — |

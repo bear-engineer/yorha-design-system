@@ -267,7 +267,7 @@ export const RequiredInForm: Story = {
   },
 };
 
-/** V4-141 / V4-146: maxFiles, accumulating rejections, per-file 8-segment bar, clear all. */
+/** V4-141 / V4-146: maxFiles, accumulating rejections, per-file sm cell gauge, clear all. */
 export const LimitsAndProgress: Story = {
   render: (args) => (
     <FileInput
@@ -283,7 +283,10 @@ export const LimitsAndProgress: Story = {
     const c = within(canvasElement);
     fireDrop(zoneOf(canvasElement), toDataTransfer(makeFiles(["1.txt", 10], ["2.txt", 500], ["3.txt", 10])));
     await c.findByText("2.txt");
-    await expect(canvasElement.querySelectorAll("[data-segment]")).toHaveLength(16);
+    const bars = canvasElement.querySelectorAll("[data-slot=file-progress] [role=progressbar]");
+    await expect(bars).toHaveLength(2);
+    await expect(bars[0]).toHaveAttribute("aria-valuenow", "50");
+    await expect(bars[1]).toHaveAttribute("aria-valuetext", "업로드 실패");
     await expect(c.getByRole("alert")).toHaveTextContent("3.txt");
     await expect(c.getByRole("button", { name: "모두 지우기" })).toBeEnabled();
   },

@@ -1,6 +1,9 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldError, FieldLabel } from "@/components/ui/field";
+import { Progress as BaseProgress } from "@base-ui/react/progress";
+import { Glyph } from "@/components/ui/glyph";
+import { Gauge } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
 const UNITS = ["byte", "kilobyte", "megabyte", "gigabyte"] as const;
@@ -41,29 +44,40 @@ export interface FileStatus {
   progress?: number;
 }
 
-const SEGMENTS = 8;
+/** The per-file bar is the sm cell gauge: 8 cells in a fixed 54 x 10 px box, so the row height never depends on the state. */
+const FILE_GAUGE_WIDTH = 54;
 
-/** Fixed 8-segment bar (4 x 8 px, whole pixels): the row height never depends on the state. */
+/**
+ * Per-file upload bar on the shared `Gauge` (sm: 4 x 4 px cells on a 6 px pitch). The value is the progressbar's aria-valuenow,
+ * `done` is a full gauge + check glyph, `error` is an alert frame + alert glyph. The glyph slot is a fixed 12 px box in every state.
+ */
 function FileProgress({ status }: { status: FileStatus }) {
-  const on = status.state === "done" ? SEGMENTS : status.state === "error" ? 0 : Math.round(Math.min(1, Math.max(0, status.progress ?? 0)) * SEGMENTS);
-  const a11y =
-    status.state === "uploading"
-      ? { role: "progressbar", "aria-label": "업로드", "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": Math.round((on / SEGMENTS) * 100) }
-      : { role: "img", "aria-label": status.state === "done" ? "업로드 완료" : "업로드 실패" };
+  const pct = status.state === "done" ? 100 : Math.round(Math.min(1, Math.max(0, status.progress ?? 0)) * 100);
+  const text = status.state === "done" ? "업로드 완료" : status.state === "error" ? "업로드 실패" : `${pct}%`;
   return (
-    <span data-slot="file-progress" data-state={status.state} {...a11y} className="inline-flex h-2 shrink-0 gap-px">
-      {Array.from({ length: SEGMENTS }, (_, i) => (
-        <span
-          key={i}
-          data-segment=""
-          data-on={i < on ? "" : undefined}
-          className={cn(
-            "block h-2 w-1 border border-yorha-border",
-            "data-[on]:border-yorha-ink data-[on]:bg-yorha-ink",
-            "in-data-[state=error]:border-yorha-alert-ui",
-          )}
+    <span data-slot="file-progress" data-state={status.state} className="inline-flex shrink-0 items-center gap-1">
+      <BaseProgress.Root
+        value={pct}
+        aria-label="업로드"
+        getAriaValueText={() => text}
+        style={{ width: FILE_GAUGE_WIDTH }}
+        className="block shrink-0"
+      >
+        <Gauge
+          Track={BaseProgress.Track}
+          slot="progress"
+          size="sm"
+          pct={pct}
+          status={status.state === "error" ? "error" : "active"}
         />
-      ))}
+      </BaseProgress.Root>
+      <span
+        aria-hidden="true"
+        data-slot="file-progress-glyph"
+        className={cn("grid size-3 shrink-0 place-items-center", status.state === "error" && "text-yorha-alert")}
+      >
+        {status.state === "uploading" ? null : <Glyph name={status.state === "done" ? "check" : "alert"} />}
+      </span>
     </span>
   );
 }

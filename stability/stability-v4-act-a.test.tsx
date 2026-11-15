@@ -116,24 +116,41 @@ describe("Button promise + result (V4-085)", () => {
   });
 });
 
-describe("Button busy bar easing (V4-086)", () => {
-  const easingOf = (host: HTMLElement) => {
-    const bar = q(host, "[data-slot=button-busy]");
-    const anims = bar.getAnimations();
-    return { count: anims.length, easing: anims[0] ? ((anims[0].effect as KeyframeEffect).getKeyframes()[0]!.easing as string) : null };
+describe("Button busy bar (V4-086, progress consumers)", () => {
+  const sweepOf = (host: HTMLElement) => {
+    const sweep = q(host, "[data-slot=button-busy-sweep]");
+    const anims = sweep.getAnimations();
+    const kf = anims[0] ? (anims[0].effect as KeyframeEffect).getKeyframes() : [];
+    return { sweep, count: anims.length, easing: anims[0] ? ((anims[0].effect as KeyframeEffect).getTiming().easing as string) : null, kf };
   };
-  it("full = smooth ease-in-out pulse, reduced = soft slow linear pulse, off = static", async () => {
+  it("full = linear translateX sweep in a fixed 2px track, reduced = opacity pulse, off = static", async () => {
     const full = await render(<Button loading>저장</Button>, "full");
-    const f = easingOf(full.host);
+    const f = sweepOf(full.host);
     expect(f.count).toBe(1);
-    expect(f.easing).toBe("ease-in-out");
+    expect(f.easing).toBe("linear");
+    expect(Object.keys(f.kf[0]!)).toContain("transform");
+    expect(Object.keys(f.kf[0]!)).not.toContain("opacity");
+    const track = q(full.host, "[data-slot=button-busy]").getBoundingClientRect();
+    expect(track.height).toBe(2);
+    expect(getComputedStyle(q(full.host, "[data-slot=button-busy]")).overflow).toBe("hidden");
     const reduced = await render(<Button loading>저장</Button>, "reduced");
-    const r = easingOf(reduced.host);
+    const r = sweepOf(reduced.host);
     expect(r.count).toBe(1);
-    expect(r.easing).toBe("linear");
+    expect(Object.keys(r.kf[0]!)).toContain("opacity");
+    expect(Object.keys(r.kf[0]!)).not.toContain("transform");
     const off = await render(<Button loading>저장</Button>, "off");
-    expect(easingOf(off.host).count).toBe(0);
-    expect(getComputedStyle(q(off.host, "[data-slot=button-busy]")).opacity).toBe("1");
+    const o = sweepOf(off.host);
+    expect(o.count).toBe(0);
+    expect(getComputedStyle(o.sweep).backgroundImage).toContain("repeating-linear-gradient");
+  });
+  it("the button rect is identical idle and busy, in every motion mode", async () => {
+    const idle = await render(<Button>저장</Button>, "full");
+    const base = q(idle.host, "button").getBoundingClientRect();
+    for (const mode of ["full", "reduced", "off"] as const) {
+      const busy = await render(<Button loading>저장</Button>, mode);
+      const rect = q(busy.host, "button").getBoundingClientRect();
+      expect([rect.width, rect.height]).toEqual([base.width, base.height]);
+    }
   });
 });
 
