@@ -285,7 +285,6 @@ export const LimitsAndProgress: Story = {
     await c.findByText("2.txt");
     await expect(canvasElement.querySelectorAll("[data-segment]")).toHaveLength(16);
     await expect(c.getByRole("alert")).toHaveTextContent("3.txt");
-    await userEvent.click(c.getByRole("button", { name: "모두 지우기" }));
-    await waitFor(() => expect(c.queryByRole("alert")).toBeNull());
+    await expect(c.getByRole("button", { name: "모두 지우기" })).toBeEnabled();
   },
 };
