@@ -60,6 +60,7 @@ export const Default: Story = {
 };
 
 export const Pressed: Story = {
+  tags: ["!autodocs"],
   args: { children: "스캔 모드", defaultPressed: true },
   play: async ({ canvasElement }) => {
     const btn = within(canvasElement).getByRole("button", { name: "스캔 모드" });
@@ -82,6 +83,7 @@ export const Disabled: Story = {
 };
 
 export const FocusVisible: Story = {
+  tags: ["!autodocs"],
   args: { children: "포커스 대상", defaultPressed: false },
   play: async ({ canvasElement }) => {
     const btn = within(canvasElement).getByRole("button", { name: "포커스 대상" });
@@ -94,6 +96,7 @@ export const FocusVisible: Story = {
 };
 
 export const States: Story = {
+  tags: ["!autodocs"],
   args: { children: "" },
   render: () => (
     <div className="flex flex-col items-start gap-3">
@@ -165,6 +168,7 @@ async function expectReducedMotion(el: Element) {
 }
 
 export const PressFeedback: Story = {
+  tags: ["!autodocs"],
   args: { children: "토글" },
   play: async ({ canvasElement }) => {
     const t = within(canvasElement).getByRole("button", { name: "토글" });

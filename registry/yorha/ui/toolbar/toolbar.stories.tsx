@@ -145,6 +145,7 @@ export const VerticalOrientation: Story = {
 };
 
 export const TogglesAndSpace: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await userEvent.tab();

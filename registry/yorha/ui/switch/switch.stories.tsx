@@ -79,6 +79,7 @@ export const Default: Story = {
 };
 
 export const LabelClick: Story = {
+  tags: ["!autodocs"],
   args: { children: "야간 모드", defaultChecked: false },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -101,6 +102,7 @@ export const Disabled: Story = {
 };
 
 export const FocusVisible: Story = {
+  tags: ["!autodocs"],
   args: { children: "포커스 대상", defaultChecked: false },
   play: async ({ canvasElement }) => {
     const sw = within(canvasElement).getByRole("switch", { name: "포커스 대상" });
@@ -114,6 +116,7 @@ export const FocusVisible: Story = {
 };
 
 export const States: Story = {
+  tags: ["!autodocs"],
   args: { children: "" },
   render: () => (
     <div className="flex flex-col items-start gap-3">
@@ -167,6 +170,7 @@ export const Authentic: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   args: { children: "전원", defaultChecked: true },
   play: async ({ canvasElement }) => {
     const els = (): Element[] => {

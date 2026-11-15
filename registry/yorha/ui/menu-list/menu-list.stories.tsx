@@ -68,6 +68,7 @@ export const Default: Story = {
 };
 
 export const ArrowKeys: Story = {
+  tags: ["!autodocs"],
   render: Default.render,
   play: async ({ canvasElement, args }) => {
     const c = within(canvasElement);
@@ -84,6 +85,7 @@ export const ArrowKeys: Story = {
 };
 
 export const HomeEnd: Story = {
+  tags: ["!autodocs"],
   render: Default.render,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -96,6 +98,7 @@ export const HomeEnd: Story = {
 };
 
 export const Typeahead: Story = {
+  tags: ["!autodocs"],
   render: Default.render,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -110,6 +113,7 @@ export const Typeahead: Story = {
 };
 
 export const TypeaheadLatin: Story = {
+  tags: ["!autodocs"],
   render: (args) => (
     <MenuList {...args} defaultValue="alpha">
       <MenuListItem value="alpha">Alpha</MenuListItem>
@@ -126,6 +130,7 @@ export const TypeaheadLatin: Story = {
 };
 
 export const ActivateWithEnterAndSpace: Story = {
+  tags: ["!autodocs"],
   render: Default.render,
   play: async ({ canvasElement, args }) => {
     const c = within(canvasElement);
@@ -207,6 +212,7 @@ export const SelectedRowStyle: Story = {
 };
 
 export const RuleToken: Story = {
+  tags: ["!autodocs"],
   render: Default.render,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -221,6 +227,7 @@ export const RuleToken: Story = {
 };
 
 export const StaggerEntersOnce: Story = {
+  tags: ["!autodocs"],
   render: Default.render,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -238,6 +245,7 @@ export const StaggerEntersOnce: Story = {
 };
 
 export const ReducedMotionHasNoTransition: Story = {
+  tags: ["!autodocs"],
   render: Default.render,
   play: async ({ canvasElement }) => {
     const restore = setMotion("reduced");
@@ -280,6 +288,7 @@ const withFakeAudio = async (run: (constructed: () => number) => Promise<void>) 
 };
 
 export const SilentByDefault: Story = {
+  tags: ["!autodocs"],
   render: (args) => (
     <YorhaProvider>
       <MenuList {...args} sound>
@@ -298,6 +307,7 @@ export const SilentByDefault: Story = {
 };
 
 export const SoundCuesWhenEnabled: Story = {
+  tags: ["!autodocs"],
   render: (args) => (
     <YorhaProvider sound={{ enabled: true }}>
       <MenuList {...args} sound>
@@ -407,6 +417,7 @@ export const Authentic: Story = {
 
 /** Row transitions use the --yorha-ease-out token, not the raw `ease-out` keyword. */
 export const RowEasingToken: Story = {
+  tags: ["!autodocs"],
   render: Default.render,
   play: async ({ canvasElement }) => {
     const restore = setMotion("full");
@@ -426,6 +437,7 @@ export const RowEasingToken: Story = {
 
 /** States: default, selected (defaultValue), disabled row. Targets >= 24px at both densities. */
 export const States: Story = {
+  tags: ["!autodocs"],
   render: (args) => (
     <MenuList {...args}>
       <Rows disabled="weapons" />

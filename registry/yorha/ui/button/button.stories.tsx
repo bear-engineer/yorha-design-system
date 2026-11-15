@@ -81,6 +81,7 @@ export const Default: Story = {
 };
 
 export const KeyboardActivation: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement, args }) => {
     const btn = within(canvasElement).getByRole("button", { name: "확인" });
     await userEvent.tab();
@@ -93,6 +94,7 @@ export const KeyboardActivation: Story = {
 };
 
 export const FocusVisibleRing: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const btn = within(canvasElement).getByRole("button", { name: "확인" });
     await userEvent.tab();
@@ -140,6 +142,7 @@ export const Loading: Story = {
 };
 
 export const SelectionWipe: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const btn = within(canvasElement).getByRole("button", { name: "확인" });
     // yorha-wipe: idle state carries the exit duration (--motion-select-exit), the hover state the enter (--motion-select)
@@ -148,6 +151,7 @@ export const SelectionWipe: Story = {
 };
 
 export const WipeRespectsMotionOff: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const root = document.documentElement;
     const prev = root.getAttribute("data-motion");
@@ -231,6 +235,7 @@ export const Authentic: Story = {
 };
 
 export const PressFeedback: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const btn = within(canvasElement).getByRole("button", { name: "확인" });
     await expect(getComputedStyle(btn).transitionProperty).not.toContain("scale"); // C2-106: pressed never resizes
@@ -240,6 +245,7 @@ export const PressFeedback: Story = {
 
 /** State matrix: default, disabled, loading (keeps focus, blocks activation). Targets stay >= 24px. */
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <div className="flex flex-wrap items-center gap-3">
       {SIZES.map((s) => (

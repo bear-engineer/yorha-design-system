@@ -131,6 +131,7 @@ export const English: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   beforeEach: () => setMotion("reduced"),
   render: (args) => <Heading text={args.text} />,
   play: async ({ canvasElement, args }) => {
@@ -166,6 +167,7 @@ function stubOsReducedMotion(reduce: boolean) {
 
 /** FTXT-04: with no provider, the OS reduced-motion preference alone makes the final text show at once. */
 export const OsReducedMotion: Story = {
+  tags: ["!autodocs"],
   beforeEach: () => stubOsReducedMotion(true),
   render: (args) => <Heading text={args.text} />,
   play: async ({ canvasElement, args }) => {
@@ -175,6 +177,7 @@ export const OsReducedMotion: Story = {
 };
 
 export const MotionOff: Story = {
+  tags: ["!autodocs"],
   beforeEach: () => setMotion("off"),
   render: (args) => <Heading text={args.text} />,
   play: async ({ canvasElement, args }) => {
@@ -224,6 +227,7 @@ export const Authentic: Story = {
 
 /** V4-265: `trigger="inview"` stays idle off screen, runs once when scrolled into view, and does not run again. */
 export const Inview: Story = {
+  tags: ["!autodocs"],
   beforeEach: () => setMotion("full"),
   parameters: { layout: "fullscreen" },
   render: (args) => (
@@ -267,6 +271,7 @@ function GlitchReplayDemo() {
 
 /** V4-263: `replay()` runs one glitch; a second call inside the 1000 ms floor (WCAG 2.3.1) is ignored. The name stays the text. */
 export const GlitchReplay: Story = {
+  tags: ["!autodocs"],
   beforeEach: () => setMotion("full"),
   render: () => <GlitchReplayDemo />,
   play: async ({ canvasElement }) => {
@@ -285,6 +290,7 @@ export const GlitchReplay: Story = {
 
 /** Reduced motion: replay() is refused and the name stays the text. Motion is set inside play so a neighbour story's cleanup cannot race it. */
 export const GlitchReducedMotion: Story = {
+  tags: ["!autodocs"],
   render: () => <GlitchReplayDemo />,
   play: async ({ canvasElement }) => {
     const restore = setMotion("reduced");

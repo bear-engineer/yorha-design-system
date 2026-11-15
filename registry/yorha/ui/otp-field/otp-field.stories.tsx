@@ -73,6 +73,7 @@ export const Default: Story = {
 };
 
 export const TypingAcrossSlots: Story = {
+  tags: ["!autodocs"],
   render: (args) => <Demo {...args} />,
   play: async ({ canvasElement, args }) => {
     const c = within(canvasElement);
@@ -86,6 +87,7 @@ export const TypingAcrossSlots: Story = {
 };
 
 export const BackspaceAcrossSlots: Story = {
+  tags: ["!autodocs"],
   render: (args) => <Demo {...args} />,
   play: async ({ canvasElement, args }) => {
     const c = within(canvasElement);
@@ -105,6 +107,7 @@ export const BackspaceAcrossSlots: Story = {
 };
 
 export const PasteFillsAllSlots: Story = {
+  tags: ["!autodocs"],
   render: (args) => <Demo {...args} />,
   play: async ({ canvasElement, args }) => {
     const c = within(canvasElement);
@@ -118,6 +121,7 @@ export const PasteFillsAllSlots: Story = {
 };
 
 export const NumericRejectsLetters: Story = {
+  tags: ["!autodocs"],
   render: (args) => <Demo {...args} />,
   play: async ({ canvasElement, args }) => {
     const c = within(canvasElement);
@@ -129,6 +133,7 @@ export const NumericRejectsLetters: Story = {
 };
 
 export const AlphanumericAccepted: Story = {
+  tags: ["!autodocs"],
   render: (args) => <Demo {...args} validationType="alphanumeric" label="복구 코드" />,
   play: async ({ canvasElement, args }) => {
     const c = within(canvasElement);
@@ -158,6 +163,7 @@ export const Disabled: Story = {
 };
 
 export const LabelFocusesFirstSlot: Story = {
+  tags: ["!autodocs"],
   render: (args) => <Demo {...args} />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -167,6 +173,7 @@ export const LabelFocusesFirstSlot: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   render: (args) => <Demo {...args} />,
   play: async ({ canvasElement }) => {
     const root = document.documentElement;
@@ -217,6 +224,7 @@ export const Authentic: Story = {
 };
 
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <div className="flex flex-col gap-4">
       <Demo label="기본" id="otp-a" />

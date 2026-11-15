@@ -148,6 +148,7 @@ export const Default: Story = {
 };
 
 export const AnnouncedInLiveRegion: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const region = await body(canvasElement).findByRole("region", { name: "알림" });
     await expect(region).toHaveAttribute("aria-live", "polite");
@@ -176,6 +177,7 @@ export const VariantsHaveShapeCue: Story = {
 };
 
 export const CloseWithKeyboard: Story = {
+  tags: ["!autodocs"],
   args: { timeout: 0 },
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole("button", { name: LABEL.success }));
@@ -240,6 +242,7 @@ const between = (v: number[]) => {
 };
 
 export const MotionRecipe: Story = {
+  tags: ["!autodocs"],
   args: { timeout: 0 },
   play: async ({ canvasElement }) => {
     const toasts = () => [...canvasElement.ownerDocument.querySelectorAll<HTMLElement>("[data-slot=toast]")];
@@ -270,6 +273,7 @@ export const MotionRecipe: Story = {
 
 /** A swipe release carries on outward from where it was let go; it does not snap back first. */
 export const SwipeContinues: Story = {
+  tags: ["!autodocs"],
   args: { timeout: 0 },
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole("button", { name: LABEL.info }));
@@ -321,6 +325,7 @@ export const AutoDismiss: Story = {
 };
 
 export const PausesOnHoverAndFocus: Story = {
+  tags: ["!autodocs"],
   args: { timeout: 800 },
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole("button", { name: LABEL.info }));
@@ -453,6 +458,7 @@ export const ActionAndAnchored: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   render: () => <PartsDemo />,
   play: async ({ canvasElement }) => {
     for (const mode of ["reduced", "off"] as const) {
@@ -482,6 +488,7 @@ export const ReducedMotion: Story = {
 
 /** State matrix: info/success/alert toasts with close buttons, focus stays on the trigger when a toast is added. Targets >= 24px. */
 export const States: Story = {
+  tags: ["!autodocs"],
   args: { timeout: 0 },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);

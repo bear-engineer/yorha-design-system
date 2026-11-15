@@ -72,6 +72,7 @@ export const Default: Story = {
 };
 
 export const InvalidSubmitFocusesFirstError: Story = {
+  tags: ["!autodocs"],
   args: { onFormSubmit: fn() },
   render: (args) => <UnitForm {...args} />,
   play: async ({ canvasElement, args }) => {
@@ -86,6 +87,7 @@ export const InvalidSubmitFocusesFirstError: Story = {
 };
 
 export const EnterKeySubmits: Story = {
+  tags: ["!autodocs"],
   args: { onFormSubmit: fn() },
   render: (args) => <UnitForm {...args} />,
   play: async ({ canvasElement, args }) => {
@@ -157,6 +159,7 @@ export const Authentic: Story = {
 };
 
 export const States: Story = {
+  tags: ["!autodocs"],
   args: { onFormSubmit: fn() },
   render: (args) => <UnitForm {...args} />,
   play: async ({ canvasElement, args }) => {

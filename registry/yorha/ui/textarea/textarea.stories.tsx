@@ -93,6 +93,7 @@ export const Default: Story = {
 };
 
 export const TypingUpdatesValue: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const area = canvas.getByRole("textbox", { name: "작전 메모" }) as HTMLTextAreaElement;
@@ -102,6 +103,7 @@ export const TypingUpdatesValue: Story = {
 };
 
 export const PlaceholderContrast: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const area = canvas.getByRole("textbox", { name: "작전 메모" }) as HTMLTextAreaElement;
@@ -182,6 +184,7 @@ export const Authentic: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   args: { label: "보고" },
   play: async ({ canvasElement }) => {
     const els = (): Element[] => {
@@ -201,6 +204,7 @@ export const ReducedMotion: Story = {
 };
 
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <div className="flex w-full flex-col gap-4">
       <Textarea label="기본" />
@@ -221,6 +225,7 @@ export const States: Story = {
 };
 
 export const SubmitOnModEnter: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <form onSubmit={(e) => e.preventDefault()}>
       <Textarea label="메모" description="Ctrl/Cmd+Enter로 전송, Enter는 줄바꿈" submitOnModEnter />

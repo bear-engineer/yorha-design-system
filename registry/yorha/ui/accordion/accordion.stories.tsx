@@ -134,6 +134,7 @@ const withMotion = async (mode: string, run: () => Promise<void>) => {
 
 /** Panel height/opacity use the yorha-collapse utility: --motion-collapse in full, ≤120ms reduced, 0 off. */
 export const MotionTokens: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -162,6 +163,7 @@ export const MotionTokens: Story = {
 
 /** State matrix: collapsed, expanded, disabled item, keyboard focus. Targets >= 24px in both densities. */
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <div className="w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <Accordion defaultValue={["overview"]}>

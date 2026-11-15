@@ -206,6 +206,7 @@ export const Default: Story = {
 };
 
 export const KeyboardEscapeReturnsFocus: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     const t = trigger();
@@ -219,6 +220,7 @@ export const KeyboardEscapeReturnsFocus: Story = {
 };
 
 export const FocusTrap: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     trigger().focus();
@@ -264,6 +266,7 @@ export const Left: Story = { render: () => <Demo side="left" /> };
 export const Top: Story = { render: () => <Demo side="top" /> };
 
 export const SwipeToDismiss: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo side="bottom" />,
   play: async () => {
     trigger().focus();
@@ -322,6 +325,7 @@ export const Nested: Story = {
 };
 
 export const KeyboardInset: Story = {
+  tags: ["!autodocs"],
   render: () => <KeyboardDemo />,
   play: async () => {
     trigger("입력 서랍 열기").focus();
@@ -336,6 +340,7 @@ export const KeyboardInset: Story = {
 };
 
 export const SwipeArea: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <div lang="ko" className="min-h-40 bg-yorha-panel p-8 text-yorha-fg">
       <Drawer side="right">
@@ -354,6 +359,7 @@ export const SwipeArea: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     const root = document.documentElement;
@@ -403,6 +409,7 @@ export const Authentic: Story = {
 
 /** States: closed trigger and open drawer (focus inside). Targets >= 24px at both densities. */
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async ({ canvasElement }) => {
     await expectTargetSize(canvasElement);

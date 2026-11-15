@@ -143,6 +143,7 @@ export const NavigatesAndCloses: Story = {
 
 /** 화살표 키로 트리거 사이를 이동하고, ArrowDown으로 열고, Escape로 닫으면 포커스가 트리거로 돌아옵니다. */
 export const KeyboardNavigation: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const units = c.getByRole("button", { name: "유닛" });

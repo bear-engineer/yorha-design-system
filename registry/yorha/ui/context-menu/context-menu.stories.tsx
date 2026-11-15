@@ -136,6 +136,7 @@ export const Default: Story = {
 };
 
 export const ShiftF10Opens: Story = {
+  tags: ["!autodocs"],
   render: (args) => <Demo {...args} />,
   play: async () => {
     area().focus();
@@ -151,6 +152,7 @@ export const ShiftF10Opens: Story = {
 };
 
 export const ContextMenuKeyOpens: Story = {
+  tags: ["!autodocs"],
   render: (args) => <Demo {...args} />,
   play: async () => {
     area().focus();
@@ -200,6 +202,7 @@ export const CheckboxAndRadio: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   render: (args) => <Demo {...args} />,
   play: async () => {
     const root = document.documentElement;
@@ -248,6 +251,7 @@ export const Authentic: Story = {
 
 /** States: trigger area, open menu with disabled, checked and radio rows. Targets >= 24px at both densities. */
 export const States: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     await userEvent.pointer({ keys: "[MouseRight]", target: area() });
     const m = await menu();

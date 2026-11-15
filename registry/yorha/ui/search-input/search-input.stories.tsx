@@ -60,6 +60,7 @@ export const ClearButton: Story = {
 };
 
 export const EscapeClears: Story = {
+  tags: ["!autodocs"],
   args: { defaultValue: "A2", onValueChange: fn() },
   play: async ({ canvasElement, args }) => {
     const c = within(canvasElement);
@@ -73,6 +74,7 @@ export const EscapeClears: Story = {
 };
 
 export const EnterSearches: Story = {
+  tags: ["!autodocs"],
   args: { onSearch: fn() },
   play: async ({ canvasElement, args }) => {
     const input = within(canvasElement).getByRole("searchbox", { name: "검색" });
@@ -92,6 +94,7 @@ export const Disabled: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   args: { defaultValue: "A" },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -135,6 +138,7 @@ export const Authentic: Story = {
 };
 
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <div className="flex w-full flex-col gap-4">
       <SearchInput label="기본" />

@@ -122,6 +122,7 @@ export const Default: Story = {
 };
 
 export const KeyboardMove: Story = {
+  tags: ["!autodocs"],
   render: (args) => <Interactive onChange={args.onChange} />,
   play: async ({ canvasElement, args }) => {
     const c = within(canvasElement);
@@ -144,6 +145,7 @@ export const KeyboardMove: Story = {
 };
 
 export const EscapeCancels: Story = {
+  tags: ["!autodocs"],
   render: (args) => <Interactive onChange={args.onChange} />,
   play: async ({ canvasElement, args }) => {
     const c = within(canvasElement);
@@ -173,6 +175,7 @@ export const EscapeCancels: Story = {
 };
 
 export const KoreanAnnouncements: Story = {
+  tags: ["!autodocs"],
   render: () => <Interactive />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -225,6 +228,7 @@ export const Collapsible: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   render: () => <Interactive />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -295,6 +299,7 @@ export const Authentic: Story = {
 };
 
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <div className="grid gap-6">
       <Interactive />

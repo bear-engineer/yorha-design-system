@@ -100,6 +100,7 @@ export const Default: Story = {
 };
 
 export const OpensOnKeyboardFocus: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     // Tab (not .focus()) so focus-visible applies
@@ -113,6 +114,7 @@ export const OpensOnKeyboardFocus: Story = {
 };
 
 export const HoverDelay: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo delay={400} closeDelay={150} />,
   play: async () => {
     await userEvent.hover(link());
@@ -126,6 +128,7 @@ export const HoverDelay: Story = {
 };
 
 export const HasArrow: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo defaultOpen />,
   play: async () => {
     const c = await openCard();
@@ -136,6 +139,7 @@ export const HasArrow: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     const root = document.documentElement;
@@ -183,6 +187,7 @@ export const Authentic: Story = {
 
 /** States: default link and open card via keyboard focus. Trigger link is in a paragraph, so inline exemption (SC 2.5.8) applies. */
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     await userEvent.tab();

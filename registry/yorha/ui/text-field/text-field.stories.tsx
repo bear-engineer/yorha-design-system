@@ -91,6 +91,7 @@ export const Default: Story = {
 };
 
 export const LabelFocusesInput: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     await userEvent.click(canvas.getByText("유닛 이름"));
@@ -99,6 +100,7 @@ export const LabelFocusesInput: Story = {
 };
 
 export const TypingUpdatesValue: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const input = canvas.getByRole("textbox", { name: "유닛 이름" });
@@ -108,6 +110,7 @@ export const TypingUpdatesValue: Story = {
 };
 
 export const PlaceholderContrast: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
     const input = canvas.getByRole("textbox", { name: "유닛 이름" }) as HTMLInputElement;
@@ -184,6 +187,7 @@ export const Authentic: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   args: { label: "작전 코드" },
   play: async ({ canvasElement }) => {
     const els = (): Element[] => {
@@ -203,6 +207,7 @@ export const ReducedMotion: Story = {
 };
 
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <div className="flex w-full flex-col gap-4">
       <TextField label="기본" />

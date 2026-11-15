@@ -36,6 +36,7 @@ export const Default: Story = {
 };
 
 export const PassesNativeProps: Story = {
+  tags: ["!autodocs"],
   args: { name: "unit", required: true, maxLength: 4, autoComplete: "off", defaultValue: "9S" },
   play: async ({ canvasElement }) => {
     const input = within(canvasElement).getByRole("textbox", { name: "유닛 코드" });
@@ -57,6 +58,7 @@ const RefProbe = (props: React.ComponentProps<typeof Input>) => {
 };
 
 export const ForwardsRef: Story = {
+  tags: ["!autodocs"],
   render: (args) => <RefProbe {...args} />,
   play: async ({ canvasElement }) => {
     const input = within(canvasElement).getByRole("textbox", { name: "유닛 코드" });
@@ -66,6 +68,7 @@ export const ForwardsRef: Story = {
 };
 
 export const ClassNameMerges: Story = {
+  tags: ["!autodocs"],
   args: { className: "w-40 uppercase" },
   play: async ({ canvasElement }) => {
     const input = within(canvasElement).getByRole("textbox", { name: "유닛 코드" });
@@ -75,6 +78,7 @@ export const ClassNameMerges: Story = {
 };
 
 export const KeyboardFocus: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const input = within(canvasElement).getByRole("textbox", { name: "유닛 코드" });
     await userEvent.tab();
@@ -100,6 +104,7 @@ export const InvalidAndDisabled: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const root = document.documentElement;
     const prev = root.getAttribute("data-motion");
@@ -150,6 +155,7 @@ export const Authentic: Story = {
 };
 
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <div className="flex flex-col gap-3">
       <Input aria-label="기본" placeholder="기본" />
@@ -171,6 +177,7 @@ export const States: Story = {
 };
 
 export const NumberTypeNoSpinners: Story = {
+  tags: ["!autodocs"],
   render: () => <Input type="number" aria-label="수량" defaultValue={3} />,
   play: async ({ canvasElement }) => {
     await expect(getComputedStyle(within(canvasElement).getByLabelText("수량")).appearance).toBe("textfield");

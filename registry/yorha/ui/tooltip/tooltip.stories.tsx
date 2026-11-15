@@ -139,6 +139,7 @@ export const HoverOpens: Story = {
 };
 
 export const EscapeDismissesFocusStays: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     const t = trigger();
@@ -214,6 +215,7 @@ export const SharedTooltip: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     for (const mode of ["reduced", "off"] as const) {
@@ -230,6 +232,7 @@ export const ReducedMotion: Story = {
 
 /** States: default, focus-visible (opens tooltip), disabled-free. The trigger is the only target. >= 24px at both densities. */
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async ({ canvasElement }) => {
     await expectTargetSize(canvasElement);

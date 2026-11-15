@@ -101,6 +101,7 @@ export const ResizeStacksAndBack: Story = {
 };
 
 export const ReadingOrderKeyboard: Story = {
+  tags: ["!autodocs"],
   name: "DOM 순서 = 읽기 순서 · Tab 순서",
   play: async ({ canvasElement }) => {
     const { list, detail, frame } = panes(canvasElement);

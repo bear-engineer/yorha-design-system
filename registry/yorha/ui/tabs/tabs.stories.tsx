@@ -123,6 +123,7 @@ const withMotion = async (mode: string, run: () => Promise<void>) => {
 
 /** Indicator uses --motion-tab-indicator; panel reports its direction through data-activation-direction. */
 export const MotionTokens: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -149,6 +150,7 @@ export const MotionTokens: Story = {
 
 /** Panel enter is opacity only over --motion-select, exit is 0: rapid arrows never leave overlapping or near-invisible panels (M04). */
 export const RapidArrows: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -178,6 +180,7 @@ export const RapidArrows: Story = {
 
 /** State matrix: selected, unselected, disabled tab, keyboard focus. Targets >= 24px in both densities. */
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <div className="w-[28rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
       <Tabs defaultValue="status">

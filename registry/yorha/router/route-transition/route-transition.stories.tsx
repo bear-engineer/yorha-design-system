@@ -63,6 +63,7 @@ export const Default: Story = {
 
 /** `data-motion="reduced"`에서는 이동 없이 120ms 크로스페이드만 남기므로 래퍼가 `reduced`로 표시됩니다. */
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   parameters: { route: { routes } },
   globals: { motion: "reduced" },
   play: async ({ canvasElement }) => {
@@ -79,6 +80,7 @@ export const ReducedMotion: Story = {
 
 /** `off`도 같은 방식으로 전환을 끕니다. */
 export const MotionOff: Story = {
+  tags: ["!autodocs"],
   parameters: { route: { routes } },
   globals: { motion: "off" },
   play: async ({ canvasElement }) => {
@@ -133,6 +135,7 @@ const directionRoutes = [
 
 /** 링크(PUSH)는 `forward`, 뒤로 가기(POP)는 `back`, `replace` 링크는 `replace`로 훅과 래퍼에 노출됩니다. */
 export const Direction: Story = {
+  tags: ["!autodocs"],
   parameters: { route: { routes: directionRoutes } },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -219,6 +222,7 @@ export const ListToDetail: Story = {
 
 /** 같은 이름의 `SharedElement`를 동시에 두 개 마운트하면 개발 모드에서 경고합니다. */
 export const DuplicateNameWarning: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <div className="text-yorha-fg-ink">
       <SharedElement name="dup-name"><p>첫째</p></SharedElement>
@@ -278,6 +282,7 @@ export const Segments: Story = {
 
 /** `document.startViewTransition`이 없으면 애니메이션 없이 바로 새 화면을 렌더링합니다. */
 export const Unsupported: Story = {
+  tags: ["!autodocs"],
   parameters: { route: { routes } },
   beforeEach: () => {
     Object.defineProperty(document, "startViewTransition", { value: undefined, configurable: true });

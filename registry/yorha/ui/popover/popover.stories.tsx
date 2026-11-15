@@ -178,6 +178,7 @@ export const Default: Story = {
 };
 
 export const KeyboardOpenEscapeReturnsFocus: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     const t = trigger();
@@ -193,6 +194,7 @@ export const KeyboardOpenEscapeReturnsFocus: Story = {
 };
 
 export const CloseButtonReturnsFocus: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     const t = trigger();
@@ -207,6 +209,7 @@ export const CloseButtonReturnsFocus: Story = {
 };
 
 export const OpenChangeReports: Story = {
+  tags: ["!autodocs"],
   render: () => {
     const log: boolean[] = [];
     (window as unknown as { __popoverLog?: boolean[] }).__popoverLog = log;
@@ -283,6 +286,7 @@ export const ModalBackdrop: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   render: () => <SharedDemo modal />,
   play: async () => {
     for (const mode of ["reduced", "off"] as const) {
@@ -300,6 +304,7 @@ export const ReducedMotion: Story = {
 
 /** States: closed trigger and open popover with close button. Targets >= 24px at both densities. */
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async ({ canvasElement }) => {
     await expectTargetSize(canvasElement);

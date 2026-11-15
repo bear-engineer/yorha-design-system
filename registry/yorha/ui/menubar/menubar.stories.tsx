@@ -128,6 +128,7 @@ export const Default: Story = {
 
 /** 한 번만 Tab으로 들어가 ←/→로 메뉴 사이를 옮기고, ↓로 열고, Escape로 닫으면 포커스가 돌아옵니다. */
 export const KeyboardNavigation: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement, args }) => {
     const bar = within(canvasElement).getByRole("menubar");
     const file = within(bar).getByRole("menuitem", { name: "파일" });

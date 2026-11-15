@@ -80,6 +80,7 @@ export const Default: Story = {
 };
 
 export const LabelClick: Story = {
+  tags: ["!autodocs"],
   args: { children: "자동 저장", defaultChecked: false },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -132,6 +133,7 @@ export const Disabled: Story = {
 };
 
 export const FocusVisible: Story = {
+  tags: ["!autodocs"],
   args: { children: "포커스 대상", defaultChecked: false },
   play: async ({ canvasElement }) => {
     const box = within(canvasElement).getByRole("checkbox", { name: "포커스 대상" });
@@ -145,6 +147,7 @@ export const FocusVisible: Story = {
 };
 
 export const States: Story = {
+  tags: ["!autodocs"],
   args: { children: "" },
   render: () => (
     <div className="flex flex-col items-start gap-3">
@@ -199,6 +202,7 @@ export const Authentic: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   args: { children: "알림 수신", defaultChecked: true },
   play: async ({ canvasElement }) => {
     const els = (): Element[] => {

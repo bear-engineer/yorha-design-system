@@ -112,6 +112,7 @@ export const Default: Story = {
 };
 
 export const TypingFilters: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     await userEvent.click(input());
@@ -125,6 +126,7 @@ export const TypingFilters: Story = {
 };
 
 export const KeyboardNavigation: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     input().focus();
@@ -147,6 +149,7 @@ export const KeyboardNavigation: Story = {
 };
 
 export const EnterSelects: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo onValueChange={(v) => ((window as unknown as { __v?: string }).__v = v)} />,
   play: async () => {
     input().focus();
@@ -162,6 +165,7 @@ export const EnterSelects: Story = {
 };
 
 export const EscapeCloses: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     await userEvent.click(input());
@@ -198,6 +202,7 @@ export const Grouped: Story = {
 
 /** IME: Enter that confirms a composition must not choose the highlighted row. */
 export const ImeDoesNotCommit: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo autoHighlight onValueChange={(v) => ((window as unknown as { __ime?: string[] }).__ime = [...((window as unknown as { __ime?: string[] }).__ime ?? []), v])} />,
   play: async () => {
     (window as unknown as { __ime?: string[] }).__ime = [];
@@ -237,6 +242,7 @@ export const Disabled: Story = {
 };
 
 export const ReducedMotion: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     const root = document.documentElement;
@@ -286,6 +292,7 @@ export const Authentic: Story = {
 
 /** State matrix: default, disabled, open list. Targets >= 24px in both densities. */
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <div className="flex flex-col gap-3">
       <Demo />
