@@ -302,6 +302,11 @@ const pointOf = (e: Event | undefined) => {
 };
 const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(v, lo), Math.max(lo, hi));
 
+/** dnd-kit mounts a live region and sensors; a read-only chart gets none of it. */
+function MaybeDnd({ on, children, ...props }: { on: boolean } & React.ComponentProps<typeof DndContext>) {
+  return on ? <DndContext {...props}>{children}</DndContext> : <>{children}</>;
+}
+
 /** Draggable item shell: dnd-kit listeners sit on the wrapper, so the button, handles and grip all bubble to it. */
 function DraggableItem({ id, disabled, children, ...rest }: { id: string; disabled: boolean } & React.ComponentProps<"div">) {
   const { setNodeRef, listeners, isDragging } = useDraggable({ id, disabled });
@@ -316,8 +321,8 @@ type SortKey = "lane" | "title" | "start" | "end";
 
 /**
  * Lane/bar timeline: an aria-hidden SVG grid (ticks, connectors) under HTML items (`button`s). Geometry is linear in
- * time, `px = round((t - range.start) / 1 h * pxPerHour)`; see `timeline-layout.ts` for the pure helpers.
- * Items stack in sub-lanes when they overlap. Arrow keys move between items (Left/Right in a lane, Up/Down between
+ * time: pixels are the hours since the range start times pxPerHour, rounded (pure helpers in timeline-layout.ts).
+ * Items stack in sub-lanes when they overlap. Editable (onItemsChange or defaultItems): drag, resize handles, Space to lift. Arrow keys move between items (Left/Right in a lane, Up/Down between
  * lanes), `+`/`-` zoom, `t` jumps to now, Enter selects.
  */
 export function TimelineGraph({
@@ -1125,7 +1130,7 @@ export function TimelineGraph({
       data-px-per-hour={fmtNum(px)}
       data-view={view}
       data-rows={density}
-      className={cn("@container flex w-full min-w-0 flex-col gap-2 font-yorha text-yorha-fg", className)}
+      className={cn("@container flex w-full min-w-0 flex-col gap-2 font-yorha text-yorha-fg", draft && "select-none", className)}
       onKeyDown={(e) => {
         onKeyDown?.(e);
         if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey) return;
@@ -1146,13 +1151,15 @@ export function TimelineGraph({
       }}
       {...props}
     >
-      <div data-part="live" role="status" aria-live="polite" aria-atomic="true" className="sr-only">
-        {liveText}
-      </div>
       {editable ? (
-        <span id={instructionsId} className="sr-only">
-          {t.dnd.instructions}
-        </span>
+        <>
+          <div data-part="live" role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+            {liveText}
+          </div>
+          <span id={instructionsId} className="sr-only">
+            {t.dnd.instructions}
+          </span>
+        </>
       ) : null}
       <div data-part="toolbar" className="flex flex-wrap items-center justify-between gap-2 border-b border-yorha-border pb-2">
         <div className="flex flex-wrap items-center gap-1">
@@ -1272,7 +1279,8 @@ export function TimelineGraph({
           </table>
         </div>
       ) : (
-        <DndContext
+        <MaybeDnd
+          on={editable}
           sensors={sensors}
           autoScroll={false}
           accessibility={{
@@ -1570,7 +1578,7 @@ export function TimelineGraph({
             </div>
           </div>
         </div>
-        {overlayHost
+        {overlayHost && editable
           ? createPortal(
               <DragOverlay dropAnimation={null}>
                 {draft && activeNorm && draft.type === "move" && draft.source !== "keyboard" ? (
@@ -1590,7 +1598,7 @@ export function TimelineGraph({
               overlayHost,
             )
           : null}
-        </DndContext>
+        </MaybeDnd>
       )}
     </div>
   );

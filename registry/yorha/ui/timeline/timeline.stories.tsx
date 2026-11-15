@@ -37,6 +37,16 @@ const meta = {
   tags: ["autodocs"],
   parameters: { layout: "padded" },
   args: { label: "결제 모듈 출시 일정", lanes, items, range, now, onItemSelect: fn() },
+  // Short type summaries: the long signatures made the docs props table 700 px wide and overflowed the page at 360 px.
+  argTypes: {
+    canMove: { table: { type: { summary: "(next, ctx) => boolean | { ok: false; reason }" } } },
+    onItemsChange: { table: { type: { summary: "(next, change) => void" } } },
+    labels: { table: { type: { summary: "Partial<TimelineGraphLabels>" } } },
+    step: { table: { type: { summary: "number | (pxPerHour) => number" } } },
+    zoom: { table: { type: { summary: "hour | day | week | fit | { pxPerHour }" } } },
+    defaultZoom: { table: { type: { summary: "hour | day | week | fit | { pxPerHour }" } } },
+    initialScroll: { table: { type: { summary: "start | now | date" } } },
+  },
   decorators: [
     (Story) => (
       <div lang="ko" className="max-w-4xl bg-yorha-panel p-4 text-yorha-fg">
@@ -492,7 +502,7 @@ export const DnD: Story = {
 
 /** `canMove` vetoes a position: nothing earlier than now. The draft stops at the last valid position, the slot is hatched, the reason is announced and shown in the readout. `locked` items stay put. */
 export const Constrained: Story = {
-  args: { zoom: { pxPerHour: 8 }, collision: "block" },
+  args: { zoom: { pxPerHour: 8 } },
   render: (args) => (
     <Editable
       {...args}
