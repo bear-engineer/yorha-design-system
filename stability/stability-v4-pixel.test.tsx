@@ -118,6 +118,23 @@ describe("Ornament (V4-034)", () => {
   });
 });
 
+describe("Ornament dot-rule (V4-037)", () => {
+  it("two end diamonds on whole pixels, 2 px dotted rule, no transform", async () => {
+    const host = await mount(createElement(Ornament, { variant: "dot-rule" }));
+    const o = host.querySelector<HTMLElement>("[data-slot=ornament]")!;
+    const gs = [...o.querySelectorAll<SVGSVGElement>("svg[data-glyph=diamond]")];
+    expect(gs.length).toBe(2);
+    for (const g of gs) {
+      const r = g.getBoundingClientRect();
+      expect(isInt(r.left) && isInt(r.top) && r.width === 12, JSON.stringify(r)).toBe(true);
+      expect(await colours(g, 2)).toBe(2);
+    }
+    const dots = o.querySelector<HTMLElement>("span")!;
+    expect(dots.getBoundingClientRect().height).toBe(2);
+    for (const el of [o, ...o.querySelectorAll<HTMLElement>("*")]) expect(getComputedStyle(el).transform).toBe("none");
+  });
+});
+
 describe("Spinner (V4-032)", () => {
   it("12 px box, 8 integer 2 px dots on a 3x3 perimeter, <= 2 toggles per cycle, off = static 3 lit", async () => {
     const host = await mount(createElement(Spinner, { label: "x" }));

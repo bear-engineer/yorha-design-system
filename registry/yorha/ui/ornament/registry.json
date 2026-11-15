@@ -5,9 +5,10 @@
       "name": "ornament",
       "type": "registry:ui",
       "title": "Ornament",
-      "description": "Decorative rule-and-dot band and dashed separator drawn with CSS gradients (aria-hidden), plus a semantic Separator with role=separator for meaningful dividers.",
+      "description": "Decorative diamond band, dashed separator and dot-rule (aria-hidden): rules on whole pixel rows, diamonds drawn with Glyph (no rotate, no anti-aliasing). The semantic divider lives in the separator item.",
       "dependencies": [],
       "registryDependencies": [
+        "@yorha/glyph",
         "@yorha/utils",
         "@yorha/base"
       ],
@@ -18,7 +19,7 @@
           "target": "@ui/ornament.tsx"
         }
       ],
-      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. v4 migration: the duplicate `Separator` export is gone; import it from `@ui/separator`."
     }
   ]
 }

@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
-import { Ornament, Separator } from "./ornament";
+import { Ornament } from "./ornament";
+import { Separator } from "@/components/ui/separator";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -10,7 +11,7 @@ const meta = {
   tags: ["autodocs"],
   args: { variant: "band" },
   argTypes: {
-    variant: { control: "inline-radio", options: ["band", "separator"] },
+    variant: { control: "inline-radio", options: ["band", "separator", "dot-rule"] },
   },
   decorators: [
     (Story) => (
@@ -31,9 +32,11 @@ export const Band: Story = {
     await expect(band!).toHaveAttribute("aria-hidden", "true");
     await expect(getComputedStyle(band!).pointerEvents).toBe("none");
     await expect(c.queryByRole("separator")).toBeNull();
-    // FTXT-01: fixed 12px box; the 1px rule sits at an integer offset, not `center` (which lands on y=6.695).
+    // fixed 12px box; v4: the centre diamond is a glyph and both rules sit on pixel row 6 (no rotate, no radial dot)
     await expect(getComputedStyle(band!).height).toBe("12px");
-    await expect(getComputedStyle(band!).backgroundPosition.split(",")[0]!.trim()).toBe("0px 6px");
+    await expect(band!.querySelectorAll("svg[data-glyph=diamond]").length).toBe(1);
+    for (const rule of band!.querySelectorAll("span")) await expect(rule.getBoundingClientRect().height).toBe(1);
+    await expect(getComputedStyle(band!).transform).toBe("none");
   },
 };
 
@@ -46,6 +49,19 @@ export const RuleSeparatorVariant: Story = {
     await expect(getComputedStyle(deco!).height).toBe("12px");
     await expect(getComputedStyle(deco!).backgroundPosition.split(",")[0]!.trim()).toBe("0px 6px");
     await expect(within(canvasElement).queryByRole("separator")).toBeNull();
+  },
+};
+
+export const DotRule: Story = {
+  args: { variant: "dot-rule" },
+  play: async ({ canvasElement }) => {
+    const deco = canvasElement.querySelector<HTMLElement>('[data-slot="ornament"]')!;
+    await expect(deco.querySelectorAll("svg[data-glyph=diamond]").length).toBe(2);
+    await expect(getComputedStyle(deco).height).toBe("12px");
+    for (const g of deco.querySelectorAll("svg")) {
+      const r = g.getBoundingClientRect();
+      await expect(Number.isInteger(r.left) && Number.isInteger(r.top)).toBe(true);
+    }
   },
 };
 
