@@ -48,7 +48,7 @@ function Triggers({ timeout }: { timeout?: number }) {
         <Button
           key={type}
           onClick={() =>
-            toast.add({
+            void toast.add({
               type,
               title: TITLE[type],
               description: "변경 사항이 기록되었습니다.",
@@ -360,7 +360,7 @@ function PartsTriggers() {
     <div className="flex flex-wrap gap-2">
       <Button
         onClick={() =>
-          toast.add({
+          void toast.add({
             type: "info",
             title: "기록 삭제됨",
             description: "되돌릴 수 있다.",
@@ -374,7 +374,7 @@ function PartsTriggers() {
       <Button
         ref={anchorRef}
         onClick={() =>
-          toast.add({
+          void toast.add({
             type: "success",
             title: "복사됨",
             timeout: 0,

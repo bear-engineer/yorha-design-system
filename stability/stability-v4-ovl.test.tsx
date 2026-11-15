@@ -11,7 +11,7 @@ import { Dialog, DialogBody, DialogContent, DialogDescription, DialogFooter, Dia
 import { Drawer, DrawerContent, DrawerGrip, DrawerTitle } from "../registry/yorha/ui/drawer/drawer";
 import { Popover, PopoverContent, PopoverDescription, PopoverTrigger } from "../registry/yorha/ui/popover/popover";
 import { PreviewCard, PreviewCardContent, PreviewCardDescription, PreviewCardTrigger } from "../registry/yorha/ui/preview-card/preview-card";
-import { Tooltip, TooltipContent, TooltipKbd, TooltipProvider, TooltipTrigger } from "../registry/yorha/ui/tooltip/tooltip";
+import { Tooltip, TooltipArrow, TooltipContent, TooltipKbd, TooltipProvider, TooltipTrigger } from "../registry/yorha/ui/tooltip/tooltip";
 import { ToastProvider, createToastManager } from "../registry/yorha/ui/toast/toast";
 
 /**
@@ -199,7 +199,8 @@ describe("dialog + alert-dialog (V4-191, V4-192, V4-194)", () => {
     await userEvent.click(document.querySelector("button")!);
     await until(() => q('[role="dialog"]') !== null);
     await wait(500);
-    await userEvent.keyboard("{Escape}");
+    // Escape is dispatched in the same task (no tool round trip) so the check lands inside the 200ms exit.
+    document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
     await frames(2);
     const popup = q('[role="dialog"]');
     expect(popup, "still mounted one frame after close").not.toBeNull();
@@ -257,7 +258,7 @@ describe("dialog + alert-dialog (V4-191, V4-192, V4-194)", () => {
     const trigger = document.querySelector<HTMLElement>("button")!;
     trigger.dispatchEvent(new PointerEvent("pointerdown", { pointerType: "touch", bubbles: true, isPrimary: true }));
     trigger.dispatchEvent(new PointerEvent("pointerup", { pointerType: "touch", bubbles: true, isPrimary: true }));
-    trigger.click();
+    trigger.dispatchEvent(new MouseEvent("click", { bubbles: true, detail: 1 }));
     await until(() => q('[role="dialog"]') !== null);
     await frames(10);
     expect(document.activeElement).toBe(q('[role="dialog"]'));
@@ -350,7 +351,10 @@ describe("pixel arrows, kbd, drawer grip (V4-199, V4-200, V4-202)", () => {
       <TooltipProvider>
         <Tooltip defaultOpen>
           <TooltipTrigger>대상</TooltipTrigger>
-          <TooltipContent>도움말</TooltipContent>
+          <TooltipContent>
+            도움말
+            <TooltipArrow />
+          </TooltipContent>
         </Tooltip>
       </TooltipProvider>,
     );

@@ -1,7 +1,9 @@
-import type { ComponentProps } from "react";
+import { useEffect, useRef, type ComponentProps } from "react";
 import { Toast as ToastPrimitive } from "@base-ui/react/toast";
 import { Button } from "@/components/ui/button";
+import { Glyph } from "@/components/ui/glyph";
 import { CrossIcon } from "@/components/ui/icons";
+import { runFx } from "@/lib/fx";
 import { cn, cnState } from "@/lib/utils";
 
 export type ToastType = "info" | "success" | "alert";
@@ -13,19 +15,29 @@ const createToastManager = ToastPrimitive.createToastManager;
 
 const TYPE_LABEL: Record<ToastType, string> = { info: "정보", success: "성공", alert: "경고" };
 
-// Shape cue per type so the variant never relies on colour alone: info = diamond, success = square with inner square,
-// alert = triangle (the only red-orange). Every shape is drawn inside one fixed 20px box, so the title starts at the same
-// x for all three types and the shape's own size never moves the text.
-function TypeShape({ type }: { type: ToastType }) {
+// Shape cue per type so the variant never relies on colour alone: info = diamond, success = square, alert = triangle with
+// a mark (the only red-orange). Every shape is a 12px dot glyph centred in one fixed 20px box, so the title starts at the
+// same x for all three types. The alert mark flickers once when its toast mounts as the front toast, and at most once per
+// second for the whole kit (WCAG 2.3.1): five alerts inside a second flicker one mark.
+const GLYPH: Record<ToastType, "diamond" | "square" | "alert"> = { info: "diamond", success: "square", alert: "alert" };
+let lastAlertFlicker = Number.NEGATIVE_INFINITY;
+
+function TypeShape({ type, front }: { type: ToastType; front: boolean }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    if (type !== "alert" || !front) return;
+    const now = performance.now();
+    if (now - lastAlertFlicker < 1000) return;
+    lastAlertFlicker = now;
+    runFx(ref.current);
+  }, [type, front]);
   return (
-    <span aria-hidden="true" className="mt-0.5 grid size-icon-lg shrink-0 place-items-center">
-      {type === "alert" ? (
-        <span className="size-4 bg-yorha-alert-ui [clip-path:polygon(50%_0,100%_100%,0_100%)]" />
-      ) : type === "success" ? (
-        <span className="size-4 border-2 border-current bg-current bg-clip-content p-0.5" />
-      ) : (
-        <span className="size-3 rotate-45 bg-current" />
-      )}
+    <span
+      ref={ref}
+      aria-hidden="true"
+      className={cn("mt-0.5 grid size-icon-lg shrink-0 place-items-center", type === "alert" && "yorha-flicker text-yorha-alert-ui")}
+    >
+      <Glyph name={GLYPH[type]} />
     </span>
   );
 }
@@ -44,7 +56,7 @@ function toToastType(type: string | undefined): ToastType {
 // over and `translate` carries the toast on outward in the swipe direction. Every movement is scaled by
 // --motion-spatial, so reduced motion is opacity only and off is instant.
 const ROOT =
-  "group/toast absolute right-0 bottom-0 z-[calc(100-var(--toast-index))] w-full border bg-yorha-panel p-3 pr-2 rounded-yorha shadow-yorha-md " +
+  "group/toast absolute right-0 bottom-0 z-[calc(100-var(--toast-index))] w-full touch-pan-y border bg-yorha-panel p-3 pr-2 rounded-yorha shadow-yorha-md " +
   "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg " +
   "h-[var(--toast-frontmost-height,auto)] " +
   "[transform:translate(var(--toast-swipe-movement-x),calc(var(--toast-swipe-movement-y)-var(--toast-index)*8px))] " +
@@ -73,16 +85,26 @@ const ANCHORED_ROOT =
   "relative w-max max-w-80 border bg-yorha-panel px-3 py-2 rounded-yorha shadow-yorha-md " +
   "font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg yorha-pop";
 
-const ARROW =
-  "relative block h-1.5 w-3 overflow-clip " +
-  "data-[side=bottom]:top-[-6px] data-[side=top]:bottom-[-6px] data-[side=top]:rotate-180 " +
-  "data-[side=left]:right-[-9px] data-[side=left]:rotate-90 data-[side=right]:left-[-9px] data-[side=right]:-rotate-90 " +
-  "before:absolute before:bottom-0 before:left-1/2 before:size-[calc(6px*1.4142)] before:border before:border-yorha-border " +
-  "before:bg-yorha-panel before:content-[''] before:[transform:translate(-50%,50%)_rotate(45deg)]";
+// Pixel arrow: one 12px triangle glyph per side, shown by the Base UI arrow's `data-side` (no rotation).
+function ArrowGlyphs() {
+  return (
+    <>
+      <Glyph name="triangle-up" className="absolute inset-0 opacity-0 group-data-[side=bottom]/arrow:opacity-100" />
+      <Glyph name="triangle-down" className="absolute inset-0 opacity-0 group-data-[side=top]/arrow:opacity-100" />
+      <Glyph name="triangle-right" className="absolute inset-0 opacity-0 group-data-[side=left]/arrow:opacity-100" />
+      <Glyph name="triangle-left" className="absolute inset-0 opacity-0 group-data-[side=right]/arrow:opacity-100" />
+    </>
+  );
+}
+const ARROW_POS =
+  "group/arrow block size-3 data-[side=bottom]:top-[-8px] data-[side=top]:bottom-[-8px] data-[side=left]:right-[-8px] data-[side=right]:left-[-8px]";
+const ARROW = ARROW_POS + " text-yorha-border";
 
 /** Pointer from an anchored toast to its anchor. Rendered by ToastList inside anchored toasts. */
 function ToastArrow({ className, ...props }: ComponentProps<typeof ToastPrimitive.Arrow>) {
-  return <ToastPrimitive.Arrow data-slot="toast-arrow" className={cnState(ARROW, className)} {...props} />;
+  return <ToastPrimitive.Arrow data-slot="toast-arrow" className={cnState(ARROW, className)} {...props}>
+      <ArrowGlyphs />
+    </ToastPrimitive.Arrow>;
 }
 
 /** Action button of a toast (`toast.add({ actionProps: { children: "Undo", onClick } })`). Renders only when set. */
@@ -121,11 +143,12 @@ const TYPE_BORDER: Record<ToastType, string> = {
 /**
  * Renders every queued toast. Included by ToastProvider; mount it yourself only with `viewport={false}`.
  *
+ * Migration (v4): rear toasts are transparent and `visibility: hidden` (not tab stops) only while the stack is collapsed; expanded they show their content. The type mark is a dot glyph (`diamond`/`square`/`alert`, no clip-path or rotation); the alert mark flickers once at mount (front toast, one per second kit-wide). Root is `touch-action: pan-y` so a horizontal swipe is not scrolled away. Arrows are pixel triangles.
  * Migration (v3): type shape sits in a fixed 20px box (titles align across types), the alert edge is an inset shadow (all types have a 1px border), close is a 24px ghost icon Button on the title row, and the stack is collapsed by default (rear toasts peek 8px, expand on hover/focus). Anything that read toast x-offsets or the `×` text must be updated.
  */
 function ToastList() {
   const { toasts } = ToastPrimitive.useToastManager();
-  return toasts.map((toast) => {
+  return toasts.map((toast, index) => {
     const type = toToastType(toast.type);
     const anchored = toast.positionerProps !== undefined;
     const root = (
@@ -139,11 +162,11 @@ function ToastList() {
         {anchored ? <ToastArrow /> : null}
         <ToastPrimitive.Content
           className={cn(
-            "flex h-full items-start gap-2 overflow-hidden transition-opacity duration-(--motion-select) data-[behind]:opacity-0 group-data-[expanded]/toast:opacity-100",
+            "flex h-full items-start gap-2 overflow-hidden [transition-property:opacity,visibility] duration-(--motion-select) data-[behind]:[[data-slot=toast]:not([data-expanded])_&]:invisible data-[behind]:[[data-slot=toast]:not([data-expanded])_&]:opacity-0",
             anchored && "overflow-visible",
           )}
         >
-          <TypeShape type={type} />
+          <TypeShape type={type} front={index === 0} />
           <div className="min-w-0 flex-1">
             <span className="sr-only">{TYPE_LABEL[type]}: </span>
             <ToastPrimitive.Title
