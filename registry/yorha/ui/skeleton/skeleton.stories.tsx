@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, within } from "storybook/test";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton, SkeletonGroup } from "@/components/ui/skeleton";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -87,4 +87,38 @@ export const Authentic: Story = {
       <Skeleton {...args} />
     </div>
   ),
+};
+
+/** Many skeletons, one announcement: the group is the only status; the blocks are presentation. */
+export const Group: Story = {
+  render: () => (
+    <SkeletonGroup label="대시보드 로딩 중" className="flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2 bg-yorha-panel p-6">
+      <Skeleton label="무시됨" className="h-4 w-full" />
+      <Skeleton className="h-4 w-2/3" />
+      <Skeleton className="h-16 w-full" />
+    </SkeletonGroup>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getAllByRole("status").length).toBe(1);
+    await expect(c.getByRole("status", { name: "대시보드 로딩 중" })).toHaveAttribute("aria-busy", "true");
+    for (const s of canvasElement.querySelectorAll("[data-slot=skeleton]")) await expect(s).toHaveAttribute("role", "presentation");
+  },
+};
+
+/** Full motion scans in 16 hard steps (the loop step token). */
+export const StepScan: Story = {
+  render: (args) => <Skeleton {...args} />,
+  play: async ({ canvasElement }) => {
+    const html = document.documentElement;
+    const previous = html.dataset.motion;
+    try {
+      html.dataset.motion = "full";
+      const shimmer = shimmerOf(within(canvasElement).getByRole("status"))!;
+      await waitFor(() => expect(shimmer.getAnimations().length).toBe(1));
+      await expect((shimmer.getAnimations()[0]!.effect as KeyframeEffect).getTiming().easing).toContain("steps(16");
+    } finally {
+      html.dataset.motion = previous ?? "full";
+    }
+  },
 };
