@@ -59,7 +59,8 @@ describe("V4-105 checkbox glyph", () => {
     for (const g of glyphs) {
       const r = g.getBoundingClientRect();
       expect([r.width, r.height], "12 px glyph").toEqual([12, 12]);
-      expect(isInt(r.x) && isInt(r.y), `integer position ${r.x},${r.y}`).toBe(true);
+      const b = box.getBoundingClientRect();
+      expect(isInt(r.x - b.x) && isInt(r.y - b.y), `integer offset in the box ${r.x - b.x},${r.y - b.y}`).toBe(true);
       expect(g.getAttribute("shape-rendering")).toBe("crispEdges");
       expect(css(g).scale).toBe("none");
       expect(css(g).transitionProperty).not.toContain("scale");
@@ -120,7 +121,8 @@ describe("V4-106 radio disc", () => {
     for (const d of discs) {
       const r = d.getBoundingClientRect();
       expect([r.width, r.height]).toEqual([12, 12]);
-      expect(isInt(r.x) && isInt(r.y)).toBe(true);
+      const b = d.closest('[data-slot="radio-box"]')!.getBoundingClientRect();
+      expect(isInt(r.x - b.x) && isInt(r.y - b.y), "integer offset in the box").toBe(true);
       expect(d.getAttribute("shape-rendering")).toBe("crispEdges");
       expect(css(d).scale).toBe("none");
       expect(css(d.parentElement!).scale).toBe("none");
@@ -148,7 +150,8 @@ describe("V4-107 switch pending", () => {
     const mark = q(thumb, '[data-slot="switch-pending-mark"]');
     const m = mark.getBoundingClientRect();
     expect([m.width, m.height]).toEqual([4, 4]);
-    expect(isInt(m.x) && isInt(m.y)).toBe(true);
+    const tb = thumb.getBoundingClientRect();
+    expect(isInt(m.x - tb.x) && isInt(m.y - tb.y), "integer offset in the thumb").toBe(true);
     await userEvent.click(sw);
     await userEvent.keyboard(" ");
     await frames(14);
