@@ -10,9 +10,9 @@ export interface ToggleProps extends Omit<React.ComponentProps<typeof BaseToggle
   size?: ButtonSize;
 }
 
-// Indicator: always mounted in a fixed cell; fades (and scales unless reduced/off) in place. Reduced keeps a short opacity fade.
+// Indicator: always mounted in a fixed cell; steps in opacity in place (V4-088: no scale; --yorha-step-flip is a plain fade in reduced, instant in off). Reduced keeps a short opacity fade.
 const INDICATOR_BASE =
-  "opacity-0 [scale:calc(1_-_(1_-_var(--motion-scale-pop))_*_var(--motion-spatial))] transition-[opacity,scale] [transition-duration:max(var(--motion-select),var(--motion-reduced-fade)),var(--motion-select)] ease-yorha";
+  "opacity-0 transition-opacity [transition-duration:max(var(--motion-select),var(--motion-reduced-fade))] ease-yorha-step-flip";
 
 /**
  * Two-state button (aria-pressed). Pressed fills with ink and the square bullet
@@ -39,7 +39,7 @@ export function Toggle({ children, className, size = "md", ...props }: TogglePro
       {...props}
     >
       <span aria-hidden="true" className="grid size-3 shrink-0 place-items-center border border-current">
-        <span className={cn(INDICATOR_BASE, "size-1.5 bg-current group-data-[pressed]:scale-100 group-data-[pressed]:opacity-100")} />
+        <span className={cn(INDICATOR_BASE, "size-1.5 bg-current group-data-[pressed]:opacity-100")} />
       </span>
       {children}
     </BaseToggle>

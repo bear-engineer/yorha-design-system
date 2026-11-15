@@ -1,16 +1,22 @@
-import type { ComponentProps } from "react";
+import { useState, type ComponentProps } from "react";
 import { Toggle as TogglePrimitive } from "@base-ui/react/toggle";
 import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group";
 import { cn, cnState } from "@/lib/utils";
 import type { ButtonSize } from "@/components/ui/button";
 
-// Indicator: always mounted in the fixed bullet cell; fades (and scales unless reduced/off) in place.
+// Indicator: always mounted in the fixed bullet cell; steps in opacity in place (V4-088: no scale; --yorha-step-flip is a plain fade in reduced, instant in off).
 const INDICATOR_BASE =
-  "opacity-0 [scale:calc(1_-_(1_-_var(--motion-scale-pop))_*_var(--motion-spatial))] transition-[opacity,scale] [transition-duration:max(var(--motion-select),var(--motion-reduced-fade)),var(--motion-select)] ease-yorha";
+  "opacity-0 transition-opacity [transition-duration:max(var(--motion-select),var(--motion-reduced-fade))] ease-yorha-step-flip";
 
 type GroupProps = ComponentProps<typeof ToggleGroupPrimitive> & {
   /** Control scale step; the group is exactly as tall as a Button of this size. Default sm. */
   size?: ButtonSize;
+  /**
+   * Single-select only (default true): clicking the pressed item cannot leave the group empty; the empty next value is ignored.
+   * Pass `required={false}` for the v3 filter behaviour. Ignored with `multiple`.
+   * Migration (V4-089): a single group used to un-press on a second click; set `required={false}` to keep that.
+   */
+  required?: boolean;
 };
 
 const GROUP_SIZE: Record<ButtonSize, string> = {
@@ -24,11 +30,22 @@ const GROUP_SIZE: Record<ButtonSize, string> = {
  * (arrow keys follow `orientation`, `loopFocus` defaults to true), `multiple` and `value: string[]`.
  * Name the group with `aria-label` or `aria-labelledby`.
  */
-function ToggleGroup({ className, size = "sm", ...props }: GroupProps) {
+function ToggleGroup({ className, size = "sm", required, multiple, value, defaultValue, onValueChange, ...props }: GroupProps) {
+  const keep = !multiple && (required ?? true);
+  const [own, setOwn] = useState<readonly string[] | undefined>(defaultValue);
+  // Uncontrolled and required: the group owns the value so an ignored (empty) change is not applied by Base UI.
+  const owned = keep && value === undefined;
   return (
     <ToggleGroupPrimitive
       data-slot="toggle-group"
       data-size={size}
+      multiple={multiple}
+      {...(owned ? { value: own } : { value, defaultValue })}
+      onValueChange={(next, details) => {
+        if (keep && next.length === 0) return;
+        if (owned) setOwn(next);
+        onValueChange?.(next, details);
+      }}
       className={cnState(
         [
           "group/tg relative inline-flex rounded-yorha bg-yorha-panel font-yorha",
@@ -75,7 +92,7 @@ function ToggleGroupItem({ className, children, ...props }: ItemProps) {
         data-yorha-bullet=""
         className="grid size-2.5 shrink-0 place-items-center border border-current"
       >
-        <span className={cn(INDICATOR_BASE, "size-1 bg-current group-data-[pressed]/item:scale-100 group-data-[pressed]/item:opacity-100")} />
+        <span className={cn(INDICATOR_BASE, "size-1 bg-current group-data-[pressed]/item:opacity-100")} />
       </span>
       {children}
     </TogglePrimitive>
