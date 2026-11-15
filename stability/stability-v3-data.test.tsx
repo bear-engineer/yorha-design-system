@@ -329,7 +329,8 @@ for (const [item, trig, panelSel] of [
         await userEvent.click(trigger);
         await wait(500);
       }
-      const panel = q(root, `[data-slot=${panelSel}]`);
+      // V4-183: closed panels stay in the DOM (hidden="until-found"), so take the open one.
+      const panel = qa(root, `[data-slot=${panelSel}]`).find((p) => !p.hasAttribute("hidden") && p.getBoundingClientRect().height > 0) ?? q(root, `[data-slot=${panelSel}]`);
       const label = q(trigger, "span:last-child");
       const textEl = q(panel, "*");
       const range = document.createRange();

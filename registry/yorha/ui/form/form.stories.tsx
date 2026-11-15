@@ -175,7 +175,7 @@ export const States: Story = {
 export const AsyncSubmit: Story = {
   render: () => (
     <Form
-      className="w-72"
+      className="w-full max-w-72"
       onFormSubmit={async (values) => {
         await new Promise((r) => setTimeout(r, 400));
         return values.name === "taken" ? { name: "이미 사용 중인 이름입니다" } : undefined;
