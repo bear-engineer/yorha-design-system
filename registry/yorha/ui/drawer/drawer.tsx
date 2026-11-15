@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect, useRef } from "react";
 import type { ComponentProps } from "react";
 import { Drawer as DrawerPrimitive } from "@base-ui/react/drawer";
 import { buttonVariants } from "@/components/ui/button";
@@ -49,7 +49,7 @@ export const drawerStyles = {
   // Drag grip of a bottom sheet: a 16px ink band that continues into the title strip, the 40 x 4 bar centred in it.
   grip:
     "flex h-4 shrink-0 cursor-grab items-center justify-center bg-yorha-ink active:cursor-grabbing " +
-    "before:h-1 before:w-10 before:bg-yorha-on-ink-soft before:content-['']",
+    "before:h-1 before:w-10 before:bg-yorha-on-ink-soft before:content-[''] data-[armed]:before:bg-yorha-on-ink",
 };
 
 const SideContext = createContext<Side>("right");
@@ -187,9 +187,31 @@ function DrawerFooter({ className, ...props }: ComponentProps<"div">) {
   return <div data-slot="drawer-footer" className={cn(drawerStyles.footer, className)} {...props} />;
 }
 
-/** Drag grip for side="bottom": place it before DrawerTitle. The whole popup is the handle; the grip only says so. */
+/** Swipe progress (0..1 of the popup's travel) past which the grip arms; releasing beyond it dismisses. */
+const DRAWER_ARM_PROGRESS = 0.5;
+
+/**
+ * Drag grip for side="bottom": place it before DrawerTitle. The whole popup is the handle; the grip only says so.
+ * Dismiss rule (Base UI): a release past the distance threshold closes the drawer, and so does a fast flick (velocity) even
+ * when short; a slow short drag springs back. The grip bar switches to full `on-ink` (`data-armed`) once the drag passes
+ * 0.5 of the travel: the distance half of the rule, a cue that letting go will close it.
+ */
 function DrawerGrip({ className, ...props }: ComponentProps<"div">) {
-  return <div data-slot="drawer-grip" aria-hidden="true" className={cn(drawerStyles.grip, className)} {...props} />;
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const grip = ref.current;
+    const popup = grip?.closest<HTMLElement>('[data-slot="drawer-content"]');
+    if (!grip || !popup) return;
+    const sync = () => {
+      const progress = parseFloat(popup.style.getPropertyValue("--drawer-swipe-progress")) || 0;
+      grip.toggleAttribute("data-armed", progress >= DRAWER_ARM_PROGRESS);
+    };
+    const mo = new MutationObserver(sync);
+    mo.observe(popup, { attributes: true, attributeFilter: ["style"] });
+    sync();
+    return () => mo.disconnect();
+  }, []);
+  return <div ref={ref} data-slot="drawer-grip" aria-hidden="true" className={cn(drawerStyles.grip, className)} {...props} />;
 }
 
 /** Closes the drawer and returns focus to the trigger. Styled as the Button component. */

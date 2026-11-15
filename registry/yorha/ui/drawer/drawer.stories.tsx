@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expectTargetSize } from "../../../../.storybook/preview";
+import { Input } from "@/components/ui/input";
+import { Radio, RadioGroup } from "@/components/ui/radio-group";
 import { expect, fireEvent, userEvent, waitFor, within } from "storybook/test";
 import {
   Drawer,
@@ -56,14 +58,13 @@ function SideSwitch() {
   const [side, setSide] = useState<Side>("right");
   return (
     <div lang="ko" className="bg-yorha-panel text-yorha-fg">
-      <div role="radiogroup" aria-label="방향" className="flex gap-3 p-4 text-yorha-sm">
+      <RadioGroup aria-label="방향" orientation="horizontal" value={side} onValueChange={(v) => setSide(v as Side)} className="p-4 text-yorha-sm">
         {SIDES.map((s) => (
-          <label key={s} className="flex items-center gap-1">
-            <input type="radio" name="side" className="size-6" checked={side === s} onChange={() => setSide(s)} />
+          <Radio key={s} value={s}>
             {s}
-          </label>
+          </Radio>
         ))}
-      </div>
+      </RadioGroup>
       <Demo key={side} side={side} />
     </div>
   );
@@ -111,7 +112,7 @@ function KeyboardDemo() {
           <DrawerBody>
             <label className="flex flex-col gap-1 text-yorha-sm">
               메모
-              <input className="border border-yorha-border bg-yorha-panel px-2 py-1" />
+              <Input />
             </label>
           </DrawerBody>
           <DrawerFooter>
