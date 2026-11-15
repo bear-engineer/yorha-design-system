@@ -42,7 +42,8 @@ async function stopRecording(page: Page): Promise<Seen[]> {
 const names = (seen: Seen[]) => seen.map((s) => s.name);
 const pseudoName = (pseudo: string) => /\((.*)\)/.exec(pseudo)?.[1] ?? "";
 
-test("push animates with the forward class, POP with the back class", async ({ page }) => {
+// v4 (V4-010): entry is a stepped clip scan plus a short fade; exit is a fade. Old yorha-route-in-*/out-* names are gone.
+test("push scans forward, POP scans back", async ({ page }) => {
   await page.goto(home());
   await expect(page.getByRole("heading", { name: "Units" })).toBeVisible();
 
@@ -51,9 +52,10 @@ test("push animates with the forward class, POP with the back class", async ({ p
   await expect(page.getByRole("article", { name: "detail" })).toBeVisible();
   const push = await stopRecording(page);
   expect(push.length, "view-transition animations ran on push").toBeGreaterThan(0);
-  expect(names(push)).toContain("yorha-route-in-forward");
-  expect(names(push)).toContain("yorha-route-out-forward");
-  expect(names(push)).not.toContain("yorha-route-in-back");
+  expect(names(push)).toContain("yorha-route-scan-forward");
+  expect(names(push)).toContain("yorha-route-fade-in");
+  expect(names(push)).toContain("yorha-route-fade-out");
+  expect(names(push)).not.toContain("yorha-route-scan-back");
   await expect(page.locator("[data-route-transition]")).toHaveAttribute("data-direction", "forward");
 
   await startRecording(page);
@@ -61,19 +63,19 @@ test("push animates with the forward class, POP with the back class", async ({ p
   await expect(page.getByRole("heading", { name: "Units" })).toBeVisible();
   const pop = await stopRecording(page);
   expect(pop.length, "view-transition animations ran on POP").toBeGreaterThan(0);
-  expect(names(pop)).toContain("yorha-route-in-back");
-  expect(names(pop)).toContain("yorha-route-out-back");
-  expect(names(pop)).not.toContain("yorha-route-in-forward");
+  expect(names(pop)).toContain("yorha-route-scan-back");
+  expect(names(pop)).toContain("yorha-route-fade-out");
+  expect(names(pop)).not.toContain("yorha-route-scan-forward");
   await expect(page.locator("[data-route-transition]")).toHaveAttribute("data-direction", "back");
 
   // Forward again via history: index is higher than the previous one.
   await startRecording(page);
   await page.goForward();
   await expect(page.getByRole("article", { name: "detail" })).toBeVisible();
-  expect(names(await stopRecording(page))).toContain("yorha-route-in-forward");
+  expect(names(await stopRecording(page))).toContain("yorha-route-scan-forward");
 });
 
-test("replace navigation uses the replace class", async ({ page }) => {
+test("replace navigation fades without a scan", async ({ page }) => {
   await page.goto(home());
   await page.getByRole("link", { name: "Unit 2B" }).click();
   await expect(page.getByRole("article", { name: "detail" })).toBeVisible();
@@ -81,8 +83,9 @@ test("replace navigation uses the replace class", async ({ page }) => {
   await page.getByTestId("replace-home").click();
   await expect(page.getByRole("heading", { name: "Units" })).toBeVisible();
   const seen = await stopRecording(page);
-  expect(names(seen)).toContain("yorha-route-in-replace");
-  expect(names(seen)).not.toContain("yorha-route-in-forward");
+  expect(names(seen)).toContain("yorha-route-fade-in");
+  expect(names(seen)).not.toContain("yorha-route-scan-forward");
+  expect(names(seen)).not.toContain("yorha-route-scan-back");
 });
 
 test("shared element names pair up between list and detail", async ({ page }) => {
@@ -109,11 +112,11 @@ test("route durations come from the motion tokens", async ({ page }) => {
   await startRecording(page);
   await page.getByRole("link", { name: "Unit 2B" }).click();
   const seen = await stopRecording(page);
-  expect(seen.find((s) => s.name === "yorha-route-in-forward")?.duration).toBe(200);
-  expect(seen.find((s) => s.name === "yorha-route-out-forward")?.duration).toBe(120);
+  expect(seen.find((s) => s.name === "yorha-route-scan-forward")?.duration).toBe(200);
+  expect(seen.find((s) => s.name === "yorha-route-fade-out")?.duration).toBe(120);
 });
 
-test("reduced motion crossfades in 120ms without movement", async ({ browser }) => {
+test("reduced motion fades in 120ms with no scan", async ({ browser }) => {
   const context = await browser.newContext({ reducedMotion: "reduce", baseURL: APP_URL, locale: "ko-KR" });
   const page = await context.newPage();
   await page.goto(home());
@@ -122,8 +125,8 @@ test("reduced motion crossfades in 120ms without movement", async ({ browser }) 
   await page.getByRole("link", { name: "Unit 9S" }).click();
   await expect(page.getByRole("article", { name: "detail" })).toBeVisible();
   const seen = await stopRecording(page);
-  const enter = seen.find((s) => s.name === "yorha-route-in-forward");
-  expect(enter?.duration).toBe(120);
+  expect(seen.find((s) => s.name === "yorha-route-fade-in" && s.pseudo.startsWith("::view-transition-new"))?.duration).toBe(120);
+  expect(seen.filter((s) => s.name.startsWith("yorha-route-scan-") && s.duration > 0)).toEqual([]);
   const transform = await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue("--motion-spatial").trim());
   expect(transform).toBe("0");
   await context.close();
