@@ -31,9 +31,31 @@ export const Default: Story = {
     const dots = dotsOf(status);
     await expect(dots.length).toBe(8);
     const box = status.getBoundingClientRect();
-    await expect([box.width, box.height]).toEqual([12, 12]);
+    await expect([box.width, box.height]).toEqual([16, 16]);
     for (const dot of dots) {
       await expect(dot).toHaveAttribute("aria-hidden", "true");
+    }
+  },
+};
+
+/** sm 12 px / md 16 px (default) / lg 24 px: square boxes, integer dots centred, ring never below 0.3 ink. */
+export const Sizes: Story = {
+  render: (args) => (
+    <div className="flex items-center gap-6">
+      {(["sm", "md", "lg"] as const).map((size) => (
+        <Spinner key={size} {...args} size={size} label={`불러오는 중 ${size}`} />
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const expected = { sm: [12, 2], md: [16, 4], lg: [24, 6] } as const;
+    for (const size of ["sm", "md", "lg"] as const) {
+      const status = c.getByRole("status", { name: `불러오는 중 ${size}` });
+      const box = status.getBoundingClientRect();
+      await expect([box.width, box.height]).toEqual([expected[size][0], expected[size][0]]);
+      const dot = dotsOf(status)[0]!.getBoundingClientRect();
+      await expect([dot.width, dot.height]).toEqual([expected[size][1], expected[size][1]]);
     }
   },
 };
@@ -70,7 +92,11 @@ export const Themes: Story = {
       {THEMES.map((t) => (
         <div key={t} data-theme={t} className="flex flex-col gap-3 bg-yorha-panel p-4 text-yorha-fg">
           <span className="text-yorha-sm">{t}</span>
-          <Spinner {...args} label={`불러오는 중 ${t}`} />
+          <div className="flex items-center gap-4">
+            {(["sm", "md", "lg"] as const).map((size) => (
+              <Spinner key={size} {...args} size={size} label={`불러오는 중 ${t} ${size}`} />
+            ))}
+          </div>
         </div>
       ))}
     </div>

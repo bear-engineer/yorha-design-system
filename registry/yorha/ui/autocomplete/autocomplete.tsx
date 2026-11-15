@@ -117,7 +117,7 @@ function AutocompleteBusy() {
   if (!loading) return null;
   return (
     <span aria-hidden="true" data-slot="autocomplete-busy" className="grid size-icon-sm place-items-center">
-      <Spinner label="불러오는 중" className="text-current [&_[data-yorha-dot]]:bg-current" />
+      <Spinner size="sm" label="불러오는 중" className="text-current [&_[data-yorha-dot]]:bg-current" />
     </span>
   );
 }

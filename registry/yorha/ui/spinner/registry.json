@@ -5,7 +5,7 @@
       "name": "spinner",
       "type": "registry:ui",
       "title": "Spinner",
-      "description": "Loading trail: role=status with an accessible name, 8 decorative 2 px dots on a 12 px box; each dot fades linearly with a lap/8 stagger so a smooth tail follows the head around the ring. Reduced: one slow opacity pulse; off: static three-dot arc.",
+      "description": "Loading ring: role=status with an accessible name, 8 decorative square dots on a 3x3 perimeter in a fixed box (sm 12 px, md 16 px default, lg 24 px). Empty ring at 40% ink, lead dot at full ink with a 2-dot trail (75% / 52%); each dot fades linearly with a lap/8 stagger. Reduced: whole-spinner opacity pulse (70-100%); off: static ring with lead dot and trail.",
       "dependencies": [],
       "registryDependencies": [
         "@yorha/utils",
@@ -18,7 +18,7 @@
           "target": "@ui/spinner.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The dots are CSS squares and a Web Animation; no original assets are used. v4: no stepped easing; the orbit is a linear opacity trail."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The dots are CSS squares and a Web Animation; no original assets are used. v4: no stepped easing; the orbit is a linear opacity trail. Migration (breaking): default size is now md = 16 px (was 12 px) and the dots are 3-size integer geometry (sm 2 px / md 4 px / lg 6 px); pass size=\"sm\" where the 12 px box is required (search-input, combobox, autocomplete, otp-field already do). The empty ring is 40% ink (was 15%), motion off shows a lead dot plus trail (was three lit dots)."
     }
   ]
 }

@@ -136,16 +136,16 @@ describe("Ornament dot-rule (V4-037)", () => {
 });
 
 describe("Spinner (V4-032)", () => {
-  it("12 px box, 8 integer 2 px dots on a 3x3 perimeter, linear opacity trail, off = static 3 lit", async () => {
+  it("16 px default box, 8 integer 4 px dots on a 3x3 perimeter, linear opacity trail (floor 0.3), off = lead + 2 trail", async () => {
     const host = await mount(createElement(Spinner, { label: "x" }));
     const el = host.querySelector<HTMLElement>("[data-slot=spinner]")!;
     const r = el.getBoundingClientRect();
-    expect([r.width, r.height]).toEqual([12, 12]);
+    expect([r.width, r.height]).toEqual([16, 16]);
     const dots = [...el.querySelectorAll<HTMLElement>("[data-yorha-dot]")];
     expect(dots.length).toBe(8);
     for (const d of dots) {
       const b = d.getBoundingClientRect();
-      expect([b.width, b.height]).toEqual([2, 2]);
+      expect([b.width, b.height]).toEqual([4, 4]);
       expect(isInt(b.left) && isInt(b.top), JSON.stringify(b)).toBe(true);
     }
     expect(new Set(dots.map((d) => `${d.getBoundingClientRect().left}:${d.getBoundingClientRect().top}`)).size).toBe(8);
@@ -153,17 +153,19 @@ describe("Spinner (V4-032)", () => {
     expect(anims.length).toBe(8);
     for (const a of anims) {
       const frames = (a.effect as KeyframeEffect).getKeyframes().map((k) => Number(k.opacity));
-      expect(frames.every((f) => f >= 0 && f <= 1)).toBe(true);
+      expect(frames.every((f) => f >= 0.3 && f <= 1)).toBe(true);
       expect(String(a.effect!.getTiming().easing)).toBe("linear"); // smooth trail, never stepped
     }
   });
-  it("off: no animation, three lit dots", async () => {
+  it("off: no animation, lead dot + two-dot trail, ring never below 0.3", async () => {
     const host = await mount(createElement(Spinner), "off");
     const el = host.querySelector<HTMLElement>("[data-slot=spinner]")!;
     await frames(2);
     expect(el.getAnimations({ subtree: true }).length).toBe(0);
-    const lit = [...el.querySelectorAll<HTMLElement>("[data-yorha-dot]")].filter((d) => Number(getComputedStyle(d).opacity) === 1);
-    expect(lit.length).toBe(3);
+    const ops = [...el.querySelectorAll<HTMLElement>("[data-yorha-dot]")].map((d) => Number(getComputedStyle(d).opacity));
+    expect(Math.min(...ops)).toBeGreaterThanOrEqual(0.3);
+    expect(ops.filter((o) => o === 1).length).toBe(1);
+    expect(ops.filter((o) => o > 0.4 && o < 1).length).toBe(2);
   });
 });
 

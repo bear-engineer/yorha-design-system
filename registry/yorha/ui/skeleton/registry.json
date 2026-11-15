@@ -5,7 +5,7 @@
       "name": "skeleton",
       "type": "registry:ui",
       "title": "Skeleton",
-      "description": "Loading placeholder: a static grid under a soft shimmer band that translates linearly left to right (1.6 s loop). role=presentation by default; SkeletonGroup is the single status. Reduced: the band pulses in opacity; off: still.",
+      "description": "Loading placeholder: a flat soft fill (separator tone, square corners, no cell grid) under one soft shimmer band that translates linearly left to right (1.6 s loop); optional framed 1 px inset frame. role=presentation by default; SkeletonGroup is the single status. Reduced: the band pulses in opacity; off: still.",
       "dependencies": [],
       "registryDependencies": [
         "@yorha/utils",
@@ -18,7 +18,7 @@
           "target": "@ui/skeleton.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The grid scan is a CSS gradient and a Web Animation; no original assets are used. v4: the shimmer is a linear translateX band over a static grid (was a stepped down-scan)."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The grid scan is a CSS gradient and a Web Animation; no original assets are used. v4: the shimmer is a linear translateX band (was a stepped down-scan). Migration (breaking): the static tiny-cell grid background is removed in favour of a flat fill (no seams); the default radius is square; new optional framed prop."
     }
   ]
 }

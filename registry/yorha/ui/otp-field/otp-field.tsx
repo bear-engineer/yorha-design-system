@@ -55,7 +55,7 @@ export const OTPFieldRoot = React.forwardRef<HTMLDivElement, OTPFieldRootProps>(
         {children}
         {status ? (
           <span data-slot="otp-status" className="grid size-3 shrink-0 place-items-center text-yorha-fg-strong">
-            {status === "verifying" ? <Spinner label="확인 중" /> : null}
+            {status === "verifying" ? <Spinner size="sm" label="확인 중" /> : null}
             {status === "success" ? <Glyph name="check" box={12} /> : null}
             {status === "error" ? <span role="status" className="sr-only">코드가 올바르지 않습니다</span> : null}
             {status === "success" ? <span role="status" className="sr-only">인증되었습니다</span> : null}

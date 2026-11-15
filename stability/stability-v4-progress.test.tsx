@@ -275,10 +275,10 @@ describe("Meter", () => {
 });
 
 describe("Spinner", () => {
-  it("full: 8 dots, each a linear opacity trail with a staggered delay; no steps; 12px box and integer dots", async () => {
+  it("full: 8 dots, each a linear opacity trail with a staggered delay; no steps; 16px default box, opacity floor >= 0.3", async () => {
     const { host } = await mount(createElement(Spinner, { label: "x" }), { motion: "full" });
     const el = host.querySelector<HTMLElement>("[data-slot=spinner]")!;
-    expect([rect(el).width, rect(el).height]).toEqual([12, 12]);
+    expect([rect(el).width, rect(el).height]).toEqual([16, 16]);
     const list = anims(el);
     expect(list.length).toBe(8);
     const delays = new Set<number>();
@@ -287,16 +287,35 @@ describe("Spinner", () => {
       expect(kf(a).some((k) => "opacity" in k)).toBe(true);
       expect(easingOf(a)).toBe("linear");
       for (const k of kf(a)) expect(String(k.easing ?? "linear")).not.toMatch(/steps/);
+      for (const k of kf(a)) expect(Number(k.opacity)).toBeGreaterThanOrEqual(0.3);
       delays.add(Number(a.effect!.getTiming().delay));
     }
     expect(delays.size).toBe(8);
   });
 
+  it("rect is constant across modes and sizes are integer squares (sm 12, md 16, lg 24)", async () => {
+    for (const [size, px] of [["sm", 12], ["md", 16], ["lg", 24]] as const) {
+      const rects: number[][] = [];
+      for (const motion of ["full", "reduced", "off"] as const) {
+        const { host } = await mount(createElement(Spinner, { size }), { motion });
+        const r = rect(host.querySelector<HTMLElement>("[data-slot=spinner]")!);
+        rects.push([r.width, r.height]);
+      }
+      for (const r of rects) expect(r).toEqual([px, px]);
+    }
+  });
+
   it("reduced: one opacity pulse; off: no animation, static trail", async () => {
     const red = await mount(createElement(Spinner), { motion: "reduced" });
     expect(anims(red.host).length).toBe(1);
+    const redOpacities = kf(anims(red.host)[0]!).map((k) => Number(k.opacity));
     const off = await mount(createElement(Spinner), { motion: "off" });
     expect(anims(off.host).length).toBe(0);
+    const ops = [...off.host.querySelectorAll<HTMLElement>("[data-yorha-dot]")].map((d) => Number(getComputedStyle(d).opacity));
+    expect(Math.min(...ops)).toBeGreaterThanOrEqual(0.3);
+    expect(ops.filter((o) => o === 1).length).toBe(1); // one lead dot
+    expect(ops.filter((o) => o > 0.4 && o < 1).length).toBe(2); // two-dot trail
+    for (const o of redOpacities) expect(o).toBeGreaterThanOrEqual(0.3);
   });
 });
 
@@ -314,5 +333,19 @@ describe("Skeleton", () => {
     expect(kf(ra).every((k) => !("transform" in k))).toBe(true);
     const off = await mount(createElement(Skeleton, { className: "h-4 w-40" }), { motion: "off" });
     expect(off.host.querySelector<HTMLElement>("[data-yorha-shimmer]")!.getAnimations().length).toBe(0);
+  });
+
+  it("flat fill: no background-image grid, square corners, optional 1px inset frame", async () => {
+    const { host } = await mount(createElement(Skeleton, { className: "h-4 w-40" }), { motion: "off" });
+    const el = host.querySelector<HTMLElement>("[data-slot=skeleton]")!;
+    const cs = getComputedStyle(el);
+    expect(cs.backgroundImage).toBe("none");
+    expect(cs.borderRadius).toBe("0px");
+    expect(cs.boxShadow).toBe("none");
+    const f = await mount(createElement(Skeleton, { className: "h-4 w-40", framed: true }), { motion: "off" });
+    const fe = f.host.querySelector<HTMLElement>("[data-slot=skeleton]")!;
+    expect(getComputedStyle(fe).boxShadow).toMatch(/inset/);
+    expect(getComputedStyle(fe).boxShadow).toMatch(/\b0px 0px 0px 1px\b/);
+    expect([rect(fe).width, rect(fe).height]).toEqual([rect(el).width, rect(el).height]);
   });
 });

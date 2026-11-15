@@ -4,12 +4,14 @@ import { cn } from "@/lib/utils";
 export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
   /** Makes this skeleton its own named status (prefer SkeletonGroup around several). */
   label?: string;
+  /** Adds a 1 px inset frame (separator tone) around the flat fill. Off by default. */
+  framed?: boolean;
 }
 
 /**
  * Shimmer runs as a Web Animation (no keyframes in the kit CSS) for as long as the skeleton is mounted: a soft band
  * translates left to right, linear, one pass per SHIMMER_MS. No steps. reduced (data-motion, or no attribute with
- * reduced-motion preferred) = the band rests mid-block and pulses in opacity; off = it rests still (the static grid
+ * reduced-motion preferred) = the band rests mid-block and pulses in opacity; off = it rests still (the flat fill
  * plus aria-busy mark it as loading).
  */
 const SHIMMER_MS = 1600;
@@ -49,14 +51,15 @@ function useScan(ref: RefObject<HTMLSpanElement | null>) {
 }
 
 /**
- * Loading placeholder: static grid (`--yorha-grid-size` cells) under a soft linear shimmer band. By default it is
+ * Loading placeholder: a flat soft fill (separator tone, square corners, no cells or seams) under one soft linear
+ * shimmer band. By default it is
  * `role="presentation"`, so a loading screen with many skeletons announces nothing per block: wrap them in one
  * `SkeletonGroup label` (a single named status). A bare Skeleton with a `label` is its own status (v3 behaviour),
  * unless it sits inside a SkeletonGroup, where the label is ignored.
  */
 const InGroup = createContext(false);
 
-function Skeleton({ label, className, ...props }: SkeletonProps) {
+function Skeleton({ label, framed = false, className, ...props }: SkeletonProps) {
   const scanRef = useRef<HTMLSpanElement>(null);
   useScan(scanRef);
   const grouped = useContext(InGroup);
@@ -64,11 +67,13 @@ function Skeleton({ label, className, ...props }: SkeletonProps) {
   return (
     <div
       data-slot="skeleton"
+      data-framed={framed ? "" : undefined}
       role={named ? "status" : "presentation"}
       aria-label={named ? label : undefined}
       aria-busy={named ? "true" : undefined}
       className={cn(
-        "relative overflow-hidden rounded-yorha bg-yorha-separator/35 bg-[linear-gradient(to_right,var(--yorha-grid)_1px,transparent_1px),linear-gradient(to_bottom,var(--yorha-grid)_1px,transparent_1px)] [background-size:var(--yorha-grid-size)_var(--yorha-grid-size)]",
+        "relative overflow-hidden bg-yorha-separator/30",
+        framed && "shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--yorha-separator)_70%,transparent)]",
         className,
       )}
       {...props}
@@ -77,7 +82,7 @@ function Skeleton({ label, className, ...props }: SkeletonProps) {
         ref={scanRef}
         aria-hidden="true"
         data-yorha-shimmer=""
-        className="pointer-events-none absolute inset-y-0 left-0 w-[40%] bg-[linear-gradient(to_right,transparent,color-mix(in_oklab,var(--yorha-ink)_14%,transparent),transparent)]"
+        className="pointer-events-none absolute inset-y-0 left-0 w-[40%] bg-[linear-gradient(to_right,transparent,color-mix(in_oklab,var(--yorha-ink)_10%,transparent),transparent)]"
       />
     </div>
   );

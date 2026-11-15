@@ -33,6 +33,21 @@ export const Default: Story = {
   },
 };
 
+/** Flat fill with an optional 1 px inset frame. */
+export const Framed: Story = {
+  render: (args) => (
+    <div className="flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-3 bg-yorha-panel p-6 text-yorha-fg">
+      <Skeleton {...args} label={undefined} />
+      <Skeleton {...args} label={undefined} framed className="h-10 w-full" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const framed = canvasElement.querySelector<HTMLElement>("[data-framed]");
+    await expect(framed).not.toBeNull();
+    await expect(getComputedStyle(framed!).boxShadow).not.toBe("none");
+  },
+};
+
 /** Loops while mounted: still scanning after 6 s (full); reduced = one opacity animation; off = none. */
 export const ReducedMotion: Story = {
   render: (args) => (

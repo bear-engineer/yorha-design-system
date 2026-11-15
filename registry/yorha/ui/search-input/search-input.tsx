@@ -53,7 +53,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
       <FieldLabel>{label}</FieldLabel>
       <InputGroup>
         <InputGroupAddon align="start">
-          {loading ? <Spinner label={loadingLabel} /> : <SearchIcon />}
+          {loading ? <Spinner size="sm" label={loadingLabel} /> : <SearchIcon />}
         </InputGroupAddon>
         <FieldGroupControl
           ref={setRefs}
