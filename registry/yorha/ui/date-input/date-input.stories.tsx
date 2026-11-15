@@ -123,13 +123,67 @@ export const Picker: Story = {
   },
 };
 
-export const PickerOnlyForDate: Story = {
+/** v4: every type has a kit picker on fine pointers; the type decides which one. */
+export const PickerEveryType: Story = {
   render: () => <DateInput type="time" label="시각" picker />,
   play: async ({ canvasElement }) => {
-    // a time input has no kit calendar: its end button opens the native picker
     await expect(within(canvasElement).queryByRole("button", { name: "달력 열기" })).toBeNull();
     await expect(within(canvasElement).getByRole("button", { name: "시간 선택" })).toBeInTheDocument();
   },
+};
+
+const openAndPick = async (canvasElement: HTMLElement, button: string, input: string, pick: () => Promise<void>, expected: string) => {
+  const c = within(canvasElement);
+  await userEvent.click(c.getByRole("button", { name: button }));
+  await waitFor(() => expect(screen.getByRole("dialog")).toBeInTheDocument());
+  await pick();
+  await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  await expect(c.getByLabelText(input, { selector: "input" })).toHaveValue(expected);
+  await expect(c.getByRole("button", { name: button })).toHaveFocus();
+};
+
+/** type=week: the Calendar in week mode (ISO weeks, Monday start, 주 column, one ink band per week). */
+export const WeekPicker: Story = {
+  args: { type: "week", label: "주", defaultValue: "2026-W46" },
+  play: ({ canvasElement }) => openAndPick(canvasElement, "주 선택", "주", () => userEvent.click(cellOf("2026-11-18")), "2026-W47"),
+};
+
+/** type=month: year header and a 3 x 4 grid. */
+export const MonthPicker: Story = {
+  args: { type: "month", label: "월", defaultValue: "2026-11" },
+  play: ({ canvasElement }) => openAndPick(canvasElement, "월 선택", "월", () => userEvent.click(screen.getByRole("button", { name: "3월" })), "2026-03"),
+};
+
+/** type=time: hour and minute columns (a seconds column when step < 60). Enter or 확인 commits. */
+export const TimePicker: Story = {
+  args: { type: "time", label: "시각", defaultValue: "09:30" },
+  play: ({ canvasElement }) =>
+    openAndPick(
+      canvasElement,
+      "시간 선택",
+      "시각",
+      async () => {
+        await userEvent.keyboard("{ArrowDown}{ArrowRight}{ArrowDown}{Enter}");
+      },
+      "10:31",
+    ),
+};
+
+/** type=datetime-local: Calendar and TimePicker side by side, one commit with 확인. */
+export const DateTimePicker: Story = {
+  args: { type: "datetime-local", label: "날짜와 시각", defaultValue: "2026-11-14T09:30" },
+  play: ({ canvasElement }) =>
+    openAndPick(
+      canvasElement,
+      "날짜와 시각 선택",
+      "날짜와 시각",
+      async () => {
+        await userEvent.click(cellOf("2026-11-18"));
+        await userEvent.click(within(screen.getByRole("listbox", { name: "시" })).getByText("14"));
+        await userEvent.click(screen.getByRole("button", { name: "확인" }));
+      },
+      "2026-11-18T14:30",
+    ),
 };
 
 export const InvalidAndDisabled: Story = {

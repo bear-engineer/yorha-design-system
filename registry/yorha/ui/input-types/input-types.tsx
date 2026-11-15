@@ -38,13 +38,13 @@ export const INPUT_TYPE_TABLE: Record<InputType, InputTypeOwner> = {
   button: { item: "@/components/ui/button", how: "buttonVariants() on a native input type=button" },
   checkbox: { item: "@/components/ui/checkbox", how: "Base UI Checkbox renders the hidden native input" },
   color: { item: "@/components/ui/color-input", how: "ColorInput: native picker, swatch and hex field" },
-  date: { item: "@/components/ui/date-input", how: "DateInput type=date, optional Calendar picker" },
-  "datetime-local": { item: "@/components/ui/date-input", how: "DateInput type=datetime-local" },
+  date: { item: "@/components/ui/date-input", how: "DateInput type=date, kit Calendar on fine pointers" },
+  "datetime-local": { item: "@/components/ui/date-input", how: "DateInput type=datetime-local, Calendar + TimePicker" },
   email: { item: "@/components/ui/input", how: "Input with inputPresets.email" },
   file: { item: "@/components/ui/file-input", how: "FileInput: button, drop zone and file list" },
   hidden: { item: "none (no UI)", how: "Plain input type=hidden; carries a value with the form, has no label" },
   image: { item: "@/components/ui/button", how: "buttonVariants({ square }) on a native input type=image" },
-  month: { item: "@/components/ui/date-input", how: "DateInput type=month" },
+  month: { item: "@/components/ui/date-input", how: "DateInput type=month, MonthPicker" },
   number: { item: "@/components/ui/input", how: "Input type=number (NumberField from @/components/ui/number-field renders type=text with steppers)" },
   password: { item: "@/components/ui/password-input", how: "PasswordInput: reveal toggle and Caps Lock hint" },
   radio: { item: "@/components/ui/radio-group", how: "Base UI Radio renders the hidden native input" },
@@ -54,9 +54,9 @@ export const INPUT_TYPE_TABLE: Record<InputType, InputTypeOwner> = {
   submit: { item: "@/components/ui/button", how: "buttonVariants({ variant: \"primary\" }) on a native input type=submit" },
   tel: { item: "@/components/ui/input", how: "Input with inputPresets.tel" },
   text: { item: "@/components/ui/input", how: "Input with inputPresets.text" },
-  time: { item: "@/components/ui/date-input", how: "DateInput type=time" },
+  time: { item: "@/components/ui/date-input", how: "DateInput type=time, TimePicker" },
   url: { item: "@/components/ui/input", how: "Input with inputPresets.url" },
-  week: { item: "@/components/ui/date-input", how: "DateInput type=week" },
+  week: { item: "@/components/ui/date-input", how: "DateInput type=week, Calendar week mode" },
 };
 
 export interface InputPreset {

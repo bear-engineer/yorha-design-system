@@ -1,6 +1,6 @@
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, userEvent, within } from "storybook/test";
+import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import { expectTargetSize } from "../../../../.storybook/preview";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,6 +15,17 @@ import { FileInput } from "../file-input/file-input";
 import { PasswordInput } from "../password-input/password-input";
 import { SearchInput } from "../search-input/search-input";
 import { INPUT_TYPES, INPUT_TYPE_TABLE, inputPresets } from "./input-types";
+
+/** Counts native showPicker() calls for the duration of a play function. */
+function vi_spy() {
+  const proto = HTMLInputElement.prototype;
+  const real = proto.showPicker;
+  const state = { calls: 0, restore: () => void (proto.showPicker = real) };
+  proto.showPicker = function () {
+    state.calls += 1;
+  };
+  return state;
+}
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const THEME_LABEL: Record<(typeof THEMES)[number], string> = { light: "라이트", dark: "다크", "high-contrast": "고대비" };
@@ -79,7 +90,7 @@ function InputTypesGallery({ formLabel = "모든 입력 유형" }: { formLabel?:
         <PasswordInput label="비밀번호" />
         <ColorInput label="색상" defaultValue="#336699" />
         <FileInput label="파일" multiple />
-        <DateInput label="날짜" picker />
+        <DateInput label="날짜" />
         <DateInput type="datetime-local" label="날짜와 시각" />
         <DateInput type="month" label="월" />
         <DateInput type="week" label="주" />
@@ -203,6 +214,22 @@ export const AllInputTypes: Story = {
     }
     // hidden is documented and present in the DOM, but not visible
     await expect(within(canvasElement).getByText(/hidden/, { selector: "[data-slot=hidden-doc]" })).toBeInTheDocument();
+    // the date/time types open kit pickers, not the OS popup
+    const c = within(canvasElement);
+    const native = vi_spy();
+    for (const [button, role] of [
+      ["주 선택", "grid"],
+      ["월 선택", "grid"],
+      ["시간 선택", "listbox"],
+      ["날짜와 시각 선택", "grid"],
+    ] as const) {
+      await userEvent.click(c.getByRole("button", { name: button }));
+      await waitFor(() => expect(screen.getAllByRole(role).length).toBeGreaterThan(0));
+      await userEvent.keyboard("{Escape}");
+      await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    }
+    await expect(native.calls).toBe(0);
+    native.restore();
     // type -> item table has one row per type
     const table = within(canvasElement).getByRole("table", { name: "입력 유형과 담당 아이템" });
     await expect(within(table).getAllByRole("row")).toHaveLength(23);
