@@ -137,7 +137,7 @@ const STAGGER = [1, 2, 3, 4, 5]
 const STREAM = `[&>tr>td]:yorha-stream [&>tr>th]:yorha-stream ${STAGGER}`;
 
 /**
- * Zebra: even rows get a hatch pattern (a shape cue), not only a colour change. Rows keep a thin rule.
+ * Zebra: even rows get a hatch pattern (a shape cue), not only a colour change (selected rows stay solid ink). Rows keep a thin rule.
  * `stream` (default on) reveals the rows in a stepped stagger on first render; change `streamKey` (page number, query)
  * to replay it for new data (the body remounts). `loading` swaps the rows for skeleton rows of the loaded row height.
  */
@@ -176,7 +176,7 @@ export function DataTableBody({
       aria-busy={loading ? "true" : undefined}
       className={cn(
         "[&>tr]:border-b [&>tr]:border-yorha-border",
-        "group-data-[zebra=true]/table:[&>tr:nth-child(even)]:[background-image:repeating-linear-gradient(135deg,var(--yorha-grid)_0_1px,transparent_1px_8px)]",
+        "group-data-[zebra=true]/table:[&>tr:nth-child(even):not([data-selected])]:[background-image:repeating-linear-gradient(135deg,var(--yorha-grid)_0_1px,transparent_1px_8px)]",
         stream && !loading && STREAM,
         className,
       )}
