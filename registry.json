@@ -21,6 +21,7 @@
     "registry/yorha/ui/number-field/registry.json",
     "registry/yorha/ui/field/registry.json",
     "registry/yorha/ui/kbd/registry.json",
+    "registry/yorha/ui/glyph/registry.json",
     "registry/yorha/ui/icons/registry.json",
     "registry/yorha/ui/input-group/registry.json",
     "registry/yorha/ui/dialog/registry.json",

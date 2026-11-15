@@ -125,6 +125,7 @@
     "alias": "@/components/ui/kbd",
     "file": "kbd.tsx"
   },
+  { "group": "ui", "name": "glyph", "type": "registry:ui", "alias": "@/components/ui/glyph", "file": "glyph.tsx" },
   { "group": "ui", "name": "icons", "type": "registry:ui", "alias": "@/components/ui/icons", "file": "icons.tsx" },
   { "group": "ui", "name": "input-group", "type": "registry:ui", "alias": "@/components/ui/input-group", "file": "input-group.tsx" },
   {

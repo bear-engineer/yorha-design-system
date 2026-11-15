@@ -70,6 +70,9 @@
       "@/components/ui/kbd": [
         "./registry/yorha/ui/kbd/kbd.tsx"
       ],
+      "@/components/ui/glyph": [
+        "./registry/yorha/ui/glyph/glyph.tsx"
+      ],
       "@/components/ui/icons": [
         "./registry/yorha/ui/icons/icons.tsx"
       ],

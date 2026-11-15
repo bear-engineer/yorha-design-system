@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "glyph",
+      "type": "registry:ui",
+      "title": "Glyph",
+      "description": "YoRHa dot glyphs: bitmap marks drawn as merged integer rects (crispEdges, currentColor), boxes 12/16/20, integer scale 1/2. One geometry source for icons, diamonds, markers and arrows.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/utils",
+        "@yorha/base"
+      ],
+      "files": [
+        { "path": "glyph.tsx", "type": "registry:ui", "target": "@ui/glyph.tsx" },
+        { "path": "glyphs.ts", "type": "registry:ui", "target": "@ui/glyphs.ts" },
+        { "path": "glyph-core.ts", "type": "registry:ui", "target": "@ui/glyph-core.ts" }
+      ],
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Glyphs are decorative (aria-hidden); label the control, not the glyph. Scale with `scale={2}`, never a CSS transform."
+    }
+  ]
+}
