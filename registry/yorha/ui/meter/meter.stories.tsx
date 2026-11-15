@@ -31,9 +31,9 @@ export const Overview: Story = {
   name: "구성 한눈에",
   render: () => (
     <Sheet title="Meter">
-      <Row label="정상 · 120/150"><div className="w-80"><Meter label="HP" value={120} min={0} max={150} /></div></Row>
-      <Row label="주의 · 60/150"><div className="w-80"><Meter label="HP" value={60} min={0} max={150} /></div></Row>
-      <Row label="위험 · 12/150"><div className="w-80"><Meter label="HP" value={12} min={0} max={150} /></div></Row>
+      <Row label="정상 · 120/150"><div className="w-80"><Meter label="HP" value={120} min={0} max={150} low={75} critical={30} /></div></Row>
+      <Row label="주의 · 60/150"><div className="w-80"><Meter label="HP" value={60} min={0} max={150} low={75} critical={30} /></div></Row>
+      <Row label="위험 · 12/150"><div className="w-80"><Meter label="HP" value={12} min={0} max={150} low={75} critical={30} /></div></Row>
     </Sheet>
   ),
 };

@@ -96,8 +96,8 @@ export interface GaugeProps {
   /** `alert` paints the fill with the alert colour (error, critical). */
   tone?: "ink" | "alert";
   ticks?: boolean;
-  /** Threshold notches (% positions) drawn in alert colour in the bottom padding. */
-  notches?: number[];
+  /** Threshold marks: % positions (ink) or `{ at, tone }`. Painted 2 px ticks in a cell gap, crossing the bottom frame. */
+  notches?: Array<number | { at: number; tone: "ink" | "alert" }>;
   trackProps?: Record<string, unknown>;
 }
 
@@ -207,15 +207,22 @@ export function Gauge({ Track, slot, size, pct, status = "active", tone = "ink",
               />
             ))
           : null}
-        {(notches ?? []).map((p, i) => (
-          <span
-            key={i}
-            aria-hidden="true"
-            data-slot={`${slot}-notch`}
-            className="absolute bottom-[-2px] h-[2px] w-[2px] bg-yorha-alert-ui forced-colors:bg-[CanvasText]"
-            style={{ left: tickAt(p) }}
-          />
-        ))}
+        {(notches ?? []).map((n, i) => {
+          const { at, tone: nt } = typeof n === "number" ? { at: n, tone: "ink" as const } : n;
+          return (
+            <span
+              key={i}
+              aria-hidden="true"
+              data-slot={`${slot}-notch`}
+              data-tone={nt}
+              className={cn(
+                "absolute bottom-[-6px] h-[9px] w-[2px] forced-colors:bg-[CanvasText]",
+                nt === "alert" ? "bg-yorha-alert-ui" : "bg-yorha-ink",
+              )}
+              style={{ left: tickAt(at) }}
+            />
+          );
+        })}
       </div>
     </Track>
   );

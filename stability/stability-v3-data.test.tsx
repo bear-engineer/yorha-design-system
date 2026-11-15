@@ -390,11 +390,11 @@ describe("FD-27/28 meter and progress", () => {
     const root = await mountStory("meter", "Low");
     const track = q(root, "[data-slot=meter-track]");
     expect(track.hasAttribute("data-low"), "track data-low").toBe(true);
-    const alert = getComputedStyle(q(root, "[data-slot=meter-notch]")).backgroundColor;
-    expect(getComputedStyle(track).borderTopColor, "alert frame").toBe(alert);
     const notches = qa(track, "[data-slot=meter-notch]");
     expect(notches).toHaveLength(2); // low + critical thresholds
-    for (const n of notches) expect(getComputedStyle(n).backgroundColor).toBe(alert);
+    const alert = getComputedStyle(notches[1]!).backgroundColor; // critical tick is alert; low tick is ink (frame is already alert)
+    expect(getComputedStyle(track).borderTopColor, "alert frame").toBe(alert);
+    expect(getComputedStyle(notches[0]!).backgroundColor).not.toBe(alert);
     // the frame colour is the low signal: an unmarked meter keeps the neutral border
     const ok = await mountStory("meter", "Default");
     const okTrack = q(ok, "[data-slot=meter-track]");

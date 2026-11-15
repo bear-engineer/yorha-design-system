@@ -2,7 +2,11 @@ import { useState } from "react";
 import { OverlayHero, overlayHeroParameters } from "../../../../src/docs/overlay-hero";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expectTargetSize } from "../../../../.storybook/preview";
+import { Badge } from "@/components/ui/badge";
+import { buttonVariants } from "@/components/ui/button";
+import { Glyph } from "@/components/ui/glyph";
 import { Input } from "@/components/ui/input";
+import { SearchInput } from "@/components/ui/search-input";
 import { Radio, RadioGroup } from "@/components/ui/radio-group";
 import { expect, fireEvent, userEvent, waitFor, within } from "storybook/test";
 import {
@@ -30,6 +34,43 @@ interface DemoProps {
   onOpenChange?: (open: boolean) => void;
 }
 
+const UNITS: [string, string, string, string][] = [
+  ["2B", "전투", "격납고 A", "정상"],
+  ["9S", "정찰", "관제실", "정상"],
+  ["A2", "전투", "벙커", "수리 중"],
+  ["21O", "작전", "관제실", "정상"],
+  ["6O", "작전", "지휘 센터", "대기"],
+];
+
+/** Unit rows in the kit language: glyph marker, name + role/location, status badge. No browser list styling. */
+function UnitList() {
+  const [query, setQuery] = useState("");
+  const rows = UNITS.filter(([n, r, l]) => `${n} ${r} ${l}`.toLowerCase().includes(query.trim().toLowerCase()));
+  return (
+    <div className="mt-4 flex flex-col gap-3">
+      <SearchInput label="유닛 검색" value={query} onValueChange={setQuery} />
+      <h3 className="m-0 flex items-center gap-2 font-yorha-bold text-yorha-xs text-yorha-fg-soft">
+        <Glyph name="diamond" />
+        등록 유닛 {rows.length}기
+      </h3>
+      <ul role="list" className="m-0 flex list-none flex-col p-0 text-yorha-sm">
+        {rows.map(([name, role, place, status]) => (
+          <li key={name} className="flex items-center gap-3 border-b border-yorha-border py-2 last:border-b-0">
+            <Glyph name={status === "수리 중" ? "diamond-ring" : "diamond-dot"} />
+            <span className="min-w-0 flex-1">
+              <span className="block font-yorha-bold">{name}</span>
+              <span className="block text-yorha-xs text-yorha-fg-soft">
+                {role} · {place}
+              </span>
+            </span>
+            <Badge variant={status === "수리 중" ? "alert" : "neutral"}>{status}</Badge>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function Demo({ side = "right", ...root }: DemoProps) {
   return (
     <div lang="ko" className="min-h-64 bg-yorha-panel p-8 text-yorha-fg">
@@ -40,14 +81,11 @@ function Demo({ side = "right", ...root }: DemoProps) {
           <DrawerTitle>유닛 목록</DrawerTitle>
           <DrawerBody>
             <DrawerDescription>격납고에 등록된 유닛을 확인한다.</DrawerDescription>
-            <ul className="mt-3 list-disc pl-5 text-yorha-sm">
-              <li>2B</li>
-              <li>9S</li>
-              <li>A2</li>
-            </ul>
+            <UnitList />
           </DrawerBody>
           <DrawerFooter>
             <DrawerClose>닫기</DrawerClose>
+            <DrawerClose className={buttonVariants({ variant: "primary" })}>유닛 배치</DrawerClose>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
@@ -173,14 +211,11 @@ export const Overview: Story = {
           <DrawerTitle>유닛 목록</DrawerTitle>
           <DrawerBody>
             <DrawerDescription>격납고에 등록된 유닛을 확인한다.</DrawerDescription>
-            <ul className="mt-3 list-disc pl-5 text-yorha-sm">
-              <li>2B</li>
-              <li>9S</li>
-              <li>A2</li>
-            </ul>
+            <UnitList />
           </DrawerBody>
           <DrawerFooter>
             <DrawerClose>닫기</DrawerClose>
+            <DrawerClose className={buttonVariants({ variant: "primary" })}>유닛 배치</DrawerClose>
           </DrawerFooter>
         </DrawerContent>
       </Drawer>
