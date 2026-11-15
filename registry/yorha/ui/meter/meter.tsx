@@ -28,8 +28,8 @@ export function Meter({ value, min = 0, max = 100, label, low, critical, variant
     pitch === 4
       ? undefined
       : {
-          maskImage: `var(--yorha-dots), repeating-linear-gradient(to right, #000 0 2px, transparent 2px ${pitch}px)`,
-          WebkitMaskImage: `var(--yorha-dots), repeating-linear-gradient(to right, #000 0 2px, transparent 2px ${pitch}px)`,
+          maskImage: `var(--yorha-dots), repeating-linear-gradient(to right, currentColor 0 2px, transparent 2px ${pitch}px)`,
+          WebkitMaskImage: `var(--yorha-dots), repeating-linear-gradient(to right, currentColor 0 2px, transparent 2px ${pitch}px)`,
           maskSize: "4px 4px, auto",
           WebkitMaskSize: "4px 4px, auto",
           maskComposite: "intersect",
