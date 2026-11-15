@@ -422,6 +422,11 @@ export const Calendar = React.forwardRef<HTMLDivElement, CalendarProps>(function
       case "End":
         target = rel(6);
         break;
+      case "t":
+      case "T":
+        // today (nearest enabled day when today is disabled); modifiers were filtered above
+        target = disabledAt(today) ? findEnabled(today, (d) => addDays(d, 1)) : today;
+        break;
       case "Escape":
         if (!pendingStart) return;
         setSelection({ from: null, to: null });
