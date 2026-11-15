@@ -101,7 +101,7 @@ const OPTION = cn(
  * go to the ends, Enter commits. The selected option is centred by setting the column's own scrollTop, so neither the
  * popup nor the page ever moves. Disabled options (min/max) are skipped and cannot be picked.
  */
-export function TimePicker({ value, onValueChange, onCommit, step, min, max, autoFocus, labels, className }: TimePickerProps) {
+export function TimePicker({ value, onValueChange, onCommit, step, min, max, autoFocus, labels, className, listClassName }: TimePickerProps) {
   const text = { hour: "시", minute: "분", second: "초", ...labels };
   const { seconds, hours, minutes, secs } = timeSteps(step);
   const parts = parseTime(value);
@@ -205,16 +205,16 @@ export function TimePicker({ value, onValueChange, onCommit, step, min, max, aut
   };
 
   return (
-    <div ref={rootRef} data-slot="time-picker" lang="ko" className={cn("flex w-fit flex-col bg-yorha-panel p-2 font-yorha text-yorha-fg", className)}>
+    <div ref={rootRef} data-slot="time-picker" lang="ko" className={cn("flex w-full flex-col bg-yorha-panel p-2 font-yorha text-yorha-fg", className)}>
       <div className="flex">
         {columns.map((c, ci) => (
-          <div key={c.key} className={cn("flex w-[3.25rem] flex-col", ci > 0 && "ml-1 border-l border-yorha-separator pl-1")}>
+          <div key={c.key} className={cn("flex min-w-[3.25rem] flex-1 flex-col", ci > 0 && "ml-1 border-l border-yorha-separator pl-1")}>
             <div className="grid h-control-sm place-items-center font-yorha-bold text-yorha-sm text-yorha-fg-strong">{c.label}</div>
             <div
               role="listbox"
               aria-label={c.label}
               onKeyDown={(e) => onKeyDown(e, ci)}
-              className="relative h-[calc(var(--yorha-control-sm)*6+24px)] overflow-y-auto overscroll-contain border-t border-yorha-separator [scrollbar-gutter:stable] [scrollbar-width:thin]"
+              className={cn("relative h-[calc(var(--yorha-control-sm)*6+24px)] overflow-y-auto overscroll-contain border-t border-yorha-separator [scrollbar-gutter:stable] [scrollbar-width:thin]", listClassName)}
             >
               {c.options.map((n) => {
                 const selected = c.current === n;

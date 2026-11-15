@@ -271,6 +271,7 @@ export function DateInput({
           min={limit(min)}
           max={limit(max)}
           autoFocus={!withDate}
+          listClassName={withDate ? "max-[419px]:h-[calc(var(--yorha-control-sm)*4+12px)]" : undefined}
           onValueChange={setDraftTime}
           onCommit={confirm}
         />
