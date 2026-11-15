@@ -1,6 +1,7 @@
-import type { ComponentProps } from "react";
+import { Children, cloneElement, isValidElement, type ComponentProps, type ReactElement } from "react";
 import { Avatar as AvatarPrimitive } from "@base-ui/react/avatar";
-import { cnState } from "@/lib/utils";
+import { Glyph, type GlyphName } from "@/components/ui/glyph";
+import { cn, cnState } from "@/lib/utils";
 
 export type AvatarSize = "sm" | "md" | "lg";
 const SIZES: Record<AvatarSize, string> = { sm: "size-8", md: "size-12", lg: "size-16" };
@@ -44,4 +45,61 @@ function AvatarFallback({ className, ...props }: ComponentProps<typeof AvatarPri
   );
 }
 
-export { Avatar, AvatarFallback, AvatarImage };
+export type AvatarStatusValue = "online" | "away" | "busy" | "offline";
+
+// Shape carries the state, colour only reinforces it: disc / diamond / square / ring.
+const STATUS: Record<AvatarStatusValue, { glyph: GlyphName; label: string; colour: string }> = {
+  online: { glyph: "disc", label: "온라인", colour: "text-yorha-fg-strong" },
+  away: { glyph: "diamond", label: "자리 비움", colour: "text-yorha-fg-soft" },
+  busy: { glyph: "square", label: "다른 용무 중", colour: "text-yorha-alert-ui" },
+  offline: { glyph: "ring", label: "오프라인", colour: "text-yorha-fg-soft" },
+};
+
+/** Presence mark in the avatar's bottom-right corner (inside the frame, which clips). Named for screen readers; `label` overrides the Korean default. */
+function AvatarStatus({ status, label, className }: { status: AvatarStatusValue; label?: string; className?: string }) {
+  const s = STATUS[status];
+  return (
+    <span
+      data-slot="avatar-status"
+      data-status={status}
+      role="img"
+      aria-label={label ?? s.label}
+      className={cn("absolute right-0 bottom-0 grid size-3 place-items-center bg-yorha-panel", s.colour, className)}
+    >
+      <Glyph name={s.glyph} box={12} />
+    </span>
+  );
+}
+
+/** Overlapping row of avatars (hairline overlap); more than `max` collapse into a "+N" avatar. `size` is applied to every child. */
+function AvatarGroup({
+  max = 4,
+  size = "md",
+  label,
+  className,
+  children,
+}: {
+  max?: number;
+  size?: AvatarSize;
+  /** Accessible name of the group, e.g. "Team". */
+  label?: string;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const all = Children.toArray(children).filter(isValidElement) as ReactElement<ComponentProps<typeof Avatar>>[];
+  const shown = all.slice(0, max);
+  const rest = all.length - shown.length;
+  const item = "-ml-px first:ml-0";
+  return (
+    <div role="group" aria-label={label} className={cn("inline-flex items-center", className)}>
+      {shown.map((child) => cloneElement(child, { size, className: cn(item, child.props.className as string | undefined) }))}
+      {rest > 0 ? (
+        <Avatar size={size} role="img" aria-label={`외 ${rest}명`} className={item}>
+          <AvatarFallback>+{rest}</AvatarFallback>
+        </Avatar>
+      ) : null}
+    </div>
+  );
+}
+
+export { Avatar, AvatarFallback, AvatarGroup, AvatarImage, AvatarStatus };
