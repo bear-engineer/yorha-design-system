@@ -114,7 +114,7 @@ function Dissolve() {
   const [open, setOpen] = useState(true);
   return (
     <Cell name="yorha-dissolve" action={<Replay label={open ? "닫기" : "열기"} locked={false} onClick={() => setOpen((value) => !value)} />}>
-      <div className="yorha-dissolve h-14 w-40 border border-yorha-border bg-yorha-panel px-pad-sm py-2 text-yorha-xs" data-open={open ? "" : undefined} data-closed={open ? undefined : ""}>
+      <div className="yorha-dissolve min-h-14 w-48 border border-yorha-border bg-yorha-panel px-pad-sm py-2 text-yorha-xs" data-open={open ? "" : undefined} data-closed={open ? undefined : ""}>
         다이얼로그: 2px 디더 마스크로 나타나고 사라집니다.
       </div>
     </Cell>

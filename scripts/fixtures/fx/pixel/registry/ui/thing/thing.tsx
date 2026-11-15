@@ -9,3 +9,4 @@ export function X() {
     </>
   );
 }
+const CheckIcon = ({ className }: { className?: string }) => <i className={className} />;
