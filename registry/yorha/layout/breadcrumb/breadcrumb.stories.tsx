@@ -27,9 +27,10 @@ type Story = StoryObj<typeof meta>;
 function PathProbe() {
   const { pathname } = useLocation();
   return (
-    <p data-testid="path" className="m-0 font-yorha-mono text-yorha-xs text-yorha-fg-soft">
-      {pathname}
-    </p>
+    <div data-slot="path-readout" className="flex items-center justify-between gap-2 border border-yorha-border px-3 py-1 font-yorha-mono text-yorha-xs text-yorha-fg-soft">
+      <span>현재 경로</span>
+      <span data-testid="path" className="text-yorha-fg">{pathname}</span>
+    </div>
   );
 }
 
@@ -200,6 +201,13 @@ export const ManyItems: Story = {
     await userEvent.click(more);
     const menu = await within(document.body).findByRole("menu");
     await expect(within(menu).getAllByRole("menuitem")).toHaveLength(3);
+    // Deterministic: wait for the open animation to finish and focus to land inside the menu before closing.
+    await waitFor(() => expect(menu.contains(document.activeElement)).toBe(true));
+    await waitFor(async () => {
+      await Promise.all(menu.getAnimations({ subtree: true }).map((a) => a.finished.catch(() => undefined)));
+      await expect(menu.getAnimations({ subtree: true }).filter((a) => a.playState === "running")).toHaveLength(0);
+    });
     await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(within(document.body).queryByRole("menu")).toBeNull());
   },
 };

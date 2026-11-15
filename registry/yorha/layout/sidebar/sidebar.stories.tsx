@@ -71,7 +71,7 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** The sidebar docked in an app frame: column on the left, page header + content placeholder on the right (1280 x 720). */
+/** The sidebar docked in an app frame: column on the left, page header + page body on the right (1280 x 720). */
 function Dock({ children, theme, body }: { children: ReactNode; theme?: string; body?: ReactNode }) {
   return (
     <div data-theme={theme} className="flex h-[720px] w-[1280px] max-w-full overflow-hidden border border-yorha-border bg-yorha-bg text-yorha-fg">
@@ -83,13 +83,7 @@ function Dock({ children, theme, body }: { children: ReactNode; theme?: string; 
           title="유닛"
           description="가동 중인 기체 12대 중 11대가 정상입니다. 점검 일정과 보급 요청을 확인하세요."
         />
-        {body ?? (
-          <div className="grid grid-cols-3 gap-4 p-6">
-            {[0, 1, 2, 3, 4, 5].map((i) => (
-              <div key={i} aria-hidden="true" className="h-28 border border-yorha-border bg-yorha-panel" />
-            ))}
-          </div>
-        )}
+        {body ?? PAGE_BODY}
       </div>
     </div>
   );
