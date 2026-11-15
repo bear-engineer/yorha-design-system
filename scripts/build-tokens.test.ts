@@ -144,8 +144,10 @@ describe("token generator", () => {
       "drawer-exit": "280ms",
       loop: "1200ms",
     };
-    const MOTION_UTILITIES = ["yorha-pop", "yorha-panel", "yorha-fade", "yorha-slide-up", "yorha-slide-down", "yorha-slide-left", "yorha-slide-right", "yorha-collapse", "yorha-wipe", "yorha-press", "yorha-stagger"];
-    const OTHER_UTILITIES = ["yorha-focus", "yorha-tabular", "yorha-segments", "yorha-break", "yorha-focus-inset", "yorha-tint", "yorha-disabled", "yorha-readonly", "yorha-invalid", "yorha-row", "yorha-surface", "yorha-scroll", "yorha-scroll-cue-x"];
+    const MOTION_UTILITIES = ["yorha-pop", "yorha-panel", "yorha-fade", "yorha-slide-up", "yorha-slide-down", "yorha-slide-left", "yorha-slide-right", "yorha-collapse", "yorha-wipe", "yorha-press", "yorha-stagger", "yorha-dissolve", "yorha-glitch", "yorha-flicker", "yorha-caret", "yorha-stream"];
+    /** Open/close transition utilities that share the Base UI starting/ending-style shape. */
+    const OPEN_CLOSE = ["yorha-panel", "yorha-fade", "yorha-slide-up", "yorha-slide-down", "yorha-slide-left", "yorha-slide-right"];
+    const OTHER_UTILITIES = ["yorha-focus", "yorha-tabular", "yorha-segments", "yorha-break", "yorha-focus-inset", "yorha-tint", "yorha-disabled", "yorha-readonly", "yorha-invalid", "yorha-row", "yorha-surface", "yorha-scroll", "yorha-scroll-cue-x", "yorha-scroll-cue-y", "yorha-dither-12", "yorha-dither-25", "yorha-dither-50", "yorha-dither-75", "yorha-dots", "yorha-rail"];
     const utilityBlock = (name: string) => block(`@utility ${name}`);
 
     it.each(Object.entries(DURATIONS))("duration token %s is %s under both names", (name, value) => {
@@ -155,7 +157,7 @@ describe("token generator", () => {
 
     it("keeps the v1 durations", () => {
       expect(blockVar(":root", "motion-select")).toBe("180ms");
-      expect(blockVar(":root", "motion-panel")).toBe("400ms");
+      expect(blockVar(":root", "motion-panel")).toBe("280ms"); // V4-001: equals modal (was 400)
       expect(blockVar(":root", "motion-panel-exit")).toBe("240ms");
       expect(blockVar(":root", "motion-stagger")).toBe("40ms");
     });
@@ -208,7 +210,7 @@ describe("token generator", () => {
     });
 
     it("open/close utilities transition between data-starting-style and data-ending-style, with an opacity fade when reduced", () => {
-      for (const name of MOTION_UTILITIES.filter((utility) => !["yorha-press", "yorha-stagger", "yorha-wipe"].includes(utility))) {
+      for (const name of OPEN_CLOSE) {
         expect(utilityBlock(name), name).toContain("&[data-starting-style], &[data-ending-style] {");
         expect(utilityBlock(name), name).toMatch(/transition-property: [a-z, ]*opacity/);
         expect(utilityBlock(name), name).toContain("var(--motion-reduced-fade)");
@@ -224,7 +226,7 @@ describe("token generator", () => {
     });
 
     it("exits ease with --yorha-ease, never ease-in", () => {
-      for (const name of ["yorha-pop", "yorha-panel", "yorha-fade"]) {
+      for (const name of ["yorha-panel", "yorha-fade"]) {
         const exit = utilityBlock(name).slice(utilityBlock(name).lastIndexOf("&[data-ending-style] {"));
         expect(exit, name).toContain("transition-timing-function: var(--yorha-ease);");
         expect(exit, name).not.toContain("ease-in");
@@ -254,12 +256,16 @@ describe("token generator", () => {
       }
     });
 
-    it("yorha-pop scales and fades from --transform-origin, exit on the faster token", () => {
+    it("V4-004 yorha-pop: stepped clip from the anchor edge on a negative-inset rest, opacity-only exit, no scale", () => {
       const pop = utilityBlock("yorha-pop");
-      expect(pop).toContain("transform-origin: var(--transform-origin");
-      expect(pop).toMatch(/&\[data-starting-style\], &\[data-ending-style\] \{\n\s+opacity: 0;\n\s+scale: [^;]*var\(--motion-scale-pop\)[^;]*var\(--motion-spatial\)/);
+      expect(pop).toContain("transition-property: opacity, clip-path;");
+      expect(pop).toContain("transition-timing-function: linear, var(--yorha-step-reveal);");
+      expect(pop).toContain("var(--yorha-pop-bleed, 1rem)");
+      expect(pop).not.toMatch(/\bscale:|transform-origin/);
+      for (const side of ["top", "left", "right", "inline-start", "inline-end"]) expect(pop).toContain(`&[data-starting-style][data-side=${side}]`);
+      expect(pop).toMatch(/&\[data-starting-style\]\[data-side=inline-start\]:where\(\[dir=rtl\], \[dir=rtl\] \*\) \{\n\s+clip-path: inset\([^;]*calc\(/);
       expect(pop).toContain("var(--motion-popover)");
-      expect(pop).toMatch(/&\[data-ending-style\] \{\n\s+transition-duration: [^;]*var\(--motion-popover-exit\)/);
+      expect(pop).toMatch(/&\[data-ending-style\] \{\n\s+opacity: 0;\n\s+transition-duration: [^;]*var\(--motion-popover-exit\)/);
     });
 
     it("yorha-panel and yorha-fade use the panel tokens; slides use the drawer token and follow the Base UI swipe variables", () => {
@@ -293,7 +299,7 @@ describe("token generator", () => {
     it("yorha-wipe transitions background-size and colour: exit speed by default, enter speed on the selected states", () => {
       const wipe = utilityBlock("yorha-wipe");
       expect(wipe).toContain("transition-property: background-size, color;");
-      expect(wipe).toContain("transition-timing-function: var(--yorha-ease-out);");
+      expect(wipe).toContain("transition-timing-function: var(--yorha-step-scan), var(--yorha-ease-out);"); // V4-003
       expect(wipe).toMatch(/^\s+transition-duration: var\(--yorha-wipe-exit, var\(--motion-select-exit\)\), var\(--motion-press\);/m);
       expect(wipe).toMatch(/&:is\(.*\[data-highlighted\].*\[data-checked\].*\) \{\n\s+transition-duration: var\(--motion-select\), var\(--motion-press\);/);
     });
@@ -328,7 +334,7 @@ describe("token generator", () => {
         expect.arrayContaining(["--motion-reduced-fade", "--motion-spatial", "--motion-scale-pop", "--motion-scale-press", "--motion-shift", "--motion-stagger-max"]),
       );
       const documented = docsTokens.motion.durations.length + docsTokens.motion.easings.length + docsTokens.motion.parameters.length;
-      const declared = [...tokenRoot().matchAll(/\n\s+--yorha-(?:motion|ease)[a-z-]*: /g)].length;
+      const declared = [...tokenRoot().matchAll(/\n\s+--yorha-(?:motion|ease|step)[a-z0-9-]*: /g)].length;
       expect(documented).toBe(declared);
     });
 
@@ -618,6 +624,85 @@ describe("craft v3 recipes (G5-G10)", () => {
       expect(cue).toContain("var(--yorha-border)");
       for (const name of ["yorha-surface", "yorha-scroll", "yorha-scroll-cue-x"]) expect(Object.keys(baseItem().css)).toContain(`@utility ${name}`);
     });
+  });
+});
+
+describe("v4 motion tokens, tiles and utilities (V4-001, 003, 005, 010, 011)", () => {
+  const css = () => generate()["src/styles/tokens.generated.css"] ?? "";
+  const modeBlock = (selector: string) => {
+    const start = css().indexOf(`\n${selector} {\n`);
+    expect(start, selector).toBeGreaterThanOrEqual(0);
+    return css().slice(start, css().indexOf("\n}\n", start));
+  };
+  const value = (block: string, name: string) => new RegExp(`\\n\\s+--${name}: ([^;]+);`).exec(block)?.[1];
+  const root = () => {
+    const all = css();
+    return all.slice(all.indexOf("--yorha-motion-select:") - 200, all.indexOf("\n}\n", all.indexOf("--yorha-motion-select:")));
+  };
+
+  it("duration, easing and mask tokens in full, reduced and off", () => {
+    const DURATIONS = { glitch: "240ms", flicker: "240ms", stream: "320ms", caret: "1000ms" };
+    for (const [name, full] of Object.entries(DURATIONS)) {
+      expect(value(root(), `motion-${name}`), name).toBe(full);
+      expect(value(root(), `yorha-motion-${name}`), name).toBe(full);
+      for (const mode of ["reduced", "off"]) expect(value(modeBlock(`[data-motion=${mode}]`), `motion-${name}`), `${name} ${mode}`).toBe("0ms");
+    }
+    const STEPS = { "step-reveal": "steps(4, end)", "step-scan": "steps(6, end)", "step-loop": "steps(16, end)", "step-flip": "steps(1, end)" };
+    for (const [name, full] of Object.entries(STEPS)) {
+      expect(value(root(), `yorha-${name}`), name).toBe(full);
+      for (const mode of ["reduced", "off"]) expect(value(modeBlock(`[data-motion=${mode}]`), `yorha-${name}`), `${name} ${mode}`).toBe("linear");
+      expect(css(), name).toContain(`--ease-yorha-${name}: var(--yorha-${name});`);
+    }
+    for (const level of [25, 50, 75]) {
+      expect(value(root(), `motion-fx-mask-${level}`)).toBe(`var(--yorha-dither-${level})`);
+      for (const mode of ["reduced", "off"]) expect(value(modeBlock(`[data-motion=${mode}]`), `motion-fx-mask-${level}`)).toBe("none");
+    }
+    expect(css()).toMatch(/@media \(prefers-reduced-motion: reduce\) \{\n  :root:not\(\[data-motion=full\]\) \{[^}]*--yorha-step-flip: linear;/);
+  });
+
+  it("dither tiles are Bayer 4x4 with 2px cells on an 8px grid, nested by level; dots are one 2px dot per 4px tile", () => {
+    const tile = (name: string) => decodeURIComponent(/--yorha-([a-z0-9-]+): url\("data:image\/svg\+xml,([^"]+)"\)/g[Symbol.matchAll](value(root(), name) ? `--${name}: ${value(root(), name)};` : "").next().value?.[2] ?? "");
+    const cells = (name: string) => [...tile(name).matchAll(/<rect x='(\d+)' y='(\d+)' width='2' height='2'\/>/g)].map((m) => `${m[1]},${m[2]}`);
+    expect(cells("yorha-dither-12")).toHaveLength(2);
+    expect(cells("yorha-dither-25")).toHaveLength(4);
+    expect(cells("yorha-dither-50")).toHaveLength(8);
+    expect(cells("yorha-dither-75")).toHaveLength(12);
+    for (const [low, high] of [["12", "25"], ["25", "50"], ["50", "75"]]) for (const cell of cells(`yorha-dither-${low}`)) expect(cells(`yorha-dither-${high}`)).toContain(cell);
+    expect(tile("yorha-dither-50")).toContain("width='8' height='8'");
+    expect(tile("yorha-dither-50")).toContain("shape-rendering='crispEdges'");
+    expect(cells("yorha-dots")).toEqual(["0,0"]);
+    expect(value(root(), "yorha-dot")).toBe("2px");
+    expect(value(root(), "yorha-dot-pitch")).toBe("4px");
+  });
+
+  it("pixel utilities mask a currentColor ground; forced colours use CanvasText and drop the light levels", () => {
+    const block = (name: string) => css().slice(css().indexOf(`\n@utility ${name} {`), css().indexOf("\n}\n", css().indexOf(`\n@utility ${name} {`)));
+    for (const name of ["yorha-dither-25", "yorha-dither-50", "yorha-dots", "yorha-rail"]) {
+      expect(block(name), name).toContain("background-color: currentColor;");
+      expect(block(name), name).toContain("mask-size:");
+    }
+    expect(block("yorha-dither-50")).toMatch(/@media \(forced-colors: active\) \{\n\s+forced-color-adjust: none;\n\s+background-color: CanvasText;\n\s+\}/);
+    expect(block("yorha-dither-25")).toContain("display: none;");
+    expect(block("yorha-dither-50")).not.toContain("display: none;");
+    expect(block("yorha-rail")).toContain("inline-size: 2px;");
+  });
+
+  it("route entry scans (stepped clip + its own opacity set); the UA root crossfade is switched off", () => {
+    const text = css();
+    expect(text).toContain(":root::view-transition-new(.yorha-route-forward) {");
+    expect(text).toMatch(/:root::view-transition-new\(\.yorha-route-forward\) \{[^}]*animation-name: yorha-route-scan-forward, yorha-route-fade-in;[^}]*var\(--yorha-step-scan\), linear/);
+    expect(text).toMatch(/:root::view-transition-group\(root\), :root::view-transition-old\(root\), :root::view-transition-new\(root\) \{\n\s+animation: none;/);
+    const item = JSON.parse(read("registry/yorha/base/base/registry.json")).items[0].css as Record<string, unknown>;
+    expect(Object.keys(item)).toContain(":root::view-transition-new(.yorha-route-back)");
+  });
+
+  it("glitch layers carry no plain content fallback; dissolve keeps mask and fade in separate keyframes sets", () => {
+    const text = css();
+    expect(text).toContain('content: attr(data-text) / "";');
+    expect(text).not.toMatch(/content: attr\(data-text\);/);
+    const keyframes = (name: string) => text.slice(text.indexOf(`@keyframes ${name} {`), text.indexOf("\n  }\n", text.indexOf(`@keyframes ${name} {`)));
+    for (const name of ["yorha-dissolve-mask-in", "yorha-dissolve-mask-out"]) expect(keyframes(name)).not.toContain("opacity");
+    for (const name of ["yorha-glitch-a-move", "yorha-stream-clip", "yorha-route-scan-forward"]) expect(keyframes(name)).not.toContain("opacity");
   });
 });
 

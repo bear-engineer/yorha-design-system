@@ -108,6 +108,8 @@ const RULES = [
   [/^shadow\.text$/, () => ({ cssVar: "yorha-text-shadow", theme: "text-shadow-yorha" })],
   [/^shadow\.(.+)$/, (k) => ({ theme: `shadow-yorha-${k}` })],
   [/^motion\.duration\.(.+)$/, (k) => ({ cssVar: `yorha-motion-${k}`, alias: `motion-${k}` })],
+  // Stepped easings (`steps()` strings): --yorha-step-*, Tailwind ease-yorha-step-*.
+  [/^motion\.easing\.(step-.+)$/, (k) => ({ cssVar: `yorha-${k}`, theme: `ease-yorha-${k}` })],
   [/^motion\.easing\.(.+)$/, (k) => ({ cssVar: k === "standard" ? "yorha-ease" : `yorha-ease-${k}`, theme: k === "standard" ? "ease-yorha" : `ease-yorha-${k}` })],
   [/^motion\.(.+)$/, (k) => ({ cssVar: `yorha-motion-${k.replaceAll(".", "-")}`, alias: `motion-${k.replaceAll(".", "-")}` })],
   [/^z\.(.+)$/, (k) => ({ cssVar: `yorha-z-${k}` })],
@@ -154,6 +156,8 @@ function cssValue(path, token) {
       return String(value);
     case "number":
       return `${value}${extensions?.["dev.yorha"]?.unit ?? ""}`;
+    case "string":
+      return String(value);
     case "cubicBezier":
       return `cubic-bezier(${value.join(", ")})`;
     case "shadow": {
@@ -190,6 +194,11 @@ const EXIT = "&[data-ending-style]";
 // Base UI marks keyboard opens, Esc dismissals and focus tooltips with data-instant: no animation for those.
 const INSTANT = { "&[data-instant]": { "transition-duration": "0s" } };
 
+const POP_BLEED = "calc(-1 * var(--yorha-pop-bleed, 1rem))";
+const POP_CLOSED = `calc(${POP_BLEED} + (100% - ${POP_BLEED}) * var(--motion-spatial))`;
+/** Clip of yorha-pop: every edge at the negative bleed inset, `closed` edge at 100% (full motion) or still at the bleed (reduced / off). */
+const popClip = (closed) => `inset(${["top", "right", "bottom", "left"].map((side) => (side === closed ? POP_CLOSED : POP_BLEED)).join(" ")})`;
+
 /** Edge-attached surface. `enter` is the direction it moves while opening: [x, y] in units of its own size. */
 function slide([x, y]) {
   const distance = (sign) => (sign === 0 ? "0" : spatial(`var(--yorha-slide-distance, 100%)${sign < 0 ? " * -1" : ""}`));
@@ -207,13 +216,22 @@ function slide([x, y]) {
 }
 
 const MOTION_CSS = {
+  // Stepped scan from the anchor edge (V4-004). Rest = a negative inset so the arrow, focus ring and hard shadow are never clipped.
+  // Starting style closes the edge next to the anchor (--motion-spatial 0 keeps it at the rest inset: reduced = opacity only).
   "@utility yorha-pop": {
-    "transform-origin": "var(--transform-origin, center)",
-    "transition-property": "opacity, scale",
-    "transition-duration": fade("popover"),
-    "transition-timing-function": "var(--yorha-ease-decelerate)",
-    [HIDDEN]: { opacity: "0", scale: scaleTo("pop") },
-    [EXIT]: { "transition-duration": fade("popover-exit"), "transition-timing-function": "var(--yorha-ease)" },
+    "transition-property": "opacity, clip-path",
+    "transition-duration": `max(calc(var(--motion-popover) / 4), var(--motion-reduced-fade)), ${fade("popover")}`,
+    "transition-timing-function": "linear, var(--yorha-step-reveal)",
+    "clip-path": popClip(),
+    "&[data-starting-style]": { opacity: "0", "clip-path": popClip("bottom") },
+    "&[data-starting-style][data-side=top]": { "clip-path": popClip("top") },
+    "&[data-starting-style][data-side=left]": { "clip-path": popClip("left") },
+    "&[data-starting-style][data-side=right]": { "clip-path": popClip("right") },
+    "&[data-starting-style][data-side=inline-start]": { "clip-path": popClip("left") },
+    "&[data-starting-style][data-side=inline-end]": { "clip-path": popClip("right") },
+    "&[data-starting-style][data-side=inline-start]:where([dir=rtl], [dir=rtl] *)": { "clip-path": popClip("right") },
+    "&[data-starting-style][data-side=inline-end]:where([dir=rtl], [dir=rtl] *)": { "clip-path": popClip("left") },
+    [EXIT]: { opacity: "0", "transition-duration": `${fade("popover-exit")}, ${fade("popover-exit")}`, "transition-timing-function": "linear, var(--yorha-step-reveal)" },
     ...INSTANT,
   },
   "@utility yorha-panel": {
@@ -261,7 +279,8 @@ const MOTION_CSS = {
     "transition-property": "background-size, color",
     "transition-duration": "var(--yorha-wipe-exit, var(--motion-select-exit)), var(--motion-press)",
     "transition-delay": "0s, calc(var(--motion-select) * 0.35)",
-    "transition-timing-function": "var(--yorha-ease-out)",
+    // The ink front steps (background-size); the colour keeps the smooth ease (a hard flip would show 60ms of light text on beige).
+    "transition-timing-function": "var(--yorha-step-scan), var(--yorha-ease-out)",
     "&:is([data-highlighted], [data-panel-open], [data-popup-open], [data-checked], [data-selected], [aria-current=page], :has([data-checked]), :hover)": {
       "transition-duration": "var(--motion-select), var(--motion-press)",
     },
@@ -272,7 +291,7 @@ const MOTION_CSS = {
     "transition-property": "scale, color, background-color, border-color, background-size",
     "transition-duration": ["press", "press", "select", "select", "select"].map((token) => `var(--motion-${token})`).join(", "),
     "transition-delay": "0s, calc(var(--motion-select) * 0.35), 0s, 0s, 0s",
-    "transition-timing-function": "var(--yorha-ease-out)",
+    "transition-timing-function": "var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-step-scan)",
     "&:active:not(:disabled, [data-disabled], [aria-disabled=true], [data-loading], [aria-busy=true])": { scale: scaleTo("press") },
   },
   "@utility yorha-stagger": {
@@ -282,14 +301,153 @@ const MOTION_CSS = {
     "animation-fill-mode": "backwards",
     "animation-delay": "calc(var(--motion-stagger) * min(var(--yorha-stagger-index, 0), var(--motion-stagger-max)))",
   },
+  // Dialog arrives / leaves as a Bayer dither (V4-005). Two animations per direction: a mask and an opacity fade never share a keyframes set.
+  // Reduced / off: the mask tokens are `none` and its duration 0, so only the 120ms fade remains (reduced) or nothing (off).
+  "@utility yorha-dissolve": {
+    "mask-size": "8px 8px",
+    "-webkit-mask-size": "8px 8px",
+    "mask-repeat": "repeat",
+    "-webkit-mask-repeat": "repeat",
+    "&:is([data-open], [data-run=in])": {
+      "animation-name": "yorha-dissolve-mask-in, yorha-dissolve-fade-in",
+      "animation-duration": "var(--motion-modal), max(calc(var(--motion-modal) / 5), var(--motion-reduced-fade))",
+      "animation-timing-function": "var(--yorha-step-flip)",
+      "animation-fill-mode": "backwards",
+    },
+    "&:is([data-closed], [data-run=out])": {
+      "animation-name": "yorha-dissolve-mask-out, yorha-dissolve-fade-out",
+      "animation-duration": "var(--motion-modal-exit), max(calc(var(--motion-modal-exit) / 5), var(--motion-reduced-fade))",
+      "animation-delay": "0s, calc(var(--motion-modal-exit) * 0.8 * var(--motion-spatial))",
+      "animation-timing-function": "var(--yorha-step-flip)",
+      "animation-fill-mode": "both",
+    },
+  },
+  // One burst of two displaced colour channels on one line of display text (V4-006). Host: `data-text` = its text, `data-run` plays it.
+  // The layers have no plain `content` fallback: a browser without the alt-text syntax shows no layers instead of doubled text.
+  "@utility yorha-glitch": {
+    position: "relative",
+    "--yorha-glitch-a": "var(--yorha-alert-ui)",
+    "--yorha-glitch-b": "var(--yorha-ink)",
+    "&::before, &::after": { content: 'attr(data-text) / ""', position: "absolute", inset: "0", "pointer-events": "none", opacity: "0" },
+    "&::before": { color: "var(--yorha-glitch-a)" },
+    "&::after": { color: "var(--yorha-glitch-b)" },
+    "&[data-run]": { "animation-name": "yorha-glitch-core", "animation-duration": fade("glitch"), "animation-timing-function": "var(--yorha-step-flip)", "animation-fill-mode": "backwards" },
+    "&[data-run]::before": { "animation-name": "yorha-glitch-a-move, yorha-glitch-a-fade", "animation-duration": "var(--motion-glitch)", "animation-timing-function": "var(--yorha-step-flip)" },
+    "&[data-run]::after": { "animation-name": "yorha-glitch-b-move, yorha-glitch-b-fade", "animation-duration": "var(--motion-glitch)", "animation-timing-function": "var(--yorha-step-flip)" },
+    "@media (forced-colors: active)": { "&::before, &::after": { display: "none" } },
+  },
+  // Signal flicker on a non-text mark with its own box (V4-007): two dips per burst in full, a single monotone fade in reduced.
+  "@utility yorha-flicker": {
+    "&[data-run]": { "animation-name": "yorha-flicker", "animation-duration": fade("flicker"), "animation-timing-function": "var(--yorha-step-flip)", "animation-fill-mode": "backwards" },
+  },
+  // Block caret in its own aria-hidden span (V4-008). Solid unless [data-blink]; blinks 6 cycles, then solid (WCAG 2.2.2). 0 cycles when reduced / off.
+  "@utility yorha-caret": {
+    display: "inline-block",
+    "inline-size": "round(0.55em, 1px)",
+    "block-size": "round(1.1em, 1px)",
+    "vertical-align": "-0.15em",
+    "background-color": "currentColor",
+    "&[data-blink]": {
+      "animation-name": "yorha-caret-blink",
+      "animation-duration": "var(--motion-caret)",
+      "animation-timing-function": "var(--yorha-step-flip)",
+      "animation-iteration-count": "calc(6 * var(--motion-spatial))",
+    },
+    "@media (forced-colors: active)": { "forced-color-adjust": "none", "background-color": "CanvasText" },
+  },
+  // Data arrived (V4-009): stepped reveal from the inline start plus a stepped fade, staggered by the same index variable as yorha-stagger.
+  // The clip animation has no reduced fade, so reduced runs the opacity animation alone.
+  "@utility yorha-stream": {
+    "animation-name": "yorha-stream-clip, yorha-stream-fade",
+    "animation-duration": `var(--motion-stream), ${fade("stream")}`,
+    "animation-timing-function": "var(--yorha-step-reveal)",
+    "animation-fill-mode": "backwards",
+    "animation-delay": "calc(var(--motion-stagger) * min(var(--yorha-stagger-index, 0), var(--motion-stagger-max)))",
+  },
 };
 // Emitted inside `@layer base`: the shadcn CLI moves a top-level @keyframes into `@theme inline`, where Tailwind
 // drops it unless an --animate-* variable uses it, and the consumer's yorha-stagger would silently not animate.
+const GLITCH_DX = "3px";
+const glitchMove = (sign) => ({
+  "0%": { transform: `translateX(${spatial(`${GLITCH_DX} * ${-sign}`)})`, "clip-path": "inset(0 0 55% 0)" },
+  "25%": { transform: `translateX(${spatial(`${GLITCH_DX} * ${sign}`)})`, "clip-path": "inset(40% 0 20% 0)" },
+  "50%": { transform: `translateX(${spatial(`${GLITCH_DX} * ${-sign / 2}`)})`, "clip-path": "inset(0 0 0 0)" },
+  "75%": { transform: `translateX(${spatial(`${GLITCH_DX} * ${sign / 2}`)})`, "clip-path": "inset(65% 0 0 0)" },
+  "100%": { transform: "none", "clip-path": "inset(0 0 0 0)" },
+});
+const glitchFade = { "0%": { opacity: spatial("1") }, "100%": { opacity: "0" } };
+const MASKS = { 25: "var(--motion-fx-mask-25)", 50: "var(--motion-fx-mask-50)", 75: "var(--motion-fx-mask-75)", none: "none" };
 const MOTION_KEYFRAMES = {
   "@keyframes yorha-stagger-in": {
     from: { opacity: "0", translate: `0 ${spatial("var(--motion-shift)")}` },
   },
+  // Dissolve: the mask steps through the dither levels; the fade is its own set (clip/mask and opacity never share one).
+  "@keyframes yorha-dissolve-mask-in": { "0%": { "mask-image": MASKS[25] }, "20%": { "mask-image": MASKS[50] }, "40%": { "mask-image": MASKS[75] }, "60%, 100%": { "mask-image": MASKS.none } },
+  "@keyframes yorha-dissolve-mask-out": { "0%": { "mask-image": MASKS.none }, "20%": { "mask-image": MASKS[75] }, "40%": { "mask-image": MASKS[50] }, "60%, 100%": { "mask-image": MASKS[25] } },
+  "@keyframes yorha-dissolve-fade-in": { from: { opacity: "0" }, to: { opacity: "1" } },
+  "@keyframes yorha-dissolve-fade-out": { from: { opacity: "1" }, to: { opacity: "0" } },
+  "@keyframes yorha-glitch-core": { "0%": { opacity: "0.35" }, "100%": { opacity: "1" } },
+  "@keyframes yorha-glitch-a-move": glitchMove(1),
+  "@keyframes yorha-glitch-b-move": glitchMove(-1),
+  "@keyframes yorha-glitch-a-fade": glitchFade,
+  "@keyframes yorha-glitch-b-fade": glitchFade,
+  "@keyframes yorha-flicker": { "0%": { opacity: "0.25" }, "20%": { opacity: "1" }, "40%": { opacity: "calc(1 - 0.55 * var(--motion-spatial))" }, "60%, 100%": { opacity: "1" } },
+  "@keyframes yorha-caret-blink": { "50%": { opacity: "0" } },
+  "@keyframes yorha-stream-clip": { from: { "clip-path": "inset(0 calc(100% * var(--motion-spatial)) 0 0)" }, to: { "clip-path": "inset(0)" } },
+  "@keyframes yorha-stream-fade": { from: { opacity: "0" }, to: { opacity: "1" } },
+  // Route entry: a stepped scan, its own opacity set. Reduced: the clip duration is 0, the fade stays.
+  "@keyframes yorha-route-scan-forward": { from: { "clip-path": "inset(0 0 calc(100% * var(--motion-spatial)) 0)" }, to: { "clip-path": "inset(0)" } },
+  "@keyframes yorha-route-scan-back": { from: { "clip-path": "inset(calc(100% * var(--motion-spatial)) 0 0 0)" }, to: { "clip-path": "inset(0)" } },
+  "@keyframes yorha-route-fade-in": { from: { opacity: "0" }, to: { opacity: "1" } },
+  "@keyframes yorha-route-fade-out": { from: { opacity: "1" }, to: { opacity: "0" } },
 };
+// Route-transition overrides (V4-010). Unlayered with the item's own selectors plus :root, so they win over its shorthand rules.
+// Root pseudos: without `animation: none` the UA's 250ms crossfade of the whole page still runs in off mode.
+const ROUTE_ENTER = (name) => ({
+  "animation-name": `${name}, yorha-route-fade-in`,
+  "animation-duration": "var(--motion-route), max(calc(var(--motion-route) / 4), var(--motion-reduced-fade))",
+  "animation-timing-function": "var(--yorha-step-scan), linear",
+  "animation-fill-mode": "backwards",
+});
+const ROUTE_EXIT = { "animation-name": "yorha-route-fade-out", "animation-duration": fade("route-exit"), "animation-timing-function": "linear", "animation-fill-mode": "both" };
+const ROUTE_SCAN = {
+  ":root::view-transition-new(.yorha-route-forward)": ROUTE_ENTER("yorha-route-scan-forward"),
+  ":root::view-transition-new(.yorha-route-back)": ROUTE_ENTER("yorha-route-scan-back"),
+  ":root::view-transition-new(.yorha-route-replace)": { "animation-name": "yorha-route-fade-in", "animation-duration": fade("route"), "animation-timing-function": "linear", "animation-fill-mode": "both" },
+  ":root::view-transition-old(.yorha-route-exit), html[data-route-direction=forward]:root::view-transition-old(.yorha-route-exit), html[data-route-direction=back]:root::view-transition-old(.yorha-route-exit)": ROUTE_EXIT,
+  ":root::view-transition-group(root), :root::view-transition-old(root), :root::view-transition-new(root)": { animation: "none" },
+};
+
+/* ------------------------------------------------------------ pixel tiles */
+
+// Bayer 4x4 ordered dither, 2px cells, 8x8px tile. Pure: no import from ui/glyph. SVG with crispEdges so DPR 2 keeps hard 2px cells.
+const BAYER = [[0, 8, 2, 10], [12, 4, 14, 6], [3, 11, 1, 9], [15, 7, 13, 5]];
+const svgTile = (size, rects) => `url("data:image/svg+xml,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='${size}' height='${size}' viewBox='0 0 ${size} ${size}' shape-rendering='crispEdges'>${rects}</svg>`)}")`;
+function ditherTile(cells) {
+  const rects = BAYER.flatMap((row, y) => row.flatMap((threshold, x) => (threshold < cells ? [`<rect x='${x * 2}' y='${y * 2}' width='2' height='2'/>`] : []))).join("");
+  return svgTile(8, rects);
+}
+export const PIXEL_VARS = {
+  "yorha-dither-12": ditherTile(2),
+  "yorha-dither-25": ditherTile(4),
+  "yorha-dither-50": ditherTile(8),
+  "yorha-dither-75": ditherTile(12),
+  "yorha-dots": svgTile(4, "<rect x='0' y='0' width='2' height='2'/>"),
+  "yorha-dot": "2px",
+  "yorha-dot-pitch": "4px",
+};
+/** Mask layer for an aria-hidden decoration under content. Forced colours: system ground, the light levels are dropped. */
+const maskLayer = (image, size, { light = false } = {}) => ({
+  "background-color": "currentColor",
+  "mask-image": `var(--${image})`,
+  "-webkit-mask-image": `var(--${image})`,
+  "mask-size": `${size} ${size}`,
+  "-webkit-mask-size": `${size} ${size}`,
+  "mask-repeat": "repeat",
+  "-webkit-mask-repeat": "repeat",
+  "pointer-events": "none",
+  "@media (forced-colors: active)": { "forced-color-adjust": "none", "background-color": "CanvasText", ...(light ? { display: "none" } : {}) },
+});
 /* ---------------------------------------------------------- state recipes */
 
 const IDLE = ":disabled, [data-disabled], [aria-disabled=\"true\"]";
@@ -402,6 +560,12 @@ const SCROLL_CUE_X = {
   "background-attachment": "local, local, scroll, scroll",
 };
 
+const SCROLL_CUE_Y = {
+  ...SCROLL_CUE_X,
+  "background-position": "center top, center bottom, center top, center bottom",
+  "background-size": "100% 1px, 100% 1px, 100% 1px, 100% 1px",
+};
+
 const MOTION_UTILITIES = Object.keys(MOTION_CSS).map((key) => key.slice("@utility ".length));
 
 /* ----------------------------------------------------------------- model */
@@ -502,7 +666,7 @@ function buildModel(tokens) {
   const css = {};
   for (const { pkg, files } of FONTS) for (const file of files) css[`@import "${pkg}/${file}"`] = {};
   css[`@custom-variant dark (${DARK_VARIANT})`] = {};
-  css[":root"] = { "color-scheme": scheme(theme.default), ...dashed(rootVars) };
+  css[":root"] = { "color-scheme": scheme(theme.default), ...dashed(rootVars), ...dashed(PIXEL_VARS) };
   css[".dark"] = { "color-scheme": "dark" };
   for (const context of themeNames) {
     css[`[data-theme=${context}]`] = {
@@ -526,6 +690,10 @@ function buildModel(tokens) {
   css["@utility yorha-surface"] = SURFACE;
   css["@utility yorha-scroll"] = SCROLL;
   css["@utility yorha-scroll-cue-x"] = SCROLL_CUE_X;
+  css["@utility yorha-scroll-cue-y"] = SCROLL_CUE_Y;
+  for (const [level, light] of [[12, true], [25, true], [50, false], [75, false]]) css[`@utility yorha-dither-${level}`] = maskLayer(`yorha-dither-${level}`, "8px", { light });
+  css["@utility yorha-dots"] = maskLayer("yorha-dots", "4px");
+  css["@utility yorha-rail"] = { "inline-size": "2px", ...maskLayer("yorha-dots", "4px") };
   css["@utility yorha-tint"] = TINT;
   css["@utility yorha-disabled"] = DISABLED;
   css["@utility yorha-readonly"] = READONLY;
@@ -564,6 +732,7 @@ function buildModel(tokens) {
     ".stroke-yorha-alert-ui": { "forced-color-adjust": "none", stroke: "CanvasText" },
     ".stroke-yorha-ring": { "forced-color-adjust": "none", stroke: "Highlight" },
   };
+  Object.assign(css, ROUTE_SCAN);
   // Row anatomy: the indicator slot exists only in popups that contain check, radio or option rows (no bullet on plain action rows).
   // Unlayered on purpose: the slot is a `grid` utility, which would beat a base-layer `display: none`.
   css["[data-slot$=-content]:not(:has([role=menuitemcheckbox], [role=menuitemradio], [role=option])) [data-slot=row-indicator]"] = { display: "none" };

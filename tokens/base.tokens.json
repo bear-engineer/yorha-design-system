@@ -540,10 +540,10 @@
       },
       "panel": {
         "$value": {
-          "value": 400,
+          "value": 280,
           "unit": "ms"
         },
-        "$description": "Panel / dialog enter."
+        "$description": "Panel / dialog enter (equals modal: one \"surface arrives\" time)."
       },
       "panel-exit": {
         "$value": {
@@ -663,6 +663,34 @@
           "unit": "ms"
         },
         "$description": "Drawer exit, scaled by the swipe strength."
+      },
+      "glitch": {
+        "$value": {
+          "value": 240,
+          "unit": "ms"
+        },
+        "$description": "RGB channel-split burst on one line of display text (yorha-glitch). One burst."
+      },
+      "flicker": {
+        "$value": {
+          "value": 240,
+          "unit": "ms"
+        },
+        "$description": "Opacity-step burst on a non-text mark (yorha-flicker). One burst."
+      },
+      "stream": {
+        "$value": {
+          "value": 320,
+          "unit": "ms"
+        },
+        "$description": "One data row arriving (yorha-stream), stepped reveal."
+      },
+      "caret": {
+        "$value": {
+          "value": 1000,
+          "unit": "ms"
+        },
+        "$description": "Block caret blink period (yorha-caret). Blinks 6 cycles, then solid."
       }
     },
     "easing": {
@@ -711,6 +739,26 @@
           1
         ],
         "$description": "Small popups entering from their anchor (yorha-pop)."
+      },
+      "step-reveal": {
+        "$type": "string",
+        "$value": "steps(4, end)",
+        "$description": "Stepped reveal: popup scan (40ms per step at 160ms), stream, short reveals."
+      },
+      "step-scan": {
+        "$type": "string",
+        "$value": "steps(6, end)",
+        "$description": "Stepped scan: selection wipe (180ms), route entry (200ms)."
+      },
+      "step-loop": {
+        "$type": "string",
+        "$value": "steps(16, end)",
+        "$description": "Stepped travelling loaders."
+      },
+      "step-flip": {
+        "$type": "string",
+        "$value": "steps(1, end)",
+        "$description": "Two-state changes: glitch, flicker, caret, dot chase."
       }
     },
     "reduced-fade": {
@@ -749,6 +797,21 @@
       "$type": "number",
       "$value": 6,
       "$description": "Highest row index that still adds stagger delay; later rows enter together (yorha-stagger)."
+    },
+    "fx-mask-25": {
+      "$type": "string",
+      "$value": "var(--yorha-dither-25)",
+      "$description": "Dither mask level 25 for the dissolve keyframes; none when reduced or off (the dissolve becomes a plain fade)."
+    },
+    "fx-mask-50": {
+      "$type": "string",
+      "$value": "var(--yorha-dither-50)",
+      "$description": "Dither mask level 50 for the dissolve keyframes; none when reduced or off (the dissolve becomes a plain fade)."
+    },
+    "fx-mask-75": {
+      "$type": "string",
+      "$value": "var(--yorha-dither-75)",
+      "$description": "Dither mask level 75 for the dissolve keyframes; none when reduced or off (the dissolve becomes a plain fade)."
     }
   },
   "z": {

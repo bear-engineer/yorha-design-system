@@ -1,5 +1,6 @@
 import { Meta } from "@storybook/addon-docs/blocks";
 import { tokens } from "./tokens.generated";
+import { MotionEffects } from "./MotionEffects";
 
 <Meta title="파운데이션/Motion" />
 
@@ -43,7 +44,7 @@ import { tokens } from "./tokens.generated";
     <tr><th>클래스</th><th>동작</th><th>토큰</th><th>언제 쓰는가</th><th>예시</th></tr>
   </thead>
   <tbody>
-    <tr><td><code>yorha-pop</code></td><td>기준점(<code>--transform-origin</code>)에서 배율 0.96 → 1, 불투명도 0 → 1</td><td><code>--motion-popover</code> / <code>--motion-popover-exit</code>, <code>ease-yorha-decelerate</code>(이탈 <code>ease-yorha</code>)</td><td>기준 요소에 붙는 작은 팝업: 팝오버, 툴팁, 메뉴, 셀렉트, 콤보박스, 미리보기 카드</td><td><code>{'<Popover.Popup className="yorha-pop" />'}</code></td></tr>
+    <tr><td><code>yorha-pop</code></td><td>기준 요소 쪽 가장자리가 닫힌 상태에서 4단계(<code>steps(4)</code>)로 열리는 클립 스캔 + 불투명도. 팝업은 앵커에서 멀어지는 방향으로 자랍니다(<code>data-side</code> top·bottom·left·right·inline-start·inline-end, RTL 반전). 휴지 상태의 클립은 음수 inset이라 화살표·포커스 링·그림자를 자르지 않습니다. 이탈은 불투명도만</td><td><code>--motion-popover</code> / <code>--motion-popover-exit</code>, <code>ease-yorha-step-reveal</code></td><td>기준 요소에 붙는 작은 팝업(320×400 CSS px 이하): 팝오버, 메뉴, 셀렉트, 콤보박스, 미리보기 카드. 툴팁은 <code>yorha-fade</code></td><td><code>{'<Popover.Popup className="yorha-pop" />'}</code></td></tr>
     <tr><td><code>yorha-panel</code></td><td>아래 0.5rem에서 올라오며 불투명도 0 → 1</td><td><code>--motion-panel</code> / <code>--motion-panel-exit</code>, <code>ease-yorha-out</code></td><td>화면 가운데 뜨는 큰 면: 다이얼로그, 경고 다이얼로그</td><td><code>{'<Dialog.Popup className="yorha-panel" />'}</code></td></tr>
     <tr><td><code>yorha-fade</code></td><td>불투명도만 0 → 1</td><td><code>--motion-panel</code> / <code>--motion-panel-exit</code>, <code>ease-yorha-out</code></td><td>움직이지 않는 면: 백드롭(스크림)</td><td><code>{'<Dialog.Backdrop className="yorha-fade" />'}</code></td></tr>
     <tr><td><code>yorha-slide-up</code></td><td>아래 가장자리에서 위로 밀려 들어옴(자기 높이만큼). 스와이프 중에는 손가락을 따라감</td><td><code>--motion-drawer</code> / <code>--motion-drawer-exit</code>, <code>ease-yorha-emphasized</code>(이탈 <code>ease-yorha</code>)</td><td>하단 시트(<code>swipeDirection="down"</code>)</td><td><code>{'<Drawer.Popup className="yorha-slide-up" />'}</code></td></tr>
@@ -51,9 +52,14 @@ import { tokens } from "./tokens.generated";
     <tr><td><code>yorha-slide-left</code></td><td>오른쪽 가장자리에서 왼쪽으로 밀려 들어옴</td><td><code>--motion-drawer</code> / <code>--motion-drawer-exit</code>, <code>ease-yorha-emphasized</code>(이탈 <code>ease-yorha</code>)</td><td>오른쪽 드로어(<code>swipeDirection="right"</code>), 오른쪽에서 나오는 토스트</td><td><code>{'<Drawer.Popup className="yorha-slide-left" />'}</code></td></tr>
     <tr><td><code>yorha-slide-right</code></td><td>왼쪽 가장자리에서 오른쪽으로 밀려 들어옴</td><td><code>--motion-drawer</code> / <code>--motion-drawer-exit</code>, <code>ease-yorha-emphasized</code>(이탈 <code>ease-yorha</code>)</td><td>왼쪽 드로어, 모바일 내비게이션(<code>swipeDirection="left"</code>)</td><td><code>{'<Drawer.Popup className="yorha-slide-right" />'}</code></td></tr>
     <tr><td><code>yorha-collapse</code></td><td>높이 0 ↔ 패널 높이(<code>--collapsible-panel-height</code>, 아코디언은 <code>--accordion-panel-height</code>), 불투명도 0 ↔ 1. <code>overflow: hidden</code> 포함</td><td><code>--motion-collapse</code> / <code>--motion-select</code>(이탈), <code>ease-yorha-emphasized</code></td><td>접히는 영역: 아코디언 패널, 콜랩서블 패널</td><td><code>{'<Accordion.Panel className="yorha-collapse" />'}</code></td></tr>
-    <tr><td><code>yorha-wipe</code></td><td>잉크 면이 왼쪽에서 오른쪽으로 차오르며(<code>background-size</code> 0% → 100%) 글자색이 반전됨. 선택·하이라이트·열림·호버 상태에서 진입, 해제되면 이탈</td><td>진입 <code>--motion-select</code> / 이탈 <code>--motion-select-exit</code>(<code>--yorha-wipe-exit</code>로 바꿈), 글자색 <code>--motion-press</code>(<code>--motion-select</code>의 35% 뒤 시작), <code>ease-yorha-out</code></td><td>선택 행: 메뉴·셀렉트·콤보박스·자동완성 항목, 라디오 그룹, 내비 링크, 메뉴바, 아코디언 헤더</td><td><code>{'<Menu.Item className="yorha-wipe bg-[length:0%_100%] data-[highlighted]:bg-[length:100%_100%]" />'}</code></td></tr>
+    <tr><td><code>yorha-wipe</code></td><td>잉크 면이 왼쪽에서 오른쪽으로 6단계(<code>ease-yorha-step-scan</code>)로 차오르며(<code>background-size</code> 0% → 100%) 글자색이 반전됨. 선택·하이라이트·열림·호버 상태에서 진입, 해제되면 이탈</td><td>진입 <code>--motion-select</code> / 이탈 <code>--motion-select-exit</code>(<code>--yorha-wipe-exit</code>로 바꿈), 글자색 <code>--motion-press</code>(<code>--motion-select</code>의 35% 뒤 시작), <code>ease-yorha-out</code></td><td>선택 행: 메뉴·셀렉트·콤보박스·자동완성 항목, 라디오 그룹, 내비 링크, 메뉴바, 아코디언 헤더</td><td><code>{'<Menu.Item className="yorha-wipe bg-[length:0%_100%] data-[highlighted]:bg-[length:100%_100%]" />'}</code></td></tr>
     <tr><td><code>yorha-press</code></td><td>누르는 동안(<code>:active</code>) 배율 0.97. 색·배경·테두리·선택 와이프 전환도 함께 정의</td><td><code>--motion-press</code>(배율·글자색, 글자색은 <code>--motion-select</code>의 35% 뒤 시작), <code>--motion-select</code>(배경·테두리), <code>ease-yorha-out</code></td><td>단독 버튼, 토글, 칩. 비활성·로딩(<code>data-loading</code>, <code>aria-busy</code>)에서는 배율이 없음. 그룹 안 항목·행·셀·탭은 배율 대신 색조 전환</td><td><code>{'<button className="yorha-press" />'}</code></td></tr>
     <tr><td><code>yorha-stagger</code></td><td>마운트될 때 아래 0.5rem에서 올라오며 나타남. 지연 = <code>--motion-stagger</code> × <code>--yorha-stagger-index</code>(6까지)</td><td><code>--motion-stagger-enter</code>, <code>--motion-stagger</code>, <code>ease-yorha-out</code></td><td>목록 행·벤토 타일의 순차 진입</td><td><code>{'<li className="yorha-stagger" style={{ "--yorha-stagger-index": index }} />'}</code></td></tr>
+    <tr><td><code>yorha-dissolve</code></td><td>다이얼로그가 2px 베이어 디더 마스크(25 → 50 → 75% → 없음)로 나타나고 반대로 사라짐. 마스크와 불투명도는 별개의 애니메이션 두 개. <code>data-open</code> / <code>data-closed</code>(또는 <code>data-run=in|out</code>)에서 재생</td><td><code>--motion-modal</code> / <code>--motion-modal-exit</code>, <code>--motion-fx-mask-25/50/75</code>, <code>ease-yorha-step-flip</code></td><td>다이얼로그·경고 다이얼로그 팝업만. 스크림, 드로어, 팝업, 목록에는 쓰지 않음</td><td><code>{'<Dialog.Popup className="yorha-dissolve" />'}</code></td></tr>
+    <tr><td><code>yorha-glitch</code></td><td>두 색 채널이 ±3px 어긋나며 줄 단위로 잘린 뒤 돌아오는 한 번의 버스트. 본문은 한 번 어두워졌다 돌아옴. <code>data-text</code>(= 본문)와 <code>data-run</code> 필요. 강제 색상 모드에서는 채널 레이어를 숨김</td><td><code>--motion-glitch</code>, <code>--yorha-glitch-a</code> / <code>-b</code>, <code>ease-yorha-step-flip</code></td><td>시스템 오류를 알리는 한 줄의 표시용 텍스트(부트 로그 FAIL, 오류·404 제목). 컨트롤, 호버, 입력, 본문, 값, 사용자가 읽고 행동해야 하는 제목에는 쓰지 않음</td><td><code>{'<h2 className="yorha-glitch" data-text="SYSTEM FAULT" data-run="">SYSTEM FAULT</h2>'}</code></td></tr>
+    <tr><td><code>yorha-flicker</code></td><td>불투명도가 .25 → 1 → .45 → 1로 두 번 떨리는 신호 불안정 표시. 크기·테두리·레이아웃은 그대로. <code>data-run</code>에서 재생</td><td><code>--motion-flicker</code>, <code>ease-yorha-step-flip</code></td><td>자기 박스가 있는 비텍스트 표식(오류 아이콘 상자, 경고 규칙선). 텍스트에는 쓰지 않음</td><td><code>{'<span className="yorha-flicker" data-run="" />'}</code></td></tr>
+    <tr><td><code>yorha-caret</code></td><td>입력 대기를 알리는 블록 커서(정수 px 상자). <code>data-blink</code>이면 1Hz로 6번 깜박인 뒤 켜진 채 멈춤. 없으면 항상 켜짐</td><td><code>--motion-caret</code>, <code>ease-yorha-step-flip</code></td><td>Typer, 부트 로그처럼 전용 <code>aria-hidden</code> span. 네이티브 입력에는 쓰지 않음</td><td><code>{'<span className="yorha-caret" data-blink="" aria-hidden="true" />'}</code></td></tr>
+    <tr><td><code>yorha-stream</code></td><td>데이터가 도착한 행이 인라인 시작 쪽에서 4단계로 열리며 나타남. 클립과 불투명도는 별개의 애니메이션. 지연 = <code>--motion-stagger</code> × <code>--yorha-stagger-index</code>(6까지)</td><td><code>--motion-stream</code>, <code>--motion-stagger</code>, <code>ease-yorha-step-reveal</code></td><td>메뉴 목록 행, 타임라인 항목. 스크롤·가상화·리사이즈, 지연이 붙는 7행 초과에는 쓰지 않음</td><td><code>{'<li className="yorha-stream" style={{ "--yorha-stagger-index": index }} />'}</code></td></tr>
   </tbody>
 </table>
 
@@ -67,6 +73,63 @@ import { tokens } from "./tokens.generated";
 - `yorha-slide-*`는 Base UI Drawer의 `--drawer-swipe-movement-x/y`, `--drawer-snap-point-offset`, `--drawer-swipe-strength`, `data-swiping`을 읽습니다. Drawer가 아닌 요소에서는 이 값들이 없으므로 영향이 없습니다.
 - `yorha-stagger`는 CSS 애니메이션이라 Base UI 속성 없이 마운트 시 한 번 재생됩니다. 인덱스를 주지 않으면 지연 없이 나타납니다.
 - 유틸리티가 없는 전환(탭 표시선, 라우트 전환, 공유 요소)은 토큰을 직접 씁니다: `transition-[left,width] duration-(--motion-tab-indicator) ease-yorha-emphasized`. `reduced`에서 페이드를 남기려면 불투명도에만 `max(var(--motion-route), var(--motion-reduced-fade))`를 쓰고 이동 거리에 `var(--motion-spatial)`을 곱합니다.
+
+## 효과 어휘 (v4)
+
+원칙: **단계(`steps()`)는 시스템이 상태를 바꿨다는 뜻, 부드러운 곡선은 사용자가 미는 물리적 움직임입니다.** 한 사건에는 효과 하나만 씁니다.
+
+<table>
+  <thead>
+    <tr><th>효과</th><th>의미</th><th>쓰는 곳</th><th>쓰지 않는 곳</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>와이프(<code>yorha-wipe</code>)</td><td>선택·호버 채움</td><td>버튼, 내비 링크, 메뉴바, 아코디언 머리, 라디오 행, 캘린더 날짜</td><td>글리치·플리커와 같은 요소</td></tr>
+    <tr><td>스캔(<code>yorha-pop</code>, 라우트)</td><td>블록이 화면에 그려짐</td><td>팝업 열림, 라우트 진입</td><td>팝업 이탈, 툴팁, 토스트, 드로어</td></tr>
+    <tr><td>디졸브(<code>yorha-dissolve</code>)</td><td>단위가 나타남·사라짐</td><td>다이얼로그, 경고 다이얼로그</td><td>스크림, 드로어, 팝업, 목록</td></tr>
+    <tr><td>스트림(<code>yorha-stream</code>)</td><td>데이터가 도착함</td><td>메뉴 목록 행, 타임라인 항목</td><td>스크롤, 가상화, 7행 초과 지연</td></tr>
+    <tr><td>글리치(<code>yorha-glitch</code>)</td><td>시스템 오류, 시스템이 말함</td><td>한 줄의 표시용 텍스트</td><td>컨트롤, 호버, 입력, 본문, 값, 읽어야 하는 제목, 드래그 오버레이, 반복</td></tr>
+    <tr><td>플리커(<code>yorha-flicker</code>)</td><td>신호 불안정, 주의</td><td>비텍스트 표식</td><td>텍스트, 키 입력마다, 한 요소에서 1000ms 안의 두 번째 버스트</td></tr>
+    <tr><td>캐럿(<code>yorha-caret</code>)</td><td>여기서 입력을 기다림</td><td>Typer, 부트 로그</td><td>네이티브 입력</td></tr>
+    <tr><td>디사이퍼(기존)</td><td>글자가 해독됨</td><td>첫 등장하는 제목·라벨·상태</td><td>본문, 입력, 호버, 매 렌더</td></tr>
+    <tr><td>페이드·슬라이드·접힘·프레스·탭 표시선(부드러움)</td><td>물리적 움직임</td><td>스크림, 툴팁, 드로어, 토스트, 아코디언</td><td>-</td></tr>
+  </tbody>
+</table>
+
+### 금지 목록
+
+글리치·플리커를 컨트롤, 호버·프레스·입력, 본문, 값, 다이얼로그 제목, 드래그 오버레이에 쓰는 것. 한 요소에서 1초에 한 번을 넘는 효과. 스피너·스켈레톤·불확정 진행률·버튼 busy·스위치 pending 밖의 무한 반복. 클립이나 마스크를 불투명도와 한 `@keyframes`에 넣는 것(컴포지터에서 떨어짐). `@keyframes`에서 `text-shadow`, `filter`, `box-shadow`, 레이아웃 속성을 움직이는 것. `.tsx`에 직접 쓴 `steps(...)`, `ms`, `cubic-bezier`(대신 `--yorha-step-*`, `ease-yorha-step-*`, `--motion-*`). `will-change`. `yorha-wipe` / `yorha-press`가 있는 요소에 다른 효과. 스크림의 디졸브, 툴팁의 스캔. 글리프의 `scale`, `rotate`. `pnpm registry:lint`가 앞의 여러 항목을 잡습니다(`fx-keyframes-mix`, `fx-keyframes-props`, `motion`의 `steps(`, `fx-on-control`, `pixel`).
+
+### 깜박임 예산 (WCAG 2.3.1, 2.2.2)
+
+<table>
+  <thead>
+    <tr><th>효과</th><th>한 버스트의 불투명도 반전</th><th>면적</th><th>장치</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>글리치</td><td>1번(.35로 어두워짐)</td><td>한 줄의 텍스트</td><td><code>runFx</code> 잠금 1000ms, 고정 <code>data-run</code>은 한 번만 마운트되는 곳에서만</td></tr>
+    <tr><td>플리커</td><td>2번</td><td>약 24px 이하 표식 또는 1–2px 규칙선</td><td>요소마다 1000ms 잠금</td></tr>
+    <tr><td>스캔·디졸브·스트림·와이프</td><td>0(단조)</td><td>팝업·다이얼로그·행</td><td>-</td></tr>
+    <tr><td>캐럿</td><td>1Hz</td><td>한 칸</td><td>6번 깜박인 뒤 켜진 채 멈춤</td></tr>
+    <tr><td>로더</td><td>점마다 1200ms에 최대 2번 전환</td><td>12px 상자 / 2px 막대</td><td>로딩이 끝나면 멈춤</td></tr>
+  </tbody>
+</table>
+
+### 모드별 동작
+
+- `reduced`: 불투명도만. 클립·마스크·이동·단계 이징 없음(스텝 이징 토큰은 `linear`, 마스크 토큰은 `none`). 120ms 이하의 단조 페이드만 남고, 캐럿은 켜진 채, 글리치 레이어는 보이지 않습니다.
+- `off`: 아무것도 움직이지 않습니다. 모든 지속 시간 토큰이 0이고 `data-run`은 `runFx`가 바로 지웁니다.
+- 강제 색상: 글리치 채널 레이어는 `display: none`, 캐럿·디더·점은 `CanvasText`, 디졸브는 알파 마스크라 그대로 동작합니다.
+- 휴지 상태는 v3와 같습니다. 어떤 효과도 클립·마스크·변형·불투명도를 남기지 않고, 어떤 박스도 바꾸지 않습니다.
+
+### 일회성 효과 재생(`data-run`)
+
+`yorha-glitch`, `yorha-flicker`는 호스트에 `data-run`이 있는 동안에만 재생됩니다. 마운트될 때 한 번이면 `data-run=""`을 JSX에 고정하고, 마운트된 요소를 다시 재생할 때는 `runFx(el)`(`lib/utils/fx.ts`)를 부릅니다. `runFx`는 같은 요소에서 마지막 실행 후 1000ms가 지나지 않았으면 아무것도 하지 않고 `false`를 돌려줍니다(이 하한은 낮출 수 없음).
+
+## 라이브 데모
+
+세 모드를 나란히 보여 줍니다. 버튼으로 다시 재생합니다(1초 잠금). 라우트 스캔은 페이지 전환이 필요해 RouteTransition 스토리에서 봅니다.
+
+<MotionEffects />
 
 ## 상호작용별 레시피
 

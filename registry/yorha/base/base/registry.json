@@ -95,6 +95,10 @@
           "ease-yorha-in": "var(--yorha-ease-in)",
           "ease-yorha-emphasized": "var(--yorha-ease-emphasized)",
           "ease-yorha-decelerate": "var(--yorha-ease-decelerate)",
+          "ease-yorha-step-reveal": "var(--yorha-step-reveal)",
+          "ease-yorha-step-scan": "var(--yorha-step-scan)",
+          "ease-yorha-step-loop": "var(--yorha-step-loop)",
+          "ease-yorha-step-flip": "var(--yorha-step-flip)",
           "leading-yorha-body": "var(--yorha-leading-body)"
         },
         "light": {
@@ -229,8 +233,8 @@
           "--motion-select": "180ms",
           "--yorha-motion-select-exit": "120ms",
           "--motion-select-exit": "120ms",
-          "--yorha-motion-panel": "400ms",
-          "--motion-panel": "400ms",
+          "--yorha-motion-panel": "280ms",
+          "--motion-panel": "280ms",
           "--yorha-motion-panel-exit": "240ms",
           "--motion-panel-exit": "240ms",
           "--yorha-motion-stagger": "40ms",
@@ -265,11 +269,23 @@
           "--motion-modal-exit": "200ms",
           "--yorha-motion-drawer-exit": "280ms",
           "--motion-drawer-exit": "280ms",
+          "--yorha-motion-glitch": "240ms",
+          "--motion-glitch": "240ms",
+          "--yorha-motion-flicker": "240ms",
+          "--motion-flicker": "240ms",
+          "--yorha-motion-stream": "320ms",
+          "--motion-stream": "320ms",
+          "--yorha-motion-caret": "1000ms",
+          "--motion-caret": "1000ms",
           "--yorha-ease": "cubic-bezier(0.2, 0, 0, 1)",
           "--yorha-ease-out": "cubic-bezier(0.16, 1, 0.3, 1)",
           "--yorha-ease-in": "cubic-bezier(0.4, 0, 1, 1)",
           "--yorha-ease-emphasized": "cubic-bezier(0.32, 0.72, 0, 1)",
           "--yorha-ease-decelerate": "cubic-bezier(0, 0, 0.2, 1)",
+          "--yorha-step-reveal": "steps(4, end)",
+          "--yorha-step-scan": "steps(6, end)",
+          "--yorha-step-loop": "steps(16, end)",
+          "--yorha-step-flip": "steps(1, end)",
           "--yorha-motion-reduced-fade": "0ms",
           "--motion-reduced-fade": "0ms",
           "--yorha-motion-spatial": "1",
@@ -282,6 +298,12 @@
           "--motion-shift": "0.5rem",
           "--yorha-motion-stagger-max": "6",
           "--motion-stagger-max": "6",
+          "--yorha-motion-fx-mask-25": "var(--yorha-dither-25)",
+          "--motion-fx-mask-25": "var(--yorha-dither-25)",
+          "--yorha-motion-fx-mask-50": "var(--yorha-dither-50)",
+          "--motion-fx-mask-50": "var(--yorha-dither-50)",
+          "--yorha-motion-fx-mask-75": "var(--yorha-dither-75)",
+          "--motion-fx-mask-75": "var(--yorha-dither-75)",
           "--yorha-z-base": "0",
           "--yorha-z-decor": "-1",
           "--yorha-z-raised": "10",
@@ -290,7 +312,14 @@
           "--yorha-z-modal": "1100",
           "--yorha-z-popover": "1200",
           "--yorha-z-toast": "1300",
-          "--yorha-z-tooltip": "1400"
+          "--yorha-z-tooltip": "1400",
+          "--yorha-dither-12": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'8'%20height%3D'8'%20viewBox%3D'0%200%208%208'%20shape-rendering%3D'crispEdges'%3E%3Crect%20x%3D'0'%20y%3D'0'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'4'%20y%3D'4'%20width%3D'2'%20height%3D'2'%2F%3E%3C%2Fsvg%3E\")",
+          "--yorha-dither-25": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'8'%20height%3D'8'%20viewBox%3D'0%200%208%208'%20shape-rendering%3D'crispEdges'%3E%3Crect%20x%3D'0'%20y%3D'0'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'4'%20y%3D'0'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'0'%20y%3D'4'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'4'%20y%3D'4'%20width%3D'2'%20height%3D'2'%2F%3E%3C%2Fsvg%3E\")",
+          "--yorha-dither-50": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'8'%20height%3D'8'%20viewBox%3D'0%200%208%208'%20shape-rendering%3D'crispEdges'%3E%3Crect%20x%3D'0'%20y%3D'0'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'4'%20y%3D'0'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'2'%20y%3D'2'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'6'%20y%3D'2'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'0'%20y%3D'4'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'4'%20y%3D'4'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'2'%20y%3D'6'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'6'%20y%3D'6'%20width%3D'2'%20height%3D'2'%2F%3E%3C%2Fsvg%3E\")",
+          "--yorha-dither-75": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'8'%20height%3D'8'%20viewBox%3D'0%200%208%208'%20shape-rendering%3D'crispEdges'%3E%3Crect%20x%3D'0'%20y%3D'0'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'2'%20y%3D'0'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'4'%20y%3D'0'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'6'%20y%3D'0'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'2'%20y%3D'2'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'6'%20y%3D'2'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'0'%20y%3D'4'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'2'%20y%3D'4'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'4'%20y%3D'4'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'6'%20y%3D'4'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'2'%20y%3D'6'%20width%3D'2'%20height%3D'2'%2F%3E%3Crect%20x%3D'6'%20y%3D'6'%20width%3D'2'%20height%3D'2'%2F%3E%3C%2Fsvg%3E\")",
+          "--yorha-dots": "url(\"data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'4'%20height%3D'4'%20viewBox%3D'0%200%204%204'%20shape-rendering%3D'crispEdges'%3E%3Crect%20x%3D'0'%20y%3D'0'%20width%3D'2'%20height%3D'2'%2F%3E%3C%2Fsvg%3E\")",
+          "--yorha-dot": "2px",
+          "--yorha-dot-pitch": "4px"
         },
         ".dark": {
           "color-scheme": "dark"
@@ -512,10 +541,28 @@
             "--motion-modal-exit": "0ms",
             "--yorha-motion-drawer-exit": "0ms",
             "--motion-drawer-exit": "0ms",
+            "--yorha-motion-glitch": "0ms",
+            "--motion-glitch": "0ms",
+            "--yorha-motion-flicker": "0ms",
+            "--motion-flicker": "0ms",
+            "--yorha-motion-stream": "0ms",
+            "--motion-stream": "0ms",
+            "--yorha-motion-caret": "0ms",
+            "--motion-caret": "0ms",
+            "--yorha-step-reveal": "linear",
+            "--yorha-step-scan": "linear",
+            "--yorha-step-loop": "linear",
+            "--yorha-step-flip": "linear",
             "--yorha-motion-reduced-fade": "120ms",
             "--motion-reduced-fade": "120ms",
             "--yorha-motion-spatial": "0",
-            "--motion-spatial": "0"
+            "--motion-spatial": "0",
+            "--yorha-motion-fx-mask-25": "none",
+            "--motion-fx-mask-25": "none",
+            "--yorha-motion-fx-mask-50": "none",
+            "--motion-fx-mask-50": "none",
+            "--yorha-motion-fx-mask-75": "none",
+            "--motion-fx-mask-75": "none"
           }
         },
         "[data-motion=full]": {
@@ -523,8 +570,8 @@
           "--motion-select": "180ms",
           "--yorha-motion-select-exit": "120ms",
           "--motion-select-exit": "120ms",
-          "--yorha-motion-panel": "400ms",
-          "--motion-panel": "400ms",
+          "--yorha-motion-panel": "280ms",
+          "--motion-panel": "280ms",
           "--yorha-motion-panel-exit": "240ms",
           "--motion-panel-exit": "240ms",
           "--yorha-motion-stagger": "40ms",
@@ -559,10 +606,28 @@
           "--motion-modal-exit": "200ms",
           "--yorha-motion-drawer-exit": "280ms",
           "--motion-drawer-exit": "280ms",
+          "--yorha-motion-glitch": "240ms",
+          "--motion-glitch": "240ms",
+          "--yorha-motion-flicker": "240ms",
+          "--motion-flicker": "240ms",
+          "--yorha-motion-stream": "320ms",
+          "--motion-stream": "320ms",
+          "--yorha-motion-caret": "1000ms",
+          "--motion-caret": "1000ms",
+          "--yorha-step-reveal": "steps(4, end)",
+          "--yorha-step-scan": "steps(6, end)",
+          "--yorha-step-loop": "steps(16, end)",
+          "--yorha-step-flip": "steps(1, end)",
           "--yorha-motion-reduced-fade": "0ms",
           "--motion-reduced-fade": "0ms",
           "--yorha-motion-spatial": "1",
-          "--motion-spatial": "1"
+          "--motion-spatial": "1",
+          "--yorha-motion-fx-mask-25": "var(--yorha-dither-25)",
+          "--motion-fx-mask-25": "var(--yorha-dither-25)",
+          "--yorha-motion-fx-mask-50": "var(--yorha-dither-50)",
+          "--motion-fx-mask-50": "var(--yorha-dither-50)",
+          "--yorha-motion-fx-mask-75": "var(--yorha-dither-75)",
+          "--motion-fx-mask-75": "var(--yorha-dither-75)"
         },
         "[data-motion=reduced]": {
           "--yorha-motion-select": "0ms",
@@ -605,10 +670,28 @@
           "--motion-modal-exit": "0ms",
           "--yorha-motion-drawer-exit": "0ms",
           "--motion-drawer-exit": "0ms",
+          "--yorha-motion-glitch": "0ms",
+          "--motion-glitch": "0ms",
+          "--yorha-motion-flicker": "0ms",
+          "--motion-flicker": "0ms",
+          "--yorha-motion-stream": "0ms",
+          "--motion-stream": "0ms",
+          "--yorha-motion-caret": "0ms",
+          "--motion-caret": "0ms",
+          "--yorha-step-reveal": "linear",
+          "--yorha-step-scan": "linear",
+          "--yorha-step-loop": "linear",
+          "--yorha-step-flip": "linear",
           "--yorha-motion-reduced-fade": "120ms",
           "--motion-reduced-fade": "120ms",
           "--yorha-motion-spatial": "0",
-          "--motion-spatial": "0"
+          "--motion-spatial": "0",
+          "--yorha-motion-fx-mask-25": "none",
+          "--motion-fx-mask-25": "none",
+          "--yorha-motion-fx-mask-50": "none",
+          "--motion-fx-mask-50": "none",
+          "--yorha-motion-fx-mask-75": "none",
+          "--motion-fx-mask-75": "none"
         },
         "[data-motion=off]": {
           "--yorha-motion-select": "0ms",
@@ -651,10 +734,28 @@
           "--motion-modal-exit": "0ms",
           "--yorha-motion-drawer-exit": "0ms",
           "--motion-drawer-exit": "0ms",
+          "--yorha-motion-glitch": "0ms",
+          "--motion-glitch": "0ms",
+          "--yorha-motion-flicker": "0ms",
+          "--motion-flicker": "0ms",
+          "--yorha-motion-stream": "0ms",
+          "--motion-stream": "0ms",
+          "--yorha-motion-caret": "0ms",
+          "--motion-caret": "0ms",
+          "--yorha-step-reveal": "linear",
+          "--yorha-step-scan": "linear",
+          "--yorha-step-loop": "linear",
+          "--yorha-step-flip": "linear",
           "--yorha-motion-reduced-fade": "0ms",
           "--motion-reduced-fade": "0ms",
           "--yorha-motion-spatial": "0",
-          "--motion-spatial": "0"
+          "--motion-spatial": "0",
+          "--yorha-motion-fx-mask-25": "none",
+          "--motion-fx-mask-25": "none",
+          "--yorha-motion-fx-mask-50": "none",
+          "--motion-fx-mask-50": "none",
+          "--yorha-motion-fx-mask-75": "none",
+          "--motion-fx-mask-75": "none"
         },
         "@utility yorha-focus": {
           "outline": "var(--yorha-ring-width) solid var(--yorha-ring)",
@@ -714,6 +815,100 @@
           "background-size": "1px 100%, 1px 100%, 1px 100%, 1px 100%",
           "background-repeat": "no-repeat",
           "background-attachment": "local, local, scroll, scroll"
+        },
+        "@utility yorha-scroll-cue-y": {
+          "background-image": "linear-gradient(var(--yorha-scroll-ground, var(--yorha-bg)), var(--yorha-scroll-ground, var(--yorha-bg))), linear-gradient(var(--yorha-scroll-ground, var(--yorha-bg)), var(--yorha-scroll-ground, var(--yorha-bg))), linear-gradient(var(--yorha-border), var(--yorha-border)), linear-gradient(var(--yorha-border), var(--yorha-border))",
+          "background-position": "center top, center bottom, center top, center bottom",
+          "background-size": "100% 1px, 100% 1px, 100% 1px, 100% 1px",
+          "background-repeat": "no-repeat",
+          "background-attachment": "local, local, scroll, scroll"
+        },
+        "@utility yorha-dither-12": {
+          "background-color": "currentColor",
+          "mask-image": "var(--yorha-dither-12)",
+          "-webkit-mask-image": "var(--yorha-dither-12)",
+          "mask-size": "8px 8px",
+          "-webkit-mask-size": "8px 8px",
+          "mask-repeat": "repeat",
+          "-webkit-mask-repeat": "repeat",
+          "pointer-events": "none",
+          "@media (forced-colors: active)": {
+            "forced-color-adjust": "none",
+            "background-color": "CanvasText",
+            "display": "none"
+          }
+        },
+        "@utility yorha-dither-25": {
+          "background-color": "currentColor",
+          "mask-image": "var(--yorha-dither-25)",
+          "-webkit-mask-image": "var(--yorha-dither-25)",
+          "mask-size": "8px 8px",
+          "-webkit-mask-size": "8px 8px",
+          "mask-repeat": "repeat",
+          "-webkit-mask-repeat": "repeat",
+          "pointer-events": "none",
+          "@media (forced-colors: active)": {
+            "forced-color-adjust": "none",
+            "background-color": "CanvasText",
+            "display": "none"
+          }
+        },
+        "@utility yorha-dither-50": {
+          "background-color": "currentColor",
+          "mask-image": "var(--yorha-dither-50)",
+          "-webkit-mask-image": "var(--yorha-dither-50)",
+          "mask-size": "8px 8px",
+          "-webkit-mask-size": "8px 8px",
+          "mask-repeat": "repeat",
+          "-webkit-mask-repeat": "repeat",
+          "pointer-events": "none",
+          "@media (forced-colors: active)": {
+            "forced-color-adjust": "none",
+            "background-color": "CanvasText"
+          }
+        },
+        "@utility yorha-dither-75": {
+          "background-color": "currentColor",
+          "mask-image": "var(--yorha-dither-75)",
+          "-webkit-mask-image": "var(--yorha-dither-75)",
+          "mask-size": "8px 8px",
+          "-webkit-mask-size": "8px 8px",
+          "mask-repeat": "repeat",
+          "-webkit-mask-repeat": "repeat",
+          "pointer-events": "none",
+          "@media (forced-colors: active)": {
+            "forced-color-adjust": "none",
+            "background-color": "CanvasText"
+          }
+        },
+        "@utility yorha-dots": {
+          "background-color": "currentColor",
+          "mask-image": "var(--yorha-dots)",
+          "-webkit-mask-image": "var(--yorha-dots)",
+          "mask-size": "4px 4px",
+          "-webkit-mask-size": "4px 4px",
+          "mask-repeat": "repeat",
+          "-webkit-mask-repeat": "repeat",
+          "pointer-events": "none",
+          "@media (forced-colors: active)": {
+            "forced-color-adjust": "none",
+            "background-color": "CanvasText"
+          }
+        },
+        "@utility yorha-rail": {
+          "inline-size": "2px",
+          "background-color": "currentColor",
+          "mask-image": "var(--yorha-dots)",
+          "-webkit-mask-image": "var(--yorha-dots)",
+          "mask-size": "4px 4px",
+          "-webkit-mask-size": "4px 4px",
+          "mask-repeat": "repeat",
+          "-webkit-mask-repeat": "repeat",
+          "pointer-events": "none",
+          "@media (forced-colors: active)": {
+            "forced-color-adjust": "none",
+            "background-color": "CanvasText"
+          }
         },
         "@utility yorha-tint": {
           "&:hover:not(:disabled, [data-disabled], [aria-disabled=\"true\"], [data-checked], [data-pressed], [aria-pressed=\"true\"], [data-selected], [aria-selected=\"true\"], [aria-current], [data-highlighted], [data-popup-open], [data-panel-open])": {
@@ -775,17 +970,39 @@
           "word-break": "normal"
         },
         "@utility yorha-pop": {
-          "transform-origin": "var(--transform-origin, center)",
-          "transition-property": "opacity, scale",
-          "transition-duration": "max(var(--motion-popover), var(--motion-reduced-fade))",
-          "transition-timing-function": "var(--yorha-ease-decelerate)",
-          "&[data-starting-style], &[data-ending-style]": {
+          "transition-property": "opacity, clip-path",
+          "transition-duration": "max(calc(var(--motion-popover) / 4), var(--motion-reduced-fade)), max(var(--motion-popover), var(--motion-reduced-fade))",
+          "transition-timing-function": "linear, var(--yorha-step-reveal)",
+          "clip-path": "inset(calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)))",
+          "&[data-starting-style]": {
             "opacity": "0",
-            "scale": "calc(1 - (1 - var(--motion-scale-pop)) * var(--motion-spatial))"
+            "clip-path": "inset(calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(calc(-1 * var(--yorha-pop-bleed, 1rem)) + (100% - calc(-1 * var(--yorha-pop-bleed, 1rem))) * var(--motion-spatial)) calc(-1 * var(--yorha-pop-bleed, 1rem)))"
+          },
+          "&[data-starting-style][data-side=top]": {
+            "clip-path": "inset(calc(calc(-1 * var(--yorha-pop-bleed, 1rem)) + (100% - calc(-1 * var(--yorha-pop-bleed, 1rem))) * var(--motion-spatial)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)))"
+          },
+          "&[data-starting-style][data-side=left]": {
+            "clip-path": "inset(calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(calc(-1 * var(--yorha-pop-bleed, 1rem)) + (100% - calc(-1 * var(--yorha-pop-bleed, 1rem))) * var(--motion-spatial)))"
+          },
+          "&[data-starting-style][data-side=right]": {
+            "clip-path": "inset(calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(calc(-1 * var(--yorha-pop-bleed, 1rem)) + (100% - calc(-1 * var(--yorha-pop-bleed, 1rem))) * var(--motion-spatial)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)))"
+          },
+          "&[data-starting-style][data-side=inline-start]": {
+            "clip-path": "inset(calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(calc(-1 * var(--yorha-pop-bleed, 1rem)) + (100% - calc(-1 * var(--yorha-pop-bleed, 1rem))) * var(--motion-spatial)))"
+          },
+          "&[data-starting-style][data-side=inline-end]": {
+            "clip-path": "inset(calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(calc(-1 * var(--yorha-pop-bleed, 1rem)) + (100% - calc(-1 * var(--yorha-pop-bleed, 1rem))) * var(--motion-spatial)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)))"
+          },
+          "&[data-starting-style][data-side=inline-start]:where([dir=rtl], [dir=rtl] *)": {
+            "clip-path": "inset(calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(calc(-1 * var(--yorha-pop-bleed, 1rem)) + (100% - calc(-1 * var(--yorha-pop-bleed, 1rem))) * var(--motion-spatial)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)))"
+          },
+          "&[data-starting-style][data-side=inline-end]:where([dir=rtl], [dir=rtl] *)": {
+            "clip-path": "inset(calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(-1 * var(--yorha-pop-bleed, 1rem)) calc(calc(-1 * var(--yorha-pop-bleed, 1rem)) + (100% - calc(-1 * var(--yorha-pop-bleed, 1rem))) * var(--motion-spatial)))"
           },
           "&[data-ending-style]": {
-            "transition-duration": "max(var(--motion-popover-exit), var(--motion-reduced-fade))",
-            "transition-timing-function": "var(--yorha-ease)"
+            "opacity": "0",
+            "transition-duration": "max(var(--motion-popover-exit), var(--motion-reduced-fade)), max(var(--motion-popover-exit), var(--motion-reduced-fade))",
+            "transition-timing-function": "linear, var(--yorha-step-reveal)"
           },
           "&[data-instant]": {
             "transition-duration": "0s"
@@ -911,7 +1128,7 @@
           "transition-property": "background-size, color",
           "transition-duration": "var(--yorha-wipe-exit, var(--motion-select-exit)), var(--motion-press)",
           "transition-delay": "0s, calc(var(--motion-select) * 0.35)",
-          "transition-timing-function": "var(--yorha-ease-out)",
+          "transition-timing-function": "var(--yorha-step-scan), var(--yorha-ease-out)",
           "&:is([data-highlighted], [data-panel-open], [data-popup-open], [data-checked], [data-selected], [aria-current=page], :has([data-checked]), :hover)": {
             "transition-duration": "var(--motion-select), var(--motion-press)"
           }
@@ -920,7 +1137,7 @@
           "transition-property": "scale, color, background-color, border-color, background-size",
           "transition-duration": "var(--motion-press), var(--motion-press), var(--motion-select), var(--motion-select), var(--motion-select)",
           "transition-delay": "0s, calc(var(--motion-select) * 0.35), 0s, 0s, 0s",
-          "transition-timing-function": "var(--yorha-ease-out)",
+          "transition-timing-function": "var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-ease-out), var(--yorha-step-scan)",
           "&:active:not(:disabled, [data-disabled], [aria-disabled=true], [data-loading], [aria-busy=true])": {
             "scale": "calc(1 - (1 - var(--motion-scale-press)) * var(--motion-spatial))"
           }
@@ -929,6 +1146,94 @@
           "animation-name": "yorha-stagger-in",
           "animation-duration": "max(var(--motion-stagger-enter), var(--motion-reduced-fade))",
           "animation-timing-function": "var(--yorha-ease-out)",
+          "animation-fill-mode": "backwards",
+          "animation-delay": "calc(var(--motion-stagger) * min(var(--yorha-stagger-index, 0), var(--motion-stagger-max)))"
+        },
+        "@utility yorha-dissolve": {
+          "mask-size": "8px 8px",
+          "-webkit-mask-size": "8px 8px",
+          "mask-repeat": "repeat",
+          "-webkit-mask-repeat": "repeat",
+          "&:is([data-open], [data-run=in])": {
+            "animation-name": "yorha-dissolve-mask-in, yorha-dissolve-fade-in",
+            "animation-duration": "var(--motion-modal), max(calc(var(--motion-modal) / 5), var(--motion-reduced-fade))",
+            "animation-timing-function": "var(--yorha-step-flip)",
+            "animation-fill-mode": "backwards"
+          },
+          "&:is([data-closed], [data-run=out])": {
+            "animation-name": "yorha-dissolve-mask-out, yorha-dissolve-fade-out",
+            "animation-duration": "var(--motion-modal-exit), max(calc(var(--motion-modal-exit) / 5), var(--motion-reduced-fade))",
+            "animation-delay": "0s, calc(var(--motion-modal-exit) * 0.8 * var(--motion-spatial))",
+            "animation-timing-function": "var(--yorha-step-flip)",
+            "animation-fill-mode": "both"
+          }
+        },
+        "@utility yorha-glitch": {
+          "position": "relative",
+          "--yorha-glitch-a": "var(--yorha-alert-ui)",
+          "--yorha-glitch-b": "var(--yorha-ink)",
+          "&::before, &::after": {
+            "content": "attr(data-text) / \"\"",
+            "position": "absolute",
+            "inset": "0",
+            "pointer-events": "none",
+            "opacity": "0",
+            "@media (forced-colors: active)": {
+              "display": "none"
+            }
+          },
+          "&::before": {
+            "color": "var(--yorha-glitch-a)"
+          },
+          "&::after": {
+            "color": "var(--yorha-glitch-b)"
+          },
+          "&[data-run]": {
+            "animation-name": "yorha-glitch-core",
+            "animation-duration": "max(var(--motion-glitch), var(--motion-reduced-fade))",
+            "animation-timing-function": "var(--yorha-step-flip)",
+            "animation-fill-mode": "backwards"
+          },
+          "&[data-run]::before": {
+            "animation-name": "yorha-glitch-a-move, yorha-glitch-a-fade",
+            "animation-duration": "var(--motion-glitch)",
+            "animation-timing-function": "var(--yorha-step-flip)"
+          },
+          "&[data-run]::after": {
+            "animation-name": "yorha-glitch-b-move, yorha-glitch-b-fade",
+            "animation-duration": "var(--motion-glitch)",
+            "animation-timing-function": "var(--yorha-step-flip)"
+          }
+        },
+        "@utility yorha-flicker": {
+          "&[data-run]": {
+            "animation-name": "yorha-flicker",
+            "animation-duration": "max(var(--motion-flicker), var(--motion-reduced-fade))",
+            "animation-timing-function": "var(--yorha-step-flip)",
+            "animation-fill-mode": "backwards"
+          }
+        },
+        "@utility yorha-caret": {
+          "display": "inline-block",
+          "inline-size": "round(0.55em, 1px)",
+          "block-size": "round(1.1em, 1px)",
+          "vertical-align": "-0.15em",
+          "background-color": "currentColor",
+          "&[data-blink]": {
+            "animation-name": "yorha-caret-blink",
+            "animation-duration": "var(--motion-caret)",
+            "animation-timing-function": "var(--yorha-step-flip)",
+            "animation-iteration-count": "calc(6 * var(--motion-spatial))"
+          },
+          "@media (forced-colors: active)": {
+            "forced-color-adjust": "none",
+            "background-color": "CanvasText"
+          }
+        },
+        "@utility yorha-stream": {
+          "animation-name": "yorha-stream-clip, yorha-stream-fade",
+          "animation-duration": "var(--motion-stream), max(var(--motion-stream), var(--motion-reduced-fade))",
+          "animation-timing-function": "var(--yorha-step-reveal)",
           "animation-fill-mode": "backwards",
           "animation-delay": "calc(var(--motion-stagger) * min(var(--yorha-stagger-index, 0), var(--motion-stagger-max)))"
         },
@@ -983,6 +1288,33 @@
             "forced-color-adjust": "none",
             "stroke": "Highlight"
           }
+        },
+        ":root::view-transition-new(.yorha-route-forward)": {
+          "animation-name": "yorha-route-scan-forward, yorha-route-fade-in",
+          "animation-duration": "var(--motion-route), max(calc(var(--motion-route) / 4), var(--motion-reduced-fade))",
+          "animation-timing-function": "var(--yorha-step-scan), linear",
+          "animation-fill-mode": "backwards"
+        },
+        ":root::view-transition-new(.yorha-route-back)": {
+          "animation-name": "yorha-route-scan-back, yorha-route-fade-in",
+          "animation-duration": "var(--motion-route), max(calc(var(--motion-route) / 4), var(--motion-reduced-fade))",
+          "animation-timing-function": "var(--yorha-step-scan), linear",
+          "animation-fill-mode": "backwards"
+        },
+        ":root::view-transition-new(.yorha-route-replace)": {
+          "animation-name": "yorha-route-fade-in",
+          "animation-duration": "max(var(--motion-route), var(--motion-reduced-fade))",
+          "animation-timing-function": "linear",
+          "animation-fill-mode": "both"
+        },
+        ":root::view-transition-old(.yorha-route-exit), html[data-route-direction=forward]:root::view-transition-old(.yorha-route-exit), html[data-route-direction=back]:root::view-transition-old(.yorha-route-exit)": {
+          "animation-name": "yorha-route-fade-out",
+          "animation-duration": "max(var(--motion-route-exit), var(--motion-reduced-fade))",
+          "animation-timing-function": "linear",
+          "animation-fill-mode": "both"
+        },
+        ":root::view-transition-group(root), :root::view-transition-old(root), :root::view-transition-new(root)": {
+          "animation": "none"
         },
         "[data-slot$=-content]:not(:has([role=menuitemcheckbox], [role=menuitemradio], [role=option])) [data-slot=row-indicator]": {
           "display": "none"
@@ -1058,6 +1390,185 @@
             "from": {
               "opacity": "0",
               "translate": "0 calc(var(--motion-shift) * var(--motion-spatial))"
+            }
+          },
+          "@keyframes yorha-dissolve-mask-in": {
+            "0%": {
+              "mask-image": "var(--motion-fx-mask-25)"
+            },
+            "20%": {
+              "mask-image": "var(--motion-fx-mask-50)"
+            },
+            "40%": {
+              "mask-image": "var(--motion-fx-mask-75)"
+            },
+            "60%, 100%": {
+              "mask-image": "none"
+            }
+          },
+          "@keyframes yorha-dissolve-mask-out": {
+            "0%": {
+              "mask-image": "none"
+            },
+            "20%": {
+              "mask-image": "var(--motion-fx-mask-75)"
+            },
+            "40%": {
+              "mask-image": "var(--motion-fx-mask-50)"
+            },
+            "60%, 100%": {
+              "mask-image": "var(--motion-fx-mask-25)"
+            }
+          },
+          "@keyframes yorha-dissolve-fade-in": {
+            "from": {
+              "opacity": "0"
+            },
+            "to": {
+              "opacity": "1"
+            }
+          },
+          "@keyframes yorha-dissolve-fade-out": {
+            "from": {
+              "opacity": "1"
+            },
+            "to": {
+              "opacity": "0"
+            }
+          },
+          "@keyframes yorha-glitch-core": {
+            "0%": {
+              "opacity": "0.35"
+            },
+            "100%": {
+              "opacity": "1"
+            }
+          },
+          "@keyframes yorha-glitch-a-move": {
+            "0%": {
+              "transform": "translateX(calc(3px * -1 * var(--motion-spatial)))",
+              "clip-path": "inset(0 0 55% 0)"
+            },
+            "25%": {
+              "transform": "translateX(calc(3px * 1 * var(--motion-spatial)))",
+              "clip-path": "inset(40% 0 20% 0)"
+            },
+            "50%": {
+              "transform": "translateX(calc(3px * -0.5 * var(--motion-spatial)))",
+              "clip-path": "inset(0 0 0 0)"
+            },
+            "75%": {
+              "transform": "translateX(calc(3px * 0.5 * var(--motion-spatial)))",
+              "clip-path": "inset(65% 0 0 0)"
+            },
+            "100%": {
+              "transform": "none",
+              "clip-path": "inset(0 0 0 0)"
+            }
+          },
+          "@keyframes yorha-glitch-b-move": {
+            "0%": {
+              "transform": "translateX(calc(3px * 1 * var(--motion-spatial)))",
+              "clip-path": "inset(0 0 55% 0)"
+            },
+            "25%": {
+              "transform": "translateX(calc(3px * -1 * var(--motion-spatial)))",
+              "clip-path": "inset(40% 0 20% 0)"
+            },
+            "50%": {
+              "transform": "translateX(calc(3px * 0.5 * var(--motion-spatial)))",
+              "clip-path": "inset(0 0 0 0)"
+            },
+            "75%": {
+              "transform": "translateX(calc(3px * -0.5 * var(--motion-spatial)))",
+              "clip-path": "inset(65% 0 0 0)"
+            },
+            "100%": {
+              "transform": "none",
+              "clip-path": "inset(0 0 0 0)"
+            }
+          },
+          "@keyframes yorha-glitch-a-fade": {
+            "0%": {
+              "opacity": "calc(1 * var(--motion-spatial))"
+            },
+            "100%": {
+              "opacity": "0"
+            }
+          },
+          "@keyframes yorha-glitch-b-fade": {
+            "0%": {
+              "opacity": "calc(1 * var(--motion-spatial))"
+            },
+            "100%": {
+              "opacity": "0"
+            }
+          },
+          "@keyframes yorha-flicker": {
+            "0%": {
+              "opacity": "0.25"
+            },
+            "20%": {
+              "opacity": "1"
+            },
+            "40%": {
+              "opacity": "calc(1 - 0.55 * var(--motion-spatial))"
+            },
+            "60%, 100%": {
+              "opacity": "1"
+            }
+          },
+          "@keyframes yorha-caret-blink": {
+            "50%": {
+              "opacity": "0"
+            }
+          },
+          "@keyframes yorha-stream-clip": {
+            "from": {
+              "clip-path": "inset(0 calc(100% * var(--motion-spatial)) 0 0)"
+            },
+            "to": {
+              "clip-path": "inset(0)"
+            }
+          },
+          "@keyframes yorha-stream-fade": {
+            "from": {
+              "opacity": "0"
+            },
+            "to": {
+              "opacity": "1"
+            }
+          },
+          "@keyframes yorha-route-scan-forward": {
+            "from": {
+              "clip-path": "inset(0 0 calc(100% * var(--motion-spatial)) 0)"
+            },
+            "to": {
+              "clip-path": "inset(0)"
+            }
+          },
+          "@keyframes yorha-route-scan-back": {
+            "from": {
+              "clip-path": "inset(calc(100% * var(--motion-spatial)) 0 0 0)"
+            },
+            "to": {
+              "clip-path": "inset(0)"
+            }
+          },
+          "@keyframes yorha-route-fade-in": {
+            "from": {
+              "opacity": "0"
+            },
+            "to": {
+              "opacity": "1"
+            }
+          },
+          "@keyframes yorha-route-fade-out": {
+            "from": {
+              "opacity": "1"
+            },
+            "to": {
+              "opacity": "0"
             }
           }
         }

@@ -3,6 +3,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import { Menu, MenuContent, MenuItem, MenuTrigger } from "../../../registry/yorha/ui/menu/menu";
 import { tokens } from "./tokens.generated";
+import { MotionEffects } from "./MotionEffects";
 
 const DENSITIES = ["compact", "default", "comfortable"] as const;
 const MOTIONS = ["full", "reduced", "off"] as const;
@@ -507,5 +508,24 @@ export const SystemMotion: Story = {
     await waitFor(() => expect(html).not.toHaveAttribute("data-motion"));
     const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
     await expect(getComputedStyle(html).getPropertyValue("--motion-spatial").trim()).toBe(reduce ? "0" : "1");
+  },
+};
+
+/** V4-014: every v4 effect renders in full, reduced and off; the one-shot demos replay on their button and the page has no layout-shifting host. */
+export const MotionEffectsDemo: Story = {
+  render: () => <MotionEffects />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const columns = canvas.getAllByRole("region");
+    await expect(columns.map((column) => column.getAttribute("data-motion"))).toEqual(["full", "reduced", "off"]);
+    for (const column of columns) {
+      const glitch = column.querySelector(".yorha-glitch");
+      await expect(glitch?.getAttribute("data-text")).toBe(glitch?.textContent);
+      await expect(column.querySelectorAll("[class*='yorha-dither-']").length).toBe(4);
+    }
+    const full = columns[0] as HTMLElement;
+    const before = (full.querySelector(".yorha-glitch") as HTMLElement).getBoundingClientRect().width;
+    await userEvent.click(within(full).getAllByRole("button", { name: "재생" })[0] as HTMLElement);
+    await expect((full.querySelector(".yorha-glitch") as HTMLElement).getBoundingClientRect().width).toBe(before);
   },
 };

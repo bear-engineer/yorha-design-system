@@ -1263,9 +1263,9 @@ export const tokens = {
         "cssVar": "--yorha-motion-panel",
         "alias": "--motion-panel",
         "utility": "",
-        "value": "400ms",
-        "description": "Panel / dialog enter.",
-        "full": "400ms",
+        "value": "280ms",
+        "description": "Panel / dialog enter (equals modal: one \"surface arrives\" time).",
+        "full": "280ms",
         "reduced": "0ms",
         "off": "0ms"
       },
@@ -1455,6 +1455,50 @@ export const tokens = {
         "full": "280ms",
         "reduced": "0ms",
         "off": "0ms"
+      },
+      {
+        "name": "glitch",
+        "cssVar": "--yorha-motion-glitch",
+        "alias": "--motion-glitch",
+        "utility": "",
+        "value": "240ms",
+        "description": "RGB channel-split burst on one line of display text (yorha-glitch). One burst.",
+        "full": "240ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "flicker",
+        "cssVar": "--yorha-motion-flicker",
+        "alias": "--motion-flicker",
+        "utility": "",
+        "value": "240ms",
+        "description": "Opacity-step burst on a non-text mark (yorha-flicker). One burst.",
+        "full": "240ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "stream",
+        "cssVar": "--yorha-motion-stream",
+        "alias": "--motion-stream",
+        "utility": "",
+        "value": "320ms",
+        "description": "One data row arriving (yorha-stream), stepped reveal.",
+        "full": "320ms",
+        "reduced": "0ms",
+        "off": "0ms"
+      },
+      {
+        "name": "caret",
+        "cssVar": "--yorha-motion-caret",
+        "alias": "--motion-caret",
+        "utility": "",
+        "value": "1000ms",
+        "description": "Block caret blink period (yorha-caret). Blinks 6 cycles, then solid.",
+        "full": "1000ms",
+        "reduced": "0ms",
+        "off": "0ms"
       }
     ],
     "easings": [
@@ -1497,6 +1541,38 @@ export const tokens = {
         "utility": "ease-yorha-decelerate",
         "value": "cubic-bezier(0, 0, 0.2, 1)",
         "description": "Small popups entering from their anchor (yorha-pop)."
+      },
+      {
+        "name": "step-reveal",
+        "cssVar": "--yorha-step-reveal",
+        "alias": "",
+        "utility": "ease-yorha-step-reveal",
+        "value": "steps(4, end)",
+        "description": "Stepped reveal: popup scan (40ms per step at 160ms), stream, short reveals."
+      },
+      {
+        "name": "step-scan",
+        "cssVar": "--yorha-step-scan",
+        "alias": "",
+        "utility": "ease-yorha-step-scan",
+        "value": "steps(6, end)",
+        "description": "Stepped scan: selection wipe (180ms), route entry (200ms)."
+      },
+      {
+        "name": "step-loop",
+        "cssVar": "--yorha-step-loop",
+        "alias": "",
+        "utility": "ease-yorha-step-loop",
+        "value": "steps(16, end)",
+        "description": "Stepped travelling loaders."
+      },
+      {
+        "name": "step-flip",
+        "cssVar": "--yorha-step-flip",
+        "alias": "",
+        "utility": "ease-yorha-step-flip",
+        "value": "steps(1, end)",
+        "description": "Two-state changes: glitch, flicker, caret, dot chase."
       }
     ],
     "parameters": [
@@ -1565,6 +1641,39 @@ export const tokens = {
         "full": "6",
         "reduced": "6",
         "off": "6"
+      },
+      {
+        "name": "fx-mask-25",
+        "cssVar": "--yorha-motion-fx-mask-25",
+        "alias": "--motion-fx-mask-25",
+        "utility": "",
+        "value": "var(--yorha-dither-25)",
+        "description": "Dither mask level 25 for the dissolve keyframes; none when reduced or off (the dissolve becomes a plain fade).",
+        "full": "var(--yorha-dither-25)",
+        "reduced": "none",
+        "off": "none"
+      },
+      {
+        "name": "fx-mask-50",
+        "cssVar": "--yorha-motion-fx-mask-50",
+        "alias": "--motion-fx-mask-50",
+        "utility": "",
+        "value": "var(--yorha-dither-50)",
+        "description": "Dither mask level 50 for the dissolve keyframes; none when reduced or off (the dissolve becomes a plain fade).",
+        "full": "var(--yorha-dither-50)",
+        "reduced": "none",
+        "off": "none"
+      },
+      {
+        "name": "fx-mask-75",
+        "cssVar": "--yorha-motion-fx-mask-75",
+        "alias": "--motion-fx-mask-75",
+        "utility": "",
+        "value": "var(--yorha-dither-75)",
+        "description": "Dither mask level 75 for the dissolve keyframes; none when reduced or off (the dissolve becomes a plain fade).",
+        "full": "var(--yorha-dither-75)",
+        "reduced": "none",
+        "off": "none"
       }
     ],
     "utilities": [
@@ -1578,7 +1687,12 @@ export const tokens = {
       "yorha-collapse",
       "yorha-wipe",
       "yorha-press",
-      "yorha-stagger"
+      "yorha-stagger",
+      "yorha-dissolve",
+      "yorha-glitch",
+      "yorha-flicker",
+      "yorha-caret",
+      "yorha-stream"
     ]
   },
   "zIndex": [

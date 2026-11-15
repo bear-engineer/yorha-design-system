@@ -121,11 +121,65 @@
           "value": 0,
           "unit": "ms"
         }
+      },
+      "glitch": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "flicker": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "stream": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
+      },
+      "caret": {
+        "$value": {
+          "value": 0,
+          "unit": "ms"
+        }
       }
     },
     "spatial": {
       "$type": "number",
       "$value": 0
+    },
+    "easing": {
+      "step-reveal": {
+        "$type": "string",
+        "$value": "linear"
+      },
+      "step-scan": {
+        "$type": "string",
+        "$value": "linear"
+      },
+      "step-loop": {
+        "$type": "string",
+        "$value": "linear"
+      },
+      "step-flip": {
+        "$type": "string",
+        "$value": "linear"
+      }
+    },
+    "fx-mask-25": {
+      "$type": "string",
+      "$value": "none"
+    },
+    "fx-mask-50": {
+      "$type": "string",
+      "$value": "none"
+    },
+    "fx-mask-75": {
+      "$type": "string",
+      "$value": "none"
     }
   }
 }
