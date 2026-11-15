@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "fx",
+      "type": "registry:lib",
+      "title": "fx",
+      "description": "runFx(): plays a one-shot motion utility (yorha-glitch, yorha-flicker) by toggling data-run, with a 1000 ms per-element floor (WCAG 2.3.1: at most three flashes per second).",
+      "dependencies": [],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "fx.ts",
+          "type": "registry:lib",
+          "target": "@lib/fx.ts"
+        }
+      ],
+      "docs": "Unofficial fan project. Import with: import { runFx } from \"@/lib/fx\". Under data-motion=off the attribute is removed at once."
+    }
+  ]
+}

@@ -6,6 +6,7 @@
     "registry/yorha/base/base/registry.json",
     "registry/yorha/base/init/registry.json",
     "registry/yorha/lib/utils/registry.json",
+    "registry/yorha/lib/fx/registry.json",
     "registry/yorha/providers/yorha-provider/registry.json",
     "registry/yorha/sound/sound/registry.json",
     "registry/yorha/ui/button/registry.json",

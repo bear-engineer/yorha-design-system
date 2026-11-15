@@ -29,7 +29,7 @@
         "./registry/yorha/providers/yorha-provider/yorha-provider.tsx"
       ],
       "@/lib/fx": [
-        "./registry/yorha/lib/utils/fx.ts"
+        "./registry/yorha/lib/fx/fx.ts"
       ],
       "@/lib/sound": [
         "./registry/yorha/sound/sound/sound.ts"
