@@ -1,10 +1,17 @@
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, beforeEach } from "vitest";
+import { park } from "./measure";
 import "./mount"; // global css (tokens, utilities)
 import { animationsFinished, frames } from "./mount";
 import { MenuList, MenuListItem } from "../registry/yorha/ui/menu-list/menu-list";
 import { TimelineGraph } from "../registry/yorha/ui/timeline/timeline";
+
+// MenuList rows take focus (and so selection) on mouse pointerenter: a pointer left by an earlier test can sit over a
+// freshly mounted row and move the selection before a read (verify3 stability run 3). Park it before every test.
+beforeEach(async () => {
+  await park();
+});
 
 // v4 docs-curation: row rule lives in MenuList; timeline toolbar readout and icon gap.
 

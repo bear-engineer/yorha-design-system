@@ -1,6 +1,7 @@
 /// <reference types="vite/client" />
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, beforeEach } from "vitest";
+import { park } from "./measure";
 import { userEvent } from "vitest/browser";
 import type { ReactNode } from "react";
 import "./mount"; // storybook project annotations + css
@@ -10,6 +11,12 @@ import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } fro
 import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuTrigger } from "../registry/yorha/ui/context-menu/context-menu";
 import { NavigationMenu, NavigationMenuContent, NavigationMenuItem, NavigationMenuLink, NavigationMenuList, NavigationMenuTrigger } from "../registry/yorha/ui/navigation-menu/navigation-menu";
 import { MenuList, MenuListItem } from "../registry/yorha/ui/menu-list/menu-list";
+
+// MenuList rows take focus (and so selection) on mouse pointerenter: a pointer left by an earlier test can sit over a
+// freshly mounted row and move the selection before a read (verify3 stability run 3). Park it before every test.
+beforeEach(async () => {
+  await park();
+});
 
 /** yorha v4 selection B (f-sel-b): V4-165..173. Rendered without the Storybook decorator, motion = full. */
 const mounted: { root: Root; container: HTMLElement }[] = [];

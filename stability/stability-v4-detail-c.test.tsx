@@ -1,8 +1,9 @@
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, beforeEach } from "vitest";
 import "./mount"; // global css (tokens, utilities)
 import { animationsFinished, frames } from "./mount";
+import { park } from "./measure";
 import { Heading } from "../registry/yorha/ui/heading/heading";
 import { MenuList, MenuListItem } from "../registry/yorha/ui/menu-list/menu-list";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "../registry/yorha/ui/tabs/tabs";
@@ -10,6 +11,12 @@ import {
   DataTable, DataTableBody, DataTableCell, DataTableHeadCell, DataTableHeader, DataTableRow,
 } from "../registry/yorha/ui/data-table/data-table";
 import { InputGroup, InputGroupButton, InputGroupInput } from "../registry/yorha/ui/input-group/input-group";
+
+// MenuList rows take focus (and so selection) on mouse pointerenter: a pointer left by an earlier test can sit over a
+// freshly mounted row and move the selection before a read (verify3 stability run 3). Park it before every test.
+beforeEach(async () => {
+  await park();
+});
 
 // v4 detail-c: Latin-only tracking/case, no seam on ink bands, distinct hover/focus/selected row states, ring geometry, link style.
 
