@@ -4,7 +4,7 @@ import { flushSync } from "react-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { userEvent } from "vitest/browser";
 import "./mount"; // storybook annotations + global css
-import { frames } from "./mount";
+import { frames, animationsFinished } from "./mount";
 import { Checkbox } from "../registry/yorha/ui/checkbox/checkbox";
 import { CheckboxGroup } from "../registry/yorha/ui/checkbox-group/checkbox-group";
 import { Radio, RadioGroup } from "../registry/yorha/ui/radio-group/radio-group";
@@ -216,7 +216,7 @@ describe("V4-108/110 slider", () => {
     expect(css(bubble).opacity).toBe("0");
     const before = [rect(thumb), rect(q(host, '[data-slot="slider-track"]')), rect(q(host, '[data-slot="slider-control"]'))];
     await userEvent.tab();
-    await frames(8);
+    await animationsFinished();
     expect(css(bubble).opacity).toBe("1");
     expect(bubble.textContent).toBe("42%");
     expect(css(bubble).position).not.toBe("static");

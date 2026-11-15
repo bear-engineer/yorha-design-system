@@ -32,6 +32,24 @@ export const frames = (n: number) => new Promise<void>((resolve) => {
   step(n);
 });
 
+/**
+ * Resolves when every finite animation/transition in the document has finished (looping ones, e.g. spinners, are ignored).
+ * Use instead of `frames(n)`/sleeps: under load a fixed frame count can end mid entry animation (opacity + 4px translate),
+ * which moves rects by a fractional pixel. Bounded at 3 s.
+ */
+export async function animationsFinished(): Promise<void> {
+  const end = performance.now() + 3000;
+  for (;;) {
+    const running = document.getAnimations().filter((a) => {
+      const t = a.effect?.getComputedTiming();
+      return a.playState !== "finished" && a.playState !== "idle" && t !== undefined && Number.isFinite(t.endTime as number);
+    });
+    if (!running.length || performance.now() > end) return;
+    await Promise.race([Promise.all(running.map((a) => a.finished.catch(() => null))), new Promise((r) => setTimeout(r, Math.max(0, end - performance.now())))]);
+    await frames(1);
+  }
+}
+
 /** Render a story with real (full) motion so transitions actually run. lang=ko like the real docs. */
 export async function mountStory(item: string, name: string, options: { stage?: "center" | "top" } = {}): Promise<HTMLElement> {
   const mod = storyModule(item);
@@ -51,5 +69,6 @@ export async function mountStory(item: string, name: string, options: { stage?: 
   await frames(2);
   await document.fonts.ready;
   await frames(2);
+  await animationsFinished(); // the entry stream must be at rest before any rect is sampled
   return container.firstElementChild as HTMLElement;
 }

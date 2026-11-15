@@ -204,7 +204,8 @@ async function mouse(type: "mouseMoved" | "mousePressed" | "mouseReleased", el: 
   });
 }
 
-const park = async () => {
+/** Move the real pointer to the page corner so a stale position from an earlier test cannot hover (and, in MenuList, focus) a freshly mounted row. */
+export const park = async () => {
   await cdp().send("Input.dispatchMouseEvent", { type: "mouseMoved", x: 2, y: 2, button: "none", buttons: 0 });
 };
 

@@ -7,7 +7,7 @@ import { Button } from "../registry/yorha/ui/button/button";
 import { Popover, PopoverClose, PopoverContent, PopoverDescription, PopoverTitle, PopoverTrigger } from "../registry/yorha/ui/popover/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../registry/yorha/ui/tooltip/tooltip";
 import { expectAnchoredBelow, expectSameHeight } from "../.storybook/geometry";
-import { frames } from "./mount";
+import { frames, animationsFinished } from "./mount";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogTitle, AlertDialogTrigger } from "../registry/yorha/ui/alert-dialog/alert-dialog";
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogTitle, DialogTrigger } from "../registry/yorha/ui/dialog/dialog";
 import { Drawer, DrawerBody, DrawerClose, DrawerContent, DrawerDescription, DrawerFooter, DrawerGrip, DrawerTitle, DrawerTrigger } from "../registry/yorha/ui/drawer/drawer";
@@ -204,7 +204,7 @@ describe("dialog and alert-dialog (FOVL-03, 05, 12, 17, 18, 20)", () => {
   it("FOVL-03: long content scrolls inside the body; title and footer stay put", async () => {
     await render(<LongDialog />);
     await until(() => !!q('[role="dialog"]'));
-    await frames(8);
+    await animationsFinished();
     const popup = q('[role="dialog"]')!;
     const body = popup.querySelector<HTMLElement>('[data-slot="dialog-body"]')!;
     expect(getComputedStyle(popup).overflowY).toBe("hidden");

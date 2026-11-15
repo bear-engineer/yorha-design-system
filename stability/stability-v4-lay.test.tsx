@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 import { createMemoryRouter, RouterProvider, Link, useNavigate } from "react-router";
 import { afterEach, describe, expect, test } from "vitest";
 import { mountStory, frames } from "./mount";
+import { park } from "./measure";
 import { Split } from "../registry/yorha/layout/split/split";
 import { HudLayout, HudRegion } from "../registry/yorha/layout/hud-layout/hud-layout";
 import { Sidebar } from "../registry/yorha/layout/sidebar/sidebar";
@@ -294,6 +295,7 @@ describe("V4-278 / V4-279 sound cues and persistence", () => {
 describe("V4-280 SystemMenuLayout Esc returns to the list row", () => {
   test("panel tabIndex -1; Escape in the panel focuses the selected row", async () => {
     const sections = [{ id: "s", label: "시스템", items: [{ id: "i1", label: "하나", content: "내용 1" }, { id: "i2", label: "둘", content: "내용 2" }] }];
+    await park(); // MenuList rows take focus on mouse pointerenter: a pointer left by an earlier test must not sit over row 2
     const c = render(createElement(SystemMenuLayout, { sections }), "width:900px");
     await frames(3);
     const panel = c.querySelector<HTMLElement>('[data-slot="system-menu-panel"]')!;
