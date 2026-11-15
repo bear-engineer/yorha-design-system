@@ -355,13 +355,16 @@ describe("V4-059..067 extensions", () => {
     expect(head.getAttribute("aria-expanded")).toBe("false");
     expect(qa(root, "[data-part='lane-labels'] [data-lane]").length).toBeLessThan(n);
   });
-  test("V4-066 entry uses yorha-stream: 2 animations, capped delay", async () => {
+  test("V4-066 entry uses yorha-stream-in: one smooth ease-out animation, once, delay = index * stagger (capped)", async () => {
     document.documentElement.setAttribute("data-motion", "full");
     const root = await mountTl("Default");
     const el = q(root, "[data-item-id='rel']");
     const cs = getComputedStyle(el);
-    expect(cs.animationName.split(",").length).toBe(2);
-    expect(parseFloat(cs.animationDelay)).toBeLessThanOrEqual(0.4);
+    expect(cs.animationName).toBe("yorha-stream-in");
+    expect(cs.animationTimingFunction).toBe("cubic-bezier(0.23, 1, 0.32, 1)");
+    expect(cs.animationIterationCount).toBe("1");
+    const index = Number(el.style.getPropertyValue("--yorha-stagger-index") || 0);
+    expect(parseFloat(cs.animationDelay)).toBeCloseTo(0.04 * Math.min(index, 6), 5);
   });
   test("V4-067 view toggle is one tab stop; table sorts by a column", async () => {
     const root = await mountTl("TableView");

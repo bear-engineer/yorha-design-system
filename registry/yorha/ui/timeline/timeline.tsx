@@ -1398,7 +1398,8 @@ export function TimelineGraph({
                       const at = Math.max(s.ms, startMs);
                       const full = f.major[ticks.major.unit]!.format(at);
                       // A day column under 120 px (8 px/h and below) cannot hold "11월 16일 (월)" once text spacing widens it: drop the month, keep the full date in title.
-                      const short = ticks.major.unit === "1d" && s.x1 - s.x0 < 120 ? f.minor["1d"]!.format(at) : full;
+                      // One format for the whole axis: decided by the full day width, never by this segment's (an edge day is clipped by the range and would mix formats).
+                      const short = ticks.major.unit === "1d" && 24 * px < 120 ? f.minor["1d"]!.format(at) : full;
                       return (
                         <span data-part="tick-label" title={short === full ? undefined : full} className="sticky left-0 block max-w-full truncate px-1.5 text-yorha-xs leading-5 font-yorha-bold text-yorha-fg">
                           {short}

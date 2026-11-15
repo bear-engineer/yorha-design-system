@@ -233,8 +233,13 @@ export const KeyboardOrder: Story = {
 export const HoverSelect: Story = {
   play: async ({ canvasElement }) => {
     const wire = q(canvasElement, "[data-item-id='wire'] button");
-    const box = () => q(canvasElement, "[data-item-id='wire']").getBoundingClientRect().toJSON();
+    const item = q(canvasElement, "[data-item-id='wire']");
+    const box = () => item.getBoundingClientRect().toJSON();
+    // The entry stream (opacity + 4px translate) moves the rect while it runs: measure the rest position, which is integer px.
+    await Promise.all(item.getAnimations().map((a) => a.finished.catch(() => null)));
+    await expect(item.getAnimations()).toHaveLength(0);
     const before = box();
+    await expect(Number.isInteger(parseFloat(item.style.top))).toBe(true); // rows sit on integer px (layout), the stream only transforms
     const readout = q(canvasElement, "[data-part='readout']");
     await userEvent.hover(wire);
     await expect(readout.textContent).toContain("와이어프레임");
@@ -441,11 +446,15 @@ export const MotionTokens: Story = {
     const wire = q(canvasElement, "[data-item-id='wire']"); // lane index 1
     const cs = () => getComputedStyle(wire);
     await withMotion("full", async () => {
-      await expect(cs().animationName.split(",")).toHaveLength(2);
-      await expect(parseFloat(cs().animationDelay)).toBeGreaterThanOrEqual(0);
+      await expect(cs().animationName).toBe("yorha-stream-in");
+      await expect(cs().animationTimingFunction).toBe("cubic-bezier(0.23, 1, 0.32, 1)");
+      await expect(cs().animationIterationCount).toBe("1");
+      const index = Number(wire.style.getPropertyValue("--yorha-stagger-index") || 0);
+      await expect(parseFloat(cs().animationDelay)).toBeCloseTo(0.04 * Math.min(index, 6), 5);
     });
     await withMotion("reduced", async () => {
       await waitFor(() => expect(Math.max(...cs().animationDuration.split(",").map(parseFloat))).toBeLessThanOrEqual(0.12));
+      await expect(cs().animationName).toBe("yorha-stream-in");
     });
     await withMotion("off", async () => {
       await waitFor(() => expect(Math.max(...cs().animationDuration.split(",").map(parseFloat))).toBe(0));

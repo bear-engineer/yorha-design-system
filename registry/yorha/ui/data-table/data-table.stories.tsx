@@ -26,7 +26,7 @@ const ROWS = [
   { id: "a2", unit: "A2", type: "전투", level: 9 },
 ];
 
-function Demo({ density = "comfortable", zebra = true }: { density?: "dense" | "comfortable"; zebra?: boolean }) {
+function Demo({ density = "comfortable", zebra = true, caption = "유닛 목록" }: { density?: "dense" | "comfortable"; zebra?: boolean; caption?: string }) {
   const [sort, setSort] = useState<SortDirection>("none");
   const rows = [...ROWS].sort((a, b) => {
     if (sort === "none") return 0;
@@ -34,7 +34,7 @@ function Demo({ density = "comfortable", zebra = true }: { density?: "dense" | "
   });
   return (
     <div className="w-[32rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-4 text-yorha-fg">
-      <DataTable caption="유닛 목록" density={density} zebra={zebra}>
+      <DataTable caption={caption} density={density} zebra={zebra}>
         <DataTableHeader>
           <DataTableRow>
             <DataTableHeadCell>유닛</DataTableHeadCell>
@@ -128,7 +128,8 @@ export const Themes: Story = {
     <div className="grid gap-4">
       {(["light", "dark", "high-contrast"] as const).map((t) => (
         <div key={t} data-theme={t} className="max-w-[calc(100vw-2rem)] bg-yorha-bg p-4 text-yorha-fg" data-testid={`theme-${t}`}>
-          <Demo />
+          {/* a scrollable table is a region named by its caption: landmarks on one page need distinct names */}
+          <Demo caption={`유닛 목록 (${t})`} />
         </div>
       ))}
     </div>

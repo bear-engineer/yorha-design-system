@@ -30,13 +30,19 @@ const GEOMETRY = {
   md: { box: 16, dot: 4, pitch: 6, inset: 0 },
   lg: { box: 24, dot: 6, pitch: 9, inset: 0 },
 } as const;
-/** Ink floor of the empty ring (never below 0.3 so the ring never vanishes) and the lead + 2-dot trail. */
-const REST = 0.4;
-const TRAIL = [1, 0.75, 0.52] as const;
+/**
+ * Ink floor of the empty ring (never below 0.3 so the ring never vanishes) and the lead + 2-dot trail. sm has 2 px dots
+ * and reads as faint dust at the md values, so it rests higher and its trail is denser.
+ */
+const TONE = {
+  sm: { rest: 0.5, trail: [1, 0.85, 0.65] },
+  md: { rest: 0.4, trail: [1, 0.75, 0.52] },
+  lg: { rest: 0.4, trail: [1, 0.75, 0.52] },
+} as const;
 /** Static (motion off) opacity of dot i: lead at dot 0, trail on the two dots behind it (counter-clockwise). */
-const restOpacity = (i: number) => {
+const restOpacity = (i: number, tone: (typeof TONE)[keyof typeof TONE]) => {
   const behind = (RING.length - i) % RING.length;
-  return behind < TRAIL.length ? TRAIL[behind]! : REST;
+  return behind < tone.trail.length ? tone.trail[behind]! : tone.rest;
 };
 
 /**
@@ -46,7 +52,8 @@ const restOpacity = (i: number) => {
  * attribute with reduced-motion preferred) = the whole spinner pulses 0.7-1; off = no animation, the ring rests
  * with a lead dot and its two-dot trail so a still spinner still reads as "busy".
  */
-function useTrail(ref: React.RefObject<HTMLSpanElement | null>) {
+function useTrail(ref: React.RefObject<HTMLSpanElement | null>, size: keyof typeof TONE) {
+  const { rest: REST, trail: TRAIL } = TONE[size];
   React.useEffect(() => {
     const root = ref.current;
     if (!root) return;
@@ -90,13 +97,13 @@ function useTrail(ref: React.RefObject<HTMLSpanElement | null>) {
       observer.disconnect();
       anims.forEach((a) => a.cancel());
     };
-  }, [ref]);
+  }, [ref, REST, TRAIL]);
 }
 
 /** Loading trail in a fixed square box (`align-top` keeps the dots on whole pixels in running text; centre it with a flex/grid parent). role=status with an accessible name; the dots themselves are decorative. */
 export function Spinner({ label = "로딩 중", size = "md", className, ...props }: SpinnerProps) {
   const ref = React.useRef<HTMLSpanElement>(null);
-  useTrail(ref);
+  useTrail(ref, size);
   const g = GEOMETRY[size];
   return (
     <span
@@ -120,7 +127,7 @@ export function Spinner({ label = "로딩 중", size = "md", className, ...props
             height: g.dot,
             left: g.inset + col * g.pitch,
             top: g.inset + row * g.pitch,
-            opacity: restOpacity(i),
+            opacity: restOpacity(i, TONE[size]),
           }}
         />
       ))}

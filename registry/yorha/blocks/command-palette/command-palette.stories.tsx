@@ -6,7 +6,8 @@ const meta = {
   title: "블록/Command palette",
   component: CommandPaletteDemo,
   tags: ["autodocs"],
-  parameters: { layout: "fullscreen" },
+  // The demo is a page (own <main>): the docs page renders it in an iframe, like the other blocks, so it is not a second main landmark.
+  parameters: { docs: { story: { inline: false, iframeHeight: 360 } }, layout: "fullscreen" },
 } satisfies Meta<typeof CommandPaletteDemo>;
 export default meta;
 type Story = StoryObj<typeof meta>;

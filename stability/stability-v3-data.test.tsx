@@ -250,14 +250,15 @@ describe("C2-201..204 kanban", () => {
 });
 
 describe("FD-12/13 timeline", () => {
-  test("no dependency connector crosses a milestone label (FD-12)", async () => {
+  test("no dependency connector crosses an outside item/milestone label (FD-12)", async () => {
     const root = await mountStory("timeline", "Default");
-    const labels = qa<SVGTextElement>(root, "[data-slot=timeline-label]");
-    expect(labels.length, "milestone labels tagged").toBeGreaterThan(0);
-    const svg = q<SVGSVGElement>(root, "svg[data-part=canvas]");
+    const labels = qa(root, "[data-part=item-label-out]");
+    expect(labels.length, "outside labels (milestones, narrow bars)").toBeGreaterThan(0);
+    expect(qa(root, "[data-part=item][data-instant]").length, "milestones").toBeGreaterThan(0);
+    const canvas = q(root, "[data-part=canvas]").getBoundingClientRect();
     const hits: string[] = [];
-    for (const path of qa<SVGPathElement>(svg, "[data-part=dependency]")) {
-      const nums = path.getAttribute("d")!.match(/[MHV][^MHV]*/g)!;
+    for (const path of qa<SVGPathElement>(root, "[data-part=dependency]")) {
+      const nums = path.getAttribute("d")!.match(/[MHVL][^MHVL]*/g)!;
       let x = 0;
       let y = 0;
       const segs: [number, number, number, number][] = [];
@@ -265,12 +266,14 @@ describe("FD-12/13 timeline", () => {
         const v = c.slice(1).split(/[ ,]+/).filter(Boolean).map(Number);
         const [px, py] = [x, y];
         if (c[0] === "M") [x, y] = [v[0]!, v[1]!];
+        if (c[0] === "L") [x, y] = [v[0]!, v[1]!];
         if (c[0] === "H") x = v[0]!;
         if (c[0] === "V") y = v[0]!;
         if (c[0] !== "M") segs.push([px, py, x, y]);
       }
       for (const label of labels) {
-        const b = label.getBBox();
+        const lr = label.getBoundingClientRect();
+        const b = { x: lr.left - canvas.left, y: lr.top - canvas.top, width: lr.width, height: lr.height };
         for (const [x1, y1, x2, y2] of segs) {
           const hit = Math.max(x1, x2) > b.x && Math.min(x1, x2) < b.x + b.width && Math.max(y1, y2) > b.y && Math.min(y1, y2) < b.y + b.height;
           if (hit) hits.push(`${label.textContent}: ${x1},${y1}-${x2},${y2}`);
@@ -383,13 +386,21 @@ describe("FD-25 panel", () => {
 });
 
 describe("FD-27/28 meter and progress", () => {
-  test("a low meter marks the track and uses a non-solid fill (FD-27)", async () => {
+  test("a low meter marks the track with an alert frame and alert notches, not only colour (FD-27)", async () => {
     const root = await mountStory("meter", "Low");
     const track = q(root, "[data-slot=meter-track]");
     expect(track.hasAttribute("data-low"), "track data-low").toBe(true);
-    const fill = q(track, "div");
-    expect(getComputedStyle(fill).backgroundImage).not.toBe("none");
-    expect(Math.round(r(track).height)).toBe(16);
+    const alert = getComputedStyle(q(root, "[data-slot=meter-notch]")).backgroundColor;
+    expect(getComputedStyle(track).borderTopColor, "alert frame").toBe(alert);
+    const notches = qa(track, "[data-slot=meter-notch]");
+    expect(notches).toHaveLength(2); // low + critical thresholds
+    for (const n of notches) expect(getComputedStyle(n).backgroundColor).toBe(alert);
+    // the frame colour is the low signal: an unmarked meter keeps the neutral border
+    const ok = await mountStory("meter", "Default");
+    const okTrack = q(ok, "[data-slot=meter-track]");
+    expect(okTrack.hasAttribute("data-low")).toBe(false);
+    expect(getComputedStyle(okTrack).borderTopColor).not.toBe(alert);
+    expect(Math.round(r(track).height)).toBe(14);
   });
 
   test("progress label/value stay on one row inside a 160px container (FD-28)", async () => {

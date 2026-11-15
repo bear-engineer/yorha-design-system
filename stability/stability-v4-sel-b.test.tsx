@@ -195,7 +195,7 @@ describe("scroll cue (V4-166)", () => {
 });
 
 describe("MenuList stream (V4-167)", () => {
-  it("rows run exactly two stepped animations and no transform/opacity transition", async () => {
+  it("each row runs one smooth yorha-stream-in (ease-out, once, index * stagger delay) and no transform/opacity transition", async () => {
     await render(
       <MenuList aria-label="list">
         {["a", "b", "c", "d"].map((v) => (
@@ -207,7 +207,11 @@ describe("MenuList stream (V4-167)", () => {
     );
     const rowEls = [...document.querySelectorAll<HTMLElement>("[data-menu-item]")];
     const fourth = rowEls[3]!;
-    expect(cs(fourth).animationName).toBe("yorha-stream-clip, yorha-stream-fade");
+    expect(cs(fourth).animationName).toBe("yorha-stream-in");
+    expect(cs(fourth).animationTimingFunction).toBe("cubic-bezier(0.23, 1, 0.32, 1)");
+    expect(cs(fourth).animationIterationCount).toBe("1");
+    expect(cs(rowEls[0]!).animationDelay).toBe("0s");
+    expect(cs(fourth).animationDelay).toBe("0.12s"); // 3 * --motion-stagger (40ms)
     expect(cs(fourth).transitionProperty).not.toContain("opacity");
     expect(cs(fourth).transitionProperty).not.toContain("translate");
     expect(fourth.style.getPropertyValue("--yorha-stagger-index")).toBe("3");

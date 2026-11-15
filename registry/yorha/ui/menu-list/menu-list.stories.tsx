@@ -224,11 +224,15 @@ export const StaggerEntersOnce: Story = {
   render: Default.render,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
-    // V4-167: rows arrive with `yorha-stream` (clip + fade, two animations), staggered by row index.
+    // V4-167: rows arrive with `yorha-stream` (one smooth opacity + 4px translate animation, ease-out, once), staggered by row index.
     const rows = () => c.getAllByRole("option");
     await waitFor(() => expect(rows()[2]).toHaveStyle({ "--yorha-stagger-index": "2" }));
-    await expect(getComputedStyle(rows()[1]!).animationName).toBe("yorha-stream-clip, yorha-stream-fade");
-    await expect(getComputedStyle(rows()[0]!).animationDelay).not.toBe(getComputedStyle(rows()[1]!).animationDelay);
+    const cs = (i: number) => getComputedStyle(rows()[i]!);
+    await expect(cs(2).animationName).toBe("yorha-stream-in");
+    await expect(cs(2).animationTimingFunction).toBe("cubic-bezier(0.23, 1, 0.32, 1)");
+    await expect(cs(2).animationIterationCount).toBe("1");
+    await expect(cs(0).animationDelay).toBe("0s");
+    await expect(cs(2).animationDelay).toBe("0.08s"); // index * --motion-stagger (40ms)
     await waitFor(() => expect(getComputedStyle(opt(c, "시스템")).opacity).toBe("1"));
   },
 };

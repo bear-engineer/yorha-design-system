@@ -305,6 +305,18 @@ describe("Spinner", () => {
     }
   });
 
+  it("sm (2px dots) is denser than md: ring floor 0.5, lead + trail 1 / 0.85 / 0.65, same integer rect", async () => {
+    const off = await mount(createElement(Spinner, { size: "sm" }), { motion: "off" });
+    const ops = [...off.host.querySelectorAll<HTMLElement>("[data-yorha-dot]")].map((d) => Number(getComputedStyle(d).opacity));
+    expect([...ops].sort((a, b) => b - a).map((o) => +o.toFixed(2))).toEqual([1, 0.85, 0.65, 0.5, 0.5, 0.5, 0.5, 0.5]);
+    for (const d of off.host.querySelectorAll<HTMLElement>("[data-yorha-dot]")) expect([rect(d).width, rect(d).height]).toEqual([2, 2]);
+    const full = await mount(createElement(Spinner, { size: "sm" }), { motion: "full" });
+    for (const a of anims(full.host)) for (const k of kf(a)) expect(Number(k.opacity)).toBeGreaterThanOrEqual(0.5);
+    const md = await mount(createElement(Spinner, { size: "md" }), { motion: "off" });
+    const mops = [...md.host.querySelectorAll<HTMLElement>("[data-yorha-dot]")].map((d) => +Number(getComputedStyle(d).opacity).toFixed(2));
+    expect(Math.min(...mops)).toBe(0.4);
+  });
+
   it("reduced: one opacity pulse; off: no animation, static trail", async () => {
     const red = await mount(createElement(Spinner), { motion: "reduced" });
     expect(anims(red.host).length).toBe(1);
