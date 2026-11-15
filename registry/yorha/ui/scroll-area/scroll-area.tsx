@@ -17,7 +17,17 @@ function ScrollAreaViewport({ className, ...props }: ComponentProps<typeof Scrol
       data-slot="scroll-area-viewport"
       role="region"
       tabIndex={0}
-      className={cnState("group/viewport size-full overscroll-contain outline-none focus-visible:yorha-focus-inset", className)}
+      className={cnState([
+          "group/viewport size-full overscroll-contain scroll-p-[6px] outline-none focus-visible:yorha-focus-inset",
+          // V4-181 edge cues: a rule appears on an edge only while there is more content past it. One axis uses the kit utility;
+          // both axes need the 8-layer form (two utilities would override each other's background-image).
+          "data-[has-overflow-y]:yorha-scroll-cue-y data-[has-overflow-x]:yorha-scroll-cue-x",
+          "data-[has-overflow-x]:data-[has-overflow-y]:[--cue-g:linear-gradient(var(--yorha-scroll-ground,var(--yorha-bg)),var(--yorha-scroll-ground,var(--yorha-bg)))] data-[has-overflow-x]:data-[has-overflow-y]:[--cue-b:linear-gradient(var(--yorha-border),var(--yorha-border))]",
+          "data-[has-overflow-x]:data-[has-overflow-y]:[background-image:var(--cue-g),var(--cue-g),var(--cue-g),var(--cue-g),var(--cue-b),var(--cue-b),var(--cue-b),var(--cue-b)]",
+          "data-[has-overflow-x]:data-[has-overflow-y]:[background-position:left_center,right_center,center_top,center_bottom,left_center,right_center,center_top,center_bottom]",
+          "data-[has-overflow-x]:data-[has-overflow-y]:[background-size:1px_100%,1px_100%,100%_1px,100%_1px,1px_100%,1px_100%,100%_1px,100%_1px]",
+          "data-[has-overflow-x]:data-[has-overflow-y]:[background-attachment:local,local,local,local,scroll,scroll,scroll,scroll]",
+        ], className)}
       {...props}
     />
   );
