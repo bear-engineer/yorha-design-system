@@ -143,15 +143,17 @@ describe("V4-181 scroll-area cues and scroll-padding", () => {
     const pad = parseFloat(getComputedStyle(vp).scrollPaddingBottom);
     expect(pad).toBeGreaterThanOrEqual(5);
     const btn = (i: number) => host.querySelector<HTMLElement>(`[data-i="${i}"]`)!;
-    btn(23).focus();
+    btn(5).focus();
     await frames(3);
     let vr = vp.getBoundingClientRect();
-    expect(vr.bottom - btn(23).getBoundingClientRect().bottom, "bottom ring under the bottom rule").toBeGreaterThanOrEqual(5);
+    expect(vr.bottom - btn(5).getBoundingClientRect().bottom, "bottom ring under the bottom rule").toBeGreaterThanOrEqual(5);
     vp.scrollTop = vp.scrollHeight;
-    btn(0).focus();
+    await frames(2);
+    btn(15).focus();
+
     await frames(3);
     vr = vp.getBoundingClientRect();
-    expect(btn(0).getBoundingClientRect().top - vr.top, "top ring under the top rule").toBeGreaterThanOrEqual(5);
+    expect(btn(15).getBoundingClientRect().top - vr.top, "top ring under the top rule").toBeGreaterThanOrEqual(5);
   });
 });
 

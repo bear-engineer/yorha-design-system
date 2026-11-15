@@ -53,11 +53,12 @@ function AccordionTrigger({ className, children, ...props }: ComponentProps<type
   );
 }
 
-/** Body; height animates with --motion-collapse (exit --motion-select) via yorha-collapse and is instant under reduced/off motion. */
-function AccordionPanel({ className, children, ...props }: ComponentProps<typeof AccordionPrimitive.Panel>) {
+/** Body; closed panels stay in the DOM as hidden="until-found" so browser find-in-page and #fragments open them (V4-183; hiddenUntilFound={false} opts out). Height animates with --motion-collapse (exit --motion-select) via yorha-collapse and is instant under reduced/off motion. */
+function AccordionPanel({ className, children, hiddenUntilFound = true, ...props }: ComponentProps<typeof AccordionPrimitive.Panel>) {
   return (
     <AccordionPrimitive.Panel
       data-slot="accordion-panel"
+      hiddenUntilFound={hiddenUntilFound}
       className={cnState("yorha-collapse font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg", className)}
       {...props}
     >

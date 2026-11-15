@@ -38,11 +38,12 @@ function CollapsibleTrigger({ className, children, ...props }: ComponentProps<ty
   );
 }
 
-/** Panel body; height and opacity animate with yorha-collapse (--motion-collapse, reduced ≤120ms, off = 0). */
-function CollapsiblePanel({ className, children, ...props }: ComponentProps<typeof CollapsiblePrimitive.Panel>) {
+/** Panel body; closed = hidden="until-found" so find-in-page opens it (V4-183; hiddenUntilFound={false} opts out). Height and opacity animate with yorha-collapse (--motion-collapse, reduced ≤120ms, off = 0). */
+function CollapsiblePanel({ className, children, hiddenUntilFound = true, ...props }: ComponentProps<typeof CollapsiblePrimitive.Panel>) {
   return (
     <CollapsiblePrimitive.Panel
       data-slot="collapsible-panel"
+      hiddenUntilFound={hiddenUntilFound}
       className={cnState("yorha-collapse font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg", className)}
       {...props}
     >
