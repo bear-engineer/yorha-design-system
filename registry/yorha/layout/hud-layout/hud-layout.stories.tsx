@@ -4,6 +4,9 @@ import { expect, userEvent, within } from "storybook/test";
 import { expectTargetSize } from "../../../../.storybook/preview";
 import { withRouter } from "../../../../.storybook/decorators";
 import { HudLayout, HudRegion } from "@/components/hud-layout";
+import { Meter } from "@/components/ui/meter";
+import { Glyph } from "@/components/ui/glyph";
+import { GridBackground } from "@/components/ui/grid-background";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -11,18 +14,27 @@ function Hud({ hidden = false, onClose }: { hidden?: boolean; onClose?: () => vo
   return (
     <HudLayout label="전투 HUD" hidden={hidden} position="absolute">
       <HudRegion corner="top-start" label="상태">
-        <p>2B · LV 12</p>
+        <p className="m-0 flex items-center gap-2 bg-yorha-ink px-2 py-1 font-yorha-bold text-yorha-sm text-yorha-on-ink">
+          <Glyph name="diamond-target" />
+          2B · LV 12
+        </p>
       </HudRegion>
       <HudRegion corner="top-end" label="위치">
-        <p>폐허 도시 · 구역 3</p>
+        <p className="m-0 flex items-center gap-2 border border-yorha-border bg-yorha-panel px-2 py-1 font-yorha-mono text-yorha-xs text-yorha-fg">
+          <Glyph name="diamond-dot" />
+          폐허 도시 · 구역 3
+        </p>
       </HudRegion>
       <HudRegion corner="bottom-start" label="체력과 에너지">
-        <div role="meter" aria-label="체력" aria-valuemin={0} aria-valuemax={100} aria-valuenow={78}>체력 78/100</div>
-        <div role="meter" aria-label="에너지" aria-valuemin={0} aria-valuemax={100} aria-valuenow={45}>에너지 45/100</div>
+        <Meter label="체력" value={78} low={30} style={{ width: 192 }} />
+        <Meter label="에너지" value={45} low={20} style={{ width: 192 }} />
       </HudRegion>
       <HudRegion corner="bottom-end" label="메시지">
-        <p role="status">포드: 적 반응 감지, 주의하세요.</p>
-        <button type="button" className="min-h-[24px] min-w-[24px]" onClick={onClose}>메시지 닫기</button>
+        <p role="status" className="m-0 flex items-center gap-2 border border-yorha-border bg-yorha-panel px-2 py-1 text-yorha-sm text-yorha-fg">
+          <Glyph name="triangle-right" />
+          포드: 적 반응 감지, 주의하세요.
+        </p>
+        <button type="button" className="min-h-[24px] min-w-[24px] border border-yorha-border bg-yorha-panel px-2 text-yorha-sm text-yorha-fg" onClick={onClose}>메시지 닫기</button>
       </HudRegion>
     </HudLayout>
   );
@@ -33,14 +45,31 @@ const meta = {
   component: HudLayout,
   tags: ["autodocs"],
   decorators: [withRouter],
-  parameters: { docs: { story: { inline: false, iframeHeight: 480 } }, layout: "fullscreen" },
+  parameters: { docs: { story: { inline: false, iframeHeight: 620 } }, layout: "padded" },
 } satisfies Meta<typeof HudLayout>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+const BRACKETS = [
+  "start-0.5 top-0.5 border-s-2 border-t-2",
+  "end-0.5 top-0.5 border-e-2 border-t-2",
+  "bottom-0.5 start-0.5 border-b-2 border-s-2",
+  "bottom-0.5 end-0.5 border-b-2 border-e-2",
+];
+
+/** A 960 x 540 game viewport: grid ground, scanlines and corner brackets under the HUD. */
 const frame = (children: React.ReactNode, theme?: string) => (
-  <div data-theme={theme} className="relative h-[24rem] w-full bg-yorha-bg text-yorha-fg">
-    <p className="p-16">게임 화면 영역</p>
+  <div data-theme={theme} className="relative h-[540px] w-[960px] max-w-full overflow-hidden border border-yorha-border bg-yorha-bg text-yorha-fg">
+    <GridBackground />
+    <div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-0 opacity-20"
+      style={{ backgroundImage: "repeating-linear-gradient(to bottom, currentColor 0 1px, transparent 1px 4px)" }}
+    />
+    {BRACKETS.map((b) => (
+      <span key={b} aria-hidden="true" className={`pointer-events-none absolute size-3 border-yorha-border ${b}`} />
+    ))}
+    <span className="sr-only">게임 화면 영역</span>
     {children}
   </div>
 );
@@ -60,6 +89,7 @@ export const Default: Story = {
 
 /** 오버레이와 영역은 포인터를 통과시키고, 버튼만 포인터를 받는다. */
 export const PointerEvents: Story = {
+  tags: ["!autodocs"],
   render: () => frame(<Hud />),
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -83,6 +113,7 @@ function Toggle() {
 
 /** hidden이면 접근성 트리와 화면에서 모두 사라진다. */
 export const Hidden: Story = {
+  tags: ["!autodocs"],
   render: () => <Toggle />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
@@ -121,6 +152,7 @@ export const Authentic: Story = {
 
 /** 표시 상태: 영역 안의 버튼 포커스와 타깃 측정. 숨김 상태는 Hidden 스토리에서 확인한다. */
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => frame(<Hud />),
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);

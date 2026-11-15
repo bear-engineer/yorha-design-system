@@ -4,6 +4,7 @@ import { expectTargetSize } from "../../../../.storybook/preview";
 import { withRouter } from "../../../../.storybook/decorators";
 import { PageHeader } from "./page-header";
 import { Button } from "@/components/ui/button";
+import { Panel } from "@/components/ui/panel";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -28,8 +29,16 @@ export const Default: Story = {
     actions: <Button variant="primary">새로고침</Button>,
   },
   render: (args) => (
-    <main className="bg-yorha-panel text-yorha-fg">
+    <main className="w-[768px] max-w-full border border-yorha-border bg-yorha-bg text-yorha-fg">
       <PageHeader {...args} />
+      <div className="flex flex-col gap-3 p-6">
+        <Panel title="최근 점검" titleLevel={2}>
+          <p className="m-0 text-yorha-sm">2B · 정상 / 9S · 주의 / A2 · 응답 없음</p>
+        </Panel>
+        <Panel title="예정된 작업" titleLevel={2}>
+          <p className="m-0 text-yorha-sm">다음 점검은 내일 09:00에 시작합니다.</p>
+        </Panel>
+      </div>
     </main>
   ),
   play: async ({ canvasElement }) => {

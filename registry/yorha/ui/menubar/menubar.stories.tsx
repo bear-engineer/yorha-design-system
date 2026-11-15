@@ -74,6 +74,20 @@ function MenubarDemo({ onSelect, container }: DemoProps) {
   );
 }
 
+
+/** Page stub under the app-top bar so the bar reads as part of an app. */
+function PageStub() {
+  return (
+    <div className="flex flex-col gap-3 p-6">
+      <p className="m-0 font-yorha-mono text-yorha-xs text-yorha-fg-soft">SEC-07 · 기체 목록</p>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="border border-yorha-border bg-yorha-panel p-3 text-yorha-sm">2B · 정상</div>
+        <div className="border border-yorha-border bg-yorha-panel p-3 text-yorha-sm">9S · 점검 중</div>
+      </div>
+    </div>
+  );
+}
+
 const meta = {
   title: "컴포넌트/내비게이션/Menubar",
   component: MenubarDemo,
@@ -81,8 +95,11 @@ const meta = {
   args: { onSelect: fn() },
   decorators: [
     (Story) => (
-      <div className="min-h-72 bg-yorha-panel p-6 text-yorha-fg">
-        <Story />
+      <div className="min-h-72 w-[720px] max-w-full border border-yorha-border bg-yorha-bg text-yorha-fg">
+        <div className="border-b border-yorha-border bg-yorha-panel px-3 py-1">
+          <Story />
+        </div>
+        <PageStub />
       </div>
     ),
   ],
@@ -140,6 +157,7 @@ export const KeyboardNavigation: Story = {
 
 /** 메뉴가 열린 상태에서 다른 트리거에 마우스를 올리면 그 메뉴로 바뀝니다. */
 export const SwitchesWhileOpen: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const bar = within(canvasElement).getByRole("menubar");
     await userEvent.click(within(bar).getByRole("menuitem", { name: "파일" }));
@@ -169,6 +187,7 @@ export const CheckboxAndRadio: Story = {
 
 /** 모션을 줄이면 트리거 채움과 팝업이 전환 없이 바뀝니다. */
 export const ReducedMotionHasNoTransition: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const restore = setMotion("reduced");
     try {
@@ -243,6 +262,7 @@ export const Authentic: Story = {
 
 /** States: closed bar, open menu with checkbox/radio rows. Targets >= 24px at both densities. */
 export const States: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     await expectTargetSize(canvasElement);
     await userEvent.click(within(canvasElement).getByRole("menuitem", { name: "보기" }));
@@ -262,6 +282,7 @@ const popupMs = (el: Element) =>
 
 /** Menubar popup shares Menu's motion: reduced is an opacity-only fade of at most 120ms with no travel; off is 0. */
 export const PopupMotionMatchesMenu: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const bar = within(canvasElement).getByRole("menubar");
     for (const mode of ["reduced", "off"] as const) {
@@ -291,6 +312,7 @@ export const PopupMotionMatchesMenu: Story = {
 
 /** V4-170: F10 focuses the first enabled trigger. */
 export const F10FocusesBar: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     (document.activeElement as HTMLElement | null)?.blur();
     await userEvent.keyboard("{F10}");

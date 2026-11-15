@@ -106,9 +106,10 @@ function SoundPanel() {
   const { enabled, setEnabled, volume, setVolume } = useSoundPreference();
   return (
     <div className="flex flex-col gap-4 bg-yorha-panel p-4 text-yorha-fg">
-      <p>
-        사운드 <output data-testid="sound-enabled">{String(enabled)}</output>
-      </p>
+      <span className="inline-flex items-stretch self-start border border-yorha-border font-yorha-mono text-yorha-xs">
+        <span className="bg-yorha-ink px-2 py-1 text-yorha-on-ink">사운드</span>
+        <output data-testid="sound-enabled" className="px-2 py-1 text-yorha-fg">{String(enabled)}</output>
+      </span>
       <div className="flex flex-wrap gap-2">
         {SOUND_CUES.map((cue) => (
           <button key={cue} type="button" className="border border-yorha-border px-3 py-1" onClick={() => play(cue)}>

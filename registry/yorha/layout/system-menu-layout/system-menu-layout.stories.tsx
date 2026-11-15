@@ -35,18 +35,32 @@ const SECTIONS: SystemMenuSection[] = [
   },
 ];
 
+/** A fixed 880 x 480 system-menu screen: hard 1px frame, offset shadow, paper ground. */
+function Screen({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-[480px] w-[880px] max-w-full border border-yorha-border bg-yorha-bg p-6 text-yorha-fg shadow-yorha-md">
+      {children}
+    </div>
+  );
+}
+
 const meta = {
   title: "레이아웃/SystemMenuLayout",
   component: SystemMenuLayout,
   tags: ["autodocs"],
   args: { sections: SECTIONS },
-  parameters: { docs: { story: { inline: false, iframeHeight: 480 } }, layout: "padded" },
+  parameters: { docs: { story: { inline: false, iframeHeight: 560 } }, layout: "padded" },
 } satisfies Meta<typeof SystemMenuLayout>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
 /** 탭(구역) → 목록 → 상세 패널 구조. 라우터 없이 동작한다. */
 export const Default: Story = {
+  render: (args) => (
+    <Screen>
+      <SystemMenuLayout {...args} />
+    </Screen>
+  ),
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await expect(c.getByRole("tablist", { name: "시스템 메뉴" })).toBeInTheDocument();
@@ -61,6 +75,7 @@ export const Default: Story = {
 
 /** 키보드: 탭 → 목록 → 상세. 화살표로 구역/항목을 바꾸고 Enter로 상세에 들어간다. */
 export const KeyboardPath: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await userEvent.tab();
@@ -85,6 +100,7 @@ export const KeyboardPath: Story = {
 
 /** 상세 패널 전환은 --motion-panel(400ms)을 따른다. */
 export const PanelTransition: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const detail = canvasElement.querySelector<HTMLElement>("[data-slot=system-menu-detail]")!;
@@ -102,6 +118,7 @@ export const PanelTransition: Story = {
 
 /** 좁은 컨테이너에서는 목록 위, 상세 아래로 쌓인다. */
 export const NarrowStacks: Story = {
+  tags: ["!autodocs"],
   render: (args) => (
     <div style={{ width: "20rem" }}>
       <SystemMenuLayout {...args} />
@@ -177,6 +194,7 @@ export const Authentic: Story = {
 
 /** 기본 선택 탭, 탭 포커스, 목록(listbox) 포커스 상태의 타깃을 측정한다. */
 export const States: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const tab = c.getByRole("tab", { name: "아이템" });

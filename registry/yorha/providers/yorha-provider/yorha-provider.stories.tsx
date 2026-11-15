@@ -14,6 +14,16 @@ import {
 
 const THEMES: Theme[] = ["light", "dark", "authentic", "high-contrast"];
 
+/** Styled HUD readout: mono label + value in a 1px frame (replaces raw debug text). */
+function Readout({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-stretch border border-yorha-border font-yorha-mono text-yorha-xs">
+      <span className="bg-yorha-ink px-2 py-1 text-yorha-on-ink">{label}</span>
+      <span className="px-2 py-1 text-yorha-fg">{children}</span>
+    </span>
+  );
+}
+
 function Panel() {
   const { theme, setTheme } = useTheme();
   const { motion, setMotion } = useMotion();
@@ -21,14 +31,16 @@ function Panel() {
   const sound = useSoundPreference();
   return (
     <div className="flex flex-col gap-4 bg-yorha-panel p-4 text-yorha-fg">
-      <p>
-        테마 <output data-testid="theme">{theme}</output> · 모션 <output data-testid="motion">{motion}</output> · 밀도{" "}
-        <output data-testid="density">{density}</output>
-      </p>
-      <p>
-        사운드 <output data-testid="sound-enabled">{String(sound.enabled)}</output> · 볼륨{" "}
-        <output data-testid="sound-volume">{sound.volume}</output> · 최대 점멸 <output data-testid="flash">{MAX_FLASH_HZ}</output>Hz
-      </p>
+      <div className="flex flex-wrap gap-2">
+        <Readout label="테마"><output data-testid="theme">{theme}</output></Readout>
+        <Readout label="모션"><output data-testid="motion">{motion}</output></Readout>
+        <Readout label="밀도"><output data-testid="density">{density}</output></Readout>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <Readout label="사운드"><output data-testid="sound-enabled">{String(sound.enabled)}</output></Readout>
+        <Readout label="볼륨"><output data-testid="sound-volume">{sound.volume}</output></Readout>
+        <Readout label="최대 점멸"><output data-testid="flash">{MAX_FLASH_HZ}</output>Hz</Readout>
+      </div>
       <div className="flex flex-wrap gap-2">
         {THEMES.map((t) => (
           <button key={t} type="button" className="border border-yorha-border px-3 py-1" onClick={() => setTheme(t)}>

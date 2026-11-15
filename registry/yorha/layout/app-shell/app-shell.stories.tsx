@@ -6,6 +6,9 @@ import { AppShell } from "@/components/app-shell";
 import { Sidebar, type SidebarSection } from "@/components/sidebar";
 import { GridBackground } from "@/components/ui/grid-background";
 import { Vignette } from "@/components/ui/vignette";
+import { PageHeader } from "@/components/page-header";
+import { Panel } from "@/components/ui/panel";
+import { Meter } from "@/components/ui/meter";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
@@ -38,7 +41,18 @@ function Demo({ grid = false, vignette = false, className }: DemoProps) {
       footer={<p className="text-yorha-sm text-yorha-fg-soft">비공식 팬 프로젝트</p>}
       className={className}
     >
-      <p className="text-yorha-base text-yorha-fg">본문 내용</p>
+      <div className="flex flex-col gap-4">
+        <PageHeader eyebrow="SEC-07" title="유닛 상태" description="전술 유닛의 현재 상태와 최근 점검 기록을 확인합니다." className="px-0 pt-0" />
+        <div className="grid gap-4 @2xl:grid-cols-2">
+          <Panel title="유닛 2B" titleLevel={2}>
+            <Meter label="체력" value={78} low={30} />
+            <Meter label="에너지" value={45} low={20} />
+          </Panel>
+          <Panel title="최근 점검" titleLevel={2}>
+            <p className="m-0 text-yorha-sm text-yorha-fg">다음 점검은 내일 09:00에 시작합니다.</p>
+          </Panel>
+        </div>
+      </div>
     </AppShell>
   );
 }
@@ -49,7 +63,7 @@ const meta = {
   tags: ["autodocs"],
   decorators: [withRouter],
   args: { children: null },
-  parameters: { docs: { story: { inline: false, iframeHeight: 480 } }, layout: "fullscreen" },
+  parameters: { docs: { story: { inline: false, iframeHeight: 640 } }, layout: "fullscreen" },
 } satisfies Meta<typeof AppShell>;
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -102,7 +116,7 @@ export const DarkTheme: Story = {
   name: "다크 테마",
   render: () => (
     <div data-theme="dark">
-      <Demo grid vignette className="min-h-0 h-96" />
+      <Demo grid vignette className="min-h-0 h-[40rem]" />
     </div>
   ),
   play: themePlay("dark"),
@@ -112,7 +126,7 @@ export const HighContrastTheme: Story = {
   name: "고대비 테마",
   render: () => (
     <div data-theme="high-contrast">
-      <Demo grid vignette className="min-h-0 h-96" />
+      <Demo grid vignette className="min-h-0 h-[40rem]" />
     </div>
   ),
   play: themePlay("high-contrast"),
@@ -124,7 +138,7 @@ export const Authentic: Story = {
   parameters: { a11y: { test: "todo" } },
   render: () => (
     <div data-theme="authentic">
-      <Demo grid vignette className="min-h-0 h-96" />
+      <Demo grid vignette className="min-h-0 h-[40rem]" />
     </div>
   ),
   play: async ({ canvasElement }) => {

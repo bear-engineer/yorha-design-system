@@ -35,14 +35,31 @@ function EditorToolbar({ orientation }: { orientation?: "horizontal" | "vertical
   );
 }
 
+
+/** Page stub under the app-top bar so the bar reads as part of an app. */
+function PageStub() {
+  return (
+    <div className="flex flex-col gap-3 p-6">
+      <p className="m-0 font-yorha-mono text-yorha-xs text-yorha-fg-soft">SEC-07 · 기체 목록</p>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="border border-yorha-border bg-yorha-panel p-3 text-yorha-sm">2B · 정상</div>
+        <div className="border border-yorha-border bg-yorha-panel p-3 text-yorha-sm">9S · 점검 중</div>
+      </div>
+    </div>
+  );
+}
+
 const meta = {
   title: "컴포넌트/내비게이션/Toolbar",
   component: EditorToolbar,
   tags: ["autodocs"],
   decorators: [
     (Story) => (
-      <div className="max-w-[calc(100vw-2rem)] overflow-x-auto bg-yorha-panel p-6 text-yorha-fg">
-        <Story />
+      <div className="w-[720px] max-w-full border border-yorha-border bg-yorha-bg text-yorha-fg">
+        <div className="overflow-x-auto border-b border-yorha-border bg-yorha-panel p-3">
+          <Story />
+        </div>
+        <PageStub />
       </div>
     ),
   ],
@@ -73,6 +90,7 @@ export const Default: Story = {
 
 /** 툴바 전체가 탭 정지점 하나입니다. 화살표로 이동(끝에서 처음으로 순환)하고, 포커스를 둔 항목만 tabindex 0입니다. */
 export const RovingTabindex: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const items = [
@@ -138,6 +156,7 @@ export const TogglesAndSpace: Story = {
 
 /** 모션을 줄이면 눌림·호버 채움이 전환 없이 바뀝니다. */
 export const ReducedMotionHasNoTransition: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const restore = setMotion("reduced");
     try {
@@ -229,6 +248,7 @@ export const Authentic: Story = {
 
 /** State matrix: default, toggle pressed, focusable-disabled, input, link. Targets >= 24px in both densities. */
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => <EditorToolbar />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);

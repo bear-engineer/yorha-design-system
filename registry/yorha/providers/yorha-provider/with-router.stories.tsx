@@ -6,9 +6,13 @@ import { withRouter } from "../../../../.storybook/decorators";
 function Where() {
   const { pathname, search } = useLocation();
   return (
-    <p className="text-yorha-fg">
-      현재 경로 <output data-testid="loc">{pathname + search}</output> <Link to="/next">다음</Link>
-    </p>
+    <div className="flex items-center gap-3 text-yorha-fg">
+      <span className="inline-flex items-stretch border border-yorha-border font-yorha-mono text-yorha-xs">
+        <span className="bg-yorha-ink px-2 py-1 text-yorha-on-ink">경로</span>
+        <output data-testid="loc" className="px-2 py-1">{pathname + search}</output>
+      </span>
+      <Link to="/next" className="inline-flex min-h-[24px] items-center">다음</Link>
+    </div>
   );
 }
 

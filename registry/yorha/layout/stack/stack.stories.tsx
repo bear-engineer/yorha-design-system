@@ -1,11 +1,17 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, within } from "storybook/test";
 import { Stack } from "./stack";
+import { Glyph } from "@/components/ui/glyph";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 
 function Cell({ children }: { children: string }) {
-  return <span className="border border-yorha-border bg-yorha-panel px-2 py-1 text-yorha-fg">{children}</span>;
+  return (
+    <span className="flex items-center gap-2 border border-yorha-border bg-yorha-panel px-3 py-2 text-yorha-sm text-yorha-fg">
+      <Glyph name="diamond-dot" />
+      {children}
+    </span>
+  );
 }
 
 /** Expected px for `multiplier` spacing units: --spacing is 4px in every density (B1). */
@@ -21,11 +27,13 @@ const meta = {
   parameters: { docs: { story: { inline: false, iframeHeight: 480 } } },
   args: { direction: "column", gap: 2 },
   render: (args) => (
-    <Stack {...args}>
-      <Cell>첫째</Cell>
-      <Cell>둘째</Cell>
-      <Cell>셋째</Cell>
-    </Stack>
+    <div className="w-80 max-w-full border border-yorha-border bg-yorha-bg p-3 text-yorha-fg">
+      <Stack {...args}>
+        <Cell>첫째</Cell>
+        <Cell>둘째</Cell>
+        <Cell>셋째</Cell>
+      </Stack>
+    </div>
   ),
 } satisfies Meta<typeof Stack>;
 export default meta;
@@ -76,6 +84,7 @@ export const RowAsList: Story = {
 
 /** B1: layout gaps sit on a fixed 4px grid; density scales controls, rows and body text, not stack gaps. */
 export const DensityScale: Story = {
+  tags: ["!autodocs"],
   name: "밀도와 무관한 고정 간격",
   render: () => (
     <div className="flex gap-8">

@@ -18,7 +18,14 @@ const THEMES = ["light", "dark", "high-contrast"] as const;
 
 function CurrentPath() {
   const { pathname } = useLocation();
-  return <p data-testid="path" className="mt-4 text-yorha-sm">{pathname}</p>;
+  return (
+    <div className="mt-4">
+      <span className="inline-flex items-stretch border border-yorha-border font-yorha-mono text-yorha-xs">
+        <span className="bg-yorha-ink px-2 py-1 text-yorha-on-ink">경로</span>
+        <output data-testid="path" className="px-2 py-1 text-yorha-fg">{pathname}</output>
+      </span>
+    </div>
+  );
 }
 
 function Panel({ links }: { links: [string, string][] }) {
@@ -75,8 +82,17 @@ const meta = {
   decorators: [
     withRouter,
     (Story) => (
-      <div className="min-h-80 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
-        <Story />
+      <div className="min-h-80 w-[720px] max-w-full border border-yorha-border bg-yorha-bg text-yorha-fg">
+        <div className="border-b border-yorha-border bg-yorha-panel px-3 py-1">
+          <Story />
+        </div>
+        <div className="flex flex-col gap-3 p-6">
+          <p className="m-0 font-yorha-mono text-yorha-xs text-yorha-fg-soft">SEC-07 · 기체 목록</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="border border-yorha-border bg-yorha-panel p-3 text-yorha-sm">2B · 정상</div>
+            <div className="border border-yorha-border bg-yorha-panel p-3 text-yorha-sm">9S · 점검 중</div>
+          </div>
+        </div>
       </div>
     ),
   ],
@@ -95,6 +111,8 @@ const setMotion = (m: string) => {
 
 /** 트리거를 누르면 패널이 열리고, 현재 경로의 링크만 `aria-current="page"`를 가집니다. */
 export const Default: Story = {
+  // Base UI renders aria-hidden focus guards around an open panel on purpose; the hero stays open so docs show the panel.
+  parameters: { a11y: { config: { rules: [{ id: "aria-hidden-focus", enabled: false }] } } },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const trigger = c.getByRole("button", { name: "유닛" });
@@ -105,8 +123,7 @@ export const Default: Story = {
     await expect(list).toHaveAttribute("aria-current", "page");
     await expect(body(canvasElement).getByRole("link", { name: "2B" })).not.toHaveAttribute("aria-current");
     await expect(c.getByRole("link", { name: "홈" })).not.toHaveAttribute("aria-current");
-    await userEvent.keyboard("{Escape}");
-    await waitFor(() => expect(body(canvasElement).queryByRole("link", { name: "유닛 목록" })).toBeNull());
+    // The panel stays open: the docs hero shows the open state. Escape-to-close is covered by KeyboardNavigation.
   },
 };
 
@@ -150,6 +167,7 @@ export const KeyboardNavigation: Story = {
 
 /** 다른 트리거로 옮기면 같은 팝업이 새 패널 크기(`--popup-width`, `--popup-height`)를 따르고, 레이아웃 속성은 전환하지 않습니다. */
 export const MorphsBetweenPanels: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     await userEvent.click(c.getByRole("button", { name: "유닛" }));
@@ -175,6 +193,7 @@ export const MorphsBetweenPanels: Story = {
 
 /** 모션을 줄이면 크기·위치·슬라이드 전환이 모두 0ms라 패널이 즉시 바뀝니다. */
 export const ReducedMotionHasNoTransition: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const restore = setMotion("reduced");
     try {
@@ -251,6 +270,7 @@ export const Authentic: Story = {
 
 /** States: closed triggers and an open panel with links. Targets >= 24px at both densities. */
 export const States: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     await expectTargetSize(canvasElement);
     await userEvent.click(within(canvasElement).getByRole("button", { name: "기록 보관소" }));

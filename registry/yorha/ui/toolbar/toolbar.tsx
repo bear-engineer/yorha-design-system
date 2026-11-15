@@ -60,7 +60,7 @@ function ToolbarLink({ className, ...props }: ComponentProps<typeof ToolbarPrimi
     <ToolbarPrimitive.Link
       data-slot="toolbar-link"
       className={cnState(
-        "inline-flex h-control-sm items-center px-pad-sm whitespace-nowrap text-yorha-sm text-yorha-fg underline underline-offset-4 hover:bg-yorha-ink hover:text-yorha-on-ink focus-visible:yorha-focus",
+        "inline-flex h-control-sm items-center px-pad-sm whitespace-nowrap text-yorha-sm text-yorha-fg yorha-link focus-visible:yorha-focus-inset",
         className,
       )}
       {...props}
@@ -101,7 +101,7 @@ function ToolbarInput({ className, ...props }: ComponentProps<typeof ToolbarPrim
       className={cnState(
         cn(
           "h-control-sm min-w-0 flex-1 basis-32 in-data-[orientation=vertical]:flex-none in-data-[orientation=vertical]:basis-auto rounded-yorha border border-yorha-border bg-yorha-panel px-2 text-yorha-sm text-yorha-fg",
-          "placeholder:text-yorha-fg-soft focus-visible:yorha-focus yorha-disabled",
+          "placeholder:text-yorha-fg-soft focus-visible:yorha-focus-inset yorha-disabled",
         ),
         className,
       )}

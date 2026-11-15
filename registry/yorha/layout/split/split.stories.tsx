@@ -7,7 +7,7 @@ const THEMES = ["light", "dark", "high-contrast"] as const;
 
 function Frame({ width, children }: { width: string; children: ReactNode }) {
   return (
-    <div data-frame className="max-w-full" style={{ width }}>
+    <div data-frame className="max-w-full border border-yorha-border bg-yorha-panel" style={{ width }}>
       {children}
     </div>
   );
@@ -74,6 +74,7 @@ export const WideSideBySide: Story = {
 };
 
 export const NarrowStacks: Story = {
+  tags: ["!autodocs"],
   name: "좁은 컨테이너 · 세로 스택",
   render: () => (
     <Frame width="360px">
@@ -88,6 +89,7 @@ export const NarrowStacks: Story = {
 };
 
 export const ResizeStacksAndBack: Story = {
+  tags: ["!autodocs"],
   name: "폭 변경 시 스택 전환",
   play: async ({ canvasElement }) => {
     const { flow, frame } = panes(canvasElement);
