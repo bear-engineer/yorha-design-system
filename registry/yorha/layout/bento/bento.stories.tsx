@@ -103,14 +103,12 @@ const Delta = ({ up, children }: { up: boolean; children: ReactNode }) => (
   </span>
 );
 
-/** Docs hero: a desktop dashboard. 4 columns, hero 2x2, wide, tall and 1x1 tiles, real kit content. */
-export const Default: Story = {
-  name: "대시보드",
-  render: () => (
-    <div className="bg-yorha-bg p-2">
-      <div data-frame style={{ width: "100%", maxWidth: 1200 }}>
-        <Bento cols={4} rowHeight="sm" data-bento="dashboard">
-          <BentoTile data-tile="hero" size="2x2" title="코어 가동률" glyph="diamond" meta="실시간" footer="마지막 동기화 09:10 · 벙커 서버">
+/** The kit's dashboard: 4 columns, hero 2x2, wide, tall and 1x1 tiles. Docs hero and the realistic variants reuse it. */
+function Dashboard({ id = "dashboard" }: { id?: string }) {
+  const tile = (name: string) => (id === "dashboard" ? name : `${id}-${name}`);
+  return (
+    <Bento cols={4} rowHeight="sm" data-bento={id}>
+          <BentoTile data-tile={tile("hero")} size="2x2" title="코어 가동률" glyph="diamond" meta="실시간" footer="마지막 동기화 09:10 · 벙커 서버">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <p className="m-0 font-yorha-bold text-yorha-3xl leading-none yorha-tabular text-yorha-fg-strong">
                 87.4<span className="text-yorha-lg">%</span>
@@ -130,15 +128,15 @@ export const Default: Story = {
               ))}
             </dl>
           </BentoTile>
-          <BentoTile data-tile="metric" title="출력" glyph="disc" meta="GW" footer="전일 3.6">
+          <BentoTile data-tile={tile("metric")} title="출력" glyph="disc" meta="GW" footer="전일 3.6">
             <p className="m-0 font-yorha-bold text-yorha-2xl leading-none yorha-tabular text-yorha-fg-strong">3.2</p>
             <Delta up={false}>0.4</Delta>
           </BentoTile>
-          <BentoTile data-tile="status" title="상태" glyph="ring" meta="A2" footer="재접속 대기 중">
+          <BentoTile data-tile={tile("status")} title="상태" glyph="ring" meta="A2" footer="재접속 대기 중">
             <Badge variant="alert">오프라인</Badge>
             <p className="m-0 text-yorha-sm text-yorha-fg-soft">연결 끊김 08:42</p>
           </BentoTile>
-          <BentoTile data-tile="tasks" size="tall" title="작업" glyph="square" meta="2/6" footer="전체 6건">
+          <BentoTile data-tile={tile("tasks")} size="tall" title="작업" glyph="square" meta="2/6" footer="전체 6건">
             <ul className="m-0 flex list-none flex-col gap-2 p-0 text-yorha-sm">
               {TASKS.map((t) => (
                 <li key={t.text} className="flex items-center gap-2">
@@ -148,16 +146,26 @@ export const Default: Story = {
               ))}
             </ul>
           </BentoTile>
-          <BentoTile data-tile="action" title="보고서" glyph="copy" href="#report" label="보고서 열기" footer="CSV · 1.2 MB">
+          <BentoTile data-tile={tile("action")} title="보고서" glyph="copy" href="#report" label="보고서 열기" footer="CSV · 1.2 MB">
             <p className="m-0 text-yorha-sm text-yorha-fg-soft">주간 가동 기록을 내보냅니다</p>
           </BentoTile>
-          <BentoTile data-tile="trend" size="wide" title="부하 추이" glyph="clock" meta="24h" href="#trend" footer={<span className="flex justify-between yorha-tabular"><span>00:00</span><span>12:00</span><span>24:00</span></span>}>
+          <BentoTile data-tile={tile("trend")} size="wide" title="부하 추이" glyph="clock" meta="24h" href="#trend" footer={<span className="flex justify-between yorha-tabular"><span>00:00</span><span>12:00</span><span>24:00</span></span>}>
             <Spark />
           </BentoTile>
-          <BentoTile data-tile="battery" title="배터리" glyph="lock" footer="경고 50 · 위험 20">
+          <BentoTile data-tile={tile("battery")} title="배터리" glyph="lock" footer="경고 50 · 위험 20">
             <Meter label="잔량" value={46} low={50} critical={20} />
           </BentoTile>
         </Bento>
+  );
+}
+
+/** Docs hero: a desktop dashboard. */
+export const Default: Story = {
+  name: "대시보드",
+  render: () => (
+    <div className="bg-yorha-bg p-2">
+      <div data-frame style={{ width: "100%", maxWidth: 1200 }}>
+        <Dashboard />
       </div>
     </div>
   ),
@@ -199,6 +207,7 @@ export const TileStates: Story = {
 };
 
 export const Presets: Story = {
+  tags: ["!autodocs"],
   name: "3 프리셋 × 3 폭",
   render: () => (
     <div className="flex flex-col gap-8 bg-yorha-bg p-2">
@@ -233,6 +242,7 @@ export const Presets: Story = {
 };
 
 export const ColumnCounts: Story = {
+  tags: ["!autodocs"],
   name: "열 수 2/4/6/12",
   render: () => (
     <div className="flex flex-col gap-6 bg-yorha-bg p-2">
@@ -261,6 +271,7 @@ export const ColumnCounts: Story = {
 };
 
 export const TabOrder: Story = {
+  tags: ["!autodocs"],
   name: "Tab 순서 = DOM 순서",
   render: () => (
     <Frame width={360}>
@@ -281,6 +292,7 @@ export const TabOrder: Story = {
 };
 
 export const ContainerQuery: Story = {
+  tags: ["!autodocs"],
   name: "컨테이너 쿼리로 타일 내부 전환",
   render: () => (
     <Frame width={360}>
@@ -305,6 +317,7 @@ export const ContainerQuery: Story = {
 };
 
 export const Radius: Story = {
+  tags: ["!autodocs"],
   name: "반경: 안쪽 = 바깥 - 패딩",
   render: () => (
     <Frame width={768}>
@@ -333,6 +346,7 @@ const stagger = (el: Element) => {
 };
 
 export const Motion: Story = {
+  tags: ["!autodocs"],
   name: "진입 stagger와 감소된 모션",
   render: () => (
     <div className="flex flex-col gap-4">
@@ -373,40 +387,49 @@ export const Motion: Story = {
   },
 };
 
-function ThemeBento({ id }: { id: string }) {
-  return (
-    <Bento preset="feature" data-bento={id}>
-      <BentoTile area="main" href={`#${id}-main`} label="주요 기능">
-        <span>설명</span>
-      </BentoTile>
-      <BentoTile area="side">
-        <p>보조</p>
-      </BentoTile>
-      <BentoTile area="one">
-        <p className="text-yorha-fg-soft">하나</p>
-      </BentoTile>
-      <BentoTile area="two">
-        <p>둘</p>
-      </BentoTile>
-    </Bento>
-  );
-}
-
+/** Same dashboard under the three themes; each panel scopes its own `data-theme`. */
 export const ThreeThemes: Story = {
   name: "3 테마",
+  parameters: { docs: { story: { inline: false, iframeHeight: 1900 } } },
   render: () => (
     <div className="flex flex-col gap-4">
       {THEMES.map((theme) => (
-        <div key={theme} data-theme={theme} className="bg-yorha-bg p-4" style={{ width: 768 } as CSSProperties}>
-          <ThemeBento id={theme} />
+        <div key={theme} data-theme={theme} className="bg-yorha-bg p-4" style={{ width: 1000 } as CSSProperties}>
+          <Dashboard id={theme} />
         </div>
       ))}
     </div>
   ),
   play: async ({ canvasElement }) => {
-    expect(canvasElement.querySelectorAll('[data-slot="bento-tile"]').length).toBe(12);
+    expect(canvasElement.querySelectorAll('[data-slot="bento-tile"]').length).toBe(21);
     const bgs = THEMES.map((t) => getComputedStyle(canvasElement.querySelector(`[data-theme="${t}"] [data-slot="bento-tile"]`) as HTMLElement).backgroundColor);
     expect(new Set(bgs).size).toBeGreaterThan(1);
+  },
+};
+
+/** The dashboard in containers of 1200, 720 and 360px: the grid collapses, DOM order stays the reading order. */
+export const ResponsiveDashboard: Story = {
+  name: "반응형: 1200 · 720 · 360",
+  parameters: { docs: { story: { inline: false, iframeHeight: 2300 } } },
+  render: () => (
+    <div className="flex flex-col gap-8 bg-yorha-bg p-2">
+      {WIDTHS.map((w) => (
+        <section key={w} aria-label={`폭 ${w}`}>
+          <Frame width={w}>
+            <Dashboard id={`w${w}`} />
+          </Frame>
+        </section>
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const cols = (w: number) => getComputedStyle(canvasElement.querySelector(`[data-bento="w${w}"]`) as HTMLElement).gridTemplateColumns.split(" ").length;
+    await waitFor(() => expect(cols(360)).toBe(1));
+    expect(cols(1200)).toBe(4);
+    expect(cols(720)).toBeGreaterThan(1);
+    expect(cols(720)).toBeLessThanOrEqual(4);
+    const narrow = tilesOf(canvasElement.querySelector('[data-bento="w360"]') as HTMLElement);
+    expect(ids(visualOrder(narrow))).toEqual(ids(narrow));
   },
 };
 
@@ -416,17 +439,18 @@ export const Authentic: Story = {
   name: "Authentic (원작 팔레트)",
   parameters: { a11y: { test: "todo" } },
   render: () => (
-    <div data-theme="authentic" className="bg-yorha-bg p-4" style={{ width: 768 }}>
-      <ThemeBento id="authentic" />
+    <div data-theme="authentic" className="bg-yorha-bg p-4" style={{ width: 1000 }}>
+      <Dashboard id="authentic" />
     </div>
   ),
   play: async ({ canvasElement }) => {
-    expect(canvasElement.querySelectorAll('[data-theme="authentic"] [data-slot="bento-tile"]').length).toBe(4);
+    expect(canvasElement.querySelectorAll('[data-theme="authentic"] [data-slot="bento-tile"]').length).toBe(7);
   },
 };
 
 /** 링크 타일: 기본과 키보드 포커스 상태, 360px 폭에서 타깃을 측정한다. 호버 리프트는 CSS 전용이라 재생하지 않는다. */
 export const States: Story = {
+  tags: ["!autodocs"],
   render: () => (
     <Frame width={360}>
       <PresetBento preset="dashboard" id="states" />

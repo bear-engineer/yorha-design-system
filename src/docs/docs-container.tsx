@@ -28,8 +28,19 @@ export function YorhaDocsContainer({ children, ...props }: PropsWithChildren<Doc
         if (parent && !["UL", "OL", "MENU"].includes(parent.tagName)) li.setAttribute("role", "none");
       }
     };
+    // Storybook stamps lang="en" on its docs wrapper and on every inline story wrapper, which would make Hangul
+    // headings inherit the Latin-only tracking/case rule. Story content and the page are Korean; its own
+    // chrome (arg tables, buttons) keeps its explicit lang="en".
+    const korean = () => {
+      root.closest(".sbdocs-content")?.setAttribute("lang", "ko");
+      for (const el of root.querySelectorAll('[id^="story--"][lang="en"]')) el.setAttribute("lang", "ko");
+    };
+    korean();
     fix();
-    const observer = new MutationObserver(fix);
+    const observer = new MutationObserver(() => {
+      fix();
+      korean();
+    });
     observer.observe(root, { childList: true, subtree: true });
     return () => observer.disconnect();
   }, []);

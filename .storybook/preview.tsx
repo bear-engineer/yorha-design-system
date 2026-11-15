@@ -4,6 +4,35 @@ import "../src/styles/storybook.css";
 
 import { expect } from "storybook/test";
 
+/**
+ * Docs pages render stories as child iframes (`docs.story.inline: false`). A play function (or autoFocus)
+ * that focuses inside a child iframe scrolls every ancestor document, so opening a docs page would land
+ * halfway down on a bare test fixture (inline stories focus inside the docs document and scroll it too). In docs only, focus() defaults to preventScroll
+ * and scrollIntoView is a no-op. Standalone story view, vitest, stability and vrt runs are untouched
+ * (their parent is not a docs preview), so focus still really moves there.
+ */
+function embeddedInDocs(): boolean {
+  // Inline stories (the default) share the docs document itself; non-inline ones run in a child iframe.
+  if (new URLSearchParams(window.location.search).get("viewMode") === "docs") return true;
+  try {
+    if (window.parent === window) return false;
+    return new URLSearchParams(window.parent.location.search).get("viewMode") === "docs";
+  } catch {
+    return false; // cross-origin parent (manager on another origin): not a docs preview
+  }
+}
+if (typeof window !== "undefined" && embeddedInDocs()) {
+  const nativeFocus = HTMLElement.prototype.focus;
+  HTMLElement.prototype.focus = function focus(options?: FocusOptions) {
+    nativeFocus.call(this, { preventScroll: true, ...options });
+  };
+  Element.prototype.scrollIntoView = () => {};
+}
+
+// The kit is Korean-first: tokens scope Latin-only tracking/case to :lang(ko), so the preview (canvas and docs
+// iframes both load this module) must declare it or Hangul headings stay wide-tracked.
+if (typeof document !== "undefined") document.documentElement.lang = "ko";
+
 /** Pointer targets (WCAG 2.5.8). aria-hidden shadow inputs and 1px visually hidden helpers are skipped. */
 const TARGET_SELECTOR = [
   "button", "a[href]", "input:not([type=hidden])", "select", "textarea", "summary",
