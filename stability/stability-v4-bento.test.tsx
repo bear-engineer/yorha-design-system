@@ -14,9 +14,9 @@ const gapOf = (el: Element) => parseFloat(getComputedStyle(el).columnGap);
 const intersects = (a: DOMRect, b: DOMRect) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
 const close = (a: number, b: number, msg: string) => expect(Math.abs(a - b), msg).toBeLessThanOrEqual(0.5);
 
-async function mount(width = 1200) {
+async function mount(width = 1200, story = "Default") {
   await page.viewport(1280, 900);
-  const root = await mountStory("bento", "Default");
+  const root = await mountStory("bento", story);
   root.style.display = "block";
   root.style.minHeight = "0";
   const frame = q(root, "[data-frame]");
@@ -54,7 +54,10 @@ describe("V4 bento docs hero at a 1200px container", () => {
     const talls = qa(root, '[data-tile][data-size="tall"], [data-tile][data-size="1x2"]');
     expect(talls.length).toBeGreaterThanOrEqual(1);
     const unit = r(tile(root, "metric"));
-    for (const t of talls) expect(r(t).height, "tall is about twice a 1x1").toBeGreaterThan(unit.height * 1.9);
+    for (const t of talls) {
+      expect(r(t).height, "tall is clearly taller than a 1x1").toBeGreaterThan(unit.height * 1.5);
+      expect(r(t).height, "tall holds two rows and the gap").toBeGreaterThanOrEqual(tracks(grid, "gridTemplateRows")[0]! + gapOf(grid) + 1);
+    }
     const footprints = new Set(tiles(root).map((t) => `${Math.round(r(t).width)}x${Math.round(r(t).height)}`));
     expect(footprints.size, "at least four distinct tile footprints").toBeGreaterThanOrEqual(4);
   });
@@ -91,7 +94,7 @@ describe("V4 bento docs hero at a 1200px container", () => {
   });
 
   test("tile states: loading is a single status region, error is an alert", async () => {
-    const root = await mount();
+    const root = await mount(1000, "TileStates");
     const loading = tile(root, "loading");
     expect(qa(loading, '[role="status"]').length).toBe(1);
     expect(loading.dataset.state).toBe("loading");

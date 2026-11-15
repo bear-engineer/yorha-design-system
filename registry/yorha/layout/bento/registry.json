@@ -9,7 +9,9 @@
       "dependencies": [],
       "registryDependencies": [
         "@yorha/base",
-        "@yorha/utils"
+        "@yorha/utils",
+        "@yorha/glyph",
+        "@yorha/skeleton"
       ],
       "files": [
         {
@@ -18,7 +20,7 @@
           "target": "@components/bento.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Each tile holds at most one interactive target: pass href and label for the stretched-link pattern, and do not nest other links or buttons in that tile. Gaps are fixed at 16px in every density (B1). Tiles enter with yorha-stagger; the hover lift moves only transform."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Each tile holds at most one interactive target: pass href and label for the stretched-link pattern, and do not nest other links or buttons in that tile. Gaps are fixed at 16px in every density (B1). Tiles enter with yorha-stagger; hover changes colour and an inset second frame line only (the box never moves), the focus ring is the tile's own outline inside the gap. Structured tiles (title, glyph, meta, footer, state) give a title row, body and footer rule, plus loading (one status region of skeletons) and error (alert) states; v4: plain children-only tiles are unchanged."
     }
   ]
 }

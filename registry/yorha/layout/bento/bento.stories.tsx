@@ -3,9 +3,13 @@ import { expect, userEvent, waitFor } from "storybook/test";
 import { expectTargetSize } from "../../../../.storybook/preview";
 import type { CSSProperties, ReactNode } from "react";
 import { Bento, BentoTile } from "./bento";
+import { Badge } from "@/components/ui/badge";
+import { Glyph } from "@/components/ui/glyph";
+import { Meter } from "@/components/ui/meter";
+import { Progress } from "@/components/ui/progress";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
-const WIDTHS = [360, 768, 1280] as const;
+const WIDTHS = [1200, 720, 360] as const;
 
 type Preset = "dashboard" | "feature" | "profile";
 const PRESETS: Record<Preset, { area: string; label: string; link?: boolean }[]> = {
@@ -64,12 +68,135 @@ const ids = (tiles: HTMLElement[]) => tiles.map((t) => t.dataset.tile);
 
 const meta = {
   title: "레이아웃/Bento",
-  parameters: { docs: { story: { inline: false, iframeHeight: 480 } } },
+  parameters: { docs: { story: { inline: false, iframeHeight: 540 } } },
   component: Bento,
   tags: ["autodocs"],
 } satisfies Meta<typeof Bento>;
 export default meta;
 type Story = StoryObj<typeof meta>;
+
+const TASKS: { glyph: "check" | "diamond-ring" | "disc"; text: string; done?: boolean }[] = [
+  { glyph: "check", text: "기록 동기화", done: true },
+  { glyph: "check", text: "유닛 A2 재접속", done: true },
+  { glyph: "diamond-ring", text: "코어 점검 보고" },
+  { glyph: "disc", text: "벙커 서버 백업" },
+  { glyph: "disc", text: "펌웨어 배포" },
+  { glyph: "disc", text: "로그 아카이브" },
+];
+/** 24h load as a bar strip: integer-wide bars, crisp edges. */
+const LOAD = [34, 30, 28, 26, 24, 26, 32, 40, 52, 61, 66, 70, 68, 72, 75, 71, 64, 58, 62, 69, 74, 70, 66, 61];
+
+function Spark() {
+  return (
+    <svg data-slot="spark" role="img" aria-label="지난 24시간 부하 추이" viewBox={`0 0 ${LOAD.length * 4} 40`} preserveAspectRatio="none" shapeRendering="crispEdges" className="block h-16 w-full text-yorha-fg-strong" fill="currentColor">
+      {LOAD.map((v, i) => (
+        <rect key={i} x={i * 4} y={40 - Math.round(v / 2)} width={3} height={Math.round(v / 2)} opacity={i === LOAD.length - 1 ? 1 : 0.55} />
+      ))}
+    </svg>
+  );
+}
+
+const Delta = ({ up, children }: { up: boolean; children: ReactNode }) => (
+  <span className="inline-flex items-center gap-1 yorha-tabular text-yorha-sm text-yorha-fg">
+    <Glyph name={up ? "triangle-up" : "triangle-down"} />
+    {children}
+  </span>
+);
+
+/** Docs hero: a desktop dashboard. 4 columns, hero 2x2, wide, tall and 1x1 tiles, real kit content. */
+export const Default: Story = {
+  name: "대시보드",
+  render: () => (
+    <div className="bg-yorha-bg p-2">
+      <div data-frame style={{ width: "100%", maxWidth: 1200 }}>
+        <Bento cols={4} rowHeight="sm" data-bento="dashboard">
+          <BentoTile data-tile="hero" size="2x2" title="코어 가동률" glyph="diamond" meta="실시간" footer="마지막 동기화 09:10 · 벙커 서버">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+              <p className="m-0 font-yorha-bold text-yorha-3xl leading-none yorha-tabular text-yorha-fg-strong">
+                87.4<span className="text-yorha-lg">%</span>
+              </p>
+              <Delta up>+2.1</Delta>
+            </div>
+            <div className="flex flex-col gap-3">
+              <Meter label="코어" value={87} />
+              <Progress label="동기화" value={64} />
+            </div>
+            <dl className="m-0 grid grid-cols-3 gap-4 text-yorha-xs text-yorha-fg-soft">
+              {[["온도", "41 °C"], ["전압", "12.4 V"], ["가동", "312일"]].map(([k, v]) => (
+                <div key={k} className="flex min-w-0 flex-col gap-1">
+                  <dt>{k}</dt>
+                  <dd className="m-0 font-yorha-bold text-yorha-base yorha-tabular text-yorha-fg-strong">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </BentoTile>
+          <BentoTile data-tile="metric" title="출력" glyph="disc" meta="GW" footer="전일 3.6">
+            <p className="m-0 font-yorha-bold text-yorha-2xl leading-none yorha-tabular text-yorha-fg-strong">3.2</p>
+            <Delta up={false}>0.4</Delta>
+          </BentoTile>
+          <BentoTile data-tile="status" title="상태" glyph="ring" meta="A2" footer="재접속 대기 중">
+            <Badge variant="alert">오프라인</Badge>
+            <p className="m-0 text-yorha-sm text-yorha-fg-soft">연결 끊김 08:42</p>
+          </BentoTile>
+          <BentoTile data-tile="tasks" size="tall" title="작업" glyph="square" meta="2/6" footer="전체 6건">
+            <ul className="m-0 flex list-none flex-col gap-2 p-0 text-yorha-sm">
+              {TASKS.map((t) => (
+                <li key={t.text} className="flex items-center gap-2">
+                  <Glyph name={t.glyph} className={t.done ? "text-yorha-fg-soft" : "text-yorha-fg-strong"} />
+                  <span className={t.done ? "text-yorha-fg-soft line-through" : "text-yorha-fg-strong"}>{t.text}</span>
+                </li>
+              ))}
+            </ul>
+          </BentoTile>
+          <BentoTile data-tile="action" title="보고서" glyph="copy" href="#report" label="보고서 열기" footer="CSV · 1.2 MB">
+            <p className="m-0 text-yorha-sm text-yorha-fg-soft">주간 가동 기록을 내보냅니다</p>
+          </BentoTile>
+          <BentoTile data-tile="trend" size="wide" title="부하 추이" glyph="clock" meta="24h" href="#trend" footer={<span className="flex justify-between yorha-tabular"><span>00:00</span><span>12:00</span><span>24:00</span></span>}>
+            <Spark />
+          </BentoTile>
+          <BentoTile data-tile="battery" title="배터리" glyph="lock" footer="경고 50 · 위험 20">
+            <Meter label="잔량" value={46} low={50} critical={20} />
+          </BentoTile>
+        </Bento>
+      </div>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const grid = canvasElement.querySelector<HTMLElement>('[data-bento="dashboard"]') as HTMLElement;
+    expect(tilesOf(grid).length).toBe(7);
+    const hero = grid.querySelector<HTMLElement>('[data-tile="hero"]') as HTMLElement;
+    const metric = grid.querySelector<HTMLElement>('[data-tile="metric"]') as HTMLElement;
+    await waitFor(() => expect(hero.getBoundingClientRect().width).toBeGreaterThan(metric.getBoundingClientRect().width * 1.9));
+    expect(ids(visualOrder(tilesOf(grid)))).toEqual(ids(tilesOf(grid)));
+  },
+};
+
+/** Loading, error and empty tiles in the same anatomy: the box and title row stay, only the body changes. */
+export const TileStates: Story = {
+  name: "타일 상태: 로딩·오류·비어 있음",
+  render: () => (
+    <Frame width={1000}>
+      <Bento cols={4} rowHeight="sm" data-bento="states-grid">
+        <BentoTile data-tile="ready" title="정상" glyph="check" meta="OK">
+          <p className="m-0 font-yorha-bold text-yorha-2xl leading-none yorha-tabular text-yorha-fg-strong">128</p>
+        </BentoTile>
+        <BentoTile data-tile="loading" title="로딩" glyph="clock" state="loading" loadingLabel="가동률 불러오는 중" />
+        <BentoTile data-tile="error" title="오류" glyph="alert" state="error" errorText="가동률을 불러오지 못했습니다" />
+        <BentoTile data-tile="empty" title="비어 있음" glyph="square">
+          <p className="m-0 text-yorha-sm text-yorha-fg-soft">집계된 기록이 없습니다</p>
+        </BentoTile>
+      </Bento>
+    </Frame>
+  ),
+  play: async ({ canvasElement }) => {
+    const tile = (id: string) => canvasElement.querySelector<HTMLElement>(`[data-tile="${id}"]`) as HTMLElement;
+    expect(tile("loading").querySelectorAll('[role="status"]').length).toBe(1);
+    expect(tile("error").querySelectorAll('[role="alert"]').length).toBe(1);
+    // Same row, same height: a state change never resizes the tile.
+    const heights = ["ready", "loading", "error", "empty"].map((id) => Math.round(tile(id).getBoundingClientRect().height));
+    expect(new Set(heights).size).toBe(1);
+  },
+};
 
 export const Presets: Story = {
   name: "3 프리셋 × 3 폭",
@@ -95,8 +222,8 @@ export const Presets: Story = {
       expect(ids(visualOrder(narrowTiles))).toEqual(ids(narrowTiles));
       expect(new Set(narrowTiles.map((t) => Math.round(t.getBoundingClientRect().left))).size).toBe(1);
       expect(getComputedStyle(narrow).gridTemplateColumns.split(" ").length).toBe(1);
-      // 1280px: areas apply, still row-major in DOM order, never dense.
-      const wide = canvasElement.querySelector<HTMLElement>(`[data-bento="${preset}-1280"]`) as HTMLElement;
+      // 1200px: areas apply, still row-major in DOM order, never dense.
+      const wide = canvasElement.querySelector<HTMLElement>(`[data-bento="${preset}-1200"]`) as HTMLElement;
       expect(getComputedStyle(wide).gridTemplateColumns.split(" ").length).toBe(4);
       expect(ids(visualOrder(tilesOf(wide)))).toEqual(ids(tilesOf(wide)));
       expect(getComputedStyle(wide).gridAutoFlow).not.toContain("dense");
@@ -234,9 +361,9 @@ export const Motion: Story = {
       expect(stagger(tile("reduced", i)).delay).toBe(0);
       expect(stagger(tile("reduced", i)).duration).toBeLessThanOrEqual(0.12);
     }
-    // M07: hover never moves the tile (edge flicker); it only changes border colour, transition on colours only.
+    // M07: hover never moves the tile (edge flicker); it only changes colour and an inset frame line (box-shadow), transition on those only.
     const t = tile("full", 1);
-    expect(getComputedStyle(t).transitionProperty).toBe("color, background-color, border-color");
+    expect(getComputedStyle(t).transitionProperty).toBe("color, background-color, border-color, box-shadow");
     expect(getComputedStyle(t).transitionProperty).not.toMatch(/translate|transform/);
     expect(parseFloat(getComputedStyle(t).transitionDuration)).toBeGreaterThan(0);
     expect(getComputedStyle(tile("reduced", 1)).transitionDuration).toBe("0s");

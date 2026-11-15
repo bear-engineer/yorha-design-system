@@ -1,4 +1,6 @@
 import { cn } from "@/lib/utils";
+import { Glyph, type GlyphName } from "@/components/ui/glyph";
+import { Skeleton, SkeletonGroup } from "@/components/ui/skeleton";
 import { Children, cloneElement, isValidElement } from "react";
 import type { CSSProperties, ComponentPropsWithoutRef, ReactElement, ReactNode } from "react";
 
@@ -7,6 +9,7 @@ export type BentoGap = 2 | 3 | 4 | 6;
 /** Row height in 4px spacing steps (fixed in every density). */
 export type BentoRowHeight = "sm" | "md" | "lg";
 export type BentoPreset = "dashboard" | "feature" | "profile";
+export type BentoTileState = "ready" | "loading" | "error";
 export type BentoSize = "1x1" | "2x1" | "1x2" | "2x2" | "wide" | "tall";
 
 export interface BentoOwnProps {
@@ -96,6 +99,18 @@ export interface BentoTileOwnProps {
   label?: string;
   /** Stagger position; Bento fills it in from DOM order. */
   index?: number;
+  /** Title row text. Setting any of title/glyph/meta/footer/state switches the tile to the structured anatomy: title row, body, optional footer rule. With `href` the title is the stretched link (`label` overrides its text). */
+  title?: ReactNode;
+  /** Dot glyph at the start of the title row. */
+  glyph?: GlyphName;
+  /** Right-aligned note in the title row (unit, range, count). */
+  meta?: ReactNode;
+  /** Pinned to the bottom of the tile behind a 1px rule. */
+  footer?: ReactNode;
+  /** `loading` replaces the body with one status region of skeletons; `error` shows `errorText` as an alert. */
+  state?: BentoTileState;
+  loadingLabel?: string;
+  errorText?: string;
   children?: ReactNode;
   className?: string;
 }
@@ -113,42 +128,94 @@ const SIZE: Record<BentoSize, string> = {
 
 /**
  * One radius token (--yorha-radius) outside; the body's radius is that minus the tile padding (never below 0).
- * The tile is a query container of its own, so the body switches layout with the tile's width.
+ * The tile is a query container of its own. Plain tiles (children only) switch body layout with the tile's width;
+ * structured tiles (title/glyph/meta/footer/state) are always a column: title row, content, footer.
+ * Link tiles change only colour and an inset second frame line on hover (the box never moves), the focus ring is the
+ * tile's own outline, drawn in the gap.
  */
-export function BentoTile({ size = "1x1", area, href, label, index, className, style, children, ...rest }: BentoTileProps) {
+export function BentoTile({ size = "1x1", area, href, label, index, title, glyph, meta, footer, state = "ready", loadingLabel = "불러오는 중", errorText = "불러오지 못했습니다", className, style, children, ...rest }: BentoTileProps) {
   const vars = {
     ...(area ? { "--bento-area": area } : {}),
     ...(index !== undefined ? { "--yorha-stagger-index": index } : {}),
     ...style,
   } as CSSProperties;
-  const interactive = href !== undefined;
+  const structured = title !== undefined || glyph !== undefined || meta !== undefined || footer !== undefined || state !== "ready";
+  const interactive = href !== undefined && state === "ready";
+  const linkClass = "outline-none after:absolute after:inset-0 after:content-['']";
   return (
     <div
       data-slot="bento-tile"
       data-area={area}
+      data-size={area ? undefined : size}
+      data-state={structured ? state : undefined}
       style={vars}
       className={cn(
-        "@container relative min-w-0 [--bento-pad:calc(var(--spacing)*4)] p-(--bento-pad)",
+        "@container group relative min-w-0 [--bento-pad:calc(var(--spacing)*4)] p-(--bento-pad)",
         "rounded-yorha border border-yorha-border bg-yorha-panel text-yorha-fg",
+        state === "error" && "border-yorha-alert-ui",
         index !== undefined && "yorha-stagger",
         area ? "@3xl:[grid-area:var(--bento-area)]" : SIZE[size],
-        // Hover changes colour only (a lifted tile slides out from under the pointer and flickers at its edge).
-        interactive && "transition-[color,background-color,border-color] duration-(--motion-select) ease-yorha-out hover:border-yorha-ink",
+        // Hover changes colour only: the border goes to ink and an inset line doubles it (box-shadow draws no layout).
+        interactive &&
+          "transition-[color,background-color,border-color,box-shadow] duration-(--motion-select) ease-yorha-out hover:border-yorha-ink hover:shadow-[inset_0_0_0_1px_var(--yorha-ink)] has-[a:focus-visible]:yorha-focus",
         className,
       )}
       {...rest}
     >
-      <div
-        data-slot="bento-tile-body"
-        className="flex h-full min-w-0 flex-col gap-2 rounded-[max(0px,calc(var(--yorha-radius)-var(--bento-pad)))] @sm:flex-row @sm:items-start @sm:gap-4"
-      >
-        {interactive ? (
-          <a href={href} className="font-yorha-bold text-yorha-fg-strong outline-none after:absolute after:inset-0 after:content-[''] focus-visible:yorha-focus">
-            {label}
-          </a>
-        ) : null}
-        {children}
-      </div>
+      {structured ? (
+        <div data-slot="bento-tile-body" className="flex h-full min-w-0 flex-col gap-3 rounded-[max(0px,calc(var(--yorha-radius)-var(--bento-pad)))]">
+          <div data-slot="bento-tile-header" className="flex min-h-6 items-center gap-2">
+            {glyph ? <Glyph data-slot="bento-tile-glyph" name={glyph} className="text-yorha-fg-soft" /> : null}
+            <span data-slot="bento-tile-title" className="min-w-0 flex-1 truncate font-yorha-bold text-yorha-sm uppercase tracking-yorha-wide text-yorha-fg-strong">
+              {interactive ? (
+                <a href={href} className={linkClass}>
+                  {label ?? title}
+                </a>
+              ) : (
+                title
+              )}
+            </span>
+            {meta !== undefined ? (
+              <span data-slot="bento-tile-meta" className="shrink-0 yorha-tabular text-yorha-xs text-yorha-fg-soft">
+                {meta}
+              </span>
+            ) : null}
+            {interactive ? <Glyph data-slot="bento-tile-go" name="triangle-right" className="text-yorha-fg-soft opacity-60 transition-opacity duration-(--motion-select) ease-yorha-out group-hover:opacity-100" /> : null}
+          </div>
+          <div data-slot="bento-tile-content" className="flex min-h-0 min-w-0 flex-1 flex-col gap-3">
+            {state === "loading" ? (
+              <SkeletonGroup label={loadingLabel} className="flex flex-1 flex-col gap-2">
+                <Skeleton className="h-6 w-1/2" />
+                <Skeleton className="min-h-6 w-full flex-1" />
+              </SkeletonGroup>
+            ) : state === "error" ? (
+              <p role="alert" className="m-0 flex items-start gap-2 text-yorha-sm text-yorha-alert">
+                <Glyph name="alert" className="mt-[2px]" />
+                <span>{errorText}</span>
+              </p>
+            ) : (
+              children
+            )}
+          </div>
+          {footer !== undefined && state === "ready" ? (
+            <div data-slot="bento-tile-footer" className="mt-auto border-t border-yorha-separator pt-3 text-yorha-xs text-yorha-fg-soft">
+              {footer}
+            </div>
+          ) : null}
+        </div>
+      ) : (
+        <div
+          data-slot="bento-tile-body"
+          className="flex h-full min-w-0 flex-col gap-2 rounded-[max(0px,calc(var(--yorha-radius)-var(--bento-pad)))] @sm:flex-row @sm:items-start @sm:gap-4"
+        >
+          {interactive ? (
+            <a href={href} className={cn(linkClass, "font-yorha-bold text-yorha-fg-strong")}>
+              {label}
+            </a>
+          ) : null}
+          {children}
+        </div>
+      )}
     </div>
   );
 }
