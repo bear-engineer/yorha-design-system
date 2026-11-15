@@ -1,5 +1,15 @@
 import { Toggle } from "@base-ui/react/toggle";
-import type { ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { cn } from "@/lib/utils";
 import { CrossIcon } from "@/components/ui/icons";
 
@@ -21,6 +31,91 @@ export interface ChipProps {
   defaultPressed?: boolean;
   onPressedChange?: (pressed: boolean) => void;
   className?: string;
+}
+
+const GroupContext = createContext(false);
+
+const CHIP = "[data-slot=chip]";
+
+export type ChipGroupProps = Omit<ComponentProps<"div">, "role"> & {
+  /** Announced politely after a chip is removed. Default "제거됨". */
+  removedLabel?: string;
+};
+
+/**
+ * Chips as one composite: a single tab stop with roving focus (Left/Right/Home/End). Backspace / Delete removes the focused
+ * chip through its `onRemove`; focus moves to the next chip, else the previous one, else the group, and "제거됨" is announced.
+ * Remove buttons inside a group are not tab stops. There is no exit animation and no undo: removal is the consumer's state.
+ * Name the group with `aria-label`.
+ */
+export function ChipGroup({ className, children, removedLabel = "제거됨", onKeyDown, onFocus, ...props }: ChipGroupProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  const active = useRef<HTMLElement | null>(null);
+  const [message, setMessage] = useState("");
+  const chips = () => [...(ref.current?.querySelectorAll<HTMLElement>(CHIP) ?? [])];
+
+  useLayoutEffect(() => {
+    const all = chips();
+    const current = active.current && all.includes(active.current) ? active.current : all[0];
+    active.current = current ?? null;
+    for (const c of all) c.tabIndex = c === current ? 0 : -1;
+  });
+  useEffect(() => {
+    if (!message) return;
+    const t = setTimeout(() => setMessage(""), 1500);
+    return () => clearTimeout(t);
+  }, [message]);
+
+  const keydown = (e: KeyboardEvent<HTMLDivElement>) => {
+    onKeyDown?.(e);
+    if (e.defaultPrevented) return;
+    const from = (e.target as HTMLElement).closest<HTMLElement>(CHIP);
+    if (!from) return;
+    const all = chips();
+    const i = all.indexOf(from);
+    let next: HTMLElement | undefined;
+    if (e.key === "ArrowRight") next = all[(i + 1) % all.length];
+    else if (e.key === "ArrowLeft") next = all[(i - 1 + all.length) % all.length];
+    else if (e.key === "Home") next = all[0];
+    else if (e.key === "End") next = all[all.length - 1];
+    else if ((e.key === "Backspace" || e.key === "Delete") && from.dataset.removable !== undefined) {
+      e.preventDefault();
+      const target = all[i + 1] ?? all[i - 1] ?? ref.current;
+      target?.focus();
+      from.querySelector<HTMLElement>("[data-slot=chip-remove]")?.click();
+      setMessage(removedLabel);
+      return;
+    } else return;
+    e.preventDefault();
+    next?.focus();
+  };
+
+  return (
+    <GroupContext.Provider value>
+      <div
+        ref={ref}
+        role="group"
+        tabIndex={-1}
+        data-slot="chip-group"
+        className={cn("flex flex-wrap items-center gap-2 focus-visible:yorha-focus", className)}
+        onKeyDown={keydown}
+        onFocus={(e) => {
+          onFocus?.(e);
+          const c = (e.target as HTMLElement).closest<HTMLElement>(CHIP);
+          if (c) {
+            active.current = c;
+            for (const x of chips()) x.tabIndex = x === c ? 0 : -1;
+          }
+        }}
+        {...props}
+      >
+        {children}
+        <span aria-live="polite" className="sr-only">
+          {message}
+        </span>
+      </div>
+    </GroupContext.Provider>
+  );
 }
 
 const CHIP_BASE =
@@ -78,6 +173,7 @@ export function Chip({
   onPressedChange,
   className,
 }: ChipProps) {
+  const inGroup = useContext(GroupContext);
   if (selectable) {
     return (
       <Toggle
@@ -102,12 +198,19 @@ export function Chip({
   }
 
   return (
-    <span className={cn(CHIP_BASE, className)} data-slot="chip">
+    <span
+      className={cn(CHIP_BASE, inGroup && "focus-visible:yorha-focus", className)}
+      data-slot="chip"
+      {...(inGroup ? { role: "group", "aria-label": sizeLabel ? `${label} ${sizeLabel}` : label, "aria-keyshortcuts": onRemove ? "Delete" : undefined } : {})}
+      data-removable={onRemove ? "" : undefined}
+    >
       <Body label={label} sizeLabel={sizeLabel} bar={<Bar capacity={capacity} segments={segments} decorative={false} />} />
       {onRemove ? (
         <button
           type="button"
           aria-label={`${label} ${removeLabel}`}
+          data-slot="chip-remove"
+          tabIndex={inGroup ? -1 : undefined}
           onClick={onRemove}
           className="-my-px grid w-8 shrink-0 place-items-center border-l border-yorha-border text-yorha-fg yorha-tint focus-visible:yorha-focus-inset"
         >
