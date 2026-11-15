@@ -63,6 +63,8 @@ export interface InputPreset {
   type: "text" | "email" | "tel" | "url";
   inputMode: "text" | "email" | "tel" | "url";
   autoComplete: string;
+  /** Label of the mobile keyboard's Enter key. */
+  enterKeyHint: "enter" | "next" | "go" | "search" | "done";
   /** Source of a pattern attribute; the browser anchors it to the whole value. */
   pattern?: string;
 }
@@ -73,8 +75,8 @@ export interface InputPreset {
  * `@/components/ui/input`: `<Input {...inputPresets.email} />`.
  */
 export const inputPresets = {
-  text: { type: "text", inputMode: "text", autoComplete: "off" },
-  email: { type: "email", inputMode: "email", autoComplete: "email" },
-  tel: { type: "tel", inputMode: "tel", autoComplete: "tel", pattern: "[0-9+\\-\\s()]{7,20}" },
-  url: { type: "url", inputMode: "url", autoComplete: "url" },
+  text: { type: "text", inputMode: "text", autoComplete: "off", enterKeyHint: "next" },
+  email: { type: "email", inputMode: "email", autoComplete: "email", enterKeyHint: "next" },
+  tel: { type: "tel", inputMode: "tel", autoComplete: "tel", enterKeyHint: "next", pattern: "[0-9+\\-\\s()]{7,20}" },
+  url: { type: "url", inputMode: "url", autoComplete: "url", enterKeyHint: "go" },
 } as const satisfies Record<string, InputPreset>;

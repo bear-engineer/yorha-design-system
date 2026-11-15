@@ -69,7 +69,7 @@ describe("V4-140: FileInput required + empty", () => {
     expect(submit).not.toHaveBeenCalled();
     const button = host.querySelector<HTMLElement>("[data-slot=file-drop-zone] button")!;
     expect(document.activeElement).toBe(button);
-    const err = host.querySelector<HTMLElement>("[data-slot=field-error]");
+    const err = host.querySelector<HTMLElement>("[role=alert]");
     expect(err, "field error shown").not.toBeNull();
     expect(err!.getBoundingClientRect().height).toBeGreaterThan(0);
     expect(zoneOf(host).closest("[data-invalid]")).not.toBeNull();
@@ -84,7 +84,7 @@ describe("V4-140: FileInput required + empty", () => {
     const got = new FormData(form).get("doc") as File;
     expect(got.name).toBe("a.txt");
     expect(form.checkValidity()).toBe(true);
-    expect(host.querySelector("[data-slot=field-error]")).toBeNull();
+    expect(host.querySelector("[role=alert]")).toBeNull();
   });
 });
 
@@ -121,7 +121,7 @@ describe("V4-141: window drop guard, paste, maxFiles", () => {
     drop(zoneOf(host), file("1.txt"), file("2.txt"), file("3.txt"));
     await frames(3);
     expect(host.querySelectorAll("ul li").length).toBe(2);
-    expect(host.querySelector("[data-slot=field-error]")?.textContent).toContain("3.txt");
+    expect(host.querySelector("[role=alert]")?.textContent).toContain("3.txt");
   });
 });
 
@@ -142,14 +142,14 @@ describe("V4-144/146: reset, rejections accumulate, clear all", () => {
     drop(zoneOf(host), file("x.png", 10, "image/png"));
     drop(zoneOf(host), file("y.png", 10, "image/png"));
     await frames(3);
-    expect(host.querySelectorAll("[data-slot=field-error]").length).toBe(2);
+    expect(host.querySelectorAll("[role=alert]").length).toBe(2);
     expect(host.querySelectorAll("ul li").length).toBe(1);
     const clear = [...host.querySelectorAll("button")].find((b) => b.textContent?.trim() === "모두 지우기")!;
     expect(clear).toBeTruthy();
     clear.click();
     await frames(3);
     expect(host.querySelectorAll("ul li").length).toBe(0);
-    expect(host.querySelectorAll("[data-slot=field-error]").length).toBe(0);
+    expect(host.querySelectorAll("[role=alert]").length).toBe(0);
   });
   it("per-file status bar: 8 segments and the row height does not change", async () => {
     const host = await mount(fileForm({ multiple: true }));
@@ -251,7 +251,8 @@ describe("V4-145/148: OTP status", () => {
       { id: "o", length: 4, status, ...extra } as never,
       ...Array.from({ length: 4 }, (_, i) => createElement(OTPFieldInput, { key: i, "aria-label": `문자 ${i + 1}` })),
     );
-  const slots = (host: HTMLElement) => [...host.querySelectorAll<HTMLInputElement>("input")];
+  // Base UI adds one extra hidden input (the form value); the visible slots sit inside [data-slot=otp-caret] wrappers.
+  const slots = (host: HTMLElement) => [...host.querySelectorAll<HTMLInputElement>("input")].filter((i) => i.type !== "hidden" && i.getAttribute("aria-label")?.startsWith("문자"));
 
   it("slot 0 defaults to one-time-code and numeric", async () => {
     const host = await mount(otp("idle"));
@@ -261,30 +262,29 @@ describe("V4-145/148: OTP status", () => {
   });
   it("status changes keep the root rect; attributes follow", async () => {
     const host = await mount(otp("idle"));
-    const rect = () => {
-      const r = host.firstElementChild!.getBoundingClientRect();
-      return [r.x, r.y, r.width, r.height].join();
+    const size = (h: HTMLElement) => {
+      const r = h.firstElementChild!.getBoundingClientRect();
+      return `${r.width}x${r.height}`;
     };
-    const idle = rect();
+    const idle = size(host);
     const rerender = async (s: "idle" | "verifying" | "success" | "error") => {
       roots.splice(0).forEach((r) => r.unmount());
       hosts.splice(0).forEach((h) => h.remove());
       return mount(otp(s, { defaultValue: "1234" }));
     };
+    const sizes: string[] = [];
     const v = await rerender("verifying");
+    sizes.push(size(v));
     expect(v.firstElementChild!.getAttribute("aria-busy")).toBe("true");
     expect(v.querySelector("[data-slot=spinner]")).not.toBeNull();
     const okHost = await rerender("success");
+    sizes.push(size(okHost));
     expect(okHost.querySelector("[data-slot=glyph][data-glyph=check]")).not.toBeNull();
     const bad = await rerender("error");
-    expect(slots(bad).every((s) => s.getAttribute("aria-invalid") === "true")).toBe(true);
-    // rects (wrapper position is identical across renders: same host)
-    expect(rect).toBeTypeOf("function");
-    expect(idle).toBeTruthy();
-    const widths = [v, okHost, bad].map((h) => h.firstElementChild!.getBoundingClientRect().width);
-    expect(new Set(widths).size).toBe(1);
-    const heights = [v, okHost, bad].map((h) => h.firstElementChild!.getBoundingClientRect().height);
-    expect(new Set(heights).size).toBe(1);
+    sizes.push(size(bad));
+    expect(slots(bad).map((s) => s.getAttribute("aria-invalid"))).toEqual(["true", "true", "true", "true"]);
+    // the reserved status cell makes every state the same size
+    expect(sizes).toEqual([idle, idle, idle]);
   });
   it("active empty slot shows the block caret; none in motion off", async () => {
     const host = await mount(otp());
