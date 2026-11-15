@@ -28,10 +28,12 @@ async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
     else root.setAttribute("data-motion", prev);
   }
 }
+// v4: the popup dissolves with a CSS animation (yorha-dissolve), the scrim fades with a transition; read both.
 function durationsMs(el: Element): number[] {
-  return getComputedStyle(el)
-    .transitionDuration.split(",")
-    .map((v) => (v.trim().endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000));
+  const cs = getComputedStyle(el);
+  return [...cs.transitionDuration.split(","), ...(cs.animationName === "none" ? [] : cs.animationDuration.split(","))].map((v) =>
+    v.trim().endsWith("ms") ? parseFloat(v) : parseFloat(v) * 1000,
+  );
 }
 /** Reduced: a fade of at most 120ms and no spatial travel (--motion-spatial is 0). */
 async function expectReduced(el: Element) {
@@ -40,7 +42,8 @@ async function expectReduced(el: Element) {
   const max = Math.max(...durationsMs(el));
   expect(max).toBeGreaterThan(0);
   expect(max).toBeLessThanOrEqual(120);
-  expect(getComputedStyle(el).transitionProperty).toContain("opacity");
+  const cs = getComputedStyle(el);
+  expect(cs.transitionProperty.includes("opacity") || cs.animationName.includes("dissolve")).toBe(true);
   expect(getComputedStyle(document.documentElement).getPropertyValue("--motion-spatial").trim()).toBe("0");
 }
 async function expectOff(el: Element) {

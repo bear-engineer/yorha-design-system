@@ -428,6 +428,8 @@ export const ReducedMotion: Story = {
           return el as HTMLElement;
         });
         for (const el of [stacked, anchored]) await (mode === "reduced" ? expectReduced : expectOff)(el);
+        // v4: collapsed rear close buttons are hidden (not tab stops); expand the stack, then close each toast.
+        await userEvent.hover(stacked);
         for (const b of within(region).getAllByRole("button", { name: "닫기" })) await userEvent.click(b);
         await waitFor(() => expect(region.querySelectorAll("[data-slot=toast]")).toHaveLength(0), { timeout: 800 });
       });
