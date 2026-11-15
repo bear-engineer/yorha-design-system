@@ -202,3 +202,39 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+const MANY = ["상태 개요", "유닛 목록", "임무 기록", "통신 로그", "보안 설정", "네트워크", "저장 장치", "전력 상태", "센서 배열", "정비 이력", "시스템 진단", "기타 항목"];
+
+/** V4-180: 12 tabs in a 20rem strip. The strip scrolls (hidden bar, edge cue), labels never shrink, the selected tab is revealed. */
+export const Overflow: Story = {
+  render: () => (
+    <div className="w-80 bg-yorha-panel p-4 text-yorha-fg [--yorha-scroll-ground:var(--yorha-panel)]">
+      <Tabs defaultValue="t0">
+        <TabsList aria-label="많은 탭">
+          {MANY.map((l, i) => (
+            <TabsTab key={l} value={`t${i}`}>
+              {l}
+            </TabsTab>
+          ))}
+        </TabsList>
+        {MANY.map((l, i) => (
+          <TabsPanel key={l} value={`t${i}`}>
+            {l} 본문
+          </TabsPanel>
+        ))}
+      </Tabs>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const list = c.getByRole("tablist", { name: "많은 탭" });
+    await expect(list.scrollWidth).toBeGreaterThan(list.clientWidth);
+    c.getByRole("tab", { name: "상태 개요" }).focus();
+    await userEvent.keyboard("{End}");
+    const last = c.getByRole("tab", { name: "기타 항목" });
+    await waitFor(() => expect(last).toHaveAttribute("aria-selected", "true"));
+    await waitFor(() => expect(last.getBoundingClientRect().right).toBeLessThanOrEqual(list.getBoundingClientRect().right + 0.5));
+    await userEvent.keyboard("{Home}");
+    await waitFor(() => expect(list.scrollLeft).toBeLessThan(1));
+  },
+};

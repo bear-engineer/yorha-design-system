@@ -20,7 +20,7 @@
           "target": "@ui/scroll-area.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Compose ScrollArea, ScrollAreaViewport (give it aria-label), ScrollAreaScrollbar (orientation), ScrollAreaThumb, ScrollAreaCorner."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Compose ScrollArea, ScrollAreaViewport (give it aria-label), ScrollAreaScrollbar (orientation), ScrollAreaThumb, ScrollAreaCorner. Edge rules (v4) show only on edges with more content; the viewport has 6px scroll-padding so focused children clear the rules. Set --yorha-scroll-ground on non-page surfaces."
     }
   ]
 }

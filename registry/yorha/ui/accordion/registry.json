@@ -20,7 +20,7 @@
           "target": "@ui/accordion.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Compose Accordion, AccordionItem, AccordionHeader, AccordionTrigger, AccordionPanel."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Compose Accordion, AccordionItem, AccordionHeader, AccordionTrigger, AccordionPanel. Closed panels are hidden=until-found (v4): find-in-page opens them; pass hiddenUntilFound={false} on AccordionPanel to opt out (closed content is then unmounted)."
     }
   ]
 }

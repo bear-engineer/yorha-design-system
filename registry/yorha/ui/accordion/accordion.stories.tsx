@@ -143,7 +143,8 @@ export const MotionTokens: Story = {
       overview.focus();
       await userEvent.keyboard("{Enter}");
       await waitFor(() => expect(overview).toHaveAttribute("aria-expanded", "true"));
-      await expect(parseFloat(getComputedStyle(panelOf()).transitionDuration)).toBeCloseTo(0.24, 2);
+      // Base UI zeroes the duration for one frame when opening from hidden="until-found"
+      await waitFor(() => expect(parseFloat(getComputedStyle(panelOf()).transitionDuration)).toBeCloseTo(0.24, 2));
       const token = getComputedStyle(document.documentElement).getPropertyValue("--yorha-ease-emphasized").trim();
       await expect(getComputedStyle(panelOf()).transitionTimingFunction).toContain(token);
     });

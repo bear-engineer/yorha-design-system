@@ -180,6 +180,20 @@ describe("V4-183 hiddenUntilFound", () => {
     expect(panel.getBoundingClientRect().height).toBeGreaterThan(8);
   });
 
+  it("accordion: opening from until-found still runs a real height transition (full motion)", async () => {
+    const host = await mount(accordion(), 320, "full");
+    const panel = host.querySelector<HTMLElement>("[data-slot=accordion-panel]")!;
+    const trigger = host.querySelector<HTMLElement>("[data-slot=accordion-trigger]")!;
+    await userEvent.click(trigger);
+    await frames(2);
+    const anim = panel.getAnimations().find((a) => (a as CSSTransition).transitionProperty === "height");
+    expect(anim, "no height transition while opening").toBeDefined();
+    expect(Number(anim!.effect!.getComputedTiming().endTime)).toBeGreaterThan(100);
+    anim!.finish();
+    await frames(2);
+    expect(panel.getBoundingClientRect().height).toBeGreaterThan(8);
+  });
+
   it("accordion: the default can be switched off per panel", async () => {
     const host = await mount(accordion({ hiddenUntilFound: false }));
     const panel = host.querySelector<HTMLElement>("[data-slot=accordion-panel]");

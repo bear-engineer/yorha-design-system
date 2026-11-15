@@ -20,7 +20,7 @@
           "target": "@ui/tabs.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Compose Tabs, TabsList (give it aria-label), TabsTab, TabsPanel."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Compose Tabs, TabsList (give it aria-label), TabsTab, TabsPanel. Strip scrolls when tabs outgrow it (V4-180): tabs keep their label width, the selected tab is revealed, keyboard focus is an inset ring (v4 migration: was outset). Set --yorha-scroll-ground when the strip is not on the page background."
     }
   ]
 }

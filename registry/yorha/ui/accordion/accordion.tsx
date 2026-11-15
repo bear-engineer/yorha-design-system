@@ -53,12 +53,13 @@ function AccordionTrigger({ className, children, ...props }: ComponentProps<type
   );
 }
 
-/** Body; closed panels stay in the DOM as hidden="until-found" so browser find-in-page and #fragments open them (V4-183; hiddenUntilFound={false} opts out). Height animates with --motion-collapse (exit --motion-select) via yorha-collapse and is instant under reduced/off motion. */
+/** Body; closed panels stay in the DOM as hidden="until-found" so browser find-in-page and #fragments open them (V4-183; hiddenUntilFound={false} opts out). role="group" (labelled by its trigger) replaces Base UI's region: closed until-found panels stay in the accessibility tree's landmark scan and N regions fail axe landmark-unique. Height animates with --motion-collapse (exit --motion-select) via yorha-collapse and is instant under reduced/off motion. */
 function AccordionPanel({ className, children, hiddenUntilFound = true, ...props }: ComponentProps<typeof AccordionPrimitive.Panel>) {
   return (
     <AccordionPrimitive.Panel
       data-slot="accordion-panel"
       hiddenUntilFound={hiddenUntilFound}
+      role="group"
       className={cnState("yorha-collapse font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg", className)}
       {...props}
     >

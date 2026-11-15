@@ -20,7 +20,7 @@
           "target": "@ui/collapsible.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Compose Collapsible, CollapsibleTrigger, CollapsiblePanel."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Compose Collapsible, CollapsibleTrigger, CollapsiblePanel. Closed panel is hidden=until-found (v4): find-in-page opens it; hiddenUntilFound={false} opts out."
     }
   ]
 }
