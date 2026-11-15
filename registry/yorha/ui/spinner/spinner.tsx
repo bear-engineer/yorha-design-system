@@ -50,7 +50,7 @@ function useOrbit(ref: React.RefObject<HTMLSpanElement | null>) {
         anims.push(root.animate([{ opacity: 0.35 }, { opacity: 1 }, { opacity: 0.35 }], { duration: loop, iterations: Infinity, easing }));
         return;
       }
-      const flip = css.getPropertyValue("--yorha-step-flip").trim() || "steps(1, end)";
+      const flip = css.getPropertyValue("--yorha-step-flip").trim() || "linear";
       root.querySelectorAll<HTMLElement>("[data-yorha-dot]").forEach((dot, i) => {
         const frames: Keyframe[] = RING.map((_, k) => ({ offset: k / RING.length, opacity: lit(k, i) ? LIT : DIM, easing: flip }));
         frames.push({ offset: 1, opacity: lit(0, i) ? LIT : DIM });
