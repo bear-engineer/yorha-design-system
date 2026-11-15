@@ -83,6 +83,8 @@ export interface TimePickerProps {
   autoFocus?: boolean;
   labels?: { hour: string; minute: string; second: string };
   className?: string;
+  /** Extra classes of the listboxes, e.g. a shorter height when stacked under a calendar. */
+  listClassName?: string;
 }
 
 type Column = { key: "h" | "m" | "s"; label: string; options: number[]; current: number | undefined; disabled: (n: number) => boolean };
