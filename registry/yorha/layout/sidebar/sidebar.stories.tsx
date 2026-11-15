@@ -81,7 +81,7 @@ function Dock({ children, theme, body }: { children: ReactNode; theme?: string; 
           breadcrumb={<Breadcrumb items={[{ label: "본부", to: "/hq" }, { label: "기체 목록", to: "/hq/list" }, { label: "A-2 기체" }]} />}
           eyebrow="SEC-07"
           title="유닛"
-          description="본문 영역의 자리 표시자입니다. 사이드바는 256px 고정 열이고 높이를 끝까지 채웁니다."
+          description="가동 중인 기체 12대 중 11대가 정상입니다. 점검 일정과 보급 요청을 확인하세요."
         />
         {body ?? (
           <div className="grid grid-cols-3 gap-4 p-6">
@@ -96,20 +96,32 @@ function Dock({ children, theme, body }: { children: ReactNode; theme?: string; 
 }
 
 /** A believable page body for the docs hero: status gauges, an activity list and a notes panel. */
+const WORK: { text: string; glyph: "check" | "diamond-ring" | "disc"; done: boolean }[] = [
+  { text: "정찰 보고서 검토", glyph: "check", done: true },
+  { text: "부품 보급 요청 승인", glyph: "diamond-ring", done: false },
+  { text: "로그 동기화 확인", glyph: "disc", done: false },
+];
+
 const PAGE_BODY = (
   <div className="grid grid-cols-1 gap-4 p-6 md:grid-cols-3">
     <Panel titleLevel={2} title="기체 상태" className="md:col-span-2">
       <div className="flex flex-col gap-4">
-        <Meter label="내구도" value={82} max={100} low={40} critical={20} />
-        <Meter label="에너지" value={64} max={100} low={40} critical={20} />
-        <Meter label="통신 감도" value={31} max={100} low={40} critical={20} />
+        <Meter label="내구도" value={82} max={100} />
+        <Meter label="에너지" value={64} max={100} />
+        <div className="flex flex-col gap-1">
+          <Meter label="통신 감도" value={31} max={100} low={40} critical={20} />
+          <span className="text-yorha-xs text-yorha-fg-soft">경고 40 · 위험 20</span>
+        </div>
       </div>
     </Panel>
     <Panel titleLevel={2} title="오늘의 작업">
-      <ul className="m-0 flex list-none flex-col gap-2 p-0 text-yorha-sm">
-        <li>정찰 보고서 검토</li>
-        <li>부품 보급 요청 승인</li>
-        <li>로그 동기화 확인</li>
+      <ul className="m-0 flex list-none flex-col p-0 text-yorha-sm">
+        {WORK.map((t) => (
+          <li key={t.text} className="flex items-center gap-2 border-b border-yorha-border py-1.5 last:border-b-0">
+            <Glyph name={t.glyph} className={t.done ? "text-yorha-fg-soft" : "text-yorha-fg-strong"} />
+            <span className={t.done ? "text-yorha-fg-soft line-through" : "text-yorha-fg-strong"}>{t.text}</span>
+          </li>
+        ))}
       </ul>
     </Panel>
     <Panel titleLevel={2} title="최근 로그" className="md:col-span-3">

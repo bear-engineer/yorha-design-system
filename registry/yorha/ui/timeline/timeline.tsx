@@ -1085,8 +1085,9 @@ export function TimelineGraph({
   }, [norm, sort, locale, lanes]);
   const cycleSort = (key: SortKey) => setSort((s) => (!s || s.key !== key ? { key, dir: "asc" } : s.dir === "asc" ? { key, dir: "desc" } : null));
 
+  // "fit" and free zooms show the real scale (the active "fit" button already says the name), presets keep their name.
   const zoomName =
-    typeof zoomValue === "string" ? t.zoom[zoomValue] : Math.abs(px - 4) < 1e-6 ? t.zoom.day : Math.abs(px - 1) < 1e-6 ? t.zoom.week : Math.abs(px - 64) < 1e-6 ? t.zoom.hour : `${fmtNum(px)} px/h`;
+    zoomValue === "fit" ? `1${t.zoom.day} = ${fmtNum(px * 24)}px` : typeof zoomValue === "string" ? t.zoom[zoomValue] : Math.abs(px - 4) < 1e-6 ? t.zoom.day : Math.abs(px - 1) < 1e-6 ? t.zoom.week : Math.abs(px - 64) < 1e-6 ? t.zoom.hour : `1${t.zoom.day} = ${fmtNum(px * 24)}px`;
 
   const itemClass = (n: Norm, instant: boolean) =>
     cn(
@@ -1173,10 +1174,10 @@ export function TimelineGraph({
             {t.fit}
           </button>
           <button type="button" className={btn} disabled={view !== "graph" || !showNow} onClick={() => scrollToTime(nowMs)} data-now-side={nowSide ?? "in"}>
-            <span aria-hidden="true" className="relative block size-3 shrink-0">
-              <Glyph name="chevron-left" className={cn("absolute inset-0", nowSide === "before" ? "opacity-100" : "opacity-0")} />
-              <Glyph name="chevron-right" className={cn("absolute inset-0", nowSide === "after" ? "opacity-100" : "opacity-0")} />
-              <Glyph name="diamond-target" className={cn("absolute inset-0", nowSide === null ? "opacity-100" : "opacity-0")} />
+            <span aria-hidden="true" className="relative block size-4 shrink-0">
+              <Glyph name="chevron-left" className={cn("absolute inset-0 m-auto", nowSide === "before" ? "opacity-100" : "opacity-0")} />
+              <Glyph name="chevron-right" className={cn("absolute inset-0 m-auto", nowSide === "after" ? "opacity-100" : "opacity-0")} />
+              <Glyph name="diamond-target" className={cn("absolute inset-0 m-auto", nowSide === null ? "opacity-100" : "opacity-0")} />
             </span>
             {t.jumpToNow}
           </button>
