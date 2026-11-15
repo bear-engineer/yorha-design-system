@@ -13,7 +13,8 @@
         "@yorha/utils",
         "@yorha/base",
         "@yorha/glyph",
-        "@yorha/button"
+        "@yorha/button",
+        "@yorha/fx"
       ],
       "files": [
         {
