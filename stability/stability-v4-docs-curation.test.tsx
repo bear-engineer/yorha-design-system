@@ -79,4 +79,33 @@ describe("Timeline toolbar", () => {
     const glyph = nowBtn.querySelector<SVGElement>('[data-glyph="diamond-target"]')!.getBoundingClientRect();
     expect(glyph.right).toBeLessThanOrEqual(icon.right + 0.01);
   });
+  it("zoom readout and toolbar rects are identical across 축소/확대/맞춤", async () => {
+    const host = await mount(
+      <TimelineGraph
+        label="일정"
+        lanes={[{ id: "a", label: "기획" }]}
+        items={[{ id: "x", lane: "a", title: "정리", start: new Date(2026, 10, 16, 9), end: new Date(2026, 10, 18, 18) }]}
+        range={{ start: new Date(2026, 10, 16), end: new Date(2026, 10, 30) }}
+        now={new Date(2026, 10, 17, 12)}
+        defaultZoom="day"
+      />,
+    );
+    const rect = (el: Element) => {
+      const r = el.getBoundingClientRect();
+      return [r.left, r.top, r.width, r.height].map((n) => n.toFixed(2)).join(",");
+    };
+    const snap = () => ({
+      readout: rect(host.querySelector('[data-part="scale-label"]')!),
+      toolbar: rect(host.querySelector('[data-part="toolbar"]')!),
+      buttons: [...host.querySelectorAll('[data-part="toolbar"] button')].map(rect),
+    });
+    const base = snap();
+    for (const name of ["축소", "확대", "맞춤"]) {
+      const btn = [...host.querySelectorAll<HTMLElement>('[data-part="toolbar"] button')].find((b) => b.getAttribute("aria-label") === name || b.textContent?.trim() === name)!;
+      btn.click();
+      await frames(3);
+      await animationsFinished();
+      expect(snap(), name).toEqual(base);
+    }
+  });
 });
