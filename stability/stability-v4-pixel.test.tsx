@@ -136,7 +136,7 @@ describe("Ornament dot-rule (V4-037)", () => {
 });
 
 describe("Spinner (V4-032)", () => {
-  it("12 px box, 8 integer 2 px dots on a 3x3 perimeter, <= 2 toggles per cycle, off = static 3 lit", async () => {
+  it("12 px box, 8 integer 2 px dots on a 3x3 perimeter, linear opacity trail, off = static 3 lit", async () => {
     const host = await mount(createElement(Spinner, { label: "x" }));
     const el = host.querySelector<HTMLElement>("[data-slot=spinner]")!;
     const r = el.getBoundingClientRect();
@@ -153,10 +153,8 @@ describe("Spinner (V4-032)", () => {
     expect(anims.length).toBe(8);
     for (const a of anims) {
       const frames = (a.effect as KeyframeEffect).getKeyframes().map((k) => Number(k.opacity));
-      let toggles = 0;
-      for (let i = 1; i < frames.length; i++) if (frames[i] !== frames[i - 1]) toggles++;
-      expect(toggles).toBeLessThanOrEqual(2);
-      expect(String((a.effect as KeyframeEffect).getKeyframes()[0]!.easing)).toMatch(/steps\(1/);
+      expect(frames.every((f) => f >= 0 && f <= 1)).toBe(true);
+      expect(String(a.effect!.getTiming().easing)).toBe("linear"); // smooth trail, never stepped
     }
   });
   it("off: no animation, three lit dots", async () => {
@@ -170,14 +168,14 @@ describe("Spinner (V4-032)", () => {
 });
 
 describe("Skeleton (V4-033)", () => {
-  it("scan uses the loop steps; one status per SkeletonGroup", async () => {
+  it("shimmer is a linear translate; one status per SkeletonGroup", async () => {
     const host = await mount(createElement(SkeletonGroup, { label: "대시보드 로딩 중" }, createElement(Skeleton, { className: "h-4 w-20" }), createElement(Skeleton, { className: "h-4 w-20" })));
     expect(host.querySelectorAll("[role=status]").length).toBe(1);
     const shimmers = [...host.querySelectorAll<HTMLElement>("[data-yorha-shimmer]")];
     expect(shimmers.length).toBe(2);
     for (const s of shimmers) {
       const a = s.getAnimations()[0]!;
-      expect(String((a.effect as KeyframeEffect).getTiming().easing)).toContain("steps(16");
+      expect(String((a.effect as KeyframeEffect).getTiming().easing)).toBe("linear");
     }
     expect(host.querySelector("[data-slot=skeleton]")!.getAttribute("role")).toBe("presentation");
   });

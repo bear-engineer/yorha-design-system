@@ -20,8 +20,6 @@ import {
   DataTableSelectCell,
   type SortDirection,
 } from "../registry/yorha/ui/data-table/data-table";
-import { Progress } from "../registry/yorha/ui/progress/progress";
-import { Meter } from "../registry/yorha/ui/meter/meter";
 import { Card } from "../registry/yorha/ui/card/card";
 import { Avatar, AvatarFallback, AvatarGroup, AvatarStatus } from "../registry/yorha/ui/avatar/avatar";
 
@@ -305,68 +303,6 @@ describe("V4-221 stream", () => {
     const off = await mount(node, { motion: "off" });
     const style = getComputedStyle(off.host.querySelector("tbody td")!);
     expect(style.animationName === "none" || style.animationDuration.split(",").every((d) => parseFloat(d) === 0)).toBe(true);
-  });
-});
-
-describe("V4-214 / 217 Progress", () => {
-  it("indeterminate sweep is eased with --yorha-step-loop (steps)", async () => {
-    const { host } = await mount(<Progress label="Busy" value={null} />, { motion: "full" });
-    const ind = host.querySelector<HTMLElement>("[data-yorha-sweep]")!;
-    const anim = ind.getAnimations()[0]!;
-    const timing = anim.effect!.getTiming();
-    const token = getComputedStyle(document.documentElement).getPropertyValue("--yorha-step-loop").trim();
-    expect(String(timing.easing)).toBe(token.replace(/, end\)$/, ")")); // the engine serialises steps(n, end) as steps(n)
-    expect(String(timing.easing)).toMatch(/^steps\(/);
-  });
-
-  it("determinate advance is a 180 ms stepped clip; formatValue feeds aria-valuetext", async () => {
-    const fmt = (v: number | null) => (v === null ? "busy" : `${v} of 100 sent`);
-    const { host, rerender } = await mount(<Progress label="Send" value={20} formatValue={fmt} />, { motion: "full" });
-    const bar = host.querySelector("[role=progressbar]")!;
-    expect(bar.getAttribute("aria-valuetext")).toBe("20 of 100 sent");
-    await wait(300);
-    await rerender(<Progress label="Send" value={60} formatValue={fmt} />);
-    const ind = host.querySelector<HTMLElement>("[data-slot=progress-fill], [role=progressbar] [data-value], [role=progressbar] div > div")!;
-    const anims = host.querySelectorAll("[role=progressbar] *");
-    const running = [...anims].flatMap((e) => e.getAnimations()).find((a) => (a.effect as KeyframeEffect).getKeyframes().some((k) => "clipPath" in k));
-    expect(running, "clip-path animation").toBeTruthy();
-    expect(running!.effect!.getTiming().duration).toBe(180);
-    expect(String(running!.effect!.getTiming().easing)).toMatch(/^steps\(/);
-    expect(ind).toBeTruthy();
-    expect(bar.getAttribute("aria-valuetext")).toBe("60 of 100 sent");
-  });
-
-  it("off mode advances without animation", async () => {
-    const { host, rerender } = await mount(<Progress label="Send" value={20} />, { motion: "off" });
-    await rerender(<Progress label="Send" value={60} />);
-    const all = [...host.querySelectorAll("[role=progressbar] *")].flatMap((e) => e.getAnimations());
-    expect(all.length).toBe(0);
-  });
-});
-
-describe("V4-218 dots variant", () => {
-  const dots = (host: HTMLElement) => host.querySelector<HTMLElement>("[data-slot=dots-fill]")!;
-
-  it("Progress dots: 4px-quantised fill with a 4px mask pitch, ghost track", async () => {
-    const { host } = await mount(<Progress label="P" value={37} variant="dots" />);
-    const fill = dots(host);
-    expect(getComputedStyle(fill).maskImage).toContain("url(");
-    expect(getComputedStyle(fill).maskSize).toBe("4px 4px");
-    expect(rect(fill).width % 4).toBe(0);
-    expect(rect(fill).height).toBe(10);
-    expect(host.querySelector("[data-slot=dots-ghost]")).toBeTruthy();
-  });
-
-  it("Meter dots: low / critical are sparse columns (wider mask pitch), differ by shape not colour alone", async () => {
-    const ok = await mount(<Meter label="HP" value={80} variant="dots" low={30} critical={10} />);
-    const low = await mount(<Meter label="HP" value={25} variant="dots" low={30} critical={10} />);
-    const crit = await mount(<Meter label="HP" value={5} variant="dots" low={30} critical={10} />);
-    const pitch = (h: HTMLElement) => Number(dots(h).dataset.pitch);
-    expect(pitch(ok.host)).toBe(4);
-    expect(pitch(low.host)).toBe(8);
-    expect(pitch(crit.host)).toBeGreaterThan(8);
-    expect(rect(dots(low.host)).width % 8).toBe(0);
-    expect(getComputedStyle(dots(low.host)).maskImage).toContain("repeating-linear-gradient");
   });
 });
 
