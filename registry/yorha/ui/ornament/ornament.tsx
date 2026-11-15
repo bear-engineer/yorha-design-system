@@ -12,7 +12,10 @@ export interface OrnamentProps extends HTMLAttributes<HTMLDivElement> {
   variant?: OrnamentVariant;
 }
 
-const LINE = "var(--yorha-line-deco)";
+// Dark: --yorha-line-deco is 1.4-1.8:1 against the dark grounds, too faint for the marks (WCAG 1.4.11 wants 3:1 for
+// meaningful graphics; these stay decorative but must still read). Dark uses --yorha-border (3.06:1 on panel, 3.8:1 on bg).
+const LINE = "var(--yorha-ornament-line)";
+const SCOPE = "[--yorha-ornament-line:var(--yorha-line-deco)] dark:[--yorha-ornament-line:var(--yorha-border)]";
 
 // Box is 12px tall (fixed px, not rem). Rules sit on whole pixel rows around the glyph's centre line (rows 5-6), and
 // every diamond is a `diamond` glyph (integer rects), so nothing is rotated or anti-aliased.
@@ -28,8 +31,8 @@ const DOTTED: CSSProperties = {
   backgroundPosition: "0 5px",
   backgroundRepeat: "no-repeat",
 };
-const RULE = "mt-[6px] h-px bg-(--yorha-line-deco)";
-const MARK = "[color:var(--yorha-line-deco)]";
+const RULE = "mt-[6px] h-px bg-(--yorha-ornament-line)";
+const MARK = "[color:var(--yorha-ornament-line)]";
 
 /** Decorative only: hidden from assistive tech and never receives pointer events. */
 export function Ornament({ variant = "band", className, style, ...rest }: OrnamentProps) {
@@ -39,7 +42,7 @@ export function Ornament({ variant = "band", className, style, ...rest }: Orname
       data-slot="ornament"
       data-variant={variant}
       aria-hidden="true"
-      className={cn("pointer-events-none block h-[12px] w-full", variant !== "separator" && "flex", className)}
+      className={cn("pointer-events-none block h-[12px] w-full", SCOPE, variant !== "separator" && "flex", className)}
       style={{ ...(variant === "separator" ? DASHED : null), ...style }}
     >
       {variant === "band" ? (

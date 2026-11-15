@@ -1,10 +1,30 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, within } from "storybook/test";
 import { Button } from "@/components/ui/button";
+import { Glyph } from "@/components/ui/glyph";
 import { Card } from "./card";
 import { useState } from "react";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
+
+/** Media slot content: an 8px survey grid (border colour, so it reads in every theme) with a centred unit mark. */
+function UnitMedia() {
+  return (
+    <div
+      className="flex h-16 w-full items-center justify-center bg-yorha-bg text-yorha-fg"
+      style={{
+        backgroundImage:
+          "linear-gradient(to right, color-mix(in oklab, var(--yorha-border) 45%, transparent) 1px, transparent 1px), linear-gradient(to bottom, color-mix(in oklab, var(--yorha-border) 45%, transparent) 1px, transparent 1px)",
+        backgroundSize: "8px 8px",
+      }}
+      aria-hidden="true"
+    >
+      <span className="flex size-8 items-center justify-center border border-yorha-border bg-yorha-panel">
+        <Glyph name="diamond" />
+      </span>
+    </div>
+  );
+}
 
 const meta = {
   title: "컴포넌트/YoRHa/Card",
@@ -13,7 +33,7 @@ const meta = {
   args: {
     title: "유닛 A-2",
     meta: "상태: 대기",
-    media: <div className="h-16 w-full bg-yorha-grid" />,
+    media: <UnitMedia />,
     actions: (
       <Button size="sm" onClick={fn()}>
         상세
