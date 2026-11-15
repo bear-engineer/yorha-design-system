@@ -211,6 +211,19 @@ export const WipLimitWarning: Story = {
   },
 };
 
+export const Collapsible: Story = {
+  args: { columns: initial },
+  render: (args) => <KanbanBoard columns={args.columns} onChange={args.onChange} collapsible />,
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const toggle = c.getByRole("button", { name: "진행 중 열 접기" });
+    await userEvent.click(toggle);
+    await expect(toggle).toHaveAttribute("aria-expanded", "false");
+    await userEvent.click(toggle);
+    await expect(toggle).toHaveAttribute("aria-expanded", "true");
+  },
+};
+
 export const ReducedMotion: Story = {
   render: () => <Interactive />,
   play: async ({ canvasElement }) => {

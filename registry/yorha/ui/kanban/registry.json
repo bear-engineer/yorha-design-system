@@ -15,7 +15,8 @@
         "@yorha/utils",
         "@yorha/base",
         "@yorha/card",
-        "@yorha/icons"
+        "@yorha/icons",
+        "@yorha/glyph"
       ],
       "files": [
         {
@@ -24,7 +25,7 @@
           "target": "@ui/kanban.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Card, column and handle ids must be unique across the board. Keyboard: Space/Enter lift, arrows move, Space drop, Esc cancel. Set lang=\"ko\" on the wrapper; announcements are Korean."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Card, column and handle ids must be unique across the board. Keyboard: Space/Enter lift, arrows move (focus stays on the lifted card's handle), Space drop, Esc cancel. v4: own edge autoscroll (48 px zone) on the board and the hovered list (dnd-kit autoScroll is off); the board keeps its start height during a drag; WIP overflow no longer adds a row (count turns alert with a triangle glyph, 2 px inset top rule, status text is screen-reader only); insertion marker is a 2 px line with 4x4 caps; empty columns show \"여기에 놓기\" while a card is held (`dropText`); over-limit target ring flickers once; `collapsible` adds a per-column toggle. MIGRATION v4: the visible WIP banner row is gone (style hooks on `p[role=status]` now hit a visually hidden node); `@/lib/fx` and `@yorha/glyph` are now dependencies. Set lang=\"ko\" on the wrapper; announcements are Korean."
     }
   ]
 }

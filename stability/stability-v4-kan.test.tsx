@@ -95,8 +95,8 @@ describe("V4-233 edge autoscroll", () => {
   test("pointer parked at the right edge scrolls the board to its max; the left edge scrolls back", async () => {
     const root = await mountStory("kanban", "Default");
     const board = q(root, "[role=region]");
-    root.style.width = "360px";
-    root.style.maxWidth = "360px";
+    board.style.width = "360px";
+    board.style.maxWidth = "360px";
     await frames(3);
     expect(board.scrollWidth, "board overflows").toBeGreaterThan(board.clientWidth + 100);
     const b = r(board);
@@ -117,8 +117,8 @@ describe("V4-233 edge autoscroll", () => {
     expect(board.scrollLeft, "scrolled back").toBeLessThan(max / 2);
     ptr(document, "pointerup", b.left + 6, b.top + 120);
     await wait(500);
-    root.style.width = "";
-    root.style.maxWidth = "";
+    board.style.width = "";
+    board.style.maxWidth = "";
   });
 
   test("column lists carry the scroll cue", async () => {

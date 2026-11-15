@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useId,
   useMemo,
   useRef,
@@ -13,6 +14,7 @@ import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
+  MeasuringStrategy,
   PointerSensor,
   TouchSensor,
   closestCorners,
@@ -37,7 +39,9 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Card } from "@/components/ui/card";
+import { Glyph } from "@/components/ui/glyph";
 import { GripIcon } from "@/components/ui/icons";
+import { runFx } from "@/lib/fx";
 import { cn } from "@/lib/utils";
 
 export interface KanbanCardData {
@@ -66,8 +70,24 @@ export interface KanbanBoardProps {
   /** Rendered in a column footer, e.g. an "add card" button. */
   renderAdd?: (column: KanbanColumnData) => ReactNode;
   emptyText?: string;
+  /** Text of the empty-column drop zone shown while a card is held. */
+  dropText?: string;
+  /** Adds a toggle per column header that collapses its card list. Collapsed columns open while a card is held. */
+  collapsible?: boolean;
   className?: string;
 }
+
+/** Edge autoscroll: zone depth in px and top speed in px/s. */
+const EDGE_ZONE = 48;
+const EDGE_SPEED = 900;
+const edgeSpeed = (pos: number, start: number, end: number) => {
+  const near = Math.min(EDGE_ZONE, (end - start) / 3);
+  if (pos < start + near) return -Math.min(1, (start + near - pos) / near) * EDGE_SPEED;
+  if (pos > end - near) return Math.min(1, (pos - (end - near)) / near) * EDGE_SPEED;
+  return 0;
+};
+
+const CSS_ESCAPE = (value: string) => value.replace(/["\\]/g, "\\$&");
 
 const cardLabel = (card: KanbanCardData) =>
   card.label ?? (typeof card.title === "string" ? card.title : card.id);
@@ -156,6 +176,8 @@ const HANDLE_BOX = "grid size-6 shrink-0 place-items-center text-yorha-fg-soft";
 
 export interface KanbanCardProps {
   card: KanbanCardData;
+  /** The card is the last of its list: the insertion marker sits on its trailing edge. */
+  last?: boolean;
   /** Accessible name of the drag handle. Defaults to "<card label> 카드 이동". */
   handleLabel?: string;
 }
@@ -174,7 +196,7 @@ function readScope(el: Element | null): OverlayScope {
  * While dragged, the source stays mounted (so the handle keeps focus) but its content is transparent: an empty dashed
  * slot of the same height, with a 2px insertion line on its top edge.
  */
-export function KanbanCard({ card, handleLabel }: KanbanCardProps) {
+export function KanbanCard({ card, handleLabel, last = false }: KanbanCardProps) {
   const {
     attributes,
     listeners,
@@ -199,6 +221,7 @@ export function KanbanCard({ card, handleLabel }: KanbanCardProps) {
       ref={setNodeRef}
       style={style}
       data-dragging={isDragging ? "" : undefined}
+      data-card-id={card.id}
       className="relative list-none snap-start"
     >
       <KanbanCardView
@@ -210,6 +233,7 @@ export function KanbanCard({ card, handleLabel }: KanbanCardProps) {
             ref={setActivatorNodeRef}
             {...attributes}
             {...listeners}
+            data-card-handle={card.id}
             aria-label={handleLabel ?? `${cardLabel(card)} 카드 이동`}
             className={cn(
               HANDLE_BOX,
@@ -220,7 +244,17 @@ export function KanbanCard({ card, handleLabel }: KanbanCardProps) {
           </button>
         }
       />
-      {isDragging ? <span data-slot="kanban-drop-indicator" aria-hidden="true" className="absolute inset-x-0 -top-px h-0.5 bg-yorha-ink" /> : null}
+      {isDragging ? (
+        <span
+          data-slot="kanban-drop-indicator"
+          data-edge={last ? "end" : "start"}
+          aria-hidden="true"
+          className={cn("pointer-events-none absolute inset-x-0 h-0.5 bg-yorha-ink", last ? "-bottom-px" : "-top-px")}
+        >
+          <span data-part="cap" className="absolute -left-px -top-px size-1 bg-yorha-ink" />
+          <span data-part="cap" className="absolute -right-px -top-px size-1 bg-yorha-ink" />
+        </span>
+      ) : null}
     </li>
   );
 }
@@ -238,6 +272,16 @@ export interface KanbanColumnProps {
   cardIds: string[];
   /** True while a dragged card sits in this column (the drop target), even over a card rather than the empty column area. */
   receiving?: boolean;
+  /** A card is held anywhere on the board. */
+  dragging?: boolean;
+  /** Drop-zone text of an empty column while `dragging`. */
+  dropText?: string;
+  /** The held card would push this column over its limit: the ring flickers once on entry. */
+  overLimitTarget?: boolean;
+  /** Renders a collapse toggle in the header. */
+  collapsible?: boolean;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
 export function KanbanColumn({
@@ -250,29 +294,68 @@ export function KanbanColumn({
   children,
   cardIds,
   receiving = false,
+  dragging = false,
+  dropText = "여기에 놓기",
+  overLimitTarget = false,
+  collapsible = false,
+  collapsed = false,
+  onCollapsedChange,
 }: KanbanColumnProps) {
   const headingId = useId();
   const { setNodeRef, isOver } = useDroppable({ id, data: { type: "column" } });
   const exceeded = wipLimit !== undefined && count > wipLimit;
+  const ringRef = useRef<HTMLSpanElement>(null);
+  const wasTarget = useRef(false);
+  useEffect(() => {
+    if (overLimitTarget && !wasTarget.current) runFx(ringRef.current);
+    wasTarget.current = overLimitTarget;
+  }, [overLimitTarget]);
+  const folded = collapsible && collapsed && !dragging;
   return (
     <div
       role="group"
       aria-labelledby={headingId}
       data-over={isOver || receiving ? "" : undefined}
       className={cn(
-        "flex w-72 shrink-0 snap-start flex-col gap-3 border border-yorha-border bg-yorha-panel p-3 font-yorha text-yorha-fg",
+        "relative flex w-72 shrink-0 snap-start flex-col gap-3 border border-yorha-border bg-yorha-panel p-3 font-yorha text-yorha-fg",
+        exceeded && "shadow-[inset_0_2px_0_0_var(--color-yorha-alert-ui)]",
         (isOver || receiving) &&
           "outline-2 -outline-offset-2 outline-dashed outline-yorha-ring",
       )}
     >
+      {overLimitTarget ? (
+        <span
+          ref={ringRef}
+          data-part="limit-ring"
+          aria-hidden="true"
+          className="yorha-flicker pointer-events-none absolute inset-0 outline-2 -outline-offset-2 outline-yorha-alert-ui"
+        />
+      ) : null}
       <div className="flex items-center justify-between gap-2">
+        {collapsible ? (
+          <button
+            type="button"
+            data-part="collapse"
+            aria-expanded={!folded}
+            aria-label={`${title} 열 ${folded ? "펼치기" : "접기"}`}
+            onClick={() => onCollapsedChange?.(!collapsed)}
+            className="yorha-tint grid size-6 shrink-0 place-items-center text-yorha-fg-soft hover:text-yorha-fg focus-visible:yorha-focus"
+          >
+            <Glyph name={folded ? "chevron-right" : "chevron-down"} />
+          </button>
+        ) : null}
         <h2
           id={headingId}
-          className="font-yorha-bold text-yorha-base uppercase tracking-yorha-heading text-yorha-fg-strong"
+          className="mr-auto font-yorha-bold text-yorha-base uppercase tracking-yorha-heading text-yorha-fg-strong"
         >
           {title}
         </h2>
-        <span className="text-yorha-sm text-yorha-fg-soft">
+        <span
+          data-part="count"
+          data-exceeded={exceeded ? "" : undefined}
+          className={cn("inline-flex items-center gap-1 text-yorha-sm", exceeded ? "text-yorha-alert" : "text-yorha-fg-soft")}
+        >
+          {exceeded ? <Glyph name="triangle-up" /> : null}
           <span aria-hidden="true">
             {count}
             {wipLimit !== undefined ? ` / ${wipLimit}` : null}
@@ -281,10 +364,7 @@ export function KanbanColumn({
         </span>
       </div>
       {exceeded ? (
-        <p
-          role="status"
-          className="border border-yorha-alert-ui px-2 py-1 text-yorha-sm text-yorha-alert"
-        >
+        <p role="status" className="sr-only">
           WIP 한도 초과: {count}/{wipLimit}
         </p>
       ) : null}
@@ -292,10 +372,22 @@ export function KanbanColumn({
         <ul
           ref={setNodeRef}
           aria-labelledby={headingId}
-          className="m-0 flex max-h-96 min-h-16 flex-col gap-3 overflow-y-auto p-0"
+          data-slot="kanban-list"
+          className={cn(
+            "yorha-scroll-cue-y m-0 flex max-h-96 min-h-16 flex-col gap-3 overflow-y-auto p-0 [--yorha-scroll-ground:var(--yorha-panel)]",
+            folded && "hidden",
+          )}
         >
           {children}
-          {count === 0 ? (
+          {count === 0 && dragging ? (
+            <li
+              data-slot="kanban-drop-zone"
+              className="relative list-none border border-dashed border-yorha-border p-4 text-center text-yorha-sm text-yorha-fg"
+            >
+              <span aria-hidden="true" className="yorha-dither-12 absolute inset-0 bg-yorha-ink" />
+              <span className="relative bg-yorha-panel px-1">{dropText}</span>
+            </li>
+          ) : count === 0 ? (
             <li className="list-none border border-dashed border-yorha-border p-4 text-center text-yorha-sm text-yorha-fg-soft">
               {emptyText}
             </li>
@@ -319,6 +411,8 @@ export function KanbanBoard({
   label = "칸반 보드",
   renderAdd,
   emptyText,
+  dropText,
+  collapsible = false,
   className,
 }: KanbanBoardProps) {
   const [draft, setDraft] = useState<KanbanColumnData[] | null>(null);
@@ -337,6 +431,9 @@ export function KanbanBoard({
     null,
   );
   const view = draft ?? columns;
+  const [collapsedIds, setCollapsedIds] = useState<ReadonlySet<string>>(new Set());
+  const [holdHeight, setHoldHeight] = useState<number | null>(null);
+  const pointerRef = useRef<{ x: number; y: number } | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
@@ -412,6 +509,7 @@ export function KanbanBoard({
   const onDragStart = ({ active }: DragStartEvent) => {
     setOverlayScope(readScope(boardRef.current));
     setDropAnimation(readDropAnimation());
+    setHoldHeight(boardRef.current?.getBoundingClientRect().height ?? null);
     setActiveId(active.id);
     commitDraft(columns);
   };
@@ -430,6 +528,9 @@ export function KanbanBoard({
   const finish = () => {
     setActiveId(null);
     commitDraft(null);
+    pointerRef.current = null;
+    // The board keeps its height through the settle so content below does not jump under the dropping card.
+    window.setTimeout(() => setHoldHeight(null), readMotionMs("--motion-select"));
   };
 
   const onDragEnd = ({ active, over }: DragEndEvent) => {
@@ -468,6 +569,49 @@ export function KanbanBoard({
   const activeCard = activeId ? findCard(view, activeId)?.card : undefined;
   const receivingId = activeId ? findColumnOf(view, activeId)?.id : undefined;
 
+  // V4-230: a cross-column move remounts the card; put focus back on the lifted card's handle and keep it in view.
+  useLayoutEffect(() => {
+    if (!activeId) return;
+    const handle = boardRef.current?.querySelector<HTMLElement>(`[data-card-handle="${CSS_ESCAPE(String(activeId))}"]`);
+    if (!handle) return;
+    if (document.activeElement !== handle) handle.focus({ preventScroll: true });
+    handle.scrollIntoView({ block: "nearest", inline: "nearest" });
+  }, [activeId, view]);
+
+  // V4-233: own edge autoscroll on the board and the hovered column list (dnd-kit's autoScroll is off).
+  useEffect(() => {
+    if (!activeId) return;
+    const onMove = (event: PointerEvent) => {
+      pointerRef.current = { x: event.clientX, y: event.clientY };
+    };
+    window.addEventListener("pointermove", onMove);
+    let raf = 0;
+    let last = performance.now();
+    const tick = (now: number) => {
+      const dt = Math.min(64, now - last) / 1000;
+      last = now;
+      const pointer = pointerRef.current;
+      const board = boardRef.current;
+      if (pointer && board) {
+        const rect = board.getBoundingClientRect();
+        const dx = edgeSpeed(pointer.x, rect.left, rect.right) * dt;
+        if (dx) board.scrollLeft += dx;
+        const list = document.elementsFromPoint(pointer.x, pointer.y).find((el): el is HTMLElement => el.matches?.("[data-slot=kanban-list]"));
+        if (list) {
+          const lr = list.getBoundingClientRect();
+          const dy = edgeSpeed(pointer.y, lr.top, lr.bottom) * dt;
+          if (dy) list.scrollTop += dy;
+        }
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => {
+      window.removeEventListener("pointermove", onMove);
+      cancelAnimationFrame(raf);
+    };
+  }, [activeId]);
+
   // Direct manipulation: the whole page shows the grabbing cursor and does not select text while a card is held.
   useEffect(() => {
     if (!activeId) return;
@@ -484,7 +628,8 @@ export function KanbanBoard({
     <DndContext
       sensors={sensors}
       collisionDetection={closestCorners}
-      autoScroll
+      autoScroll={false}
+      measuring={{ droppable: { strategy: MeasuringStrategy.Always } }}
       accessibility={{ announcements, screenReaderInstructions }}
       onDragStart={onDragStart}
       onDragOver={onDragOver}
@@ -495,7 +640,9 @@ export function KanbanBoard({
         ref={boardRef}
         role="region"
         aria-label={label}
-        className={cn("relative flex snap-x snap-proximity scroll-px-1 items-start gap-4 overflow-x-auto overscroll-x-contain p-1", className)}
+        style={holdHeight !== null ? { minHeight: holdHeight } : undefined}
+        data-dragging={activeId !== null ? "" : undefined}
+        className={cn("relative flex snap-x snap-proximity data-[dragging]:snap-none scroll-px-1 items-start gap-4 overflow-x-auto overscroll-x-contain p-1", className)}
       >
         {view.map((column) => (
           <KanbanColumn
@@ -508,9 +655,27 @@ export function KanbanBoard({
             addSlot={renderAdd?.(column)}
             cardIds={column.cards.map((c) => c.id)}
             receiving={receivingId === column.id}
+            dragging={activeId !== null}
+            dropText={dropText}
+            overLimitTarget={
+              receivingId === column.id &&
+              column.wipLimit !== undefined &&
+              column.cards.length > column.wipLimit &&
+              columns.find((c) => c.id === column.id)?.cards.some((c) => c.id === activeId) !== true
+            }
+            collapsible={collapsible}
+            collapsed={collapsedIds.has(column.id)}
+            onCollapsedChange={(next) =>
+              setCollapsedIds((prev) => {
+                const set = new Set(prev);
+                if (next) set.add(column.id);
+                else set.delete(column.id);
+                return set;
+              })
+            }
           >
-            {column.cards.map((card) => (
-              <KanbanCard key={card.id} card={card} />
+            {column.cards.map((card, index) => (
+              <KanbanCard key={card.id} card={card} last={index === column.cards.length - 1 && index > 0} />
             ))}
           </KanbanColumn>
         ))}
@@ -530,7 +695,7 @@ export function KanbanBoard({
               card={activeCard}
               className="shadow-yorha-lg"
               handle={
-                <span aria-hidden="true" className={cn(HANDLE_BOX, "text-yorha-fg")}>
+                <span aria-hidden="true" data-part="grip" className={cn(HANDLE_BOX, "text-yorha-ink")}>
                   <GripIcon />
                 </span>
               }
