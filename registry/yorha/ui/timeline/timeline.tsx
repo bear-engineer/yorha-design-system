@@ -1181,7 +1181,7 @@ export function TimelineGraph({
             </span>
             {t.jumpToNow}
           </button>
-          <span className="inline-block min-w-20 px-2 text-yorha-sm tracking-yorha-wide text-yorha-fg-soft" data-part="scale-label">
+          <span className="inline-block w-[17ch] shrink-0 overflow-hidden whitespace-nowrap px-2 align-middle text-yorha-sm tabular-nums tracking-yorha-wide text-yorha-fg-soft" data-part="scale-label">
             {zoomName}
           </span>
         </div>
