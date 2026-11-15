@@ -39,7 +39,6 @@ const rect = (el: Element) => {
   const r = el.getBoundingClientRect();
   return [r.x, r.y, r.width, r.height].map((n) => Math.round(n * 100) / 100).join(",");
 };
-const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 describe("V4-120 PasswordInput autoHide", () => {
   const pw = (extra = {}) => createElement(PasswordInput, { label: "비밀번호", defaultValue: "secret123", ...extra });
@@ -299,8 +298,8 @@ describe("V4-128 PasswordInput strength", () => {
     await frames(2);
     expect(bar().querySelectorAll("[data-segment][data-on]").length).toBe(3);
     expect(rect(bar())).toBe(before);
-    await wait(700);
-    expect(host.querySelector("[data-slot=password-strength-status]")!.textContent).not.toBe("");
+    // The status is announced after a 600 ms debounce: wait for it (a fixed 700 ms sleep lost the race under load).
+    await vi.waitFor(() => expect(host.querySelector("[data-slot=password-strength-status]")!.textContent).not.toBe(""), { timeout: 3000 });
   });
 });
 
