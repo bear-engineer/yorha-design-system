@@ -1394,9 +1394,17 @@ export function TimelineGraph({
                 <div className="absolute inset-x-0 bottom-0 border-b border-yorha-border" />
                 {majorSegs.map((s) => (
                   <div key={s.ms} data-part="tick-major" className="absolute overflow-hidden" style={{ left: s.x0, width: s.x1 - s.x0, top: AXIS.guides, height: AXIS.major }}>
-                    <span data-part="tick-label" className="sticky left-0 block max-w-full truncate px-1.5 text-yorha-xs leading-5 font-yorha-bold text-yorha-fg">
-                      {f.major[ticks.major.unit]!.format(Math.max(s.ms, startMs))}
-                    </span>
+                    {(() => {
+                      const at = Math.max(s.ms, startMs);
+                      const full = f.major[ticks.major.unit]!.format(at);
+                      // A day column under 120 px (8 px/h and below) cannot hold "11월 16일 (월)" once text spacing widens it: drop the month, keep the full date in title.
+                      const short = ticks.major.unit === "1d" && s.x1 - s.x0 < 120 ? f.minor["1d"]!.format(at) : full;
+                      return (
+                        <span data-part="tick-label" title={short === full ? undefined : full} className="sticky left-0 block max-w-full truncate px-1.5 text-yorha-xs leading-5 font-yorha-bold text-yorha-fg">
+                          {short}
+                        </span>
+                      );
+                    })()}
                   </div>
                 ))}
                 {minorXs.map((tk, i) => {

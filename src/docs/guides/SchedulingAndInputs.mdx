@@ -21,6 +21,31 @@ import { INPUT_TYPES, INPUT_TYPE_TABLE } from "../../../registry/yorha/ui/input-
 - `TimelineGraph`: 레인별 막대(시작+끝)와 점 글리프 마름모(시점), 현재 시각 선, 의존선을 SVG 격자 위의 HTML 버튼으로 그립니다. 겹치는 일정은 하위 레인으로 쌓입니다. x 좌표는 시간에 선형 비례하며 `zoom`(`hour` 64px/시간, `day` 4px/시간, `week` 1px/시간, `fit`, `{ pxPerHour }`)과 확대·축소(+/- 키, 버튼, Ctrl+휠)를 지원합니다. 모든 항목이 키보드로 접근되며 좌우는 같은 레인, 상하는 인접 레인의 겹치는 일정으로 이동합니다. "표" 보기로 바꾸면 같은 항목을 시간순 표로 보여 주므로 차트를 읽기 어려운 사용자가 같은 정보를 얻습니다. v4 이전 `scale`/`onScaleChange`는 `zoom`/`onZoomChange`로 바뀌었습니다.
 - `Timeline`(세로): 이벤트 로그용 목록입니다. 상태(`info`, `success`, `warn`, `danger`)는 색 외에 점 모양과 화면 낭독용 글자로도 전달됩니다.
 
+### 타임라인 드래그 앤 드롭 (v4)
+
+`TimelineGraph`는 `onItemsChange` 또는 `defaultItems`를 주면 편집 모드가 됩니다. 둘 다 없으면 `readOnly`(기본)이고, 드래그·크기 조절·들어올리기·삭제가 모두 꺼지며 화면 낭독 안내 영역도 만들어지지 않습니다. `readOnly`를 직접 주어 편집 가능한 데이터에서도 잠글 수 있습니다.
+
+- **이동**: 막대를 끌면 포인터 아래에 오버레이가 따라오고, 원래 자리는 35 %로 남습니다. 시간은 `step`에 맞춰 붙고(Alt = 1분), 레인은 포인터 높이로 정해집니다. Shift는 시간 축에 고정합니다. 이웃 일정은 움직이지 않으며 놓을 칸이 점선 슬롯과 두 줄의 시각 눈금으로 보입니다.
+- **크기 조절**: 막대 양 끝 핸들을 끕니다. 최소 길이와 `step`을 지킵니다.
+- **키보드**: 항목에서 Space로 들어올리고 방향키로 옮기며(Shift = 큰 단위) Space/Enter로 놓고 Esc로 취소합니다. Delete는 지웁니다. 모든 변경은 읽기 영역에 한 번 안내됩니다.
+- **규칙**: `canMove(next, { change, items, lanes })`가 `{ ok: false, reason }`을 돌려주면 마지막으로 유효했던 위치를 지키고, 슬롯이 빗금(`data-invalid`)으로 바뀌며 이유를 안내합니다. `collision="block"`은 겹치는 후보를 거부하고 `"allow"`(기본)는 두 항목에 `data-conflict`를 붙입니다. `locked` 항목은 움직이지 않습니다.
+- **터치**: 막대 위의 쓸기는 스크롤이고, 이동은 그립 핸들에서 시작합니다.
+- **표 경로**: "표" 보기에서 시작·끝·레인 입력으로 같은 변경을 할 수 있어 드래그가 어려운 사용자도 편집합니다.
+- **되돌리기**: `onItemsChange`의 `change.from`으로 Toast의 "실행 취소"를 만듭니다. 상태는 호스트가 가집니다.
+
+```tsx
+<TimelineGraph
+  label="작전 일정"
+  items={items}
+  onItemsChange={(next, change) => {
+    setItems(next);
+    toast.add({ title: "일정을 옮겼습니다", actionProps: { children: "실행 취소", onClick: () => setItems(restore(next, change.from)) } });
+  }}
+  canMove={(candidate) => (candidate.lane === "점검" ? { ok: false, reason: "점검 레인에는 둘 수 없습니다" } : { ok: true })}
+  collision="block"
+/>
+```
+
 ## 칸반
 
 [Kanban](?path=/docs/컴포넌트-yorha-kanban--docs)은 `KanbanBoard`에 `columns`와 `onChange`를 줍니다. 카드·열 id는 보드 안에서 유일해야 합니다.

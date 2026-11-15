@@ -16,6 +16,7 @@
         "@yorha/button",
         "@yorha/card",
         "@yorha/data-table",
+        "@yorha/glyph",
         "@yorha/heading",
         "@yorha/meter",
         "@yorha/progress",

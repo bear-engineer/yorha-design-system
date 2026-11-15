@@ -1,0 +1,27 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "items": [
+    {
+      "name": "command-palette",
+      "type": "registry:block",
+      "title": "Command palette",
+      "description": "Dialog with a search field and MenuList rows: substring filter, ArrowDown into the rows, Enter runs and closes, Esc returns focus to the trigger, Ctrl/Cmd+K opens it. Copy the file next to your app shell.",
+      "dependencies": [],
+      "registryDependencies": [
+        "@yorha/button",
+        "@yorha/dialog",
+        "@yorha/input",
+        "@yorha/kbd",
+        "@yorha/menu-list"
+      ],
+      "files": [
+        {
+          "path": "command-palette.tsx",
+          "type": "registry:page",
+          "target": "~/app/routes/command-palette.tsx"
+        }
+      ],
+      "docs": "Unofficial fan project. Pass `commands` and `onRun`. The rows are a MenuList (listbox); typing never moves focus out of the field until ArrowDown. A notification-centre block was considered and rejected."
+    }
+  ]
+}

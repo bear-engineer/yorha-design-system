@@ -24,6 +24,22 @@ import { Meta } from "@storybook/addon-docs/blocks";
 
 유틸리티가 없는 전환(탭 표시선, 라우트 전환, 공유 요소)만 토큰을 직접 씁니다. 숫자 지속 시간, `cubic-bezier(...)`, `transition-all`은 `pnpm registry:lint`의 `motion` 규칙이 막습니다.
 
+## 글리치·스캔·점 모션 적용 (v4)
+
+안드로이드 터미널의 신호 느낌을 내는 모션은 쓸 자리가 정해져 있습니다. 모두 컴포지터 속성(transform, opacity, clip-path)만 쓰고, `reduced`에서는 변위와 글리치 없이 투명도만, `off`에서는 즉시 바뀝니다.
+
+| 효과 | 쓰는 곳 | 쓰지 않는 곳 |
+|---|---|---|
+| `yorha-glitch` + `runFx(el)` | 시스템 오류 제목(표시 글자) | 읽거나 입력 중인 글자 |
+| `yorha-flicker` + `runFx(el)` | 오류 아이콘 상자, 놓을 수 없는 슬롯 같은 글자 없는 표시 | 본문 |
+| `yorha-dissolve` | 작은 대화상자 입장 | 큰 화면(마스크는 메인 스레드) |
+| `yorha-pop`, `yorha-panel`, `yorha-collapse` | 팝업·패널·접기의 열림/닫힘 | - |
+| `yorha-stream` | 행이 차례로 도착하는 목록 | 한 번에 보이는 표 |
+| 라우트 `scan` | 페이지 이동([페이지 전환](?path=/docs/가이드-페이지-전환--docs)) | 탭 전환(슬라이드) |
+| `yorha-caret`, 점 스피너 | 입력 캐럿, 로딩 | 장식 반복 |
+
+초당 3번을 넘는 깜박임, 큰 면적, 무한 반복은 쓰지 않습니다(WCAG 2.3.1). `runFx`는 같은 요소에 1000 ms 안에 다시 실행하지 않습니다. 불러오기: `import { runFx } from "@/lib/fx"`(레지스트리 항목 `@yorha/fx`).
+
 ## 감소·끔 동작
 
 앱은 `data-motion`(`full`, `reduced`, `off`)으로 모드를 정합니다. 프로바이더가 없어도 OS의 "동작 줄이기"가 켜져 있으면 `reduced`와 같습니다.

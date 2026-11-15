@@ -13,7 +13,8 @@
         "@yorha/system-menu-layout",
         "@yorha/text-field",
         "@yorha/button",
-        "@yorha/dialog"
+        "@yorha/dialog",
+        "@yorha/timeline"
       ],
       "files": [
         {

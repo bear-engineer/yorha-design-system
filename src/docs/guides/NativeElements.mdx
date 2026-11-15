@@ -1,0 +1,36 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="가이드/네이티브 요소" />
+
+# 네이티브 HTML 요소 결정
+
+원칙: 네이티브 요소는 킷이 다시 만들 수 없는 것(폼 값, 검증, 자동 완성, IME, 모바일 선택기, 표·목록 의미)을 가질 때 남깁니다. UA가 브랜드에 맞지 않게 그리면 스타일을 입히고, 거친 포인터가 아닌 곳에서 UA 팝업이 낯설면 킷 팝업으로 보강하며, 스타일할 수 없는 경우에만 교체합니다(v3에서 Base UI로 이미 교체). 새 네이티브 태그는 도입하지 않습니다.
+
+| 요소 | 쓰는 곳 | 결정 | 이유 |
+|---|---|---|---|
+| `<input>` text, email, tel, url, search, password · `<textarea>` | input, text-field, input-group, search-input, password-input, textarea | **유지 + 스타일** | 자동 완성, IME, 모바일 키보드, 맞춤법, 검증. `contenteditable`은 쓰지 않습니다 |
+| `<input type=number>` 직접 사용 | Input | **허용, 스타일, NumberField 권장** | UA 스피너는 12 px 타깃이고 휠이 값을 바꿉니다 |
+| `<input type=date/time/datetime-local/month/week>` | date-input | **유지 + 구간 스타일** | 모바일 선택기, 구간 접근성, min/max/step 검증 |
+| 같은 입력의 팝업 | date-input | **점진적 보강** | `picker="auto"`: 정밀 포인터는 킷 Calendar, 거친 포인터는 네이티브. `color-scheme`이 테마를 따릅니다 |
+| `type=time` 팝업 | date-input | **지금은 네이티브 유지** | 킷 TimePicker는 새 컴포넌트라 이후로 미룹니다 |
+| `<input type=color>` | color-input | **네이티브 엔진 + 정밀 포인터의 킷 팝오버** | 색 대화상자는 낯선 창입니다. 값과 `name`은 실제 input에 남습니다. 직접 만든 HSV 선택기는 기각 |
+| `<input type=file>` | file-input | **유지, 수정** | `display:none` 대신 시각적으로만 숨기고, `invalid`에서 버튼으로 포커스를 넘기며 Field를 오류로 표시 |
+| `<input type=range>` | slider | **Base UI 유지** | 네이티브 range는 분절 게이지를 그릴 수 없습니다. 숨은 input이 폼 값을 지킵니다 |
+| `<input type=range>` 직접 사용 | 소리 스토리 | **킷 Slider로 교체(v4)** | 저장소의 마지막 UA range였습니다 |
+| `<input type=checkbox/radio>`, switch | checkbox, radio-group, switch | **Base UI 유지** | UA 상자는 4 px 모서리와 글리프를 받을 수 없고, 숨은 input이 `name`·초기화·검증을 지킵니다 |
+| `<input type=hidden>` | date-picker | **유지, 자체 `required` 검증 추가** | 숨은 input은 네이티브 검증을 일으키지 않습니다 |
+| `<input type=button/submit/reset/image>` | input-types | **갤러리 전용** | 글리프·단축키·진행 막대를 담을 수 없어 `<Button type>`을 씁니다 |
+| `<select>`, `<datalist>` | 없음 | **Base UI Select / Combobox / Autocomplete** | UA 목록 팝업은 Chromium `base-select` 밖에서 스타일할 수 없습니다. NativeSelect는 기각 |
+| `<dialog>`, `popover` 속성 | 없음 | **Base UI 유지** | 퇴장 애니메이션 제어, 중첩 레이어, 스크롤 잠금 |
+| `<details>/<summary>` | 없음 | **Base UI Accordion / Collapsible** + `hidden="until-found"` | `<details>`는 레이아웃 전환 금지 규칙 안에서 높이를 움직일 수 없습니다 |
+| `<progress>`, `<meter>` | 없음 | **Base UI 역할 유지** | 네이티브 막대는 분절·빗금을 그릴 수 없고 보조 기기에는 역할이 같습니다 |
+| `<table>` | data-table, prose, timeline 표, calendar | **네이티브 표 유지** | 화면 낭독기의 표 탐색, 넘칠 때만 포커스 가능한 스크롤 영역, 첫 열 `<th scope="row">` |
+| SVG `<g role=button>` | timeline 항목 | **HTML `<button>`으로 교체** | 자동 스크롤과 터치 드래그가 SVG에서 동작하지 않고, 말줄임·포커스 링이 공짜입니다 |
+| `<button>` 대 `<a>` | 전체 | **변경 없음** | div 버튼도, 동작에 쓰는 앵커도 없습니다 |
+| `<fieldset>/<legend>`, `<form>`, `<label>`, `<output>`, 랜드마크, 목록 | 폼, 레이아웃 | **유지** | 폼 초기화는 제어되는 킷 필드를 되돌려야 합니다. 계속 바뀌는 `<output>`은 `aria-live="off"` |
+
+## 읽는 법
+
+- **유지**는 킷이 그 요소를 그대로 렌더하거나 그 위에 얹는다는 뜻입니다. 우회하는 `div` 대체품은 만들지 않습니다.
+- **교체**된 요소는 Base UI 부품이 같은 역할과 이름을 주고 숨은 네이티브 input이 폼 값을 지킵니다.
+- 새 컨트롤을 만들 때도 같은 순서로 판단합니다: 네이티브가 값·검증·의미를 주는가, UA가 무엇을 그리는가, 교체하면 무엇을 잃는가.

@@ -42,6 +42,7 @@ import { Card } from "@/components/ui/card";
 import { Glyph } from "@/components/ui/glyph";
 import { GripIcon } from "@/components/ui/icons";
 import { cn } from "@/lib/utils";
+import { runFx } from "@/lib/fx";
 
 export interface KanbanCardData {
   /** Unique across every card AND every column of the board (dnd-kit uses one id space). */
@@ -74,25 +75,6 @@ export interface KanbanBoardProps {
   /** Adds a toggle per column header that collapses its card list. Collapsed columns open while a card is held. */
   collapsible?: boolean;
   className?: string;
-}
-
-const FLICKER_LOCKOUT_MS = 1000;
-const lastFlicker = new WeakMap<HTMLElement, number>();
-/**
- * One-shot `yorha-flicker` on a mounted element: sets `data-run`, clears it when the animation settles, ignores calls within 1000 ms
- * (WCAG 2.3.1). Local copy of the utils `runFx` contract: that file is a non-primary file of `utils`, which items must not import
- * (registry:lint). Swap for `runFx` once the parent splits `@yorha/fx` out of `@yorha/utils`.
- */
-function flickerOnce(el: HTMLElement | null) {
-  if (!el) return;
-  const now = performance.now();
-  const last = lastFlicker.get(el);
-  if (last !== undefined && now - last < FLICKER_LOCKOUT_MS) return;
-  lastFlicker.set(el, now);
-  el.setAttribute("data-run", "");
-  const animations = el.getAnimations();
-  if (animations.length === 0) el.removeAttribute("data-run");
-  else void Promise.allSettled(animations.map((a) => a.finished)).then(() => el.removeAttribute("data-run"));
 }
 
 /** Edge autoscroll: zone depth in px and top speed in px/s. */
@@ -325,7 +307,7 @@ export function KanbanColumn({
   const ringRef = useRef<HTMLLIElement>(null);
   const wasTarget = useRef(false);
   useEffect(() => {
-    if (overLimitTarget && !wasTarget.current) flickerOnce(ringRef.current);
+    if (overLimitTarget && !wasTarget.current) runFx(ringRef.current);
     wasTarget.current = overLimitTarget;
   }, [overLimitTarget]);
   const folded = collapsible && collapsed && !dragging;

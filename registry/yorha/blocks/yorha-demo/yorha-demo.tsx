@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { TextField } from "@/components/ui/text-field";
+import { TimelineGraph, type TimelineGraphItem, type TimelineLane } from "@/components/ui/timeline";
 
 function ProfilePanel() {
   return (
@@ -37,12 +38,38 @@ function ProfilePanel() {
   );
 }
 
+const at = (day: number, hour: number) => new Date(2026, 10, day, hour).getTime();
+const LANES: TimelineLane[] = [
+  { id: "recon", label: "정찰" },
+  { id: "combat", label: "전투" },
+];
+const MISSIONS: TimelineGraphItem[] = [
+  { id: "scout", lane: "recon", title: "지역 정찰", start: at(16, 9), end: at(16, 15) },
+  { id: "strike", lane: "combat", title: "거점 타격", start: at(16, 13), end: at(17, 4) },
+  { id: "sync", lane: "recon", title: "기록 동기화", start: at(17, 9), status: "success" },
+];
+
+/** 드래그로 옮기고 양 끝으로 늘리며, 키보드는 Space로 들어올린다. 편집 가능한 일정은 defaultItems만으로 켜진다. */
+function SchedulePanel() {
+  return (
+    <TimelineGraph
+      label="임무 일정"
+      lanes={LANES}
+      defaultItems={MISSIONS}
+      range={{ start: at(16, 0), end: at(18, 0) }}
+      zoom={{ pxPerHour: 8 }}
+      collision="block"
+    />
+  );
+}
+
 const SECTIONS: SystemMenuSection[] = [
   {
     id: "unit",
     label: "유닛",
     items: [
       { id: "profile", label: "프로필", description: "이름과 초기화", content: <ProfilePanel /> },
+      { id: "schedule", label: "일정", description: "임무를 끌어 옮긴다", content: <SchedulePanel /> },
       { id: "notes", label: "메모", description: "유닛 기록", content: <p className="text-yorha-base text-yorha-fg">메모 항목은 준비 중이다.</p> },
     ],
   },

@@ -9,11 +9,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { DataTable, DataTableBody, DataTableCell, DataTableHeader, DataTableHeadCell, DataTableRow } from "@/components/ui/data-table";
+import { DataTable, DataTableBody, DataTableCell, DataTableEmpty, DataTableHeader, DataTableHeadCell, DataTableRow } from "@/components/ui/data-table";
 import { Heading } from "@/components/ui/heading";
 import { Meter } from "@/components/ui/meter";
 import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Glyph } from "@/components/ui/glyph";
+import { Skeleton, SkeletonGroup } from "@/components/ui/skeleton";
 import { Timeline, type TimelineEvent } from "@/components/ui/timeline";
 
 type ViewState = "ready" | "loading" | "empty" | "error";
@@ -75,12 +76,12 @@ function Empty({ children }: { children: ReactNode }) {
 function Placeholder({ area, title }: { area: string; title: string }) {
   return (
     <Tile area={area} title={title}>
-      <Skeleton label={`${title} 로딩 중`} className="h-full min-h-16 w-full" />
+      <Skeleton className="h-full min-h-16 w-full" />
     </Tile>
   );
 }
 
-function UnitTable() {
+function UnitTable({ units }: { units: Unit[] }) {
   return (
     <DataTable caption="유닛 목록" density="dense" hideCaption>
       <DataTableHeader>
@@ -92,7 +93,8 @@ function UnitTable() {
         </DataTableRow>
       </DataTableHeader>
       <DataTableBody>
-        {UNITS.map((unit) => (
+        {units.length === 0 ? <DataTableEmpty colSpan={4}>표시할 유닛이 없습니다</DataTableEmpty> : null}
+        {units.map((unit) => (
           <DataTableRow key={unit.id}>
             <DataTableCell>
               <Link to={{ search: `?unit=${unit.id}` }} className="rounded-yorha font-yorha-medium text-yorha-fg-strong underline focus-visible:yorha-focus">
@@ -116,13 +118,15 @@ function UnitTable() {
 function DashboardTiles({ state }: { state: "ready" | "loading" | "empty" }) {
   if (state === "loading") {
     return (
-      <Bento preset="dashboard" stagger={false}>
-        <Placeholder area="hero" title="코어" />
-        <Placeholder area="a" title="배터리" />
-        <Placeholder area="b" title="담당" />
-        <Placeholder area="chart" title="기록" />
-        <Placeholder area="list" title="유닛 현황" />
-      </Bento>
+      <SkeletonGroup label="대시보드 불러오는 중">
+        <Bento preset="dashboard" stagger={false}>
+          <Placeholder area="hero" title="코어" />
+          <Placeholder area="a" title="배터리" />
+          <Placeholder area="b" title="담당" />
+          <Placeholder area="chart" title="기록" />
+          <Placeholder area="list" title="유닛 현황" />
+        </Bento>
+      </SkeletonGroup>
     );
   }
   const empty = state === "empty";
@@ -167,7 +171,7 @@ function DashboardTiles({ state }: { state: "ready" | "loading" | "empty" }) {
         {empty ? <Empty>기록이 없습니다</Empty> : <Timeline label="최근 기록" items={EVENTS} />}
       </Tile>
       <Tile area="list" title="유닛 현황">
-        {empty ? <Empty>표시할 유닛이 없습니다</Empty> : <UnitTable />}
+        <UnitTable units={empty ? [] : UNITS} />
       </Tile>
     </Bento>
   );
@@ -203,6 +207,7 @@ function UnitDetail({ id }: { id: string }) {
 
 /**
  * Bento 대시보드 블록. 라우트 모듈(app/routes/bento-dashboard.tsx)로 복사해 쓴다.
+ * 로딩은 SkeletonGroup 하나가 상태를 한 번만 알리고, 비어 있는 표는 DataTableEmpty 행을 씁니다.
  * 표시 상태(정상/로딩/비어 있음/오류)는 데모용 전환 버튼이며, 실제 앱에서는 로더 상태로 바꾼다.
  * 유닛 이름 링크를 누르면 `?unit=<id>` 상세로 가고, SharedElement가 이름을 제목으로 잇는다.
  */
@@ -239,7 +244,10 @@ export default function BentoDashboardRoute() {
             <UnitDetail id={unitId} />
           ) : state === "error" ? (
             <div role="alert" className="flex flex-col items-start gap-3 rounded-yorha border border-yorha-alert-ui bg-yorha-panel p-4">
-              <p className="m-0 font-yorha-bold text-yorha-alert">데이터를 불러오지 못했습니다</p>
+              <p className="m-0 flex items-center gap-2 font-yorha-bold text-yorha-alert">
+                <Glyph name="alert" />
+                데이터를 불러오지 못했습니다
+              </p>
               <Button
                 onClick={() => {
                   setState("ready");

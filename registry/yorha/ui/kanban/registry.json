@@ -16,7 +16,8 @@
         "@yorha/base",
         "@yorha/card",
         "@yorha/icons",
-        "@yorha/glyph"
+        "@yorha/glyph",
+        "@yorha/fx"
       ],
       "files": [
         {
