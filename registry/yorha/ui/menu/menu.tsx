@@ -1,10 +1,16 @@
-import { createContext, useContext, type ComponentProps, type ReactNode } from "react";
+import { Children, createContext, isValidElement, useContext, type ComponentProps, type ReactNode } from "react";
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { buttonVariants } from "@/components/ui/button";
+import { Glyph } from "@/components/ui/glyph";
 import { TriangleIcon } from "@/components/ui/icons";
+import { KbdCombo, useShortcut } from "@/components/ui/kbd";
 import { cn, cnState } from "@/lib/utils";
 
 /**
+ * Migration (v4 sel-b): the arrow is a pixel triangle glyph (no rotated box); the popup body is a scroll viewport
+ * (`data-slot="menu-scroll"`, capped to the available height, `yorha-scroll-cue-y`), so `MenuArrow` is rendered beside it, not inside;
+ * `MenuItem shortcut="mod+S"` shows a `KbdCombo` and sets `aria-keyshortcuts` (display only, it binds nothing; new dependency `@yorha/kbd`, `@yorha/glyph`).
+ *
  * Migration (v3 sel): nested content opens to the side (`MenuSubContent` is the explicit name; no `side`/`align` needed);
  * action rows carry no bullet (only check/radio rows reserve the indicator slot, which renders no children);
  * the cursor and submenu chevron are `TriangleIcon` from `@yorha/icons` (new dependency of menu, context-menu,
@@ -75,6 +81,8 @@ type ContentProps = ComponentProps<typeof MenuPrimitive.Popup> &
     backdrop?: boolean;
   };
 
+const SCROLL = "yorha-scroll yorha-scroll-cue-y [--yorha-scroll-ground:var(--yorha-panel)] max-h-[calc(var(--available-height)-10px)]";
+
 const POPUP =
   "min-w-56 border border-yorha-border bg-yorha-panel py-1 text-yorha-fg shadow-yorha-md rounded-yorha outline-none " +
   "yorha-pop";
@@ -89,6 +97,7 @@ function MenuContent({
   collisionPadding = 8,
   container,
   backdrop = false,
+  children,
   ...props
 }: ContentProps) {
   // Nested content (inside MenuSub) opens beside its trigger: first row lines up with the trigger row (-4 = popup padding).
@@ -96,6 +105,11 @@ function MenuContent({
   const side = sideProp ?? (nested ? "inline-end" : "bottom");
   const sideOffset = sideOffsetProp ?? (nested ? -1 : 8);
   const alignOffset = alignOffsetProp ?? (nested ? -4 : undefined);
+  // The arrow sits outside the scroll body (a scroll container would clip it).
+  const kids = Children.toArray(children);
+  const isArrow = (k: ReactNode) => isValidElement(k) && k.type === MenuArrow;
+  const arrows = kids.filter(isArrow);
+  const body = kids.filter((k) => !isArrow(k));
   return (
     <MenuPrimitive.Portal container={container}>
       {backdrop ? <MenuBackdrop /> : null}
@@ -107,22 +121,38 @@ function MenuContent({
         collisionPadding={collisionPadding}
         className="z-(--yorha-z-popover) outline-none"
       >
-        <MenuPrimitive.Popup data-slot="menu-content" className={cnState(POPUP, className)} {...props} />
+        <MenuPrimitive.Popup data-slot="menu-content" className={cnState(POPUP, className)} {...props}>
+          {arrows}
+          <div data-slot="menu-scroll" className={SCROLL}>
+            {body}
+          </div>
+        </MenuPrimitive.Popup>
       </MenuPrimitive.Positioner>
     </MenuPrimitive.Portal>
   );
 }
 
+// Pixel arrow: one 12px triangle glyph per side (crispEdges, no rotation), stacked in one 12px box and shown by the arrow's `data-side`.
+// The glyph's base row sits over the popup edge so it merges with the border; `text-*` picks the fill.
+function ArrowGlyphs() {
+  return (
+    <>
+      <Glyph name="triangle-up" className="absolute inset-0 opacity-0 group-data-[side=bottom]/arrow:opacity-100" />
+      <Glyph name="triangle-down" className="absolute inset-0 opacity-0 group-data-[side=top]/arrow:opacity-100" />
+      <Glyph name="triangle-right" className="absolute inset-0 opacity-0 group-data-[side=left]/arrow:opacity-100" />
+      <Glyph name="triangle-left" className="absolute inset-0 opacity-0 group-data-[side=right]/arrow:opacity-100" />
+    </>
+  );
+}
+
 const ARROW =
-  "relative block h-1.5 w-3 overflow-clip " +
-  "data-[side=bottom]:top-[-6px] data-[side=top]:bottom-[-6px] data-[side=top]:rotate-180 " +
-  "data-[side=left]:right-[-9px] data-[side=left]:rotate-90 data-[side=right]:left-[-9px] data-[side=right]:-rotate-90 " +
-  "before:absolute before:bottom-0 before:left-1/2 before:size-[calc(6px*1.4142)] before:border before:border-yorha-border " +
-  "before:bg-yorha-panel before:content-[''] before:[transform:translate(-50%,50%)_rotate(45deg)]";
+  "group/arrow block size-3 text-yorha-border data-[side=bottom]:top-[-8px] data-[side=top]:bottom-[-8px] data-[side=left]:right-[-8px] data-[side=right]:left-[-8px]";
 
 /** Pointer from the menu to its trigger. Render it inside MenuContent. */
 function MenuArrow({ className, ...props }: ComponentProps<typeof MenuPrimitive.Arrow>) {
-  return <MenuPrimitive.Arrow data-slot="menu-arrow" className={cnState(ARROW, className)} {...props} />;
+  return <MenuPrimitive.Arrow data-slot="menu-arrow" className={cnState(ARROW, className)} {...props}>
+      <ArrowGlyphs />
+    </MenuPrimitive.Arrow>;
 }
 
 // Popup scrims fade with the popover tokens (not the 400ms panel ones); `pointer-events-none` while ending so a click
@@ -223,10 +253,14 @@ function MenuLinkItem({ className, children, ...props }: ComponentProps<typeof M
 }
 
 /** Plain action row. No bullet: only check and radio rows carry an indicator. */
-function MenuItem({ className, children, ...props }: ComponentProps<typeof MenuPrimitive.Item>) {
+function MenuItem({ className, children, shortcut, ...props }: ComponentProps<typeof MenuPrimitive.Item> & { shortcut?: string }) {
+  const keys = shortcut ? shortcut.split("+").filter(Boolean) : [];
+  // Display only: `enabled: false` returns the aria value without binding a listener.
+  const aria = useShortcut(keys, () => {}, { enabled: false });
   return (
-    <MenuPrimitive.Item data-slot="menu-item" className={cnState(ROW, className)} {...props}>
+    <MenuPrimitive.Item data-slot="menu-item" className={cnState(ROW, className)} aria-keyshortcuts={shortcut ? aria["aria-keyshortcuts"] : undefined} {...props}>
       <RowBody>{children}</RowBody>
+      {shortcut ? <MenuShortcut className="opacity-100"><KbdCombo keys={keys} className="[&_kbd]:h-4 [&_kbd]:min-w-4 [&_kbd]:px-1 [&_kbd]:leading-[13px]" /></MenuShortcut> : null}
     </MenuPrimitive.Item>
   );
 }
@@ -267,8 +301,11 @@ function MenuRadioItem({ className, children, ...props }: ComponentProps<typeof 
     <MenuPrimitive.RadioItem data-slot="menu-radio-item" className={cnState(ROW, className)} {...props}>
       <RowBody
         indicator={
-          <span aria-hidden="true" className={cn(BOX, "rotate-45")}>
-            <MenuPrimitive.RadioItemIndicator keepMounted className="size-1 bg-current data-[unchecked]:hidden" />
+          <span aria-hidden="true" className="relative block size-3">
+            <Glyph name="diamond-ring" className="absolute inset-0" />
+            <MenuPrimitive.RadioItemIndicator keepMounted className="absolute inset-0 data-[unchecked]:hidden">
+              <Glyph name="diamond-dot" />
+            </MenuPrimitive.RadioItemIndicator>
           </span>
         }
       >

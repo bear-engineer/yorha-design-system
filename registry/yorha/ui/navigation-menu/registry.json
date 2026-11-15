@@ -12,7 +12,8 @@
       "registryDependencies": [
         "@yorha/utils",
         "@yorha/base",
-        "@yorha/nav-link"
+        "@yorha/nav-link",
+        "@yorha/glyph"
       ],
       "files": [
         {

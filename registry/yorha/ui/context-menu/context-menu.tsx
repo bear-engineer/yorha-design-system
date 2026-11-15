@@ -1,11 +1,17 @@
 import { createContext, useContext, type ComponentProps, type ReactNode } from "react";
 import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu";
+import { Glyph } from "@/components/ui/glyph";
 import { TriangleIcon } from "@/components/ui/icons";
+import { KbdCombo, useShortcut } from "@/components/ui/kbd";
 import { cn, cnState } from "@/lib/utils";
 
 /**
+ * Migration (v4 sel-b): the arrow is a pixel triangle glyph; the popup body is a scroll viewport (`data-slot="context-menu-scroll"`, capped to the
+ * available height, `yorha-scroll-cue-y`); the trigger sets `-webkit-touch-callout: none`; `ContextMenuItem shortcut="mod+S"` shows a `KbdCombo`
+ * and sets `aria-keyshortcuts` (display only). New dependencies `@yorha/kbd`, `@yorha/glyph`.
+ *
  * Class strings, written in this file on purpose (menu-like look, no import from the menu item).
- * Motion: popup = `yorha-pop` (T3 utility, scale+opacity from --transform-origin; opacity-only under reduced, none under off).
+ * Motion: popup = `yorha-pop` (stepped side-aware clip reveal; opacity-only under reduced, none under off).
  */
 export const contextMenuStyles = {
   popup:
@@ -19,12 +25,22 @@ export const contextMenuStyles = {
   label: "px-2 py-1.5 font-yorha-bold text-yorha-xs tracking-yorha-heading text-yorha-fg-soft uppercase",
   separator: "my-1 h-px bg-yorha-separator",
   arrow:
-    "size-2.5 rotate-45 border-yorha-border bg-yorha-panel " +
-    "data-[side=bottom]:top-[-6px] data-[side=bottom]:border-t data-[side=bottom]:border-l " +
-    "data-[side=top]:bottom-[-6px] data-[side=top]:border-r data-[side=top]:border-b " +
-    "data-[side=left]:right-[-6px] data-[side=left]:border-t data-[side=left]:border-r " +
-    "data-[side=right]:left-[-6px] data-[side=right]:border-b data-[side=right]:border-l",
+    "group/arrow block size-3 text-yorha-border data-[side=bottom]:top-[-8px] data-[side=top]:bottom-[-8px] data-[side=left]:right-[-8px] data-[side=right]:left-[-8px]",
+  scroll: "yorha-scroll yorha-scroll-cue-y [--yorha-scroll-ground:var(--yorha-panel)] max-h-[calc(var(--available-height)-10px)]",
 };
+
+// Pixel arrow: one 12px triangle glyph per side (crispEdges, no rotation), stacked in one 12px box and shown by the arrow's `data-side`.
+// The glyph's base row sits over the popup edge so it merges with the border; `text-*` picks the fill.
+function ArrowGlyphs() {
+  return (
+    <>
+      <Glyph name="triangle-up" className="absolute inset-0 opacity-0 group-data-[side=bottom]/arrow:opacity-100" />
+      <Glyph name="triangle-down" className="absolute inset-0 opacity-0 group-data-[side=top]/arrow:opacity-100" />
+      <Glyph name="triangle-right" className="absolute inset-0 opacity-0 group-data-[side=left]/arrow:opacity-100" />
+      <Glyph name="triangle-left" className="absolute inset-0 opacity-0 group-data-[side=right]/arrow:opacity-100" />
+    </>
+  );
+}
 
 /** Cursor gutter, indicator slot (hidden unless the popup holds check/radio rows) and label. */
 function RowBody({ indicator, children }: { indicator?: ReactNode; children?: ReactNode }) {
@@ -87,7 +103,7 @@ function ContextMenuTrigger({ className, onKeyDown, tabIndex = 0, ...props }: Co
       data-slot="context-menu-trigger"
       tabIndex={tabIndex}
       onKeyDown={handleKeyDown}
-      className={cnState("focus-visible:yorha-focus", className)}
+      className={cnState("focus-visible:yorha-focus [-webkit-touch-callout:none]", className)}
       {...props}
     />
   );
@@ -134,8 +150,14 @@ function ContextMenuContent({
         className="z-(--yorha-z-popover) outline-none"
       >
         <ContextMenuPrimitive.Popup data-slot="context-menu-content" className={cnState(contextMenuStyles.popup, className)} {...props}>
-          {arrow && <ContextMenuPrimitive.Arrow data-slot="context-menu-arrow" aria-hidden="true" className={contextMenuStyles.arrow} />}
-          {children}
+          {arrow && (
+            <ContextMenuPrimitive.Arrow data-slot="context-menu-arrow" aria-hidden="true" className={contextMenuStyles.arrow}>
+              <ArrowGlyphs />
+            </ContextMenuPrimitive.Arrow>
+          )}
+          <div data-slot="context-menu-scroll" className={contextMenuStyles.scroll}>
+            {children}
+          </div>
         </ContextMenuPrimitive.Popup>
       </ContextMenuPrimitive.Positioner>
     </ContextMenuPrimitive.Portal>
@@ -143,10 +165,14 @@ function ContextMenuContent({
 }
 
 /** Plain action row. No bullet: only check and radio rows carry an indicator. */
-function ContextMenuItem({ className, children, ...props }: ComponentProps<typeof ContextMenuPrimitive.Item>) {
+function ContextMenuItem({ className, children, shortcut, ...props }: ComponentProps<typeof ContextMenuPrimitive.Item> & { shortcut?: string }) {
+  const keys = shortcut ? shortcut.split("+").filter(Boolean) : [];
+  // Display only: `enabled: false` returns the aria value without binding a listener.
+  const aria = useShortcut(keys, () => {}, { enabled: false });
   return (
-    <ContextMenuPrimitive.Item data-slot="context-menu-item" className={cnState(contextMenuStyles.item, className)} {...props}>
+    <ContextMenuPrimitive.Item data-slot="context-menu-item" className={cnState(contextMenuStyles.item, className)} aria-keyshortcuts={shortcut ? aria["aria-keyshortcuts"] : undefined} {...props}>
       <RowBody>{children}</RowBody>
+      {shortcut ? <ContextMenuShortcut><KbdCombo keys={keys} className="[&_kbd]:h-4 [&_kbd]:min-w-4 [&_kbd]:px-1 [&_kbd]:leading-[13px]" /></ContextMenuShortcut> : null}
     </ContextMenuPrimitive.Item>
   );
 }
@@ -193,8 +219,11 @@ function ContextMenuRadioItem({ className, children, ...props }: ComponentProps<
     <ContextMenuPrimitive.RadioItem data-slot="context-menu-radio-item" className={cnState(contextMenuStyles.item, className)} {...props}>
       <RowBody
         indicator={
-          <span aria-hidden="true" className={cn(contextMenuStyles.box, "rotate-45")}>
-            <ContextMenuPrimitive.RadioItemIndicator keepMounted className="size-1 bg-current data-[unchecked]:hidden" />
+          <span aria-hidden="true" className="relative block size-3">
+            <Glyph name="diamond-ring" className="absolute inset-0" />
+            <ContextMenuPrimitive.RadioItemIndicator keepMounted className="absolute inset-0 data-[unchecked]:hidden">
+              <Glyph name="diamond-dot" />
+            </ContextMenuPrimitive.RadioItemIndicator>
           </span>
         }
       >

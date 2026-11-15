@@ -1,5 +1,6 @@
 import type { ComponentProps } from "react";
 import { NavigationMenu as NavigationMenuPrimitive } from "@base-ui/react/navigation-menu";
+import { Glyph } from "@/components/ui/glyph";
 import { ChevronIcon } from "@/components/ui/icons";
 import { cn, cnState } from "@/lib/utils";
 
@@ -14,6 +15,9 @@ type ViewportOptions = Pick<PositionerProps, "side" | "align" | "sideOffset" | "
   backdrop?: boolean;
 };
 
+/** Hover timing, passed to the Base UI root: `delay` (ms before a hover opens a panel, default 50) and `closeDelay` (ms before leaving closes it, default 50). */
+type NavigationMenuTimingProps = { delay?: number; closeDelay?: number };
+
 /**
  * Root. Renders its children plus one shared popup (Portal, Positioner, Popup, Arrow, Viewport)
  * that every `NavigationMenuContent` morphs inside. Pass `viewport={false}` to compose
@@ -24,7 +28,7 @@ function NavigationMenu({
   children,
   viewport,
   ...props
-}: RootProps & { viewport?: false | ViewportOptions }) {
+}: RootProps & NavigationMenuTimingProps & { viewport?: false | ViewportOptions }) {
   return (
     <NavigationMenuPrimitive.Root
       data-slot="navigation-menu"
@@ -144,7 +148,7 @@ function NavigationMenuLink({ className, closeOnClick = true, ...props }: Compon
   );
 }
 
-/** Shared popup. Size follows the active panel through `--positioner-*` / `--popup-*` (no layout transition); panels slide and fade, the popup itself fades and scales. */
+/** Shared popup. Size follows the active panel through `--positioner-*` / `--popup-*` (no layout transition); panels slide and fade, the popup itself uses the stepped `yorha-pop` reveal. */
 function NavigationMenuViewport({
   side = "bottom",
   align = "start",
@@ -177,11 +181,7 @@ function NavigationMenuViewport({
           data-slot="navigation-menu-popup"
           aria-label={label}
           className={cn(
-            "relative h-(--popup-height) w-(--popup-width) origin-(--transform-origin) border border-yorha-border bg-yorha-panel text-yorha-fg shadow-yorha-md rounded-yorha outline-none",
-            "transition-[opacity,scale] [transition-duration:max(var(--motion-shared-element),var(--motion-reduced-fade))] ease-yorha-emphasized",
-            "data-[starting-style]:opacity-0 data-[starting-style]:scale-(--pop-scale)",
-            "data-[ending-style]:opacity-0 data-[ending-style]:scale-(--pop-scale) data-[ending-style]:duration-(--motion-popover-exit) data-[ending-style]:ease-yorha-in",
-            "[--pop-scale:calc(1_-_(1_-_var(--motion-scale-pop))_*_var(--motion-spatial))]",
+            "yorha-pop relative h-(--popup-height) w-(--popup-width) border border-yorha-border bg-yorha-panel text-yorha-fg shadow-yorha-md rounded-yorha outline-none",
           )}
         >
           <NavigationMenuArrow />
@@ -198,16 +198,14 @@ function NavigationMenuArrow({ className, ...props }: ComponentProps<typeof Navi
     <NavigationMenuPrimitive.Arrow
       data-slot="navigation-menu-arrow"
       className={cnState(
-        [
-          "relative block h-1.5 w-3 overflow-clip",
-          "before:absolute before:bottom-0 before:left-1/2 before:block before:size-[calc(6px*1.4142)] before:-translate-x-1/2 before:translate-y-1/2 before:rotate-45",
-          "before:border before:border-yorha-border before:bg-yorha-panel before:content-['']",
-          "data-[side=bottom]:-top-1.5 data-[side=top]:-bottom-1.5 data-[side=top]:rotate-180",
-        ],
+        "group/arrow block size-3 text-yorha-border data-[side=bottom]:top-[-8px] data-[side=top]:bottom-[-8px]",
         className,
       )}
       {...props}
-    />
+    >
+      <Glyph name="triangle-up" className="absolute inset-0 opacity-0 group-data-[side=bottom]/arrow:opacity-100" />
+      <Glyph name="triangle-down" className="absolute inset-0 opacity-0 group-data-[side=top]/arrow:opacity-100" />
+    </NavigationMenuPrimitive.Arrow>
   );
 }
 

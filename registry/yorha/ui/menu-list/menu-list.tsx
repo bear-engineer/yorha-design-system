@@ -12,7 +12,6 @@ interface MenuContextValue {
   variant: Variant;
   value: string | null;
   tabStop: string | null;
-  phase: "ssr" | "pre" | "in";
   setValue: (value: string) => void;
   activate: (value: string) => void;
 }
@@ -72,7 +71,6 @@ function MenuListImpl({
   const controlled = valueProp !== undefined;
   const value = controlled ? valueProp : inner;
   const [tabStop, setTabStop] = React.useState<string | null>(null);
-  const [phase, setPhase] = React.useState<"ssr" | "pre" | "in">("ssr");
   const buffer = React.useRef({ text: "", timer: 0 });
 
   const setValue = React.useCallback(
@@ -96,25 +94,12 @@ function MenuListImpl({
     const root = ref.current;
     if (!root) return;
     const rows = Array.from(root.querySelectorAll<HTMLElement>(ITEM));
-    rows.forEach((row, i) => row.style.setProperty("--menu-i", String(i)));
+    rows.forEach((row, i) => row.style.setProperty("--yorha-stagger-index", String(i)));
     const enabled = rows.filter((r) => !r.hasAttribute("data-disabled"));
     const current = enabled.find((r) => r.dataset.menuValue === value) ?? enabled[0];
     const next = current?.dataset.menuValue ?? null;
     setTabStop((prev) => (prev === next ? prev : next));
   });
-
-  // Entry stagger runs once on mount: hide before first paint, reveal two frames later.
-  React.useLayoutEffect(() => {
-    setPhase("pre");
-    let b = 0;
-    const a = requestAnimationFrame(() => {
-      b = requestAnimationFrame(() => setPhase("in"));
-    });
-    return () => {
-      cancelAnimationFrame(a);
-      cancelAnimationFrame(b);
-    };
-  }, []);
 
   const move = (rows: HTMLElement[], target: HTMLElement | undefined) => {
     if (!target) return;
@@ -163,8 +148,8 @@ function MenuListImpl({
   };
 
   const ctx = React.useMemo<MenuContextValue>(
-    () => ({ variant, value, tabStop, phase, setValue, activate }),
-    [variant, value, tabStop, phase, setValue, activate],
+    () => ({ variant, value, tabStop, setValue, activate }),
+    [variant, value, tabStop, setValue, activate],
   );
 
   return (
@@ -198,14 +183,11 @@ const ROW = cn(
   "group relative flex min-h-row w-full cursor-pointer items-center gap-2 py-1 pl-2 pr-3 text-left text-yorha-base uppercase tracking-yorha-wide text-yorha-fg",
   "border-y-[length:var(--menu-rule)] border-solid border-transparent",
   "bg-[linear-gradient(var(--yorha-ink),var(--yorha-ink))] bg-no-repeat [background-size:0%_100%]",
-  "data-[enter=pre]:-translate-x-2 data-[enter=pre]:opacity-0",
+  "yorha-stream",
   "data-[selected]:text-yorha-on-ink data-[selected]:border-yorha-border data-[selected]:[background-size:100%_100%]",
   "outline-none forced-colors:focus-visible:outline-2 forced-colors:focus-visible:-outline-offset-2 forced-colors:focus-visible:outline-[Highlight]",
   "yorha-disabled",
 );
-
-// Index is clamped by the token: later rows enter together.
-const STAGGER = "calc(var(--motion-stagger) * min(var(--menu-i, 0), var(--motion-stagger-max)))";
 
 /** One row. Selected: ink wipes in left to right, bullet inverts, arrow cursor and rules appear. */
 export function MenuListItem({
@@ -222,7 +204,7 @@ export function MenuListItem({
 }: MenuListItemProps) {
   const ctx = React.useContext(MenuContext);
   if (!ctx) throw new Error("MenuListItem must be used inside MenuList");
-  const { variant, phase } = ctx;
+  const { variant } = ctx;
   const selected = ctx.value === value;
   const label = React.useRef<HTMLSpanElement>(null);
   const [text, setText] = React.useState(textValue ?? "");
@@ -232,12 +214,7 @@ export function MenuListItem({
 
   // 90ms in, 0 out: the row being left drops at once so only one wipe is on screen (G8).
   const wipe = selected ? "var(--motion-press)" : "0s";
-  const transition = [
-    `opacity var(--motion-stagger-enter) var(--yorha-ease-out) ${STAGGER}`,
-    `translate var(--motion-stagger-enter) var(--yorha-ease-out) ${STAGGER}`,
-    `background-size ${wipe} var(--yorha-ease-out)`,
-    `color ${wipe} var(--yorha-ease-out)`,
-  ].join(", ");
+  const transition = [`background-size ${wipe} var(--yorha-ease-out)`, `color ${wipe} var(--yorha-ease-out)`].join(", ");
 
   const listbox = variant === "listbox";
   const internal: Record<string, unknown> = {
@@ -249,7 +226,6 @@ export function MenuListItem({
         "data-menu-text": (textValue ?? text).toLowerCase(),
         "data-selected": selected ? "" : undefined,
         "data-disabled": disabled ? "" : undefined,
-        "data-enter": phase === "pre" ? "pre" : undefined,
         "aria-disabled": disabled || undefined,
         ...(listbox
           ? { role: "option", "aria-selected": selected }

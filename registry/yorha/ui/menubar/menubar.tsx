@@ -1,4 +1,4 @@
-import type { ComponentProps } from "react";
+import { useEffect, useRef, type ComponentProps } from "react";
 import { Menubar as MenubarPrimitive } from "@base-ui/react/menubar";
 import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import {
@@ -19,11 +19,29 @@ import { cnState } from "@/lib/utils";
 
 /**
  * Desktop-app style bar of menus. One tab stop; Left/Right move between triggers, Down opens,
- * and once a menu is open, Left/Right or hovering another trigger switches menus. Escape closes.
+ * F10 focuses the first enabled trigger. Once a menu is open, Left/Right or hovering another trigger switches menus. Escape closes.
  */
-function Menubar({ className, ...props }: ComponentProps<typeof MenubarPrimitive>) {
+function Menubar({ className, ref, ...props }: ComponentProps<typeof MenubarPrimitive>) {
+  const own = useRef<HTMLDivElement | null>(null);
+  // F10 (no modifiers) moves focus to the first enabled trigger, like a desktop menu bar.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== "F10" || event.defaultPrevented || event.shiftKey || event.ctrlKey || event.altKey || event.metaKey) return;
+      const first = own.current?.querySelector<HTMLElement>('[data-slot="menubar-trigger"]:not([data-disabled]):not([disabled])');
+      if (!first) return;
+      event.preventDefault();
+      first.focus();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, []);
   return (
     <MenubarPrimitive
+      ref={(node: HTMLDivElement | null) => {
+        own.current = node;
+        if (typeof ref === "function") ref(node);
+        else if (ref) (ref as { current: HTMLDivElement | null }).current = node;
+      }}
       data-slot="menubar"
       className={cnState(
         "inline-flex items-center gap-1 border border-yorha-border bg-yorha-panel p-1 font-yorha text-yorha-fg rounded-yorha",

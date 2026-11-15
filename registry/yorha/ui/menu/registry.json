@@ -13,7 +13,9 @@
         "@yorha/utils",
         "@yorha/base",
         "@yorha/button",
-        "@yorha/icons"
+        "@yorha/icons",
+        "@yorha/glyph",
+        "@yorha/kbd"
       ],
       "files": [
         {

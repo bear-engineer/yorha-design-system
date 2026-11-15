@@ -227,15 +227,9 @@ describe("context-menu trigger (V4-168)", () => {
     );
     const t = q('[data-slot="context-menu-trigger"]')!;
     const v = cs(t).getPropertyValue("-webkit-touch-callout");
-    // Chromium has no such property: accept the computed value or, where it is dropped, the authored rule on the element's class.
-    const authored = [...document.styleSheets].some((sheet) => {
-      try {
-        return [...sheet.cssRules].some((r) => r.cssText.includes("-webkit-touch-callout") && t.matches((r as CSSStyleRule).selectorText ?? "x"));
-      } catch {
-        return false;
-      }
-    });
-    expect(v === "none" || authored, `computed "${v}"`).toBe(true);
+    // Chromium has no such property (the CSSOM drops the declaration), WebKit does: check the computed value where it exists,
+    // otherwise the authored utility on the trigger.
+    expect(v === "none" || t.className.includes("[-webkit-touch-callout:none]"), `computed "${v}" class "${t.className}"`).toBe(true);
     expect(cs(t).cursor).not.toBe("context-menu");
   });
 });
