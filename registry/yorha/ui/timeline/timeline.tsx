@@ -1163,7 +1163,7 @@ export function TimelineGraph({
         </>
       ) : null}
       <div data-part="toolbar" className="flex flex-wrap items-center justify-between gap-2 border-b border-yorha-border pb-2">
-        <div className="flex flex-wrap items-center gap-1">
+        <div className="flex max-w-full min-w-0 flex-wrap items-center gap-1">
           <button type="button" className={btn} aria-label={t.zoomOut} disabled={view !== "graph" || ladderStep(px, -1, maxPx, minPx) === undefined} onClick={() => zoomBy(-1)}>
             <Glyph name="minus" />
           </button>
@@ -1181,7 +1181,7 @@ export function TimelineGraph({
             </span>
             {t.jumpToNow}
           </button>
-          <span className="inline-block w-[20ch] shrink-0 overflow-hidden whitespace-nowrap px-2 align-middle text-yorha-sm tabular-nums tracking-yorha-wide text-yorha-fg-soft" data-part="scale-label">
+          <span className="inline-block w-[20ch] max-w-full shrink-0 overflow-hidden whitespace-nowrap px-2 align-middle text-yorha-sm tabular-nums tracking-yorha-wide text-yorha-fg-soft" data-part="scale-label">
             {zoomName}
           </span>
         </div>
