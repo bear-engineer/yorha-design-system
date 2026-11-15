@@ -181,3 +181,42 @@ export function useSound() {
   );
   return { play };
 }
+
+/** Interaction kinds that may play a cue, mapped onto the existing procedural cues (no new sounds in v4). */
+export const CUE_MAP = {
+  "overlay-open": "open",
+  "overlay-close": "close",
+  toggle: "select",
+  "kanban-lift": "select",
+  "kanban-drop": "confirm",
+  "kanban-cancel": "cancel",
+  "kanban-limit": "error",
+  "toast-info": "select",
+  "toast-success": "confirm",
+  "toast-warning": "error",
+  "toast-error": "error",
+  sort: "cursor-move",
+} as const satisfies Record<string, SoundCue>;
+
+export type CueKind = keyof typeof CUE_MAP;
+
+/** Same cue within this window is dropped (a held key or a burst of updates must not machine-gun). */
+export const CUE_THROTTLE_MS = 60;
+const lastCue = new Map<SoundCue, number>();
+
+/**
+ * `useCue(kind)` returns a function that plays the cue mapped to `kind`. Off by default (sound preference),
+ * throttled to one cue per 60 ms. Call it from user-event handlers only, never from effects reacting to
+ * programmatic or controlled-value updates.
+ */
+export function useCue(kind: CueKind) {
+  const { play } = useSound();
+  return useCallback(() => {
+    const cue: SoundCue = CUE_MAP[kind];
+    const now = typeof performance === "undefined" ? Date.now() : performance.now();
+    const last = lastCue.get(cue);
+    if (last !== undefined && now - last < CUE_THROTTLE_MS) return;
+    lastCue.set(cue, now);
+    play(cue);
+  }, [kind, play]);
+}

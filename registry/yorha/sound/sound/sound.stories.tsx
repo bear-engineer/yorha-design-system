@@ -1,3 +1,4 @@
+import { Slider } from "@/components/ui/slider";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, within, userEvent } from "storybook/test";
 import { YorhaProvider, useSoundPreference, type YorhaProviderProps } from "@/components/yorha-provider";
@@ -115,18 +116,18 @@ function SoundPanel() {
           </button>
         ))}
       </div>
-      <label className="flex items-center gap-3">
-        볼륨
-        <input
-          type="range"
+      <div className="flex items-center gap-3">
+        <Slider
+          label="볼륨"
           min={0}
           max={1}
           step={0.05}
           value={volume}
-          onChange={(e) => setVolume(Number(e.target.value))}
+          onValueChange={(v) => setVolume(Array.isArray(v) ? (v[0] ?? 0) : v)}
+          className="max-w-xs"
         />
-        <output data-testid="sound-volume">{volume}</output>
-      </label>
+        <output data-testid="sound-volume" aria-live="off">{volume}</output>
+      </div>
       <button type="button" aria-pressed={!enabled} className="border border-yorha-border px-3 py-1" onClick={() => setEnabled(!enabled)}>
         음소거
       </button>

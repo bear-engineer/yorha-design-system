@@ -1,4 +1,4 @@
-import { Outlet, useLocation, useNavigationType } from "react-router";
+import { Outlet, UNSAFE_DataRouterStateContext, useLocation, useNavigationType } from "react-router";
 import {
   ViewTransition,
   addTransitionType,
@@ -136,6 +136,58 @@ function usePopstateTransitions(enabled: boolean) {
   }, [enabled]);
 }
 
+/** Polite live region: after each navigation it says the document title, or the first h1 when there is none. */
+export function RouteAnnouncer({ message }: { message: string }) {
+  return (
+    <div data-slot="route-announcer" role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+      {message}
+    </div>
+  );
+}
+
+const PENDING_DELAY_MS = 150;
+const PENDING_SEGMENTS = 10;
+const PENDING_STEP_MS = 120;
+
+/**
+ * 2 px bar of 10 segments across the top edge while a data-router navigation is pending longer than 150 ms.
+ * Segments light one by one (opacity steps, no layout, no flashing above 8 Hz); motion off shows it fully lit.
+ * Renders nothing outside a data router (no `navigation` state).
+ */
+function RoutePending() {
+  const pending = (useContext(UNSAFE_DataRouterStateContext) as { navigation?: { state: string } } | null)?.navigation?.state === "loading";
+  const [shown, setShown] = useState(false);
+  const [lit, setLit] = useState(1);
+  useEffect(() => {
+    if (!pending) {
+      setShown(false);
+      return;
+    }
+    const show = setTimeout(() => setShown(true), PENDING_DELAY_MS);
+    const step = setInterval(() => setLit((n) => (n % PENDING_SEGMENTS) + 1), PENDING_STEP_MS);
+    return () => {
+      clearTimeout(show);
+      clearInterval(step);
+    };
+  }, [pending]);
+  if (!pending || !shown) return null;
+  return (
+    <div aria-hidden="true" data-slot="route-pending" className="pointer-events-none fixed inset-x-0 top-0 z-(--yorha-z-overlay) flex h-0.5">
+      {Array.from({ length: PENDING_SEGMENTS }, (_, i) => (
+        <span key={i} data-lit={i < lit ? "true" : undefined} className="h-full flex-1 bg-yorha-ink opacity-15 data-[lit=true]:opacity-100 [[data-motion=off]_&]:opacity-100" />
+      ))}
+    </div>
+  );
+}
+
+/** Focus target after a PUSH: the main landmark, else the first h1 (made programmatically focusable). */
+function focusPage() {
+  const target = document.querySelector<HTMLElement>("main, [role=main]") ?? document.querySelector<HTMLElement>("h1");
+  if (!target) return;
+  if (!target.hasAttribute("tabindex")) target.setAttribute("tabindex", "-1");
+  target.focus({ preventScroll: true });
+}
+
 const RouteTransitionContext = createContext<RouteTransitionState>({ direction: "replace", mode: "off" });
 
 /**
@@ -156,6 +208,8 @@ export function useRouteTransition(): RouteTransitionState {
  * navigation to add a transition type, so the leaving route reads the same direction from
  * `data-route-direction` on <html> (set in a layout effect, before the animation starts).
  * Other classes: `yorha-route`, `yorha-route-enter`, `yorha-route-exit`.
+ *
+ * v4 navigation behaviour: a polite RouteAnnouncer (document title, else the first h1); PUSH moves focus to `main` (else the first h1) and scrolls to the top; POP leaves focus alone and restores the scroll of that history entry; REPLACE and hash navigations are left to the browser. A 2 px, 10-segment pending bar appears after 150 ms of a pending data-router navigation. Motion: full = stepped scan (V4-010), reduced = fade, off = none.
  */
 export function RouteTransition({ context }: RouteTransitionProps) {
   const mode = useTransitionMode();
@@ -175,6 +229,28 @@ export function RouteTransition({ context }: RouteTransitionProps) {
     };
   }
   const direction = track.current.direction;
+  // Scroll memory per history entry, written while the old page is still on screen.
+  const scrolls = useRef(new Map<string, number>());
+  const shownKey = useRef(location.key);
+  if (shownKey.current !== location.key) {
+    if (typeof window !== "undefined") scrolls.current.set(shownKey.current, window.scrollY);
+    shownKey.current = location.key;
+  }
+  const [announcement, setAnnouncement] = useState("");
+  const firstRender = useRef(true);
+  useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+    if (!location.hash) {
+      if (navigationType === "POP") window.scrollTo(0, scrolls.current.get(location.key) ?? 0);
+      else if (navigationType === "PUSH") window.scrollTo(0, 0);
+    }
+    if (navigationType === "PUSH") focusPage();
+    const title = document.title.trim();
+    setAnnouncement(title || document.querySelector("h1")?.textContent?.trim() || location.pathname);
+  }, [location.key]);
   usePopstateTransitions(mode === "on" || mode === "reduced");
 
   useLayoutEffect(() => {
@@ -199,6 +275,8 @@ export function RouteTransition({ context }: RouteTransitionProps) {
         ) : (
           outlet
         )}
+        <RouteAnnouncer message={announcement} />
+        <RoutePending />
       </div>
     </RouteTransitionContext>
   );

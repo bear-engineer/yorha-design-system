@@ -8,6 +8,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -20,6 +21,7 @@ export type Motion = "full" | "reduced" | "off";
 export type Density = "default" | "compact" | "comfortable";
 
 export const MOTION_STORAGE_KEY = "yorha:motion";
+export const SOUND_STORAGE_KEY = "yorha:sound";
 const MOTIONS: readonly Motion[] = ["full", "reduced", "off"];
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 
@@ -102,8 +104,44 @@ export function YorhaProvider({
   const [density, setDensity] = useState<Density>(densityProp ?? "default");
   // Initial state is server-safe ("full"); the real preference is resolved in an effect.
   const [motion, setMotionState] = useState<Motion>(motionProp ?? "full");
-  const [soundEnabled, setSoundEnabled] = useState(sound?.enabled ?? false);
+  const [soundEnabled, setSoundEnabledState] = useState(sound?.enabled ?? false);
   const [soundVolume, setSoundVolumeState] = useState(clamp01(sound?.volume ?? 0.5));
+  const soundRef = useRef({ enabled: sound?.enabled ?? false, volume: clamp01(sound?.volume ?? 0.5) });
+  const soundGiven = sound !== undefined;
+
+  // Saved sound choice (yorha:sound) applies unless the `sound` prop sets it explicitly. Off by default.
+  useEffect(() => {
+    if (soundGiven) return;
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(SOUND_STORAGE_KEY) ?? "null") as { enabled?: unknown; volume?: unknown } | null;
+      if (!saved) return;
+      if (typeof saved.enabled === "boolean") {
+        soundRef.current.enabled = saved.enabled;
+        setSoundEnabledState(saved.enabled);
+      }
+      if (typeof saved.volume === "number") {
+        soundRef.current.volume = clamp01(saved.volume);
+        setSoundVolumeState(soundRef.current.volume);
+      }
+    } catch {
+      /* storage unavailable or malformed: keep the defaults */
+    }
+  }, [soundGiven]);
+  const saveSound = useCallback(() => {
+    try {
+      window.localStorage.setItem(SOUND_STORAGE_KEY, JSON.stringify(soundRef.current));
+    } catch {
+      /* in-memory only */
+    }
+  }, []);
+  const setSoundEnabled = useCallback(
+    (enabled: boolean) => {
+      soundRef.current.enabled = enabled;
+      setSoundEnabledState(enabled);
+      saveSound();
+    },
+    [saveSound],
+  );
 
   useEffect(() => {
     if (themeProp) setTheme(themeProp);
@@ -135,7 +173,14 @@ export function YorhaProvider({
       /* storage unavailable: keep the in-memory choice */
     }
   }, []);
-  const setSoundVolume = useCallback((v: number) => setSoundVolumeState(clamp01(v)), []);
+  const setSoundVolume = useCallback(
+    (v: number) => {
+      soundRef.current.volume = clamp01(v);
+      setSoundVolumeState(soundRef.current.volume);
+      saveSound();
+    },
+    [saveSound],
+  );
 
   useRootAttribute("data-theme", theme);
   useRootAttribute("data-motion", motion);
@@ -143,7 +188,7 @@ export function YorhaProvider({
 
   const value = useMemo<YorhaContextValue>(
     () => ({ theme, setTheme, motion, setMotion, density, setDensity, soundEnabled, setSoundEnabled, soundVolume, setSoundVolume }),
-    [theme, motion, setMotion, density, soundEnabled, soundVolume, setSoundVolume],
+    [theme, motion, setMotion, density, soundEnabled, setSoundEnabled, soundVolume, setSoundVolume],
   );
   return (
     <CSPProvider nonce={nonce}>
