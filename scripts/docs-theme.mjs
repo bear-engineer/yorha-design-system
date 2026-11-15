@@ -21,7 +21,27 @@ const readThemes = () => {
     const ready = !!doc && doc.readyState === "complete" && !!doc.querySelector("#storybook-root *, #root *");
     return { id: new URL(frame.src, location.href).searchParams.get("id"), ready, theme: doc?.documentElement.dataset.theme ?? null };
   });
-  return { top: document.documentElement.dataset.docsTheme ?? null, frames };
+  // Docs chrome as a reader sees it: page ground and the colour of the page title (or first heading).
+  const wrapper = document.querySelector("#storybook-docs .sbdocs-wrapper");
+  const heading = document.querySelector("#storybook-docs h1, #storybook-docs h2");
+  const chrome = wrapper && heading ? { ground: getComputedStyle(wrapper).backgroundColor, text: getComputedStyle(heading).color } : null;
+  return { top: document.documentElement.dataset.docsTheme ?? null, frames, chrome };
+};
+
+/** Expected docs ground per theme (DOCS_THEMES in src/docs/docs-container.tsx; light keeps Storybook's page). */
+const GROUND = { dark: "rgb(48, 46, 41)", "high-contrast": "rgb(235, 231, 214)" };
+const rgb = (c) => (c.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+const lum = (c) => {
+  const [r, g, b] = rgb(c).map((v) => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055) ** 2.4; });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrast = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+/** Ground must be the theme's ground (a story that rewrites html[data-theme] must not move it) and the title readable. */
+const chromeProblem = (chrome, theme) => {
+  if (!chrome || !GROUND[theme]) return null;
+  if (chrome.ground !== GROUND[theme]) return `docs ground ${chrome.ground}, expected ${GROUND[theme]}`;
+  const ratio = contrast(chrome.text, chrome.ground);
+  return ratio < 4.5 ? `docs title ${chrome.text} on ${chrome.ground} is ${ratio.toFixed(2)}:1` : null;
 };
 
 async function waitThemed(page, theme) {
@@ -30,13 +50,14 @@ async function waitThemed(page, theme) {
   do {
     // A navigation (story iframe reload, HMR) can destroy the context mid-evaluate; just poll again.
     seen = await page.evaluate(readThemes).catch(() => ({ top: null, frames: [] }));
-    if (seen.top === theme && seen.frames.every((f) => f.ready && f.theme === theme)) return null;
+    if (seen.top === theme && seen.frames.every((f) => f.ready && f.theme === theme) && !chromeProblem(seen.chrome, theme)) return null;
     // Docs loads story iframes lazily (loading=lazy): scroll like a reader to bring the rest into view.
     if (seen.frames.some((f) => !f.ready)) await page.mouse.wheel(0, 700).catch(() => {});
     await page.waitForTimeout(250);
   } while (Date.now() < deadline);
   const wrong = seen.frames.filter((f) => !f.ready || f.theme !== theme).map((f) => `${f.id}=${f.ready ? f.theme : "not rendered"}`);
-  return `expected ${theme}: top=${seen.top}${wrong.length ? `; iframes ${wrong.join(", ")}` : ""}`;
+  const chrome = chromeProblem(seen.chrome, theme);
+  return `expected ${theme}: top=${seen.top}${wrong.length ? `; iframes ${wrong.join(", ")}` : ""}${chrome ? `; ${chrome}` : ""}`;
 }
 
 async function open(browser, base, entry, theme) {
