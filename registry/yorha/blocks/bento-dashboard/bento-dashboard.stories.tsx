@@ -74,7 +74,8 @@ export const StateSwitching: Story = {
     await userEvent.click(btn("비어 있음"));
     await expect(btn("비어 있음")).toHaveFocus();
     await expect(await c.findByText("표시할 유닛이 없습니다")).toBeInTheDocument();
-    await expect(c.queryByRole("status")).toBeNull();
+    // DataTable keeps one empty sr-only live region mounted; no loading status may remain.
+    await expect(c.queryAllByRole("status").filter((el) => el.textContent?.trim() || !el.matches("[data-slot=data-table-status]"))).toHaveLength(0);
 
     await userEvent.click(btn("오류"));
     await expect(btn("오류")).toHaveFocus();

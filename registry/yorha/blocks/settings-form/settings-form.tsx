@@ -146,7 +146,17 @@ function SettingsFormBody() {
         <FieldLabel>인증 코드</FieldLabel>
         <OTPFieldRoot id={ANCHOR.otp} length={OTP_LENGTH} value={otp} onValueChange={setOtp}>
           {Array.from({ length: OTP_LENGTH }, (_, i) => (
-            <OTPFieldInput key={i} aria-label={i === 0 ? undefined : `${i + 1}번째 자리 (총 ${OTP_LENGTH})`} />
+            <OTPFieldInput
+              key={i}
+              {...(i === 0
+                ? {}
+                : {
+                    // Field labels every slot via aria-labelledby, which beats aria-label: point slots 2..n at themselves so they keep their own name.
+                    id: `${ANCHOR.otp}-${i + 1}`,
+                    "aria-labelledby": `${ANCHOR.otp}-${i + 1}`,
+                    "aria-label": `${i + 1}번째 자리 (총 ${OTP_LENGTH})`,
+                  })}
+            />
           ))}
         </OTPFieldRoot>
         <FieldDescription>문자로 받은 6자리 숫자</FieldDescription>
