@@ -41,7 +41,6 @@ import { CSS } from "@dnd-kit/utilities";
 import { Card } from "@/components/ui/card";
 import { Glyph } from "@/components/ui/glyph";
 import { GripIcon } from "@/components/ui/icons";
-import { runFx } from "@/lib/fx";
 import { cn } from "@/lib/utils";
 
 export interface KanbanCardData {
@@ -75,6 +74,25 @@ export interface KanbanBoardProps {
   /** Adds a toggle per column header that collapses its card list. Collapsed columns open while a card is held. */
   collapsible?: boolean;
   className?: string;
+}
+
+const FLICKER_LOCKOUT_MS = 1000;
+const lastFlicker = new WeakMap<HTMLElement, number>();
+/**
+ * One-shot `yorha-flicker` on a mounted element: sets `data-run`, clears it when the animation settles, ignores calls within 1000 ms
+ * (WCAG 2.3.1). Local copy of the utils `runFx` contract: that file is a non-primary file of `utils`, which items must not import
+ * (registry:lint). Swap for `runFx` once the parent splits `@yorha/fx` out of `@yorha/utils`.
+ */
+function flickerOnce(el: HTMLElement | null) {
+  if (!el) return;
+  const now = performance.now();
+  const last = lastFlicker.get(el);
+  if (last !== undefined && now - last < FLICKER_LOCKOUT_MS) return;
+  lastFlicker.set(el, now);
+  el.setAttribute("data-run", "");
+  const animations = el.getAnimations();
+  if (animations.length === 0) el.removeAttribute("data-run");
+  else void Promise.allSettled(animations.map((a) => a.finished)).then(() => el.removeAttribute("data-run"));
 }
 
 /** Edge autoscroll: zone depth in px and top speed in px/s. */
@@ -304,10 +322,10 @@ export function KanbanColumn({
   const headingId = useId();
   const { setNodeRef, isOver } = useDroppable({ id, data: { type: "column" } });
   const exceeded = wipLimit !== undefined && count > wipLimit;
-  const ringRef = useRef<HTMLSpanElement>(null);
+  const ringRef = useRef<HTMLLIElement>(null);
   const wasTarget = useRef(false);
   useEffect(() => {
-    if (overLimitTarget && !wasTarget.current) runFx(ringRef.current);
+    if (overLimitTarget && !wasTarget.current) flickerOnce(ringRef.current);
     wasTarget.current = overLimitTarget;
   }, [overLimitTarget]);
   const folded = collapsible && collapsed && !dragging;
@@ -317,20 +335,12 @@ export function KanbanColumn({
       aria-labelledby={headingId}
       data-over={isOver || receiving ? "" : undefined}
       className={cn(
-        "relative flex w-72 shrink-0 snap-start flex-col gap-3 border border-yorha-border bg-yorha-panel p-3 font-yorha text-yorha-fg",
+        "flex w-72 shrink-0 snap-start flex-col gap-3 border border-yorha-border bg-yorha-panel p-3 font-yorha text-yorha-fg",
         exceeded && "shadow-[inset_0_2px_0_0_var(--color-yorha-alert-ui)]",
         (isOver || receiving) &&
           "outline-2 -outline-offset-2 outline-dashed outline-yorha-ring",
       )}
     >
-      {overLimitTarget ? (
-        <span
-          ref={ringRef}
-          data-part="limit-ring"
-          aria-hidden="true"
-          className="yorha-flicker pointer-events-none absolute inset-0 outline-2 -outline-offset-2 outline-yorha-alert-ui"
-        />
-      ) : null}
       <div className="flex items-center justify-between gap-2">
         {collapsible ? (
           <button
@@ -374,10 +384,18 @@ export function KanbanColumn({
           aria-labelledby={headingId}
           data-slot="kanban-list"
           className={cn(
-            "yorha-scroll-cue-y m-0 flex max-h-96 min-h-16 flex-col gap-3 overflow-y-auto p-0 [--yorha-scroll-ground:var(--yorha-panel)]",
+            "yorha-scroll-cue-y relative m-0 flex max-h-96 min-h-16 flex-col gap-3 overflow-y-auto p-0 [--yorha-scroll-ground:var(--yorha-panel)]",
             folded && "hidden",
           )}
         >
+          {overLimitTarget ? (
+            <li
+              ref={ringRef}
+              data-part="limit-ring"
+              aria-hidden="true"
+              className="yorha-flicker pointer-events-none absolute inset-0 list-none outline-2 -outline-offset-2 outline-yorha-alert-ui"
+            />
+          ) : null}
           {children}
           {count === 0 && dragging ? (
             <li
