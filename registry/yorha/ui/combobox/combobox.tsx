@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useId, useLayoutEffect, useMemo, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { Combobox as ComboboxPrimitive } from "@base-ui/react/combobox";
 import { ChevronIcon, CrossIcon, TriangleIcon } from "@/components/ui/icons";
 import { Glyph } from "@/components/ui/glyph";
@@ -344,6 +344,8 @@ function ComboboxContent({
 
 function ComboboxList({ className, ...props }: ComponentProps<typeof ComboboxPrimitive.List>) {
   const { loading } = useContext(ComboboxContext);
+  // A function child is routed through our ComboboxCollection so the create option never reaches the caller's render function.
+  const resolved = typeof props.children === "function" ? <ComboboxCollection>{props.children}</ComboboxCollection> : props.children;
   return (
     <ComboboxPrimitive.List
       data-slot="combobox-list"
@@ -351,7 +353,9 @@ function ComboboxList({ className, ...props }: ComponentProps<typeof ComboboxPri
       data-loading={loading ? "" : undefined}
       className={cnState("outline-none data-[empty]:hidden data-[loading]:opacity-60", className)}
       {...props}
-    />
+    >
+      {resolved}
+    </ComboboxPrimitive.List>
   );
 }
 
@@ -503,6 +507,7 @@ function ComboboxLabel({ className, ...props }: ComponentProps<typeof ComboboxPr
 function ComboboxChips({ className, children, ...props }: ComponentProps<typeof ComboboxPrimitive.Chips>) {
   const ref = useRef<HTMLDivElement | null>(null);
   const { open, requestOpen } = useContext(ComboboxContext);
+  const moreId = useId();
   const [hidden, setHidden] = useState(0);
   // Runs after every render (chips come and go) and on resize; the guard on setHidden ends the loop.
   const measure = () => {
@@ -547,12 +552,18 @@ function ComboboxChips({ className, children, ...props }: ComponentProps<typeof 
     >
       {children}
       {hidden > 0 && (
+        <>
+        {/* Name = visible "+N" plus the count in words (label-in-name); the aria-label attribute stays as the plain fallback. */}
+        <span id={moreId} hidden>
+          +{hidden} 외 {hidden}개 선택됨
+        </span>
         <button
           type="button"
           data-slot="combobox-chips-more"
           aria-label={`외 ${hidden}개 선택됨`}
           aria-haspopup="listbox"
           aria-expanded={open}
+          aria-labelledby={moreId}
           onClick={(event) => {
             requestOpen();
             ref.current?.querySelector<HTMLInputElement>("[data-slot=combobox-input]")?.focus();
@@ -562,6 +573,7 @@ function ComboboxChips({ className, children, ...props }: ComponentProps<typeof 
         >
           +{hidden}
         </button>
+        </>
       )}
     </ComboboxPrimitive.Chips>
   );

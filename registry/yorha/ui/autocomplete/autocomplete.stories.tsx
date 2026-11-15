@@ -304,3 +304,37 @@ export const States: Story = {
     await waitFor(() => expect(body().queryByRole("listbox")).toBeNull());
   },
 };
+
+function LoadingDemo() {
+  return (
+    <div lang="ko" className="w-72 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
+      <Autocomplete items={["Archive", "Bunker", "Command", "Desert"]} loading>
+        <AutocompleteInputGroup>
+          <AutocompleteInput aria-label="검색" placeholder="검색" />
+          <AutocompleteClear />
+          <AutocompleteTrigger />
+        </AutocompleteInputGroup>
+        <AutocompleteContent>
+          <AutocompleteStatus />
+          <AutocompleteList>
+            {(u: string) => (
+              <AutocompleteItem key={u} value={u}>
+                {u}
+              </AutocompleteItem>
+            )}
+          </AutocompleteList>
+        </AutocompleteContent>
+      </Autocomplete>
+    </div>
+  );
+}
+
+/** `loading`: Spinner in the trigger cell, previous suggestions at 60 % with `aria-busy`, status "불러오는 중"; the field keeps its size. Esc clears typed text first, an empty field lets Esc bubble. */
+export const Loading: Story = {
+  render: () => <LoadingDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: "목록 열기" }));
+    await waitFor(() => expect(document.querySelector("[data-slot=autocomplete-list]")).toHaveAttribute("aria-busy", "true"));
+  },
+};

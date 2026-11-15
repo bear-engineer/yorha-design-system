@@ -2,6 +2,7 @@ import { expectTargetSize } from "../../../../.storybook/preview";
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
+import { ComboboxCreate } from "./combobox";
 import {
   Combobox,
   ComboboxChip,
@@ -259,7 +260,7 @@ export const MultipleChips: Story = {
 export const ManySelected: Story = {
   render: () => <Multiple initial={UNITS.slice(0, 8)} />,
   play: async () => {
-    await expect(body().getByRole("img", { name: /^외 \d+개 선택됨$/ })).toBeVisible();
+    await expect(body().getByRole("button", { name: /외 \d+개 선택됨$/ })).toBeVisible();
   },
 };
 
@@ -385,5 +386,86 @@ export const DisabledState: Story = {
   play: async ({ canvasElement }) => {
     await expect(single()).toBeDisabled();
     await expectTargetSize(canvasElement);
+  },
+};
+
+function LoadingDemo() {
+  return (
+    <div lang="ko" className="w-72 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
+      <Combobox items={UNITS} loading>
+        <ComboboxInputGroup>
+          <ComboboxInput aria-label="유닛 검색" placeholder="유닛 검색" />
+          <ComboboxClear />
+          <ComboboxTrigger />
+        </ComboboxInputGroup>
+        <ComboboxContent>
+          <ComboboxStatus />
+          <ComboboxEmpty>일치하는 유닛이 없습니다</ComboboxEmpty>
+          <ComboboxList>
+            {(u: string) => (
+              <ComboboxItem key={u} value={u}>
+                {u}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    </div>
+  );
+}
+
+/** `loading`: the Spinner takes the chevron's place (same 12px cell), previous rows stay at 60 % with `aria-busy`, the status reads "불러오는 중". The field never resizes. */
+export const Loading: Story = {
+  render: () => <LoadingDemo />,
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    await userEvent.click(canvas.getByRole("button", { name: "목록 열기" }));
+    await waitFor(() => expect(document.querySelector("[data-slot=combobox-list]")).toHaveAttribute("aria-busy", "true"));
+    await expect(document.querySelector("[data-slot=combobox-status]")).toHaveTextContent("불러오는 중");
+  },
+};
+
+function CreatableDemo() {
+  const [items, setItems] = useState(UNITS);
+  const [value, setValue] = useState<string | null>(null);
+  return (
+    <div lang="ko" className="w-72 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
+      <Combobox items={items} value={value} onValueChange={(v) => setValue(v as string | null)}>
+        <ComboboxInputGroup>
+          <ComboboxInput aria-label="유닛 선택 또는 추가" placeholder="유닛 선택 또는 추가" />
+          <ComboboxClear />
+          <ComboboxTrigger />
+        </ComboboxInputGroup>
+        <ComboboxContent>
+          <ComboboxCreate
+            exists={false}
+            onCreate={(text) => {
+              setItems((prev) => (prev.includes(text) ? prev : [...prev, text]));
+              setValue(text);
+            }}
+          />
+          <ComboboxEmpty>일치하는 유닛이 없습니다</ComboboxEmpty>
+          <ComboboxList>
+            {(u: string) => (
+              <ComboboxItem key={u} value={u}>
+                {u}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    </div>
+  );
+}
+
+/** `ComboboxCreate`: unmatched text gets a real option at the end of the list ("text" 만들기); ArrowDown + Enter creates it and sets the value. */
+export const Creatable: Story = {
+  render: () => <CreatableDemo />,
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByRole("combobox", { name: "유닛 선택 또는 추가" });
+    await userEvent.type(input, "Zeta");
+    await waitFor(() => expect(document.querySelector("[data-slot=combobox-create]")).toBeTruthy());
+    await userEvent.keyboard("{ArrowDown}{Enter}");
+    await waitFor(() => expect(input).toHaveValue("Zeta"));
   },
 };

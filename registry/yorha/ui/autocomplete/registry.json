@@ -23,7 +23,7 @@
           "target": "@ui/autocomplete.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Compose Autocomplete > AutocompleteInputGroup (AutocompleteInput, AutocompleteClear, AutocompleteTrigger) and AutocompleteContent > AutocompleteEmpty + AutocompleteList > AutocompleteItem. Optional: AutocompleteGroup/GroupLabel/Separator, Status, Row, Collection, Backdrop, Arrow, Value, useAutocompleteFilter. The typed text is the value; `mode` and `autoHighlight` come from Base UI. Always give the input an aria-label or a label."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Compose Autocomplete > AutocompleteInputGroup (AutocompleteInput, AutocompleteClear, AutocompleteTrigger) and AutocompleteContent > AutocompleteEmpty + AutocompleteList > AutocompleteItem. Optional: AutocompleteGroup/GroupLabel/Separator, Status, Row, Collection, Backdrop, Arrow, Value, useAutocompleteFilter. The typed text is the value; `mode` and `autoHighlight` come from Base UI. Always give the input an aria-label or a label. v4 (yorha-v4/f-sel-a): `<Autocomplete loading>` puts a Spinner in the trigger cell, previous suggestions at 60 % opacity with aria-busy, AutocompleteStatus reads \"불러오는 중\" by default. Esc with the popup closed clears typed text (no bubbling); an empty field lets Esc bubble. Arrow is a pixel triangle glyph stack (no rotation). Migration: `Autocomplete` is a function wrapper; registryDependencies add @yorha/glyph and @yorha/spinner."
     }
   ]
 }

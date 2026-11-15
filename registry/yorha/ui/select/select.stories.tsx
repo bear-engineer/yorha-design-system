@@ -414,3 +414,52 @@ export const States: Story = {
     await waitFor(() => expect(t).toHaveFocus());
   },
 };
+
+const FRUIT_ITEMS = ["사과", "배", "포도"].map((f) => ({ value: f, label: f }));
+
+/** `clearable`: Backspace / Delete on the closed trigger returns to the placeholder (not with `required`). */
+export const Clearable: Story = {
+  render: () => (
+    <Select clearable defaultValue="배" items={FRUIT_ITEMS}>
+      <SelectTrigger aria-label="과일 선택">
+        <SelectValue placeholder="과일 선택" />
+      </SelectTrigger>
+      <SelectContent>
+        {FRUIT_ITEMS.map((f) => (
+          <SelectItem key={f.value} value={f.value}>
+            {f.label}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  ),
+  play: async ({ canvasElement }) => {
+    const trigger = within(canvasElement).getByRole("combobox", { name: "과일 선택" });
+    trigger.focus();
+    await userEvent.keyboard("{Backspace}");
+    await waitFor(() => expect(trigger).toHaveTextContent("과일 선택"));
+  },
+};
+
+/** In a form: `name` posts the value, `required` blocks an empty submit, and Reset goes back to `defaultValue`. */
+export const InForm: Story = {
+  render: () => (
+    <form className="flex flex-col gap-3">
+      <Select name="fruit" required defaultValue="배" items={FRUIT_ITEMS}>
+        <SelectTrigger aria-label="과일 선택">
+          <SelectValue placeholder="과일 선택" />
+        </SelectTrigger>
+        <SelectContent>
+          {FRUIT_ITEMS.map((f) => (
+            <SelectItem key={f.value} value={f.value}>
+              {f.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <button type="reset" className="self-start text-yorha-sm underline">
+        초기화
+      </button>
+    </form>
+  ),
+};
