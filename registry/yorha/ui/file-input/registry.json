@@ -5,7 +5,7 @@
       "name": "file-input",
       "type": "registry:ui",
       "title": "File input",
-      "description": "File selector with a button and a drop zone: multiple, accept, maxSize, a removable file list, sizes formatted with Intl, keyboard operable, drag-over state, and live-region announcements.",
+      "description": "File selector with a button and a drop zone: multiple, accept, maxSize, a removable file list, sizes formatted with Intl, keyboard operable, drag-over state, and live-region announcements. Required validation focuses the button and shows a message; window drop guard, paste, maxFiles, per-file status bar, clear all, form reset.",
       "registryDependencies": [
         "@yorha/base",
         "@yorha/utils",
@@ -19,7 +19,7 @@
           "target": "@ui/file-input.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. The native input type=file is display:none and opened by the button, so Enter and Space work. Dropped or chosen files that do not match accept or exceed maxSize are rejected with a role=alert message. Removing a file keeps the native input's FileList in sync through DataTransfer."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. The button opens the native input type=file, so Enter and Space work. Dropped or chosen files that do not match accept or exceed maxSize are rejected with a role=alert message. Removing a file keeps the native input's FileList in sync through DataTransfer. Migration (v4): the native input is visually hidden (sr-only, tabIndex -1, aria-hidden) instead of display:none, so `required` is validated and `invalid` focuses the button and shows `requiredMessage`. While mounted, file dragovers/drops anywhere on the window are cancelled so a miss does not navigate away. Paste inside the group adds clipboard files. New props: maxFiles, status(file, index) -> {state, progress}, requiredMessage, clearLabel. Rejection messages now accumulate until 모두 지우기 or a form reset (they used to be replaced by each drop). Form reset empties the list."
     }
   ]
 }

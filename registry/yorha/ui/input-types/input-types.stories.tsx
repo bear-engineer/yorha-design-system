@@ -2,7 +2,7 @@ import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { expectTargetSize } from "../../../../.storybook/preview";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Field, FieldLabel, Fieldset, FieldsetLegend } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -168,6 +168,30 @@ export const Presets: Story = {
     await expect(inputPresets.url).toMatchObject({ type: "url", inputMode: "url", autoComplete: "url" });
     // pattern is a valid regular expression and accepts a Korean phone number
     await expect(new RegExp(`^(?:${inputPresets.tel.pattern})$`).test("010-1234-5678")).toBe(true);
+    await expect(inputPresets.url.enterKeyHint).toBe("go");
+  },
+};
+
+/** V4-149: the input forms of submit / reset exist for gallery completeness; apps use Button, which can hold a glyph, a kbd or a busy bar. */
+export const ButtonsNextToInputTypes: Story = {
+  render: () => (
+    <form className="flex flex-col gap-3" onSubmit={(e) => e.preventDefault()}>
+      <Field>
+        <FieldLabel>이메일</FieldLabel>
+        <Input {...inputPresets.email} name="email" />
+      </Field>
+      <div className="flex gap-2">
+        <input type="submit" value="input submit" className={buttonVariants({ variant: "primary" })} />
+        <input type="reset" value="input reset" className={buttonVariants()} />
+        <Button type="submit" variant="primary">Button submit</Button>
+        <Button type="reset">Button reset</Button>
+      </div>
+    </form>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await expect(c.getByLabelText("이메일")).toHaveAttribute("enterkeyhint", "next");
+    await expect(c.getByRole("button", { name: "Button reset" })).toHaveAttribute("type", "reset");
   },
 };
 

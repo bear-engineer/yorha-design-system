@@ -5,13 +5,15 @@
       "name": "otp-field",
       "type": "registry:ui",
       "title": "OTP Field",
-      "description": "One-time code entry on Base UI OTPField: Root, Input and Separator parts. Typing advances, Backspace steps back, paste fills all slots; numeric or alphanumeric validation.",
+      "description": "One-time code entry on Base UI OTPField: Root, Input and Separator parts. Typing advances, Backspace steps back, paste fills all slots; numeric or alphanumeric validation. `status` prop (idle, verifying, success, error) with a reserved trailing cell; block caret in the active empty slot.",
       "dependencies": [
         "@base-ui/react@^1.9.0"
       ],
       "registryDependencies": [
         "@yorha/base",
-        "@yorha/utils"
+        "@yorha/utils",
+        "@yorha/glyph",
+        "@yorha/spinner"
       ],
       "files": [
         {
@@ -20,7 +22,7 @@
           "target": "@ui/otp-field.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Migration (v4): each slot is now a span wrapper (the square) around the input plus a caret; Root takes `status`, which reserves one trailing cell so a status change never resizes the root. Slot 1 defaults to autoComplete=\"one-time-code\", all slots inputMode=\"numeric\". Error puts focus and selection on slot 1. The yorha caret is hidden when motion is off. Base UI still renders one extra hidden input for the form value."
     }
   ]
 }

@@ -5,12 +5,15 @@
       "name": "color-input",
       "type": "registry:ui",
       "title": "Color input",
-      "description": "Swatch, hex text field and native colour picker kept in sync inside a Field. Typed hex (3 or 6 digits, # optional) is normalised to #rrggbb on blur; invalid text is flagged and restored.",
+      "description": "Swatch, hex text field and native colour picker kept in sync inside a Field. Typed hex (3 or 6 digits, # optional) is normalised to #rrggbb on blur; invalid text is flagged and restored. On fine pointers the swatch opens a popover (swatches, hex, system picker, EyeDropper where available); a partial hex dithers the swatch; form reset restores the default.",
       "registryDependencies": [
         "@yorha/base",
         "@yorha/utils",
         "@yorha/field",
-        "@yorha/input-group"
+        "@yorha/input-group",
+        "@yorha/button",
+        "@yorha/input",
+        "@yorha/popover"
       ],
       "files": [
         {
@@ -19,7 +22,7 @@
           "target": "@ui/color-input.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Value is always lower-case #rrggbb. The swatch is the visible face of the native picker, which keeps its own accessible name (pickerLabel)."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Value is always lower-case #rrggbb. The swatch is the visible face of the native picker, which keeps its own accessible name (pickerLabel). Migration (v4): on a fine pointer the native input is no longer the click target (it stays in the form, pointer-events none, aria-hidden); a trigger button opens the popover and its \"시스템 선택기\" button calls showPicker(). Coarse pointers keep the native picker. New prop `swatches`. Tests that look up the picker by label must add `{ selector: \"input[type=color]\" }` (the trigger button carries the same name). A hex that is still partial shows a yorha-dither-50 layer and commits nothing. Reset events on the owning form restore the default value."
     }
   ]
 }

@@ -5,7 +5,7 @@
       "name": "input-types",
       "type": "registry:ui",
       "title": "Input types",
-      "description": "inputPresets (text, email, tel, url: type, inputMode, autoComplete, pattern) for the Input item, the INPUT_TYPES list of all 22 HTML input types and the type-to-item table. The AllInputTypes story renders every type with the yorha item that owns it.",
+      "description": "inputPresets (text, email, tel, url: type, inputMode, autoComplete, pattern) for the Input item, the INPUT_TYPES list of all 22 HTML input types and the type-to-item table. The AllInputTypes story renders every type with the yorha item that owns it. Presets carry enterKeyHint; the gallery shows Button type=submit/reset beside input type=submit/reset.",
       "registryDependencies": [
         "@yorha/base",
         "@yorha/utils"
@@ -17,7 +17,7 @@
           "target": "@ui/input-types.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Spread a preset onto Input: <Input {...inputPresets.email} />. The tel pattern is permissive (digits, +, -, spaces, parentheses, 7-20 characters); tighten it per locale. number uses Input type=number because NumberField renders type=text; hidden has no UI and no label."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Spread a preset onto Input: <Input {...inputPresets.email} />. The tel pattern is permissive (digits, +, -, spaces, parentheses, 7-20 characters); tighten it per locale. number uses Input type=number because NumberField renders type=text; hidden has no UI and no label. Migration (v4): inputPresets gain `enterKeyHint` (next, url: go). Native input type=button/submit/reset/image stay gallery-only: prefer <Button type>, which can hold glyphs, kbd and a busy bar."
     }
   ]
 }

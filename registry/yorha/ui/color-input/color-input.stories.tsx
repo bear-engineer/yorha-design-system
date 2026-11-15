@@ -24,7 +24,7 @@ async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
 }
 const seconds = (el: Element) => parseFloat(getComputedStyle(el).transitionDuration) || 0;
 
-const picker = (c: ReturnType<typeof within>, label: string) => c.getByLabelText(`${label} 색상 선택`) as HTMLInputElement;
+const picker = (c: ReturnType<typeof within>, label: string) => c.getByLabelText(`${label} 색상 선택`, { selector: "input[type=color]" }) as HTMLInputElement;
 const swatchOf = (root: HTMLElement) => root.querySelector<HTMLElement>("[data-slot=color-swatch]")!;
 
 const meta = {
@@ -155,5 +155,40 @@ export const States: Story = {
     await expect(text).toHaveAttribute("aria-invalid", "true");
     await expect(text.getAttribute("aria-describedby") ?? "").toContain(c.getByRole("alert").id);
     await expectTargetSize(canvasElement);
+  },
+};
+
+/** V4-143: on a fine pointer the swatch opens the popover (swatches, hex, system picker); the form value stays on the native input. */
+export const PopoverPicker: Story = {
+  args: { name: "accent", onValueChange: fn(), swatches: ["#336699", "#aa3333", "#33aa66", "#aaaa33"] },
+  play: async ({ canvasElement, args }) => {
+    const c = within(canvasElement);
+    await userEvent.click(canvasElement.querySelector("[data-slot=color-trigger]")!);
+    const options = await within(document.body).findAllByRole("radio");
+    await expect(options).toHaveLength(4);
+    await userEvent.click(options[1]!);
+    await waitFor(() => expect(picker(c, "강조색")).toHaveValue("#aa3333"));
+    await expect(args.onValueChange).toHaveBeenCalledWith("#aa3333");
+  },
+};
+
+/** V4-142: a half-typed hex dithers the swatch and commits nothing; V4-144: Reset restores the default. */
+export const PartialHexAndReset: Story = {
+  render: (args) => (
+    <form className="flex flex-col gap-3">
+      <ColorInput {...args} name="accent" />
+      <button type="reset" className="w-fit underline">초기화</button>
+    </form>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const text = c.getByLabelText("강조색", { selector: "input[type=text]" });
+    await userEvent.clear(text);
+    await userEvent.type(text, "12");
+    await expect(canvasElement.querySelector("[data-slot=color-swatch-dither]")).not.toBeNull();
+    await expect(picker(c, "강조색")).toHaveValue("#336699");
+    await userEvent.click(c.getByRole("button", { name: "초기화" }));
+    await waitFor(() => expect(text).toHaveValue("#336699"));
+    await expect(canvasElement.querySelector("[data-slot=color-swatch-dither]")).toBeNull();
   },
 };

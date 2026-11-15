@@ -244,3 +244,48 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+/** V4-140: required + empty blocks submit, focuses the button and shows the message; a file in FormData clears it. */
+export const RequiredInForm: Story = {
+  render: (args) => (
+    <form className="flex flex-col gap-3" onSubmit={(e) => e.preventDefault()}>
+      <FileInput {...args} label="첨부" name="doc" required />
+      <div className="flex gap-2">
+        <button type="submit" className="underline">제출</button>
+        <button type="reset" className="underline">초기화</button>
+      </div>
+    </form>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.click(c.getByRole("button", { name: "제출" }));
+    await expect(await c.findByRole("alert")).toHaveTextContent("파일을 선택하세요");
+    await expect(zoneOf(canvasElement).querySelector("button")).toHaveFocus();
+    fireDrop(zoneOf(canvasElement), toDataTransfer(makeFiles(["a.txt", 10])));
+    await c.findByText("a.txt");
+    await expect((new FormData(canvasElement.querySelector("form")!).get("doc") as File).name).toBe("a.txt");
+  },
+};
+
+/** V4-141 / V4-146: maxFiles, accumulating rejections, per-file 8-segment bar, clear all. */
+export const LimitsAndProgress: Story = {
+  render: (args) => (
+    <FileInput
+      {...args}
+      label="사진"
+      multiple
+      maxFiles={2}
+      accept=".txt"
+      status={(f, i) => (i === 0 ? { state: "uploading", progress: 0.5 } : { state: f.size > 100 ? "error" : "done" })}
+    />
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    fireDrop(zoneOf(canvasElement), toDataTransfer(makeFiles(["1.txt", 10], ["2.txt", 500], ["3.txt", 10])));
+    await c.findByText("2.txt");
+    await expect(canvasElement.querySelectorAll("[data-segment]")).toHaveLength(16);
+    await expect(c.getByRole("alert")).toHaveTextContent("3.txt");
+    await userEvent.click(c.getByRole("button", { name: "모두 지우기" }));
+    await waitFor(() => expect(c.queryByRole("alert")).toBeNull());
+  },
+};

@@ -233,3 +233,21 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+/** V4-145: status keeps the root size; the trailing cell holds the Spinner (verifying) or the check (success). */
+export const Status: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      {(["idle", "verifying", "success", "error"] as const).map((s) => (
+        <Demo key={s} label={s} id={`otp-${s}`} status={s} defaultValue={s === "idle" ? "" : "123456"} />
+      ))}
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const roots = [...canvasElement.querySelectorAll<HTMLElement>("[data-status]")];
+    await expect(roots).toHaveLength(4);
+    await expect(new Set(roots.map((r) => r.getBoundingClientRect().width)).size).toBe(1);
+    await expect(canvasElement.querySelector("[data-status=verifying]")).toHaveAttribute("aria-busy", "true");
+    await expect(canvasElement.querySelector("[data-status=success] [data-glyph=check]")).not.toBeNull();
+  },
+};
