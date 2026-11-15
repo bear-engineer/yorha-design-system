@@ -5,9 +5,10 @@
       "name": "icons",
       "type": "registry:ui",
       "title": "Icons",
-      "description": "YoRHa icon set: ChevronIcon, CheckIcon, CrossIcon, PlusIcon, MinusIcon, TriangleIcon, SortIcon, GripIcon, CalendarIcon, ClockIcon, EyeIcon, EyeOffIcon, SearchIcon. Sizes 12/16/20, viewBox equals render size, 2px square-cap strokes on whole pixels.",
+      "description": "YoRHa icon set: ChevronIcon, CheckIcon, CrossIcon, PlusIcon, MinusIcon, TriangleIcon, SortIcon, GripIcon, CalendarIcon, ClockIcon, EyeIcon, EyeOffIcon, SearchIcon. Thin wrappers over Glyph: integer-rect bitmaps (crispEdges, currentColor), sizes 12/16/20, no strokes.",
       "dependencies": [],
       "registryDependencies": [
+        "@yorha/glyph",
         "@yorha/utils",
         "@yorha/base"
       ],
@@ -18,7 +19,7 @@
           "target": "@ui/icons.tsx"
         }
       ],
-      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Icons are decorative (aria-hidden); put them in a `grid place-items-center` box and label the control, not the icon."
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Icons render through @ui/glyph and are decorative (aria-hidden); put them in a `grid place-items-center` box and label the control, not the icon."
     }
   ]
 }

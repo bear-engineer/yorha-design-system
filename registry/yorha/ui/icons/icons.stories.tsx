@@ -102,7 +102,7 @@ export const Themes: Story = {
   ),
   play: async ({ canvasElement }) => {
     for (const svg of canvasElement.querySelectorAll("svg")) {
-      await expect(getComputedStyle(svg).stroke).toBe(getComputedStyle(svg.parentElement!).color);
+      await expect(getComputedStyle(svg).fill).toBe(getComputedStyle(svg.parentElement!).color);
     }
   },
 };

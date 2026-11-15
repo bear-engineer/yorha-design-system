@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import * as icons from "./icons";
 
-/** G3 drawing rules over every exported icon component (and every dir/size variant). */
+/** v4 drawing rules (V4-031) over every exported icon component (and every dir/size variant). */
 const SIZE_OF: Record<string, number> = {
   CheckIcon: 12,
   CrossIcon: 12,
@@ -56,32 +56,24 @@ describe("icons (G3)", () => {
         expect(attr(svg, "focusable")).toBe("false");
         expect(attr(svg, "class")).toContain("shrink-0");
       });
-      it("strokes at 2px square/miter in currentColor, or is solid with no stroke", () => {
-        const solid = attr(svg, "fill") === "currentColor";
-        if (solid) {
-          expect(svg).not.toMatch(/\sstroke="/);
-          return;
-        }
-        expect(attr(svg, "fill")).toBe("none");
-        expect(attr(svg, "stroke")).toBe("currentColor");
-        expect(attr(svg, "stroke-width")).toBe("2");
-        expect(attr(svg, "stroke-linecap")).toBe("square");
-        expect(attr(svg, "stroke-linejoin")).toBe("miter");
+      it("is a stroke-free crisp glyph: currentColor fill, no stroke attribute", () => {
+        expect(attr(svg, "fill")).toBe("currentColor");
+        expect(attr(svg, "shape-rendering")).toBe("crispEdges");
+        expect(markup).not.toMatch(/\sstroke/);
       });
       it("has integer coordinates only", () => {
         const body = markup.replace(/<svg[^>]*>/, "");
         const values: string[] = [];
         for (const m of body.matchAll(/\s(d|points)="([^"]*)"/g)) values.push(...(m[2]!.match(/-?\d*\.?\d+/g) ?? []));
-        for (const m of body.matchAll(/\s(x|y|cx|cy|r|width|height)="([^"]*)"/g)) values.push(m[2]!);
         expect(values.length).toBeGreaterThan(0);
         for (const n of values) expect(Number.isInteger(Number(n)), `${label}: ${n}`).toBe(true);
-        expect(body).not.toMatch(/\sstroke-width=/); // the width lives on the root only
+        expect(body).not.toMatch(/<(circle|polygon|line|polyline)\b/);
       });
       it("stays inside its box", () => {
-        const body = markup.replace(/<svg[^>]*>/, "");
-        const nums: number[] = [];
-        for (const m of body.matchAll(/\s(d|points)="([^"]*)"/g)) nums.push(...(m[2]!.match(/-?\d+/g) ?? []).map(Number));
-        for (const n of nums) expect(n >= 0 && n <= v.size).toBe(true);
+        const d = /\sd="([^"]*)"/.exec(markup.replace(/<svg[^>]*>/, ""))![1]!;
+        const rects = [...d.matchAll(/M(\d+) (\d+)h(\d+)v(\d+)h-\d+Z/g)].map((m) => m.slice(1).map(Number) as [number, number, number, number]);
+        expect(rects.length).toBeGreaterThan(0);
+        for (const [x, y, w, h] of rects) expect(x >= 0 && y >= 0 && x + w <= v.size && y + h <= v.size).toBe(true);
       });
     });
   }
