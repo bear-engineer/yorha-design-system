@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { Glyph } from "@/components/ui/glyph";
 
 export interface BadgeProps {
   /** neutral: plain square label. alert: drab red-orange accent with a diamond marker (shape cue, not colour alone). */
@@ -25,7 +26,7 @@ export function Badge({ variant = "neutral", children, className }: BadgeProps) 
         className,
       )}
     >
-      {variant === "alert" ? <span aria-hidden="true" className="inline-block size-1.5 rotate-45 bg-current" /> : null}
+      {variant === "alert" ? <Glyph name="diamond" /> : null}
       {children}
     </span>
   );
