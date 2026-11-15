@@ -75,11 +75,16 @@ describe("V4-260 BootLog reserves its final height", () => {
     expect(Math.abs(root.getBoundingClientRect().height - h0)).toBeLessThan(0.5);
   });
 
-  it("every line is mounted from the start; unrevealed lines are hidden, not absent", async () => {
+  it("unreached lines are not in the log (nor the AT tree); an aria-hidden ghost reserves the height", async () => {
     const host = await mount(<BootLog lines={lines} speed={40} gap={300} />, { width: 480 });
-    const all = host.querySelectorAll<HTMLElement>("[data-slot=boot-log-line]");
-    expect(all.length).toBe(lines.length);
-    expect(getComputedStyle(all[lines.length - 1]!).visibility).toBe("hidden");
+    const log = host.querySelector<HTMLElement>("[role=log]")!;
+    expect(log.querySelectorAll("[data-slot=boot-log-line]").length).toBe(1);
+    expect(log.textContent).not.toContain("HANDSHAKE COMPLETE");
+    const ghost = host.querySelector<HTMLElement>("[data-slot=boot-log-ghost]")!;
+    expect(ghost.getAttribute("aria-hidden")).toBe("true");
+    expect(ghost.children.length).toBe(lines.length);
+    expect(ghost.contains(log)).toBe(false);
+    expect(getComputedStyle(ghost).visibility).toBe("hidden");
   });
 
   it("a click on the focused log skips to the end", async () => {
@@ -88,8 +93,7 @@ describe("V4-260 BootLog reserves its final height", () => {
     expect(log.tabIndex).toBe(0);
     log.click();
     await frames(2);
-    const all = host.querySelectorAll<HTMLElement>("[data-slot=boot-log-line]");
-    for (const el of all) expect(getComputedStyle(el).visibility).toBe("visible");
+    expect(log.querySelectorAll("[data-slot=boot-log-line]").length).toBe(lines.length);
   });
 
   it("V4-266 status marks are a glyph plus the text tag", async () => {
@@ -257,5 +261,27 @@ describe("V4-268 ProseTable th without scope warns in dev", () => {
       </Prose>,
     );
     expect(warn.mock.calls.some((c) => String(c[0]).includes("scope"))).toBe(false);
+  });
+});
+
+describe("V4-262 Typer caret at an exact line end", () => {
+  it("the box does not grow when the text fills the line exactly", async () => {
+    const host = await mount(<Typer text={"A".repeat(20)} speed={20} />, { width: 100 });
+    host.style.fontFamily = "monospace";
+    host.style.fontSize = "10px";
+    host.style.width = "20ch";
+    await frames(2);
+    const typer = host.querySelector<HTMLElement>("[data-slot=typer]")!;
+    const typed = host.querySelector<HTMLElement>("[data-yorha-typed]")!;
+    const h0 = typer.getBoundingClientRect().height;
+    let max = h0;
+    const end = performance.now() + 8000;
+    while (typer.dataset.state !== "done" && performance.now() < end) {
+      max = Math.max(max, typer.getBoundingClientRect().height, typed.getBoundingClientRect().height);
+      await frames(1);
+    }
+    expect(typer.dataset.state).toBe("done");
+    expect(Math.max(max, typed.getBoundingClientRect().height) - h0).toBeLessThan(0.5);
+    expect(typed.getBoundingClientRect().height).toBeLessThanOrEqual(typer.getBoundingClientRect().height + 0.5);
   });
 });
