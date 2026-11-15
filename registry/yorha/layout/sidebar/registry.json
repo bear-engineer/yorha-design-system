@@ -12,7 +12,8 @@
         "@yorha/utils",
         "@yorha/nav-link",
         "@yorha/heading",
-        "@yorha/stack"
+        "@yorha/stack",
+        "@yorha/glyph"
       ],
       "files": [
         {

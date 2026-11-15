@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 export interface AppShellProps {
   /** Content of the dark header strip (banner landmark). */
   header?: ReactNode;
-  /** Navigation, usually <Sidebar/>. Collapses behind the menu button below the lg container width. */
+  /** Navigation, usually <Sidebar/>. Below the lg container width it becomes a sheet over the content, opened by the menu button (main never moves); a link tap closes it and returns focus to the button. Migration (v4): was an in-flow block that pushed main down. */
   nav?: ReactNode;
   /** Main content (main landmark). */
   children: ReactNode;
@@ -29,7 +29,7 @@ const SKIP =
 const HEADER = "flex items-center gap-3 bg-yorha-ink px-4 py-2 text-yorha-on-ink";
 const TOGGLE =
   "@lg:hidden ml-auto inline-flex h-control-sm items-center border border-yorha-on-ink px-3 text-yorha-sm uppercase tracking-yorha-wide " +
-  "focus-visible:yorha-focus";
+  "yorha-tint focus-visible:yorha-focus";
 
 export function AppShell({
   header,
@@ -52,6 +52,13 @@ export function AppShell({
   const skipToMain = (event: MouseEvent<HTMLAnchorElement>) => {
     event.preventDefault();
     mainRef.current?.focus();
+  };
+
+  // A tap on a link inside the nav is a navigation: close the sheet and put focus back on its toggle.
+  const closeOnNavigate = (event: MouseEvent<HTMLDivElement>) => {
+    if (!navOpen || !(event.target instanceof Element) || !event.target.closest("a[href]")) return;
+    setNavOpen(false);
+    toggleRef.current?.focus();
   };
 
   // Escape closes the open disclosure from anywhere in the shell and hands focus back to its button.
@@ -90,7 +97,13 @@ export function AppShell({
             id={navId}
             data-slot="app-shell-nav"
             data-open={navOpen ? "true" : undefined}
-            className={cn("flex shrink-0 flex-col @lg:w-64 [&>*]:flex-1", !navOpen && "@max-lg:hidden")}
+            onClick={closeOnNavigate}
+            // Below lg the nav is a sheet over the content (absolute): opening it never moves <main>.
+            className={cn(
+              "flex shrink-0 flex-col @lg:w-64 @lg:has-[[data-collapsed=true]]:w-16 [&>*]:flex-1",
+              "@max-lg:absolute @max-lg:inset-x-0 @max-lg:top-0 @max-lg:z-(--yorha-z-raised) @max-lg:border-b @max-lg:border-yorha-border",
+              !navOpen && "@max-lg:hidden",
+            )}
           >
             {nav}
           </div>

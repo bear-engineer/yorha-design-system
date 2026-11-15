@@ -47,7 +47,7 @@ export function HudLayout({ label = "HUD", hidden = false, position = "fixed", c
   );
 }
 
-/** One corner of the HUD, a labelled region. Buttons and links inside receive pointer events. */
+/** One corner of the HUD, a labelled region. Interactive descendants (a, button, input, select, textarea, summary, [tabindex], [role=button]) receive pointer events. */
 export function HudRegion({ corner, label, className, children }: HudRegionProps) {
   return (
     <section
@@ -56,7 +56,7 @@ export function HudRegion({ corner, label, className, children }: HudRegionProps
       data-corner={corner}
       className={cn(
         "pointer-events-none absolute flex max-w-[min(24rem,50%)] flex-col gap-2 p-4 font-yorha text-yorha-sm tracking-yorha-body text-yorha-fg",
-        "[&_a]:pointer-events-auto [&_button]:pointer-events-auto [&_input]:pointer-events-auto",
+        "[&_:is(a,button,input,select,textarea,summary,[tabindex],[role=button])]:pointer-events-auto",
         CORNER[corner],
         className,
       )}

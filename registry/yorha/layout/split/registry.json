@@ -9,7 +9,8 @@
       "dependencies": [],
       "registryDependencies": [
         "@yorha/base",
-        "@yorha/utils"
+        "@yorha/utils",
+        "@yorha/glyph"
       ],
       "files": [
         {

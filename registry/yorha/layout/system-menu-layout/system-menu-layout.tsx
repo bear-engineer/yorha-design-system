@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { MenuList, MenuListItem } from "@/components/ui/menu-list";
 import { Panel } from "@/components/ui/panel";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
@@ -36,7 +36,7 @@ const firstEnabled = (section: SystemMenuSection) => section.items.find((item) =
 
 /**
  * Pause-menu screen: tabs for the primary sections, a menu list on the left, a detail panel on the right.
- * Router-agnostic. Keyboard path: Tab -> tab strip, Tab -> list, Enter on a row -> detail panel.
+ * Router-agnostic. Keyboard path: Tab -> tab strip, Tab -> list, Enter on a row -> detail panel (focusable, not a tab stop), Esc in the panel -> back to the list row (v4).
  */
 export function SystemMenuLayout({
   sections,
@@ -85,11 +85,22 @@ function SectionBody({
 }) {
   const item = section.items.find((candidate) => candidate.id === itemId) ?? null;
   const detail = useRef<HTMLDivElement>(null);
+  const list = useRef<HTMLDivElement>(null);
+  // Esc in the detail panel hands focus back to the selected row of the list.
+  const backToList = (event: KeyboardEvent<HTMLElement>) => {
+    if (event.key !== "Escape" || event.defaultPrevented) return;
+    const row = list.current?.querySelector<HTMLElement>("[data-selected]") ?? list.current?.querySelector<HTMLElement>("[tabindex='0']");
+    if (!row) return;
+    event.preventDefault();
+    event.stopPropagation();
+    row.focus();
+  };
 
   return (
     <Split
       divider={false}
       list={
+        <div ref={list}>
         <MenuList
           aria-label={`${section.label} 목록`}
           value={itemId}
@@ -102,18 +113,20 @@ function SectionBody({
             </MenuListItem>
           ))}
         </MenuList>
+        </div>
       }
       detail={
         <div
           ref={detail}
           data-slot="system-menu-detail"
+          onKeyDown={backToList}
         >
           {item && (
             <Panel
               data-slot="system-menu-panel"
               title={item.label}
               titleLevel={2}
-              tabIndex={0}
+              tabIndex={-1}
               className="focus-visible:yorha-focus"
             >
               {item.content}

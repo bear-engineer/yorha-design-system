@@ -52,7 +52,11 @@ describe("V4-270 AppShell mobile nav is an overlay", () => {
     expect(Math.abs(r(main).top - top0), "main top constant while the nav is open").toBeLessThanOrEqual(0.5);
     expect(Math.abs(r(main).height - h0), "main height constant").toBeLessThanOrEqual(0.5);
     expect(getComputedStyle(region).position).toBe("absolute");
-    for (const el of [toggle, region]) expect(getComputedStyle(el).transitionProperty).not.toBe("all");
+    for (const el of [region, toggle]) {
+      const cs = getComputedStyle(el);
+      // `all` is the computed default; it only matters when a duration makes it animate.
+      expect(cs.transitionProperty === "all" ? parseFloat(cs.transitionDuration) : 0, "no animated transition-property: all").toBe(0);
+    }
     root.querySelector<HTMLAnchorElement>('[data-slot="app-shell-nav"] a')!.click();
     await frames(3);
     expect(region.dataset.open, "link tap closes").toBeUndefined();
@@ -64,7 +68,7 @@ describe("V4-272 Split resizable", () => {
   const LIST = createElement("button", { type: "button", id: "in-list" }, "목록");
   const DETAIL = createElement("p", null, "상세");
   function Host(props: { onSize?: (n: number) => void; defaultSize?: number }) {
-    return createElement(Split, { list: LIST, detail: DETAIL, resizable: true, defaultSize: props.defaultSize ?? 256, onSizeChange: props.onSize, className: "w-[900px]" } as never);
+    return createElement(Split, { list: LIST, detail: DETAIL, resizable: true, defaultSize: props.defaultSize ?? 256, onSizeChange: props.onSize, className: "w-full" } as never);
   }
   const sep = (c: HTMLElement) => c.querySelector<HTMLElement>('[role="separator"]')!;
 
@@ -188,6 +192,8 @@ describe("V4-271 route transition: announcer, focus, scroll", () => {
 
   test("PUSH announces the h1, focuses main and resets scroll; POP keeps focus and restores scroll", async () => {
     document.documentElement.dataset.motion = "off";
+    const prevTitle = document.title;
+    document.title = "";
     const router = routerFor();
     render(createElement(RouterProvider, { router }));
     await frames(3);
@@ -203,12 +209,15 @@ describe("V4-271 route transition: announcer, focus, scroll", () => {
     expect(live.textContent).toContain("페이지 B");
     expect(document.activeElement?.tagName).toBe("MAIN");
     expect(window.scrollY).toBe(0);
+    const back = document.querySelector<HTMLButtonElement>("#back")!;
+    back.focus();
     await router.navigate(-1);
     await frames(4);
     await sleep(150);
-    expect(document.activeElement?.tagName, "POP does not steal focus").not.toBe("MAIN");
+    expect(document.activeElement, "POP does not move focus").toBe(back);
     expect(window.scrollY, "scroll restored").toBeGreaterThan(300);
     delete document.documentElement.dataset.motion;
+    document.title = prevTitle;
   });
 
   test("off mode installs no view-transition animation; scan keyframes exist for full", () => {
@@ -250,7 +259,7 @@ describe("V4-278 / V4-279 sound cues and persistence", () => {
     }
   });
 
-  test("useCue is a no-op while sound is off", () => {
+  test("useCue is a no-op while sound is off", async () => {
     let fired = 0;
     function Probe() {
       const cue = useCue("toggle");
@@ -258,6 +267,7 @@ describe("V4-278 / V4-279 sound cues and persistence", () => {
       return null;
     }
     render(createElement(YorhaProvider, null, createElement(Probe)));
+    await frames(2);
     expect(() => (window as unknown as { __cue: () => void }).__cue()).not.toThrow();
     expect(fired).toBe(1);
   });
