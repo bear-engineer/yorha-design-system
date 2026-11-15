@@ -122,11 +122,11 @@ describe("Button busy bar easing (V4-086)", () => {
     const anims = bar.getAnimations();
     return { count: anims.length, easing: anims[0] ? ((anims[0].effect as KeyframeEffect).getKeyframes()[0]!.easing as string) : null };
   };
-  it("full = step-flip, reduced = soft slow pulse, off = static", async () => {
+  it("full = smooth ease-in-out pulse, reduced = soft slow linear pulse, off = static", async () => {
     const full = await render(<Button loading>저장</Button>, "full");
     const f = easingOf(full.host);
     expect(f.count).toBe(1);
-    expect(f.easing).toMatch(/^steps\(1/);
+    expect(f.easing).toBe("ease-in-out");
     const reduced = await render(<Button loading>저장</Button>, "reduced");
     const r = easingOf(reduced.host);
     expect(r.count).toBe(1);
@@ -176,7 +176,7 @@ describe("IconButton tooltip (V4-087)", () => {
 });
 
 describe("Toggle bullet (V4-088)", () => {
-  it("scale is none in both states; the filled bullet steps in opacity", async () => {
+  it("scale is none in both states; the filled bullet fades in opacity", async () => {
     const { host } = await render(
       <div>
         <Toggle>알림</Toggle>
@@ -202,7 +202,7 @@ describe("Toggle bullet (V4-088)", () => {
     expect(getComputedStyle(marks[0]!).opacity).toBe("0");
     const on = q(host, "[data-yorha-bullet] > span");
     expect(getComputedStyle(on).opacity).toBe("1");
-    expect(getComputedStyle(marks[0]!).transitionTimingFunction).toContain("steps");
+    expect(getComputedStyle(marks[0]!).transitionTimingFunction).toBe("cubic-bezier(0.23, 1, 0.32, 1)");
   });
 });
 

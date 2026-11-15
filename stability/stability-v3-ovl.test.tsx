@@ -309,12 +309,14 @@ describe("dialog and alert-dialog (FOVL-03, 05, 12, 17, 18, 20)", () => {
     for (const p of popups) expectPixelSnapped(p, { axes: "y" });
   });
 
-  it("FOVL-17: modal enter uses the 280ms modal token on popup and backdrop", async () => {
+  it("FOVL-17: modal enter uses the 220ms modal token on the popup and the 160ms backdrop token on the backdrop", async () => {
     await render(<LongDialog />);
     await until(() => !!q('[role="dialog"]'));
-    expect(getComputedStyle(document.documentElement).getPropertyValue("--motion-modal").trim()).toBe("280ms");
-    const d = getComputedStyle(q('[role="dialog"]')!).getPropertyValue("--motion-panel").trim();
-    expect(d).toBe("280ms");
+    expect(getComputedStyle(document.documentElement).getPropertyValue("--motion-modal").trim()).toBe("220ms");
+    const popup = q('[role="dialog"]')!;
+    const scrim = popup.parentElement!.previousElementSibling as HTMLElement;
+    expect(getComputedStyle(scrim).getPropertyValue("--motion-panel").trim()).toBe("160ms");
+    expect(getComputedStyle(scrim).getPropertyValue("--motion-panel-exit").trim()).toBe("140ms");
   });
 
   it("FOVL-20: AlertDialogAction variant danger is an alert-coloured Button", async () => {

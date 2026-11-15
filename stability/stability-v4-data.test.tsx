@@ -299,7 +299,7 @@ describe("V4-221 stream", () => {
     );
     const full = await mount(node, { motion: "full" });
     const td = full.host.querySelector("tbody td")!;
-    expect(getComputedStyle(td).animationName).toContain("yorha-stream-clip");
+    expect(getComputedStyle(td).animationName).toContain("yorha-stream-in");
     const off = await mount(node, { motion: "off" });
     const style = getComputedStyle(off.host.querySelector("tbody td")!);
     expect(style.animationName === "none" || style.animationDuration.split(",").every((d) => parseFloat(d) === 0)).toBe(true);

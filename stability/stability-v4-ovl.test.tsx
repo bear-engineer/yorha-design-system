@@ -157,19 +157,19 @@ describe("dialog + alert-dialog (V4-191, V4-192, V4-194)", () => {
   );
   const names = (el: Element) => getComputedStyle(el).animationName.split(",").map((s) => s.trim());
 
-  it("V4-191: popup dissolves (mask animation), scrim fades; names per motion mode", async () => {
+  it("V4-191: popup unfolds (clip + fade animations), scrim fades; names per motion mode", async () => {
     await render(dialog);
     (await userEvent.click(document.querySelector("button")!), undefined);
     await until(() => q('[role="dialog"]') !== null);
     const popup = q('[role="dialog"]')!;
-    expect(names(popup).some((n) => n.includes("yorha-dissolve-mask-in"))).toBe(true);
+    expect(names(popup).some((n) => n.includes("yorha-unfold-clip-in"))).toBe(true);
     expect(getComputedStyle(popup).transitionProperty).not.toContain("translate");
     const scrim = popup.parentElement!.previousElementSibling as HTMLElement;
     expect(getComputedStyle(scrim).transitionProperty).toBe("opacity");
-    expect(names(scrim).every((n) => !n.includes("dissolve"))).toBe(true);
+    expect(names(scrim).every((n) => !n.includes("unfold"))).toBe(true);
   });
 
-  it("V4-191: under motion=off the dissolve has zero duration", async () => {
+  it("V4-191: under motion=off the unfold has zero duration", async () => {
     document.documentElement.dataset.motion = "off";
     await render(dialog);
     await userEvent.click(document.querySelector("button")!);
@@ -205,7 +205,7 @@ describe("dialog + alert-dialog (V4-191, V4-192, V4-194)", () => {
     const popup = q('[role="dialog"]');
     expect(popup, "still mounted one frame after close").not.toBeNull();
     expect(popup!.hasAttribute("data-ending-style") || popup!.hasAttribute("data-closed")).toBe(true);
-    expect(names(popup!).some((n) => n.includes("yorha-dissolve-mask-out"))).toBe(true);
+    expect(names(popup!).some((n) => n.includes("yorha-unfold-clip-out"))).toBe(true);
     await until(() => q('[role="dialog"]') === null);
   });
 
@@ -249,8 +249,9 @@ describe("dialog + alert-dialog (V4-191, V4-192, V4-194)", () => {
     expect(rule.hasAttribute("data-run")).toBe(true);
     expect(names(rule)).toEqual(["yorha-flicker"]);
     const title = popup.querySelector<HTMLElement>('[data-slot="alert-dialog-title"]')!;
-    expect(title.getAnimations({ subtree: true }).length).toBe(0);
-    expect(names(title)).toEqual(["none"]);
+    // The only animation on the title is the popup's content rise (no glitch / flicker on a title).
+    expect(title.getAnimations({ subtree: true }).map((a) => (a as CSSAnimation).animationName)).toEqual(["yorha-unfold-content-in"]);
+    expect(names(title)).toEqual(["yorha-unfold-content-in"]);
   });
 
   it("V4-194: opened by touch, initial focus is the popup, not the first field", async () => {
@@ -305,7 +306,7 @@ describe("preview-card (V4-195, V4-196)", () => {
     expect(location.hash).toBe("#v4-touch");
   });
 
-  it("V4-196: popover and preview-card keep the unclipped stepped reveal; their arrow is not clipped", async () => {
+  it("V4-196: popover and preview-card keep the unclipped smooth reveal; their arrow is not clipped", async () => {
     await render(
       <div>
         <Popover defaultOpen>

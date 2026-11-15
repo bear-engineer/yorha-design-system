@@ -11,7 +11,7 @@ import { Radio, RadioGroup } from "../registry/yorha/ui/radio-group/radio-group"
 import { Switch } from "../registry/yorha/ui/switch/switch";
 import { Slider } from "../registry/yorha/ui/slider/slider";
 
-// v4 f-act-b: V4-105 checkbox glyph + stepped clip, V4-106 radio disc, V4-107 switch pending, V4-108/110 slider fill + bubble + marks,
+// v4 f-act-b: V4-105 checkbox glyph + smooth clip, V4-106 radio disc, V4-107 switch pending, V4-108/110 slider fill + bubble + marks,
 // V4-109 checkbox-group shift range, V4-111 slider form.
 
 const mounted: { root: Root; host: HTMLElement }[] = [];
@@ -70,7 +70,7 @@ describe("V4-105 checkbox glyph", () => {
     expect(rect(box), "box rect constant").toBe(before);
   });
 
-  it("checking steps the clip left to right in 4 discrete values; box rect constant", async () => {
+  it("checking wipes the clip left to right smoothly (ease-out, every sample differs); box rect constant", async () => {
     const host = await render(createElement(Checkbox, { defaultChecked: false }, "알림"));
     const box = q(host, '[data-slot="checkbox-box"]');
     const before = rect(box);
@@ -83,16 +83,17 @@ describe("V4-105 checkbox glyph", () => {
     const dur = Number(anim!.effect!.getComputedTiming().duration);
     expect(dur).toBeGreaterThan(0);
     const seen = new Set<string>();
-    for (const t of [0.05, 0.3, 0.55, 0.8]) {
+    for (const t of [0, 0.04, 0.15, 0.4]) {
       anim!.currentTime = t * dur;
       seen.add(css(check).clipPath);
       expect(rect(box), "box rect constant mid-run").toBe(before);
       const r = check.getBoundingClientRect();
       expect([r.width, r.height]).toEqual([12, 12]);
     }
-    expect(seen.size, `4 discrete clip values: ${[...seen]}`).toBe(4);
+    expect(seen.size, `4 distinct clip values: ${[...seen]}`).toBe(4);
+    expect(css(check).transitionTimingFunction).not.toContain("steps");
     expect(seen.has(hidden), "starts hidden").toBe(true);
-    expect(css(check).clipPath, "3/4 open at 0.8").not.toBe(hidden);
+    expect(css(check).clipPath, "partly open at 0.4").not.toBe(hidden);
     anim!.finish();
   });
 
@@ -112,7 +113,7 @@ describe("V4-105 checkbox glyph", () => {
 });
 
 describe("V4-106 radio disc", () => {
-  it("8 px disc glyph in a 12 px box, opacity step, no scale, box constant", async () => {
+  it("8 px disc glyph in a 12 px box, opacity fade, no scale, box constant", async () => {
     const host = await render(createElement(RadioGroup, { "aria-label": "r", defaultValue: "a" }, createElement(Radio, { value: "a" }, "하나"), createElement(Radio, { value: "b" }, "둘")));
     const boxes = [...host.querySelectorAll('[data-slot="radio-box"]')];
     const before = boxes.map(rect);
@@ -161,7 +162,7 @@ describe("V4-107 switch pending", () => {
     expect(css(thumb).scale).toBe("none");
   });
 
-  it("pending flips between two states; idle mark is hidden; rects equal across pending", async () => {
+  it("pending pulses smoothly between two levels; idle mark is hidden; rects equal across pending", async () => {
     function Harness() {
       const [p, setP] = useState(false);
       return createElement("div", null, createElement("button", { id: "go", onClick: () => setP((v) => !v) }, "go"), createElement(Switch, { pending: p }, "동기화"));
@@ -180,7 +181,10 @@ describe("V4-107 switch pending", () => {
       seen.add(css(mark).opacity);
       await new Promise((r) => setTimeout(r, 40));
     }
-    expect(seen.size, `two-state pulse ${[...seen]}`).toBe(2);
+    const levels = [...seen].map(Number);
+    expect(seen.size, `smooth pulse ${[...seen]}`).toBeGreaterThan(2);
+    expect(Math.min(...levels)).toBeLessThan(0.15);
+    expect(Math.max(...levels)).toBeGreaterThan(0.85);
     expect([rect(track), rect(thumb)]).toEqual(rects);
   });
 });
