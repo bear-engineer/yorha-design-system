@@ -39,6 +39,14 @@ const asPage = (root: HTMLElement) => {
 };
 
 describe("FL-10 breadcrumb", () => {
+  // v4 craft: label boxes carry 4px ink padding; separators are 12px glyph cells with 12px margins, so the gap is measured to the label box.
+  const labelBox = (item: Element) => r(item.querySelector("[data-slot=breadcrumb-label]") ?? item);
+  const inkLeft = (item: Element) => {
+    const t = item.querySelector("[data-slot=breadcrumb-label]") ?? item;
+    const range = document.createRange();
+    range.selectNodeContents(t.firstChild!);
+    return range.getBoundingClientRect().left;
+  };
   test("gaps around every separator are equal; links keep a hit target without shifting the text", async () => {
     const root = await mountStory("breadcrumb", "Default");
     await settle();
@@ -49,22 +57,24 @@ describe("FL-10 breadcrumb", () => {
       const sep = q(li, "[data-slot=breadcrumb-separator]");
       const item = [...li.children].find((c) => c !== sep)!;
       const prev = [...lis[i - 1]!.children].find((c) => c.getAttribute("data-slot") !== "breadcrumb-separator")!;
-      gaps.push(r(sep).left - textBox(prev).right, textBox(item).left - r(sep).right);
+      gaps.push(r(sep).left - labelBox(prev).right, labelBox(item).left - r(sep).right);
     });
     const spread = Math.max(...gaps) - Math.min(...gaps);
     expect(spread, `separator gaps ${gaps.map((g) => g.toFixed(2)).join(", ")}`).toBeLessThanOrEqual(0.5);
     const nav = q(root, "nav");
-    expect(Math.abs(textBox(lis[0]!.firstElementChild!).left - r(nav).left), "first label sits on the nav's left edge").toBeLessThanOrEqual(0.5);
+    expect(Math.abs(inkLeft(lis[0]!.firstElementChild!) - r(nav).left), "first label text sits on the nav's left edge").toBeLessThanOrEqual(0.5);
+    expect(Math.abs(labelBox(lis[0]!.firstElementChild!).left - (r(nav).left - 4)), "label box starts 4px left of the nav edge").toBeLessThanOrEqual(0.5);
   });
 
   test("a long label truncates with an ellipsis and keeps its full text in title", async () => {
     const root = await mountStory("breadcrumb", "LongLabel");
     await settle();
-    const long = qa(root, "li").map((li) => [...li.children].find((c) => c.getAttribute("data-slot") !== "breadcrumb-separator")!).find((el) => (el.textContent ?? "").length > 30)!;
-    expect(long, "long item rendered").toBeTruthy();
+    const link = qa(root, "li").map((li) => [...li.children].find((c) => c.getAttribute("data-slot") !== "breadcrumb-separator")!).find((el) => (el.textContent ?? "").length > 30)!;
+    expect(link, "long item rendered").toBeTruthy();
+    const long = link.querySelector<HTMLElement>("[data-slot=breadcrumb-label]")!;
     expect(getComputedStyle(long).textOverflow).toBe("ellipsis");
     expect(long.scrollWidth, "truncated").toBeGreaterThan(long.clientWidth);
-    expect(long.getAttribute("title")).toBe(long.textContent);
+    expect(link.getAttribute("title")).toBe(link.textContent);
     expect(r(long).width, "max 24ch").toBeLessThanOrEqual(24 * 16);
   });
 });
@@ -73,7 +83,7 @@ describe("FL-06 / FL-19 / FL-20 sidebar and nav rows", () => {
   test("every sidebar row is exactly the row token tall (integer, equal)", async () => {
     const root = await mountStory("sidebar", "Default");
     await settle();
-    const rows = qa(root, "nav a");
+    const rows = qa(root, 'nav[aria-label="주 메뉴"] a');
     expect(rows.length).toBeGreaterThan(2);
     const want = px("var(--yorha-row)");
     for (const a of rows) expect(r(a).height, `row "${a.textContent}"`).toBe(want);
@@ -81,17 +91,17 @@ describe("FL-06 / FL-19 / FL-20 sidebar and nav rows", () => {
     for (const t of tops) expect(t % 1, `row top ${t}`).toBeCloseTo(0, 5);
   });
 
-  test("bullet is a whole-pixel square", async () => {
+  test("marker is a whole-pixel 12px glyph cell (v4 craft: it replaced the 6px '::before' square)", async () => {
     const root = await mountStory("sidebar", "Default");
-    const bullet = getComputedStyle(q(root, "nav a"), "::before");
-    expect(bullet.width).toBe("6px");
-    expect(bullet.height).toBe("6px");
+    const marker = q(root, 'nav[aria-label="주 메뉴"] a [data-slot=nav-link-marker]');
+    expect(r(marker).width).toBe(12);
+    expect(r(marker).height).toBe(12);
   });
 
   test("nav rows have a pressed step (FL-20)", async () => {
     const root = await mountStory("sidebar", "Default");
     // :active cannot be driven from a vitest-browser story, so the rule is asserted on the class list (yorha-tint carries the :active step).
-    const inactive = qa(root, "nav a").find((a) => a.getAttribute("aria-current") !== "page")!;
+    const inactive = qa(root, 'nav[aria-label="주 메뉴"] a').find((a) => a.getAttribute("aria-current") !== "page")!;
     expect(inactive.className).toMatch(/yorha-tint/);
   });
 });

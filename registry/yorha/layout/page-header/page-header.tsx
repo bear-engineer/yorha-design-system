@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils";
 export interface PageHeaderProps {
   /** Rendered as the page's only h1. */
   title: ReactNode;
+  /** Breadcrumb trail (or any navigation) shown above the eyebrow, on the 24px baseline of the Breadcrumb. */
+  breadcrumb?: ReactNode;
   /** Section code shown above the title, e.g. "SEC-07". */
   eyebrow?: ReactNode;
   description?: ReactNode;
@@ -17,11 +19,12 @@ export interface PageHeaderProps {
 }
 
 /** Page title block. Keeps one h1 per page; the ornament band is decorative only and its rule is the block's bottom edge. */
-export function PageHeader({ title, eyebrow, description, actions, ornament = true, className }: PageHeaderProps) {
+export function PageHeader({ title, breadcrumb, eyebrow, description, actions, ornament = true, className }: PageHeaderProps) {
   return (
     <div data-slot="page-header" className={cn("flex flex-col gap-3 bg-yorha-panel px-6 pt-6 text-yorha-fg", className)}>
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="flex min-w-0 flex-col gap-2">
+          {breadcrumb && <div data-slot="page-header-breadcrumb" className="min-w-0 pl-2">{breadcrumb}</div>}
           {eyebrow && (
             <p data-slot="page-header-eyebrow" className="m-0 font-yorha-mono text-yorha-xs uppercase tracking-yorha-wide text-yorha-fg-soft">
               {eyebrow}

@@ -121,7 +121,8 @@ export const LongLabel: Story = {
   play: async ({ canvasElement }) => {
     const long = within(canvasElement).getByRole("link", { name: /비공식 팬 프로젝트/ });
     await expect(long).toHaveAttribute("title", long.textContent ?? "");
-    await expect(long.scrollWidth).toBeGreaterThan(long.clientWidth);
+    const label = long.querySelector<HTMLElement>('[data-slot="breadcrumb-label"]')!;
+    await expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
   },
 };
 
@@ -168,7 +169,37 @@ export const States: Story = {
     const c = within(canvasElement);
     await userEvent.tab();
     await expect(c.getByRole("link", { name: "홈" })).toHaveFocus();
-    await expect(c.getByText("A-2 기체")).toHaveAttribute("aria-current", "page");
+    await expect(c.getByText("A-2 기체").closest("[aria-current]")).toHaveAttribute("aria-current", "page");
     await expectTargetSize(canvasElement);
+  },
+};
+
+const DEEP: BreadcrumbItem[] = [
+  { label: "홈", to: "/" },
+  { label: "유닛", to: "/units" },
+  { label: "2B 계열", to: "/units/2b" },
+  { label: "정비 기록", to: "/units/2b/logs" },
+  { label: "2026-11 점검", to: "/units/2b/logs/2026-11" },
+  { label: "A-2 기체" },
+];
+
+/** 항목이 `maxItems`(기본 4)를 넘으면 가운데 단계가 "…" 메뉴로 접힙니다. 첫 항목과 마지막 두 항목은 남고, 숨은 단계는 메뉴 링크로 열립니다. 360px에서도 같은 구성입니다. */
+export const ManyItems: Story = {
+  parameters: { route: { routes: routedElements(DEEP), initialEntries: ["/units"] } },
+  args: { items: DEEP },
+  render: (args) => (
+    <div className="w-[min(100%,22.5rem)] bg-yorha-panel p-4 text-yorha-fg">
+      <Breadcrumb {...args} />
+      <Outlet />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const more = await c.findByRole("button", { name: /숨겨진 경로 3개/ });
+    await expect(canvasElement.querySelectorAll("nav li")).toHaveLength(4);
+    await userEvent.click(more);
+    const menu = await within(document.body).findByRole("menu");
+    await expect(within(menu).getAllByRole("menuitem")).toHaveLength(3);
+    await userEvent.keyboard("{Escape}");
   },
 };

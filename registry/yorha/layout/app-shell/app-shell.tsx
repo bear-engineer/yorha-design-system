@@ -101,7 +101,7 @@ export function AppShell({
             // Below lg the nav is a sheet over the content (absolute): opening it never moves <main>.
             className={cn(
               "flex shrink-0 flex-col @lg:w-64 @lg:has-[[data-collapsed=true]]:w-16 [&>*]:flex-1",
-              "@max-lg:absolute @max-lg:inset-x-0 @max-lg:top-0 @max-lg:z-(--yorha-z-raised) @max-lg:border-b @max-lg:border-yorha-border",
+              "@max-lg:absolute @max-lg:inset-x-0 @max-lg:bg-yorha-panel @max-lg:top-0 @max-lg:z-(--yorha-z-raised) @max-lg:border-b @max-lg:border-yorha-border",
               !navOpen && "@max-lg:hidden",
             )}
           >

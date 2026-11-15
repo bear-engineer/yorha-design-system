@@ -11,7 +11,8 @@
       ],
       "registryDependencies": [
         "@yorha/base",
-        "@yorha/utils"
+        "@yorha/utils",
+        "@yorha/glyph"
       ],
       "files": [
         {
@@ -20,7 +21,7 @@
           "target": "@components/nav-link.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Use inside a react-router data or declarative router. Pass render={<NavLink to=... />} to a Base UI row to reuse the selected-row look."
+      "docs": "Migration (v4 craft): the row marker is a diamond glyph (hollow / dotted on hover / filled on current), the focus ring is inset, labels carry no uppercase or wide tracking, the current row has no light rules. Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Use inside a react-router data or declarative router. Pass render={<NavLink to=... />} to a Base UI row to reuse the selected-row look."
     }
   ]
 }

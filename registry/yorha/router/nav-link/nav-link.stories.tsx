@@ -15,14 +15,21 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** HUD readout of the route: mono caption + value in a 1px frame. The value keeps `data-testid="path"` for the tests. */
 function CurrentPath() {
   const { pathname } = useLocation();
-  return <p data-testid="path">{pathname}</p>;
+  return (
+    <div data-slot="path-readout" className="flex items-center justify-between gap-2 border border-yorha-border px-3 py-1 font-yorha-mono text-yorha-xs text-yorha-fg-soft">
+      <span>현재 경로</span>
+      <span data-testid="path" className="text-yorha-fg">{pathname}</span>
+    </div>
+  );
 }
 
+/** A real sidebar column: 256px wide, panel ground, 1px right rule, rows with no gap (stacked like the Sidebar). */
 function Nav() {
   return (
-    <div className="flex w-64 max-w-[calc(100vw-2rem)] flex-col bg-yorha-panel p-2">
+    <div className="flex h-80 w-64 max-w-[calc(100vw-2rem)] flex-col gap-4 border-r border-yorha-border bg-yorha-panel p-4">
       <nav aria-label="주 메뉴" className="flex flex-col">
         <NavLink to="/" end>홈</NavLink>
         <NavLink to="/units">유닛</NavLink>
@@ -82,6 +89,8 @@ export const Keyboard: Story = {
     await waitFor(() => expect(c.getByTestId("path")).toHaveTextContent("/logs"));
     await expect(link).toHaveAttribute("aria-current", "page");
     await expect(link).toHaveFocus();
+    // 포커스 링은 행 안쪽에 그려져 이웃 행을 덮지 않는다.
+    await expect(getComputedStyle(link).outlineOffset).toBe("-2px");
   },
 };
 
@@ -91,7 +100,7 @@ function MenuRow({ to, children }: { to: string; children: string }) {
 
 function MenuListDemo() {
   return (
-    <div className="w-64 max-w-[calc(100vw-2rem)] bg-yorha-panel p-2">
+    <div className="flex h-60 w-64 max-w-[calc(100vw-2rem)] flex-col gap-4 border-r border-yorha-border bg-yorha-panel p-4">
       <ul role="list" className="m-0 flex list-none flex-col p-0">
         <li><MenuRow to="/">홈</MenuRow></li>
         <li><MenuRow to="/units">유닛</MenuRow></li>

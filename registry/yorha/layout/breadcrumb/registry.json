@@ -11,7 +11,9 @@
       ],
       "registryDependencies": [
         "@yorha/utils",
-        "@yorha/base"
+        "@yorha/base",
+        "@yorha/glyph",
+        "@yorha/menu"
       ],
       "files": [
         {
@@ -20,7 +22,7 @@
           "target": "@components/breadcrumb.tsx"
         }
       ],
-      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Use inside a react-router data or declarative router. Labels clip at 24ch with an ellipsis (v3; they wrapped before), so keep long names short and show the full name elsewhere on the page."
+      "docs": "Unofficial fan project. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Use inside a react-router data or declarative router. Migration (v4 craft): separators are fixed 12px chevron glyph cells; the focus ring hugs the label box and never touches a separator; hover fills the label with ink while the current page is marked by a leading diamond; `maxItems` (default 4) collapses middle levels into a ... menu; no uppercase. Labels clip at 24ch with an ellipsis (v3; they wrapped before), so keep long names short and show the full name elsewhere on the page."
     }
   ]
 }
