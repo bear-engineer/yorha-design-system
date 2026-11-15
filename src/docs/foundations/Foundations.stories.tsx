@@ -369,7 +369,7 @@ export const MotionUtilities: Story = {
 
     // full: token durations, exit faster than enter, spatial start values.
     await expect(style("pop-open", "full").transitionProperty).toBe("opacity, clip-path"); // V4-004: smooth clip, no scale
-    await expect(durations("pop-open", "full")).toEqual([token("popover") / 4, token("popover")]);
+    await expect(durations("pop-open", "full")).toEqual([Math.round(token("popover") * 600) / 1000, token("popover")]);
     await expect(durations("pop-end", "full")).toEqual([token("popover-exit"), token("popover-exit")]);
     await expect(style("pop-start", "full").opacity).toBe("0");
     await expect(style("pop-start", "full").scale).toBe("none");

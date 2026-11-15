@@ -1,6 +1,6 @@
 # Base UI coverage
 
-Components with a registry item: 40/40 · parts used: 271/271
+Components with a registry item: 40/40 · parts used: 269/271
 
 | Component | Item dir | Parts used/total | Missing |
 |---|---|---|---|
@@ -24,13 +24,13 @@ Components with a registry item: 40/40 · parts used: 271/271
 | input | registry/yorha/ui/input, registry/yorha/ui/text-field | 0/0 | — |
 | menu | registry/yorha/ui/menu, registry/yorha/ui/menubar | 26/26 | — |
 | menubar | registry/yorha/ui/menubar | 0/0 | — |
-| meter | registry/yorha/ui/meter | 5/5 | — |
+| meter | registry/yorha/ui/meter | 4/5 | — (waived: Indicator) |
 | navigation-menu | registry/yorha/ui/navigation-menu | 13/13 | — |
 | number-field | registry/yorha/ui/number-field | 7/7 | — |
 | otp-field | registry/yorha/ui/otp-field | 3/3 | — |
 | popover | registry/yorha/ui/color-input, registry/yorha/ui/date-input, registry/yorha/ui/date-picker, registry/yorha/ui/popover | 12/12 | — |
 | preview-card | registry/yorha/ui/preview-card | 9/9 | — |
-| progress | registry/yorha/ui/progress | 5/5 | — |
+| progress | registry/yorha/ui/progress | 4/5 | — (waived: Indicator) |
 | radio | registry/yorha/ui/radio-group | 2/2 | — |
 | radio-group | registry/yorha/ui/radio-group | 0/0 | — |
 | scroll-area | registry/yorha/ui/scroll-area | 6/6 | — |

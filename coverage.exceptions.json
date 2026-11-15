@@ -1,1 +1,12 @@
-[]
+[
+  {
+    "component": "progress",
+    "part": "Indicator",
+    "reason": "v4 cell gauge: the fill is a clip-path inset over a static cell mask (whole-cell edge, compositor-friendly smooth advance); Indicator drives an inline width, which would move the edge off the cell grid. Track, Label and Value stay Base UI."
+  },
+  {
+    "component": "meter",
+    "part": "Indicator",
+    "reason": "Same cell gauge as progress (shared Gauge): clip-path fill over a static cell mask instead of Indicator's inline width."
+  }
+]
