@@ -282,7 +282,7 @@ export const NarrowBars: Story = {
 /** Under 28 rem the lane column is a 28 px rail (first grapheme, full label in `title`). */
 export const Narrow360: Story = {
   args: { zoom: "fit" },
-  decorators: [(Story) => <div lang="ko" className="w-[360px] bg-yorha-panel p-0 text-yorha-fg"><Story /></div>],
+  decorators: [(Story) => <div lang="ko" className="w-full max-w-[360px] bg-yorha-panel p-0 text-yorha-fg"><Story /></div>],
   play: async ({ canvasElement }) => {
     const labels = q(canvasElement, "[data-part='lane-labels']");
     await expect(labels.getBoundingClientRect().width).toBeLessThanOrEqual(29);

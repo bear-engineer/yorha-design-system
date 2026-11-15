@@ -591,7 +591,7 @@ export function TimelineGraph({
   const cycleSort = (key: SortKey) => setSort((s) => (!s || s.key !== key ? { key, dir: "asc" } : s.dir === "asc" ? { key, dir: "desc" } : null));
 
   const zoomName =
-    zoomValue === "fit" ? t.zoom.fit : Math.abs(px - 4) < 1e-6 ? t.zoom.day : Math.abs(px - 1) < 1e-6 ? t.zoom.week : Math.abs(px - 64) < 1e-6 ? t.zoom.hour : `${fmtNum(px)} px/h`;
+    typeof zoomValue === "string" ? t.zoom[zoomValue] : Math.abs(px - 4) < 1e-6 ? t.zoom.day : Math.abs(px - 1) < 1e-6 ? t.zoom.week : Math.abs(px - 64) < 1e-6 ? t.zoom.hour : `${fmtNum(px)} px/h`;
 
   const itemClass = (n: Norm, instant: boolean) =>
     cn(
@@ -601,7 +601,7 @@ export function TimelineGraph({
         : cn(
             "flex items-center gap-1 overflow-hidden border px-1.5 outline-current aria-pressed:outline-solid aria-pressed:outline-2 aria-pressed:-outline-offset-4",
             "[@media(hover:hover)_and_(pointer:fine)]:hover:outline-solid [@media(hover:hover)_and_(pointer:fine)]:hover:outline-1 [@media(hover:hover)_and_(pointer:fine)]:hover:-outline-offset-2",
-            n.status === "pending" ? "relative border-yorha-ink bg-yorha-panel text-yorha-fg" : "border-yorha-bg bg-yorha-ink text-yorha-on-ink",
+            n.status === "pending" ? "border-yorha-ink bg-yorha-panel text-yorha-fg" : "border-yorha-bg bg-yorha-ink text-yorha-on-ink",
             n.status === "danger" && "border-2 border-yorha-alert-ui",
           ),
     );
@@ -865,7 +865,7 @@ export function TimelineGraph({
                   </div>
                 ) : null}
               </div>
-              {showNow ? <div data-part="now" aria-hidden="true" className="pointer-events-none absolute z-20 w-0.5 bg-yorha-alert-ui" style={{ left: nowX - 1, top: AXIS.height, height: bodyH }} /> : null}
+              {showNow ? <div data-part="now" aria-hidden="true" className="pointer-events-none absolute z-[5] w-0.5 bg-yorha-alert-ui" style={{ left: nowX - 1, top: AXIS.height, height: bodyH }} /> : null}
               {!norm.length ? (
                 <div data-part="empty" role="status" className="absolute z-10 flex items-center px-3 text-yorha-sm text-yorha-fg-soft" style={{ left: 0, top: AXIS.height, height: m.rowMin, width: Math.min(canvasW, viewportPx || canvasW) }}>
                   {emptyText ?? t.empty}
