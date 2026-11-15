@@ -4,9 +4,9 @@ import { ToggleGroup as ToggleGroupPrimitive } from "@base-ui/react/toggle-group
 import { cn, cnState } from "@/lib/utils";
 import type { ButtonSize } from "@/components/ui/button";
 
-// Indicator: always mounted in the fixed bullet cell; steps in opacity in place (V4-088: no scale; --yorha-step-flip is a plain fade in reduced, instant in off).
+// Indicator: always mounted in the fixed bullet cell; fades in opacity in place (V4-088: no scale; a plain fade in reduced, instant in off).
 const INDICATOR_BASE =
-  "opacity-0 transition-opacity [transition-duration:max(var(--motion-select),var(--motion-reduced-fade))] ease-yorha-step-flip";
+  "opacity-0 transition-opacity [transition-duration:max(var(--motion-select),var(--motion-reduced-fade))] ease-yorha-out";
 
 type GroupProps = ComponentProps<typeof ToggleGroupPrimitive> & {
   /** Control scale step; the group is exactly as tall as a Button of this size. Default sm. */

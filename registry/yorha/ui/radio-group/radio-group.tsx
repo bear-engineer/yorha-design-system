@@ -9,9 +9,9 @@ export interface RadioGroupProps extends React.ComponentProps<typeof BaseRadioGr
   orientation?: "vertical" | "horizontal";
 }
 
-// 8 px disc glyph in a 12 px box (even offset inside the 20 px drawn box). Opacity step only: no scale, no clip.
+// 8 px disc glyph in a 12 px box (even offset inside the 20 px drawn box). Opacity fade only: no scale, no clip.
 const DOT =
-  "grid place-items-center opacity-0 transition-opacity [transition-duration:max(var(--motion-select),var(--motion-reduced-fade))] ease-yorha-step-flip data-[checked]:opacity-100";
+  "grid place-items-center opacity-0 transition-opacity [transition-duration:max(var(--motion-select),var(--motion-reduced-fade))] ease-yorha-out data-[checked]:opacity-100";
 
 /** Group of mutually exclusive options. Arrow keys move the selection. */
 export function RadioGroup({ className, orientation = "vertical", ...props }: RadioGroupProps) {
@@ -35,7 +35,7 @@ export interface RadioProps extends Omit<React.ComponentProps<typeof BaseRadio.R
  * One option. The selected row wipes to the ink fill left to right; the square
  * bullet uses currentColor so it inverts with the row.
  * The Base UI root is a 24px hit area holding the drawn 20px box (the focus ring is on that box, like Checkbox).
- * Migration (v4): the bullet is the 8 px `disc` dot glyph (was a CSS square); it appears by an opacity step, no scale pop.
+ * Migration (v4): the bullet is the 8 px `disc` dot glyph (was a CSS square); it fades in, no scale pop.
  * Migration (B25): the focus ring moved from the row to the 20px box; the indicator is 20px in every density (was 24 in
  * comfortable). No API change.
  */

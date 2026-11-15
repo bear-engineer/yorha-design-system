@@ -29,7 +29,7 @@ async function inMotion(mode: "reduced" | "off", run: () => Promise<void>) {
     else root.setAttribute("data-motion", prev);
   }
 }
-// v4: the popup dissolves with a CSS animation (yorha-dissolve), the scrim fades with a transition; read both.
+// v4: the popup unfolds with a CSS animation (yorha-unfold), the scrim fades with a transition; read both.
 function durationsMs(el: Element): number[] {
   const cs = getComputedStyle(el);
   return [...cs.transitionDuration.split(","), ...(cs.animationName === "none" ? [] : cs.animationDuration.split(","))].map((v) =>
@@ -44,7 +44,7 @@ async function expectReduced(el: Element) {
   expect(max).toBeGreaterThan(0);
   expect(max).toBeLessThanOrEqual(120);
   const cs = getComputedStyle(el);
-  expect(cs.transitionProperty.includes("opacity") || cs.animationName.includes("dissolve")).toBe(true);
+  expect(cs.transitionProperty.includes("opacity") || cs.animationName.includes("unfold")).toBe(true);
   expect(getComputedStyle(document.documentElement).getPropertyValue("--motion-spatial").trim()).toBe("0");
 }
 async function expectOff(el: Element) {

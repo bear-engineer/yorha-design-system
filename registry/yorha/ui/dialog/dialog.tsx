@@ -6,20 +6,20 @@ import { useSound } from "@/lib/sound";
 
 /**
  * Class strings shared by Dialog, AlertDialog and static previews (one definition).
- * Motion (v4): backdrop = `yorha-fade` (its `--motion-panel*` are the modal tokens, 280ms in / 200ms out), popup = `yorha-dissolve`
- * (Bayer dither mask in `--motion-modal`, then opacity; no displacement, so the popup rect is the same at start, mid and end).
- * The mask is painted on the main thread: keep it on dialogs of at most `max-w-md`; reduced = opacity only, off = instant.
+ * Motion (smooth): backdrop = `yorha-fade` (`--motion-panel*` are the modal-backdrop tokens, 160ms in / 140ms out), popup = `yorha-unfold`
+ * (clip-path unfolds from a centred 2px band to a -6px inset in 220ms ease-out, opacity 0 -> 1 over 90ms, content rises 4px with a 60ms delay; exit 150ms).
+ * Migration: `yorha-dissolve` is removed, use `yorha-unfold`. Reduced = 120ms linear opacity only, off = instant.
  */
 export const dialogStyles = {
   backdrop:
-    "yorha-fade [--motion-panel:var(--motion-modal)] [--motion-panel-exit:var(--motion-modal-exit)] fixed inset-0 z-(--yorha-z-overlay) bg-yorha-scrim data-[ending-style]:pointer-events-none",
+    "yorha-fade [--motion-panel:var(--motion-modal-backdrop)] [--motion-panel-exit:var(--motion-modal-backdrop-exit)] fixed inset-0 z-(--yorha-z-overlay) bg-yorha-scrim data-[ending-style]:pointer-events-none",
   // Top-anchored: the popup's top edge is a whole number whatever its height (centring put it on a third of a pixel).
   viewport:
     "pointer-events-none fixed inset-0 z-(--yorha-z-modal) grid items-start justify-items-center px-4 pb-4 pt-4 " +
     "[--dialog-top:1rem] [@media(min-height:40rem)]:[--dialog-top:6rem] [@media(min-height:40rem)]:pt-24",
   // The popup never scrolls: header and footer are pinned, the body (DialogBody / AlertDialogDescription) scrolls.
   popup:
-    "yorha-dissolve pointer-events-auto data-[ending-style]:pointer-events-none group/dialog relative flex max-h-[calc(100dvh-var(--dialog-top)-1rem)] w-full max-w-md flex-col overflow-hidden " +
+    "yorha-unfold pointer-events-auto data-[ending-style]:pointer-events-none group/dialog relative flex max-h-[calc(100dvh-var(--dialog-top)-1rem)] w-full max-w-md flex-col overflow-hidden " +
     "rounded-yorha border border-yorha-border bg-yorha-panel text-yorha-fg shadow-yorha-lg",
   // ink header strip (control height); the dot and trailing rule are decorative pseudo elements
   title:
@@ -102,7 +102,7 @@ export interface DialogContentProps extends ComponentProps<typeof BaseDialog.Pop
 }
 
 /**
- * Migration (v4): the popup enters with `yorha-dissolve` instead of the `yorha-panel` slide (tests that read `translate` during open must be updated); a touch open focuses the popup itself, not the first field (the keyboard would cover it).
+ * Migration (v4): the popup enters with `yorha-unfold` (was `yorha-dissolve`, removed: migrate to `yorha-unfold`) instead of the `yorha-panel` slide (tests that read `translate` during open must be updated); a touch open focuses the popup itself, not the first field (the keyboard would cover it).
  * Migration (v3): `closeButton` now defaults to true (a 닫기 button in the title strip, `DialogCloseButton` semantics); pass `closeButton={false}` to keep the old chrome.
  * The popup is a flex column: only `DialogBody` scrolls, title and footer stay put. Content placed directly in the popup no longer scrolls; wrap it in `DialogBody`.
  * Title, body and footer share one inline inset (`px-6`, `px-4` under 640px); the title text-shadow is gone; the popup is top-anchored (pt-4, pt-24 on tall viewports).

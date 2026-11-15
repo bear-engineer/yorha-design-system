@@ -56,7 +56,7 @@ export function AlertDialogCancel({ variant = "ghost", className, render, ...pro
 /**
  * Confirms the action and closes. A primary Button unless `render` is given; `variant="danger"` for destructive actions.
  *
- * Migration (v4): popup dissolves in (same as Dialog) instead of the `yorha-panel` slide; a 2px alert rule (`data-slot="alert-dialog-rule"`) at the top edge flickers once at open, the title is untouched.
+ * Migration (v4): popup unfolds from a line (`yorha-unfold`, same as Dialog; `yorha-dissolve` is removed, migrate to `yorha-unfold`) instead of the `yorha-panel` slide; a 2px alert rule (`data-slot="alert-dialog-rule"`) at the top edge flickers once at open, the title is untouched.
  * Migration (v3): AlertDialogAction/AlertDialogCancel accept `variant` (Button variants; Action defaults to primary, Cancel to ghost). Destructive confirms: `variant="danger"`. Same flex-column/scroll and inset rules as Dialog.
  */
 export function AlertDialogAction({ variant = "primary", className, render, ...props }: ActionProps) {

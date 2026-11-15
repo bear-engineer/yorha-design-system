@@ -97,7 +97,7 @@ export function Slider({ label, showValue = false, formatValue, marks, className
                 aria-hidden="true"
                 className={cn(
                   "yorha-tabular pointer-events-none absolute bottom-full left-0 mb-1 flex w-full justify-center opacity-0",
-                  "transition-opacity [transition-duration:max(var(--motion-select),var(--motion-reduced-fade))] ease-yorha-step-flip",
+                  "transition-opacity [transition-duration:max(var(--motion-select),var(--motion-reduced-fade))] ease-yorha-out",
                   "group-data-[dragging]/thumb:opacity-100 group-has-[:focus-visible]/thumb:opacity-100",
                 )}
               >

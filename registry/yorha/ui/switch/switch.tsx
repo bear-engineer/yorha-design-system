@@ -9,7 +9,7 @@ export interface SwitchProps extends Omit<React.ComponentProps<typeof BaseSwitch
   rowClassName?: string;
   /**
    * The change is being applied elsewhere (a request): sets `aria-busy` and `data-pending`, ignores toggling (click, Space,
-   * label) and pulses a 4 px mark inside the thumb (two-state, `--yorha-step-flip`). Track and thumb never change size.
+   * label) and pulses a 4 px mark inside the thumb (smooth ease-in-out pulse). Track and thumb never change size.
    */
   pending?: boolean;
 }
@@ -33,7 +33,7 @@ function usePendingPulse(ref: React.RefObject<HTMLSpanElement | null>, pending: 
         anim = el.animate([{ opacity: 0.35 }, { opacity: 1 }, { opacity: 0.35 }], { duration: loop, iterations: Infinity, easing: css.getPropertyValue("--yorha-ease-emphasized").trim() || "linear" });
         return;
       }
-      const flip = css.getPropertyValue("--yorha-step-flip").trim() || "linear";
+      const flip = "ease-in-out";
       anim = el.animate([{ opacity: 1, easing: flip }, { opacity: 0, easing: flip, offset: 0.5 }, { opacity: 1 }], { duration: loop / 2, iterations: Infinity });
     };
     const observer = new MutationObserver(sync);

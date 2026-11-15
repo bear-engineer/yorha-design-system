@@ -81,8 +81,7 @@ const LOOP_FALLBACK_MS = 1200; // used when the --motion-loop token is absent
 const RESULT_MS = 1200; // how long an internal result mark stays
 
 /**
- * Busy indicator pulse (opacity only, so the indicator never changes the button's box). Two states, one hop each half cycle:
- * the keyframe easing is `--yorha-step-flip` (steps(1, end) in full; the token is `linear` in reduced, so reduced is the slow soft pulse).
+ * Busy indicator pulse (opacity only, so the indicator never changes the button's box). A smooth ease-in-out pulse (linear in reduced, which is the slow soft pulse).
  * Duration is --motion-loop (1200ms full, 2400ms reduced). off = static and fully opaque.
  */
 function usePulse(ref: RefObject<HTMLSpanElement | null>, active: boolean) {
@@ -100,7 +99,7 @@ function usePulse(ref: RefObject<HTMLSpanElement | null>, active: boolean) {
       if (mode === "off" || typeof el.animate !== "function") return;
       const style = getComputedStyle(html);
       const duration = parseFloat(style.getPropertyValue("--motion-loop")) || LOOP_FALLBACK_MS;
-      const easing = style.getPropertyValue("--yorha-step-flip").trim() || "linear";
+      const easing = motionOf() === "reduced" ? "linear" : "ease-in-out";
       anim = el.animate(
         [
           { opacity: 1, offset: 0, easing },

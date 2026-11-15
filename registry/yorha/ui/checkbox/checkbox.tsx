@@ -10,21 +10,22 @@ export interface CheckboxProps extends Omit<React.ComponentProps<typeof BaseChec
   rowClassName?: string;
 }
 
-// Indicator: a 12 px dot glyph, always mounted in the fixed box. Checking reveals it left to right by a stepped clip-path
-// (4 steps, --yorha-step-reveal); unchecking is one opacity step. --motion-spatial is 0 in reduced/off, which keeps the clip open,
-// so reduced is a plain opacity fade and off is instant. No scale, no transform: the glyph never leaves its integer pixels.
+// Indicator: a 12 px dot glyph, always mounted in the fixed box. Checking reveals it left to right by a smooth clip-path wipe plus an
+// opacity fade (ease-yorha-out); unchecking fades out. --motion-spatial is 0 in reduced/off, which keeps the clip open,
+// so reduced is a plain 120ms opacity fade and off is instant. No scale, no transform: the glyph never leaves its integer pixels.
 const INDICATOR_BASE = [
   "col-start-1 row-start-1 opacity-0 [clip-path:inset(0_calc(100%_*_var(--motion-spatial))_0_0)]",
-  "[transition-property:opacity,clip-path] [transition-duration:max(var(--motion-select-exit),var(--motion-reduced-fade)),0s] [transition-delay:0s,var(--motion-select-exit)] ease-yorha-step-flip",
+  "[transition-property:opacity,clip-path] [transition-duration:max(var(--motion-select-exit),var(--motion-reduced-fade)),var(--motion-select-exit)] ease-yorha-out",
 ].join(" ");
+// Literal class strings: Tailwind cannot see a template-built class.
 const ON_CHECKED =
-  "group-data-[checked]/box:opacity-100 group-data-[checked]/box:[clip-path:inset(0_0_0_0)] group-data-[checked]/box:[transition-duration:var(--motion-reduced-fade),var(--motion-select)] group-data-[checked]/box:[transition-delay:0s,0s] group-data-[checked]/box:[transition-timing-function:var(--yorha-step-flip),var(--yorha-step-reveal)]";
+  "group-data-[checked]/box:opacity-100 group-data-[checked]/box:[clip-path:inset(0_0_0_0)] group-data-[checked]/box:[transition-duration:max(var(--motion-select),var(--motion-reduced-fade)),var(--motion-select)]";
 const ON_INDETERMINATE =
-  "group-data-[indeterminate]/box:opacity-100 group-data-[indeterminate]/box:[clip-path:inset(0_0_0_0)] group-data-[indeterminate]/box:[transition-duration:var(--motion-reduced-fade),var(--motion-select)] group-data-[indeterminate]/box:[transition-delay:0s,0s] group-data-[indeterminate]/box:[transition-timing-function:var(--yorha-step-flip),var(--yorha-step-reveal)]";
+  "group-data-[indeterminate]/box:opacity-100 group-data-[indeterminate]/box:[clip-path:inset(0_0_0_0)] group-data-[indeterminate]/box:[transition-duration:max(var(--motion-select),var(--motion-reduced-fade)),var(--motion-select)]";
 
 /**
  * Square checkbox. Checked shows a `check` dot glyph on ink; indeterminate a `minus` glyph (12 px, integer pixels).
- * Motion: checking reveals the glyph left to right in 4 clip steps; unchecking is one opacity step; reduced = opacity fade; off = instant.
+ * Motion: checking reveals the glyph left to right with a smooth clip wipe and fade; unchecking fades out; reduced = opacity fade; off = instant.
  * Migration (v4): the icon scale/opacity pop is gone; the root carries `data-yorha-value` (CheckboxGroup range selection).
  * The three states differ by shape and fill, not colour alone.
  * Structure: the Base UI root is a 24px hit area (SC 2.5.8) that holds the drawn 20px box, so the box never
