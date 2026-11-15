@@ -26,8 +26,9 @@ function useScan(ref: RefObject<HTMLSpanElement | null>) {
       anim?.cancel();
       anim = undefined;
       const mode = motionOf();
-      if (mode === "off" || typeof el.animate !== "function") return;
       el.style.left = mode === "full" ? "0px" : "30%";
+      el.style.opacity = mode === "off" ? "0" : ""; // off: the clean static grid, no resting band
+      if (mode === "off" || typeof el.animate !== "function") return;
       anim =
         mode === "reduced"
           ? el.animate([{ opacity: 0.3 }, { opacity: 1 }, { opacity: 0.3 }], { duration: SHIMMER_MS * 1.5, iterations: Infinity, easing: "ease-in-out" })

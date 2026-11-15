@@ -75,12 +75,12 @@ export const ReducedMotion: Story = {
 
 export const Themes: Story = {
   render: (args) => (
-    <div className="grid grid-cols-3 gap-4">
+    <div className="flex flex-col gap-4">
       {THEMES.map(({ theme, label }) => (
         <div key={theme} data-theme={theme} className="flex flex-col gap-3 bg-yorha-panel p-4 text-yorha-fg">
           <span className="text-yorha-sm">{label}</span>
-          <Progress {...args} label={label} value={62} />
-          <Progress {...args} label={`${label} 처리 중`} value={null} />
+          <Progress {...args} label="전송" value={62} />
+          <Progress {...args} label="처리 중" value={null} />
         </div>
       ))}
     </div>
