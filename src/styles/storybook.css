@@ -4,16 +4,19 @@
 @source "../../registry";
 @source "../../src";
 
-/* Docs pages (data-docs-theme = toolbar, immune to stories that own data-theme): ground follows the toolbar theme (R7). Light keeps Storybook's white page. */
+/* Docs pages: ground and text follow the toolbar theme (data-docs-theme), never html[data-theme]. Stories that own
+   data-theme (YorhaProvider, Sound demos) rewrite html[data-theme] on the docs page, so var(--yorha-bg) here would flip
+   the ground to light under dark text. Literal sRGB of the generated tokens, same values as DOCS_THEMES in
+   src/docs/docs-container.tsx. Light keeps Storybook's white page. */
 html[data-docs-theme="dark"] body.sb-show-main:has(#storybook-docs:not([hidden])),
 html[data-docs-theme="dark"] #storybook-docs .sbdocs-wrapper,
 html[data-docs-theme="dark"] #storybook-docs .sbdocs-content {
-  background-color: var(--yorha-bg);
-  color: var(--yorha-fg);
+  background-color: #302e29;
+  color: #cec9b1;
 }
 html[data-docs-theme="high-contrast"] body.sb-show-main:has(#storybook-docs:not([hidden])),
 html[data-docs-theme="high-contrast"] #storybook-docs .sbdocs-wrapper,
 html[data-docs-theme="high-contrast"] #storybook-docs .sbdocs-content {
-  background-color: var(--yorha-bg);
-  color: var(--yorha-fg);
+  background-color: #ebe7d6;
+  color: #24231e;
 }

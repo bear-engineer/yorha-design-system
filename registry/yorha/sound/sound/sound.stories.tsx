@@ -189,8 +189,10 @@ const meta = {
   // The provider owns <html data-*> in these stories; the toolbar decorator must stay out.
   parameters: { yorha: { manageRoot: false } },
   decorators: [withMockAudio],
-  render: (args: YorhaProviderProps) => (
-    <YorhaProvider {...args}>
+  // Theme follows the toolbar unless a story sets it: sound is not about theme, and a light panel on a dark docs page
+  // reads as a bug.
+  render: (args: YorhaProviderProps, { globals }) => (
+    <YorhaProvider {...args} theme={args.theme ?? globals.theme}>
       <SoundPanel />
     </YorhaProvider>
   ),
@@ -200,8 +202,8 @@ type Story = StoryObj<typeof meta>;
 
 export const Overview: Story = {
   name: "개요",
-  render: (args) => (
-    <YorhaProvider {...args}>
+  render: (args, { globals }) => (
+    <YorhaProvider {...args} theme={args.theme ?? globals.theme}>
       <SoundOverview />
     </YorhaProvider>
   ),
