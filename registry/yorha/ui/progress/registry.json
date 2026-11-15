@@ -5,7 +5,7 @@
       "name": "progress",
       "type": "registry:ui",
       "title": "Progress",
-      "description": "Segmented YoRHa gauge bar on Base UI Progress (or variant=\"dots\": three rows of 2 px dots in whole columns). Determinate shows the value in aria-valuenow and aria-valuetext (formatValue to customise) and advances by a 180 ms stepped clip; indeterminate omits aria-valuenow and hops a block across the track in --yorha-step-loop steps while mounted (reduced: opacity pulse; off: stripes).",
+      "description": "YoRHa gauge on Base UI Progress: 14 px (sm 10 px) framed track, solid 6 px ink cells on an 8 px pitch over 2 px hairline ticks for empty cells, whole-cell fill edge, tabular value on the label baseline. Determinate increases glide with a 240 ms clip-path (--yorha-ease-out); indeterminate is a smooth 1.4 s linear sweep under the static cell mask (reduced: opacity pulse; off: static alternate cells). Props: size, status (active | paused | error), ticks, formatValue.",
       "dependencies": [
         "@base-ui/react@^1.9.0"
       ],
@@ -20,7 +20,7 @@
           "target": "@ui/progress.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The gauge seams are a CSS gradient; no original assets are used. v4: indeterminate easing is --yorha-step-loop (was --yorha-ease-emphasized; reduced keeps the eased pulse); new props variant and formatValue. Increases animate with clip-path only (never width)."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The gauge seams are a CSS gradient; no original assets are used. v4: indeterminate easing is --yorha-step-loop (was --yorha-ease-emphasized; reduced keeps the eased pulse); new props variant and formatValue. Increases animate with clip-path only (never width). v4 craft pass (breaking): `variant` (segments | dots) and `segments` are removed; the gauge is one cell design. Migration: drop `variant`/`segments`; use `size=\"sm\"` for the compact bar, `status` for paused/error, `ticks` for 25/50/75 notches. The component now snaps its own width to a whole number of cells (at most one pitch of slack on the right) and exports `Gauge` (used by Meter). Motion is never stepped: no --yorha-step-* easings; the cell look is a static mask over the moving fill."
     }
   ]
 }

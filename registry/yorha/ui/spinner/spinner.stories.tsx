@@ -88,19 +88,19 @@ export const Authentic: Story = {
   ),
 };
 
-/** Each dot hops with the step-flip token (hard on/off), never a fade. */
-export const DotStepFlip: Story = {
+/** Each dot is a linear opacity trail staggered around the ring: smooth, never a hard hop. */
+export const DotTrail: Story = {
   args: { label: "불러오는 중" },
   play: async ({ canvasElement }) => {
     const html = document.documentElement;
     const previous = html.dataset.motion;
     try {
       html.dataset.motion = "full";
-      const dot = canvasElement.querySelector<HTMLElement>("[data-yorha-dot]")!;
-      await waitFor(() => expect(dot.getAnimations().length).toBeGreaterThan(0));
-      const frames = (dot.getAnimations()[0]!.effect as KeyframeEffect).getKeyframes();
-      await expect(String(frames[0]!.easing)).toMatch(/^steps\(1/);
-      await expect(new Set(frames.map((f) => Number(f.opacity)))).toEqual(new Set([1, 0.15]));
+      const dots = [...canvasElement.querySelectorAll<HTMLElement>("[data-yorha-dot]")];
+      await waitFor(() => expect(dots[0]!.getAnimations().length).toBeGreaterThan(0));
+      const anims = dots.map((d) => d.getAnimations()[0]!);
+      for (const a of anims) await expect(String(a.effect!.getTiming().easing)).toBe("linear");
+      await expect(new Set(anims.map((a) => Number(a.effect!.getTiming().delay))).size).toBe(8);
     } finally {
       html.dataset.motion = previous ?? "full";
     }

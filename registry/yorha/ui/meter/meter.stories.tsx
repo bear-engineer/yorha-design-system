@@ -68,17 +68,20 @@ export const Authentic: Story = {
   ),
 };
 
-/** Dots variant: low = every 2nd column, critical = every 3rd in the alert colour (readable without colour). */
-export const Dots: Story = {
+/** Thresholds: notches at `low` and `critical` in the bottom frame padding, alert frame at or below low, alert fill at or below critical. */
+export const Thresholds: Story = {
   render: () => (
     <div className="flex w-80 max-w-full flex-col gap-4">
-      <Meter label="HP" value={80} variant="dots" low={30} critical={10} />
-      <Meter label="HP 낮음" value={25} variant="dots" low={30} critical={10} />
-      <Meter label="HP 위험" value={6} variant="dots" low={30} critical={10} />
+      <Meter label="HP" value={120} max={150} low={45} critical={15} />
+      <Meter label="HP 낮음" value={30} max={150} low={45} critical={15} />
+      <Meter label="HP 위험" value={9} max={150} low={45} critical={15} />
+      <Meter label="HP SM" value={30} max={150} low={45} critical={15} size="sm" />
     </div>
   ),
   play: async ({ canvasElement }) => {
-    const pitches = [...canvasElement.querySelectorAll<HTMLElement>("[data-slot=dots-fill]")].map((e) => Number(e.dataset.pitch));
-    await expect(pitches).toEqual([4, 8, 12]);
+    const tracks = [...canvasElement.querySelectorAll<HTMLElement>("[data-slot=meter-track]")];
+    await expect(tracks.map((t) => t.hasAttribute("data-low"))).toEqual([false, true, true, true]);
+    await expect(tracks.map((t) => t.hasAttribute("data-critical"))).toEqual([false, false, true, false]);
+    await expect(canvasElement.querySelectorAll("[data-slot=meter-notch]").length).toBe(8);
   },
 };

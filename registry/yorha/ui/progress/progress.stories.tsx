@@ -2,7 +2,6 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, waitFor, within } from "storybook/test";
 import { Progress } from "@/components/ui/progress";
 
-
 const THEMES = [
   { theme: "light", label: "light" },
   { theme: "dark", label: "dark" },
@@ -14,7 +13,7 @@ const meta = {
   component: Progress,
   tags: ["autodocs"],
   parameters: { layout: "centered" },
-  args: { label: "전송", value: 40, max: 100, segments: 10 },
+  args: { label: "전송", value: 40, max: 100 },
   decorators: [
     (Story) => (
       <div className="w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
@@ -40,43 +39,34 @@ export const Default: Story = {
 export const Indeterminate: Story = {
   args: { value: null, label: "처리 중" },
   play: async ({ canvasElement }) => {
-    const c = within(canvasElement);
-    const bar = c.getByRole("progressbar", { name: "처리 중" });
+    const bar = within(canvasElement).getByRole("progressbar", { name: "처리 중" });
     await expect(bar).not.toHaveAttribute("aria-valuenow");
     await expect(bar).toHaveAttribute("data-indeterminate");
   },
 };
 
-/** Indeterminate loops while mounted: still moving after 6 s (full); reduced = one opacity animation; off = none, striped. */
+/** Indeterminate loops while mounted: a smooth linear sweep (full), an opacity pulse (reduced), static alternate cells (off). */
 export const ReducedMotion: Story = {
   args: { value: null, label: "처리 중" },
   play: async ({ canvasElement }) => {
     const html = document.documentElement;
     const previous = html.dataset.motion;
     const c = within(canvasElement);
-    const indicator = c.getByRole("progressbar", { name: "처리 중" }).querySelector<HTMLElement>("[data-yorha-sweep]");
-    await expect(indicator).not.toBeNull();
-    const track = indicator!.parentElement!;
+    const sweep = () => c.getByRole("progressbar", { name: "처리 중" }).querySelector<HTMLElement>("[data-slot=progress-sweep]")!;
     const keys = (a: Animation) => Object.keys((a.effect as KeyframeEffect).getKeyframes()[0]!);
     try {
       html.dataset.motion = "full";
-      await waitFor(() => expect(indicator!.getAnimations().length).toBe(1));
-      await expect(keys(indicator!.getAnimations()[0]!)).toContain("transform");
-      await new Promise((r) => setTimeout(r, 6200));
-      await expect(indicator!.getAnimations()[0]!.playState).toBe("running");
-      // a moving segment, not a 35% value bar
-      await expect(indicator!.getBoundingClientRect().width).toBeLessThan(track.getBoundingClientRect().width * 0.5);
+      await waitFor(() => expect(sweep().getAnimations().length).toBe(1));
+      await expect(keys(sweep().getAnimations()[0]!)).toContain("transform");
+      await expect(String(sweep().getAnimations()[0]!.effect!.getTiming().easing)).toBe("linear");
       html.dataset.motion = "reduced";
       await waitFor(() => {
-        expect(indicator!.getAnimations().length).toBe(1);
-        expect(keys(indicator!.getAnimations()[0]!)).toContain("opacity");
+        expect(sweep().getAnimations().length).toBe(1);
+        expect(keys(sweep().getAnimations()[0]!)).toContain("opacity");
       });
-      await expect(keys(indicator!.getAnimations()[0]!)).not.toContain("transform");
+      await expect(keys(sweep().getAnimations()[0]!)).not.toContain("transform");
       html.dataset.motion = "off";
-      await waitFor(() => expect(indicator!.getAnimations().length).toBe(0));
-      // static but busy: full-width stripes, never a lone block that reads as a value
-      await expect(getComputedStyle(indicator!).backgroundImage).toMatch(/repeating-linear-gradient/);
-      await expect(Math.round(indicator!.getBoundingClientRect().width)).toBe(Math.round(track.clientWidth));
+      await waitFor(() => expect(sweep().getAnimations().length).toBe(0));
     } finally {
       html.dataset.motion = previous ?? "full";
     }
@@ -89,7 +79,7 @@ export const Themes: Story = {
       {THEMES.map(({ theme, label }) => (
         <div key={theme} data-theme={theme} className="flex flex-col gap-3 bg-yorha-panel p-4 text-yorha-fg">
           <span className="text-yorha-sm">{label}</span>
-          <Progress {...args} label={label} />
+          <Progress {...args} label={label} value={62} />
           <Progress {...args} label={`${label} 처리 중`} value={null} />
         </div>
       ))}
@@ -108,16 +98,48 @@ export const Authentic: Story = {
   ),
 };
 
-/** Dot-matrix gauge: whole 4 px columns, ghost track behind the fill. Opt-in; segments stay the default. */
-export const Dots: Story = {
-  args: { variant: "dots", label: "전송", value: 62 },
+/** Every state at once: active, paused (half-height cells), error (alert frame + fill), complete, indeterminate; same box in all. */
+export const States: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <Progress label="진행" value={62} />
+      <Progress label="일시 정지" value={38} status="paused" formatValue={(v) => `${v}% 정지`} />
+      <Progress label="오류" value={38} status="error" formatValue={(v) => `${v}% 실패`} />
+      <Progress label="완료" value={100} formatValue={() => "완료"} />
+      <Progress label="처리 중" value={null} />
+    </div>
+  ),
   play: async ({ canvasElement }) => {
-    const fill = canvasElement.querySelector<HTMLElement>("[data-slot=dots-fill]")!;
-    await expect(fill.getBoundingClientRect().width % 4).toBe(0);
+    const tracks = [...canvasElement.querySelectorAll<HTMLElement>("[data-slot=progress-track]")].map((t) => t.getBoundingClientRect().height);
+    await expect(new Set(tracks)).toEqual(new Set([14]));
   },
 };
 
-export const DotsIndeterminate: Story = { args: { variant: "dots", value: null, label: "처리 중" } };
+/** `sm` (10 px track, 4 px cells on a 6 px pitch) next to `md`, with 25/50/75 notches. */
+export const Sizes: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <Progress label="MD" value={62} ticks />
+      <Progress label="SM" value={62} size="sm" ticks />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const heights = [...canvasElement.querySelectorAll<HTMLElement>("[data-slot=progress-track]")].map((t) => t.getBoundingClientRect().height);
+    await expect(heights).toEqual([14, 10]);
+    await expect(canvasElement.querySelectorAll("[data-slot=progress-tick]").length).toBe(6);
+  },
+};
+
+/** The fill always rests on a whole cell: the track is a whole number of cells plus the 6 px chrome. */
+export const WholeCells: Story = {
+  args: { value: 62 },
+  play: async ({ canvasElement }) => {
+    const track = canvasElement.querySelector<HTMLElement>("[data-slot=progress-track]")!;
+    await expect((track.getBoundingClientRect().width - 6) % 8).toBe(0);
+    const cells = canvasElement.querySelector<HTMLElement>("[data-slot=progress-cells]")!;
+    await expect(cells.getBoundingClientRect().width % 8).toBe(0);
+  },
+};
 
 /** `formatValue` feeds both the visible value and `aria-valuetext`. */
 export const FormatValue: Story = {

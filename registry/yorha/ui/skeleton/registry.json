@@ -5,7 +5,7 @@
       "name": "skeleton",
       "type": "registry:ui",
       "title": "Skeleton",
-      "description": "Loading placeholder: a live region (role=status, aria-busy) with a faint 0.3rem grid scan that runs three passes and then stays still. Under reduced or off motion the scan never starts.",
+      "description": "Loading placeholder: a static grid under a soft shimmer band that translates linearly left to right (1.6 s loop). role=presentation by default; SkeletonGroup is the single status. Reduced: the band pulses in opacity; off: still.",
       "dependencies": [],
       "registryDependencies": [
         "@yorha/utils",
@@ -18,7 +18,7 @@
           "target": "@ui/skeleton.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The grid scan is a CSS gradient and a Web Animation; no original assets are used."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The grid scan is a CSS gradient and a Web Animation; no original assets are used. v4: the shimmer is a linear translateX band over a static grid (was a stepped down-scan)."
     }
   ]
 }

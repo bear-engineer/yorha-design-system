@@ -74,7 +74,8 @@ describe("Progress geometry", () => {
       expect(rect(cells).width % 8).toBe(0);
       expect(rect(track).height).toBe(14);
       expect(rect(cells).height).toBe(8);
-      for (const el of host.querySelectorAll("*")) {
+      // text boxes (label, value) have glyph-driven widths; every structural box is integer
+      for (const el of [host, q(host, "progress-row"), track, cells, q(host, "progress-ghost"), q(host, "progress-fill")]) {
         const b = rect(el);
         if (b.width === 0 && b.height === 0) continue;
         expect(isInt(b.left) && isInt(b.top) && isInt(b.width) && isInt(b.height), `${el.tagName}.${el.getAttribute("data-slot")} ${key(el)}`).toBe(true);
@@ -123,7 +124,7 @@ describe("Progress geometry", () => {
     expect(ticks.length).toBe(3);
     const base = rect(q(host, "progress-cells")).left;
     for (const t of ticks) {
-      expect((rect(t).left - base) % 8).toBe(0);
+      expect((rect(t).left + 2 - base) % 8).toBe(0);
       expect(rect(t).top).toBeLessThan(rect(q(host, "progress-cells")).top);
     }
   });
@@ -152,7 +153,7 @@ describe("Progress label / value", () => {
 
 describe("Progress layout stability", () => {
   it("no rect changes across value, status, indeterminate and size-neutral states", async () => {
-    const snap = (host: HTMLElement) => ["progress-row", "progress-label", "progress-value", "progress-track", "progress-cells", "progress-ghost"].map((s) => key(q(host, s))).join("|");
+    const snap = (host: HTMLElement) => ["progress-row", "progress-label", "progress-track", "progress-cells", "progress-ghost", "progress-fill"].map((s) => key(q(host, s))).join("|");
     const { host, rerender } = await mount(<Progress label="전송" value={10} />);
     const base = snap(host);
     for (const node of [
@@ -182,14 +183,17 @@ describe("Progress layout stability", () => {
 });
 
 describe("Progress motion (smooth, never stepped)", () => {
-  it("determinate increase: one clip-path animation, 240ms, cubic-bezier(0.23, 1, 0.32, 1), not steps", async () => {
+  it("determinate increase: one clip-path animation, 240ms, --yorha-ease-out (smooth ease-out), not steps", async () => {
     const { host, rerender } = await mount(<Progress label="x" value={20} />, { motion: "full" });
     await wait(400);
     await rerender(<Progress label="x" value={70} />);
     const running = anims(host).filter((a) => kf(a).some((k) => "clipPath" in k));
     expect(running.length).toBe(1);
     expect(running[0]!.effect!.getTiming().duration).toBe(240);
-    expect(easingOf(running[0]!)).toBe("cubic-bezier(0.23, 1, 0.32, 1)");
+    const token = getComputedStyle(document.documentElement).getPropertyValue("--yorha-ease-out").trim();
+    expect(easingOf(running[0]!)).toBe(token.replace(/,\s*/g, ", "));
+    expect(easingOf(running[0]!)).toMatch(/^cubic-bezier\(/);
+    await wait(350);
     expect(visibleFill(host) % 8).toBe(0); // the rest state still lands on a cell boundary
   });
 

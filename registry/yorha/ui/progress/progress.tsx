@@ -2,26 +2,33 @@ import * as React from "react";
 import { Progress as BaseProgress } from "@base-ui/react/progress";
 import { cn, cnState } from "@/lib/utils";
 
+export type GaugeSize = "sm" | "md";
+export type GaugeStatus = "active" | "paused" | "error";
+
 export interface ProgressProps extends Omit<React.ComponentProps<typeof BaseProgress.Root>, "children" | "value"> {
   /** Current value 0..max. `null` is indeterminate: no aria-valuenow is rendered. */
   value?: number | null;
   /** Visible and accessible name. */
   label: string;
-  /** Number of gauge segments, drawn as seams over the bar (`variant="segments"`). */
-  segments?: number;
-  /** `segments` (default): ink fill with seams. `dots`: three rows of 2 px dots on a 4 px pitch, filled in whole columns. */
-  variant?: "segments" | "dots";
+  /** `md` (default): 6 px cells on an 8 px pitch, 14 px track. `sm`: 4 px cells on a 6 px pitch, 10 px track. */
+  size?: GaugeSize;
+  /** `paused` draws half-height cells in the soft colour; `error` uses the alert colour. The box never changes. */
+  status?: GaugeStatus;
+  /** Notches at 25 / 50 / 75 % in the frame padding, snapped to cell boundaries. */
+  ticks?: boolean;
   /** Text for `aria-valuetext` and the visible value; default `40%` / `진행 중`. */
   formatValue?: (value: number | null) => string;
 }
 
-const SWEEP_SHARE = 35; // width (% of track) of the moving segment in full motion
+/* ---- motion (smooth, never stepped): the cell look is a static mask, only the fill behind it moves ---- */
 
 type MotionMode = "full" | "reduced" | "off";
 
+const ADVANCE_MS = 240;
+const SWEEP_MS = 1400;
+
 function readMode(): MotionMode {
-  const html = document.documentElement;
-  const mode = html.dataset.motion;
+  const mode = document.documentElement.dataset.motion;
   if (mode === "full" || mode === "reduced" || mode === "off") return mode;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "reduced" : "full";
 }
@@ -38,129 +45,219 @@ function useMotionMode(): MotionMode {
   return mode;
 }
 
-/**
- * Indeterminate loop as a Web Animation (no keyframes in kit CSS), running for as long as the bar
- * is mounted, one `--motion-loop` cycle per pass. full = a SWEEP_SHARE% segment hops across the track in
- * `--yorha-step-loop` steps; reduced = the striped full-width
- * indicator pulses in opacity (eased with --yorha-ease-emphasized; --motion-loop is 2400ms there); off = it rests as stripes.
- */
-function useSweep(ref: React.RefObject<HTMLDivElement | null>, active: boolean, mode: MotionMode) {
-  React.useEffect(() => {
+/** Pixel width of an element, kept in state so cell counts and clip insets are whole pixels. */
+function useWidth(ref: React.RefObject<HTMLElement | null>): number {
+  const [width, setWidth] = React.useState(0);
+  React.useLayoutEffect(() => {
     const el = ref.current;
-    if (!el || !active || mode === "off" || typeof el.animate !== "function") return;
-    const css = getComputedStyle(document.documentElement);
-    const loop = parseFloat(css.getPropertyValue("--motion-loop")) || 0;
-    if (loop <= 0) return;
-    const easing = css.getPropertyValue("--yorha-ease-emphasized").trim() || "linear";
-    const steps = css.getPropertyValue("--yorha-step-loop").trim() || "linear";
-    const anim =
-      mode === "reduced"
-        ? el.animate([{ opacity: 0.35 }, { opacity: 1 }, { opacity: 0.35 }], { duration: loop, iterations: Infinity, easing })
-        : // the segment is SWEEP_SHARE% of the track wide: starts fully left of it, ends fully right of it
-          el.animate(
-            [{ transform: "translateX(-100%)" }, { transform: `translateX(${Math.round(100 / (SWEEP_SHARE / 100))}%)` }],
-            { duration: loop, iterations: Infinity, easing: steps },
-          );
-    return () => anim.cancel();
-  }, [ref, active, mode]);
+    if (!el) return;
+    const sync = () => setWidth(Math.round(el.getBoundingClientRect().width));
+    const observer = new ResizeObserver(sync);
+    observer.observe(el);
+    sync();
+    return () => observer.disconnect();
+  }, [ref]);
+  return width;
 }
 
-const DOT_PITCH = 4;
+const PITCH: Record<GaugeSize, number> = { md: 8, sm: 6 };
+const CELL: Record<GaugeSize, number> = { md: 6, sm: 4 };
+const HEIGHT: Record<GaugeSize, number> = { md: 8, sm: 4 };
+/** Frame (1 px x 2) + inset (2 px x 2) around the cells. */
+const CHROME = 6;
+
+const cellMask = (size: GaugeSize) => `linear-gradient(to right, black 0 ${CELL[size]}px, transparent ${CELL[size]}px ${PITCH[size]}px)`;
+
+function maskStyle(size: GaugeSize, band?: string): React.CSSProperties {
+  const image = band ? `${cellMask(size)}, ${band}` : cellMask(size);
+  const tile = band ? `${PITCH[size]}px 100%, 100% 100%` : `${PITCH[size]}px 100%`;
+  const repeat = band ? "repeat-x, no-repeat" : "repeat-x";
+  return {
+    maskImage: image,
+    WebkitMaskImage: image,
+    maskSize: tile,
+    WebkitMaskSize: tile,
+    maskRepeat: repeat,
+    WebkitMaskRepeat: repeat,
+    maskComposite: band ? "intersect" : undefined,
+    WebkitMaskComposite: band ? "source-in" : undefined,
+  };
+}
+
+export interface GaugeProps {
+  /** Rendered as the track: BaseProgress.Track or BaseMeter.Track. */
+  Track: React.ElementType;
+  /** data-slot prefix: progress | meter. */
+  slot: string;
+  size: GaugeSize;
+  /** 0..100, or null for the indeterminate sweep. */
+  pct: number | null;
+  status?: GaugeStatus;
+  /** `alert` paints the fill with the alert colour (error, critical). */
+  tone?: "ink" | "alert";
+  ticks?: boolean;
+  /** Threshold notches (% positions) drawn in alert colour in the bottom padding. */
+  notches?: number[];
+  trackProps?: Record<string, unknown>;
+}
+
+/** Whole-cell clip: 0 cells when pct is 0, at least 1 when pct > 0, `round(pct)` cells otherwise. */
+export function filledCells(pct: number, cells: number): number {
+  return pct <= 0 ? 0 : Math.max(1, Math.round((pct / 100) * cells));
+}
 
 /**
- * Determinate advance: when the value grows, the fill is revealed from its old edge to the new one by a stepped
- * clip-path (compositor-only, `--yorha-step-reveal`, one `--motion-select`). Shrinking is instant. Reduced and off: no clip.
+ * The shared gauge body (also used by Meter): 14 px (md) / 10 px (sm) framed track, 2 px inset, cells drawn by a static
+ * mask over a fill that moves smoothly (clip-path on increase, a linear translateX sweep when indeterminate).
+ * Empty cells are 2 px hairline ticks (ghost), filled cells are solid blocks: shape, not two greys.
  */
-function useAdvance(ref: React.RefObject<HTMLElement | null>, pct: number | null, mode: MotionMode) {
-  const previous = React.useRef<number | null>(null);
+export function Gauge({ Track, slot, size, pct, status = "active", tone = "ink", ticks, notches, trackProps }: GaugeProps) {
+  const mode = useMotionMode();
+  const cellsRef = React.useRef<HTMLDivElement>(null);
+  const fillRef = React.useRef<HTMLDivElement>(null);
+  const sweepRef = React.useRef<HTMLSpanElement>(null);
+  const width = useWidth(cellsRef);
+  const pitch = PITCH[size];
+  const cells = Math.floor(width / pitch);
+  const indeterminate = pct === null;
+  const n = indeterminate ? cells : filledCells(pct, cells);
+  const right = Math.max(0, width - n * pitch);
+  const sweepWidth = Math.max(pitch, Math.round((width * 0.3) / pitch) * pitch);
+
+  // determinate increase: clip-path eased by the --yorha-ease-out token (a strong ease-out), 240 ms; decreases and reduced/off are instant
+  const previous = React.useRef<{ n: number; width: number } | null>(null);
   React.useEffect(() => {
     const was = previous.current;
-    previous.current = pct;
-    const el = ref.current;
-    if (!el || pct === null || was === null || pct <= was || mode !== "full" || typeof el.animate !== "function") return;
-    const css = getComputedStyle(document.documentElement);
-    const duration = parseFloat(css.getPropertyValue("--motion-select")) || 0;
-    if (duration <= 0) return;
-    const easing = css.getPropertyValue("--yorha-step-reveal").trim() || "linear";
-    const hidden = (1 - was / pct) * 100;
-    const anim = el.animate([{ clipPath: `inset(0 ${hidden}% 0 0)` }, { clipPath: "inset(0 0 0 0)" }], { duration, easing });
+    previous.current = { n, width };
+    const el = fillRef.current;
+    if (!el || indeterminate || !was || was.width !== width || n <= was.n || mode !== "full" || typeof el.animate !== "function") return;
+    const anim = el.animate(
+      [{ clipPath: `inset(0px ${width - was.n * pitch}px 0px 0px)` }, { clipPath: `inset(0px ${right}px 0px 0px)` }],
+      { duration: ADVANCE_MS, easing: getComputedStyle(document.documentElement).getPropertyValue("--yorha-ease-out").trim() || "ease-out" },
+    );
     return () => anim.cancel();
-  }, [ref, pct, mode]);
+  }, [n, width, right, pitch, indeterminate, mode]);
+
+  // indeterminate: smooth linear sweep (full), opacity pulse (reduced), static alternate cells (off)
+  React.useEffect(() => {
+    const el = sweepRef.current;
+    if (!el || !indeterminate || mode === "off" || width <= 0 || typeof el.animate !== "function") return;
+    const anim =
+      mode === "reduced"
+        ? el.animate([{ opacity: 0.35 }, { opacity: 1 }, { opacity: 0.35 }], { duration: SWEEP_MS * 2, iterations: Infinity, easing: "ease-in-out" })
+        : el.animate([{ transform: `translateX(${-sweepWidth}px)` }, { transform: `translateX(${width}px)` }], {
+            duration: SWEEP_MS,
+            iterations: Infinity,
+            easing: "linear",
+          });
+    return () => anim.cancel();
+  }, [indeterminate, mode, width, sweepWidth]);
+
+  const color = tone === "alert" || status === "error" ? "bg-yorha-alert-ui" : status === "paused" ? "bg-yorha-fg-soft" : "bg-yorha-ink";
+  const keep = "[forced-color-adjust:none]";
+  const half = HEIGHT[size] / 2;
+  // paused: the mask is intersected with a vertical band, so the fill box (and every rect) stays identical
+  const band = `linear-gradient(to bottom, transparent 0 ${half / 2}px, black ${half / 2}px ${half / 2 + half}px, transparent ${half / 2 + half}px)`;
+  const cellStyle = status === "paused" ? maskStyle(size, band) : maskStyle(size);
+  const alternate = `repeating-linear-gradient(to right, currentColor 0 ${pitch}px, transparent ${pitch}px ${pitch * 2}px)`;
+  const tickAt = (p: number) => Math.round((p / 100) * cells) * pitch - 2;
+
+  return (
+    <Track
+      data-slot={`${slot}-track`}
+      data-status={status}
+      className={cn(
+        "relative border border-yorha-border bg-yorha-bg p-[2px] data-[low]:border-yorha-alert-ui data-[status=error]:border-yorha-alert-ui",
+        size === "md" ? "h-[14px]" : "h-[10px]",
+      )}
+      {...trackProps}
+    >
+      <div className="relative w-full" style={{ height: HEIGHT[size] }}>
+        <div
+          aria-hidden="true"
+          data-slot={`${slot}-ghost`}
+          className={cn("absolute inset-x-0 h-[2px] bg-yorha-border forced-colors:bg-[GrayText]", keep)}
+          style={{ top: half - 1, ...maskStyle(size) }}
+        />
+        <div ref={cellsRef} aria-hidden="true" data-slot={`${slot}-cells`} className="absolute inset-0 overflow-hidden" style={cellStyle}>
+          <div
+            ref={fillRef}
+            data-slot={`${slot}-fill`}
+            className={cn("absolute inset-0 text-yorha-ink forced-colors:text-[CanvasText]", indeterminate ? "bg-transparent" : cn(color, keep, "forced-colors:bg-[CanvasText]"))}
+            style={{ clipPath: `inset(0px ${indeterminate ? 0 : right}px 0px 0px)` }}
+          >
+            {indeterminate ? (
+              <span
+                ref={sweepRef}
+                data-slot={`${slot}-sweep`}
+                className={cn("absolute inset-y-0 left-0 block", keep, mode === "full" ? cn(color, "forced-colors:bg-[CanvasText]") : "bg-transparent")}
+                style={mode === "full" ? { width: sweepWidth, transform: `translateX(${-sweepWidth}px)` } : { width: "100%", backgroundImage: alternate }}
+              />
+            ) : null}
+          </div>
+        </div>
+        {ticks
+          ? [25, 50, 75].map((p) => (
+              <span
+                key={p}
+                aria-hidden="true"
+                data-slot={`${slot}-tick`}
+                className="absolute top-[-2px] h-[2px] w-[2px] bg-yorha-border forced-colors:bg-[CanvasText]"
+                style={{ left: tickAt(p) }}
+              />
+            ))
+          : null}
+        {(notches ?? []).map((p, i) => (
+          <span
+            key={i}
+            aria-hidden="true"
+            data-slot={`${slot}-notch`}
+            className="absolute bottom-[-2px] h-[2px] w-[2px] bg-yorha-alert-ui forced-colors:bg-[CanvasText]"
+            style={{ left: tickAt(p) }}
+          />
+        ))}
+      </div>
+    </Track>
+  );
 }
 
-/**
- * Segmented YoRHa gauge on Base UI Progress. Determinate shows the percentage; indeterminate
- * removes aria-valuenow and loops a moving segment (striped when motion is reduced/off).
- */
-export function Progress({ value = null, max = 100, label, segments = 10, variant = "segments", formatValue, className, ...props }: ProgressProps) {
-  const indeterminate = value === null;
-  const indicatorRef = React.useRef<HTMLDivElement>(null);
-  const mode = useMotionMode();
-  useSweep(indicatorRef, indeterminate, mode);
-  const dots = variant === "dots";
-  const pct = value === null ? null : max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
-  const fillRef = React.useRef<HTMLSpanElement>(null);
-  useAdvance(dots ? fillRef : indicatorRef, pct, mode);
-  const text = formatValue ?? ((v: number | null) => (v === null ? "진행 중" : `${v}%`));
-  const step = 100 / Math.max(1, segments);
-  const seams = `repeating-linear-gradient(to right, transparent 0 calc(${step}% - 2px), var(--yorha-panel) calc(${step}% - 2px) ${step}%)`;
+/** Snaps the whole gauge (label row included) to a whole number of cells, so the right edge is a cell edge. */
+export const gaugeWidth = (size: GaugeSize): React.CSSProperties => ({
+  width: `calc(round(down, 100% - ${CHROME}px, ${PITCH[size]}px) + ${CHROME}px)`,
+});
 
+export const gaugeRoot = "flex max-w-full flex-col gap-[6px] font-yorha text-yorha-fg";
+export const gaugeRow = "flex h-4 items-baseline justify-between gap-3";
+export const gaugeLabel = "min-w-0 truncate text-yorha-sm leading-4 uppercase tracking-yorha-wide text-yorha-fg-soft";
+export const gaugeValue = "yorha-tabular shrink-0 whitespace-nowrap text-yorha-sm leading-4 text-yorha-fg";
+
+/**
+ * YoRHa gauge on Base UI Progress: framed track, solid ink cells over hairline ticks, value in tabular numerals.
+ * Indeterminate removes aria-valuenow and sweeps a block smoothly across the cells.
+ */
+export function Progress({ value = null, max = 100, label, size = "md", status = "active", ticks, formatValue, className, style, ...props }: ProgressProps) {
+  const pct = value === null ? null : max > 0 ? Math.min(100, Math.max(0, (value / max) * 100)) : 0;
+  const text = formatValue ?? ((v: number | null) => (v === null ? "진행 중" : `${v}%`));
   return (
     <BaseProgress.Root
       value={value}
       max={max}
       getAriaValueText={(_formatted, v) => text(v ?? null)}
-      className={cnState(cn("flex w-full flex-col gap-1 font-yorha text-yorha-fg"), className)}
+      data-status={status}
+      data-complete={pct === 100 ? "" : undefined}
+      className={cnState(cn(gaugeRoot), className)}
+      style={{ ...gaugeWidth(size), ...(style as React.CSSProperties) }}
       {...props}
     >
-      <div className="flex items-baseline justify-between gap-3">
-        <BaseProgress.Label title={label} className="min-w-0 truncate text-yorha-sm uppercase tracking-yorha-wide text-yorha-fg-soft">
+      <div data-slot="progress-row" className={gaugeRow}>
+        <BaseProgress.Label data-slot="progress-label" title={label} className={gaugeLabel}>
           {label}
         </BaseProgress.Label>
-        <BaseProgress.Value className="yorha-tabular shrink-0 whitespace-nowrap text-yorha-sm text-yorha-fg">
+        <BaseProgress.Value data-slot="progress-value" className={cn(gaugeValue, status === "error" && "text-yorha-alert")}>
           {(_formatted, v) => text(v ?? null)}
         </BaseProgress.Value>
       </div>
-      <BaseProgress.Track className="relative h-4 overflow-hidden rounded-yorha border border-yorha-border bg-yorha-bg">
-        <BaseProgress.Indicator
-          ref={indicatorRef}
-          data-yorha-sweep={indeterminate ? "" : undefined}
-          className={cn(
-            dots ? (indeterminate ? "yorha-dots absolute top-[2px] left-0 h-[10px] text-yorha-ink" : "h-full bg-transparent") : "h-full bg-yorha-ink",
-            indeterminate && !dots && "absolute inset-y-0 left-0",
-            indeterminate && mode === "full" && (dots ? "w-[round(down,35%,4px)]" : "w-[35%]"),
-            // dots, reduced/off: whole columns across the track
-            indeterminate && dots && mode !== "full" && "w-[round(down,100%,4px)]",
-            // reduced/off: no moving segment, so a full-width striped fill (never a lone % block) reads as "busy"
-            indeterminate &&
-              !dots &&
-              mode !== "full" &&
-              "w-full bg-transparent bg-[repeating-linear-gradient(135deg,var(--yorha-ink)_0_0.25rem,transparent_0.25rem_0.5rem)]",
-          )}
-        />
-        {dots ? (
-          <>
-            <span
-              aria-hidden="true"
-              data-slot="dots-ghost"
-              className="yorha-dots absolute top-[2px] left-0 h-[10px] text-yorha-border"
-              style={{ width: `round(down, 100%, ${DOT_PITCH}px)` }}
-            />
-            {pct === null ? null : (
-              <span
-                ref={fillRef}
-                aria-hidden="true"
-                data-slot="dots-fill"
-                data-pitch={DOT_PITCH}
-                className="yorha-dots absolute top-[2px] left-0 h-[10px] text-yorha-ink"
-                style={{ width: `round(down, ${pct}%, ${DOT_PITCH}px)` }}
-              />
-            )}
-          </>
-        ) : (
-          <span aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ backgroundImage: seams }} />
-        )}
-      </BaseProgress.Track>
+      <Gauge Track={BaseProgress.Track} slot="progress" size={size} pct={pct} status={status} ticks={ticks} />
     </BaseProgress.Root>
   );
 }

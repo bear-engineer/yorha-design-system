@@ -106,8 +106,8 @@ export const Group: Story = {
   },
 };
 
-/** Full motion scans in 16 hard steps (the loop step token). */
-export const StepScan: Story = {
+/** Full motion is a smooth linear translateX shimmer, never stepped. */
+export const LinearShimmer: Story = {
   render: (args) => <Skeleton {...args} />,
   play: async ({ canvasElement }) => {
     const html = document.documentElement;
@@ -116,7 +116,7 @@ export const StepScan: Story = {
       html.dataset.motion = "full";
       const shimmer = shimmerOf(within(canvasElement).getByRole("status"))!;
       await waitFor(() => expect(shimmer.getAnimations().length).toBe(1));
-      await expect((shimmer.getAnimations()[0]!.effect as KeyframeEffect).getTiming().easing).toContain("steps(16");
+      await expect((shimmer.getAnimations()[0]!.effect as KeyframeEffect).getTiming().easing).toBe("linear");
     } finally {
       html.dataset.motion = previous ?? "full";
     }

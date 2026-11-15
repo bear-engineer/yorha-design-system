@@ -5,7 +5,7 @@
       "name": "spinner",
       "type": "registry:ui",
       "title": "Spinner",
-      "description": "Loading dots: role=status with an accessible name (aria-label plus visually hidden text), decorative dots staggered over three cycles, then resting. Under reduced or off motion the dots never animate.",
+      "description": "Loading trail: role=status with an accessible name, 8 decorative 2 px dots on a 12 px box; each dot fades linearly with a lap/8 stagger so a smooth tail follows the head around the ring. Reduced: one slow opacity pulse; off: static three-dot arc.",
       "dependencies": [],
       "registryDependencies": [
         "@yorha/utils",
@@ -18,7 +18,7 @@
           "target": "@ui/spinner.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The dots are CSS squares and a Web Animation; no original assets are used."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. The dots are CSS squares and a Web Animation; no original assets are used. v4: no stepped easing; the orbit is a linear opacity trail."
     }
   ]
 }
