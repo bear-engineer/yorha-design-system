@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { YorhaProvider } from "@/components/yorha-provider";
 import {
   Dialog,
@@ -57,11 +58,7 @@ function Demo({ sound = false }: { sound?: boolean }) {
         <DialogTitle>유닛 정보</DialogTitle>
         <DialogBody>
           <DialogDescription>이 유닛의 식별 이름을 변경한다.</DialogDescription>
-          <input
-            aria-label="유닛 이름"
-            defaultValue="2B"
-            className="mt-4 h-10 w-full border border-yorha-border bg-yorha-bg px-3 text-yorha-fg focus-visible:yorha-focus"
-          />
+          <Input aria-label="유닛 이름" defaultValue="2B" className="mt-4" />
         </DialogBody>
         <DialogFooter>
           <DialogClose render={<Button variant="ghost" />}>취소</DialogClose>

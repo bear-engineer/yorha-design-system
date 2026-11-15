@@ -1,14 +1,14 @@
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
-import { useCallback, useState, type ComponentProps, type ReactNode, type Ref } from "react";
+import { useCallback, useRef, useState, type ComponentProps, type ReactNode, type Ref } from "react";
 import { CrossIcon } from "@/components/ui/icons";
 import { cn, cnState } from "@/lib/utils";
 import { useSound } from "@/lib/sound";
 
 /**
  * Class strings shared by Dialog, AlertDialog and static previews (one definition).
- * Motion: backdrop = `yorha-fade`, popup = `yorha-panel` (T3 utilities; enter/exit tokens, opacity-only
- * and <=120ms under data-motion reduced, 0 under off). Both set `--motion-panel*` to the modal tokens
- * (280ms in, 200ms out) so a dialog and an alert dialog are slower than a small panel.
+ * Motion (v4): backdrop = `yorha-fade` (its `--motion-panel*` are the modal tokens, 280ms in / 200ms out), popup = `yorha-dissolve`
+ * (Bayer dither mask in `--motion-modal`, then opacity; no displacement, so the popup rect is the same at start, mid and end).
+ * The mask is painted on the main thread: keep it on dialogs of at most `max-w-md`; reduced = opacity only, off = instant.
  */
 export const dialogStyles = {
   backdrop:
@@ -19,7 +19,7 @@ export const dialogStyles = {
     "[--dialog-top:1rem] [@media(min-height:40rem)]:[--dialog-top:6rem] [@media(min-height:40rem)]:pt-24",
   // The popup never scrolls: header and footer are pinned, the body (DialogBody / AlertDialogDescription) scrolls.
   popup:
-    "yorha-panel [--motion-panel:var(--motion-modal)] [--motion-panel-exit:var(--motion-modal-exit)] pointer-events-auto data-[ending-style]:pointer-events-none group/dialog relative flex max-h-[calc(100dvh-var(--dialog-top)-1rem)] w-full max-w-md flex-col overflow-hidden " +
+    "yorha-dissolve pointer-events-auto data-[ending-style]:pointer-events-none group/dialog relative flex max-h-[calc(100dvh-var(--dialog-top)-1rem)] w-full max-w-md flex-col overflow-hidden " +
     "rounded-yorha border border-yorha-border bg-yorha-panel text-yorha-fg shadow-yorha-lg",
   // ink header strip (control height); the dot and trailing rule are decorative pseudo elements
   title:
@@ -28,7 +28,7 @@ export const dialogStyles = {
     "before:size-2 before:shrink-0 before:bg-current before:content-[''] " +
     "after:h-px after:flex-1 after:bg-yorha-on-ink-soft after:content-['']",
   // one inline inset for title, body and footer: 16px, 24px from 640px
-  body: "yorha-scroll min-h-0 flex-1 px-4 py-5 sm:px-6",
+  body: "yorha-scroll yorha-scroll-cue-y [--yorha-scroll-ground:var(--yorha-panel)] min-h-0 flex-1 px-4 py-5 sm:px-6",
   description: "text-yorha-base leading-yorha-body text-yorha-fg-strong",
   footer:
     "flex shrink-0 flex-wrap justify-end gap-3 border-t border-dotted border-yorha-separator px-4 py-4 sm:px-6",
@@ -102,16 +102,24 @@ export interface DialogContentProps extends ComponentProps<typeof BaseDialog.Pop
 }
 
 /**
+ * Migration (v4): the popup enters with `yorha-dissolve` instead of the `yorha-panel` slide (tests that read `translate` during open must be updated); a touch open focuses the popup itself, not the first field (the keyboard would cover it).
  * Migration (v3): `closeButton` now defaults to true (a 닫기 button in the title strip, `DialogCloseButton` semantics); pass `closeButton={false}` to keep the old chrome.
  * The popup is a flex column: only `DialogBody` scrolls, title and footer stay put. Content placed directly in the popup no longer scrolls; wrap it in `DialogBody`.
  * Title, body and footer share one inline inset (`px-6`, `px-4` under 640px); the title text-shadow is gone; the popup is top-anchored (pt-4, pt-24 on tall viewports).
  */
 export function DialogContent({ className, children, closeButton = true, ...props }: DialogContentProps) {
+  const popupRef = useRef<HTMLDivElement | null>(null);
   return (
     <BaseDialog.Portal>
       <BaseDialog.Backdrop className={dialogStyles.backdrop} />
       <BaseDialog.Viewport className={dialogStyles.viewport}>
-        <BaseDialog.Popup className={cnState(dialogStyles.popup, className)} {...props}>
+        <BaseDialog.Popup
+          ref={popupRef}
+          // Touch: a field focused at open raises the soft keyboard over the dialog, so the popup takes focus; keyboard and pointer keep Base UI's first-focusable rule.
+          initialFocus={(type) => (type === "touch" ? popupRef.current : true)}
+          className={cnState(dialogStyles.popup, className)}
+          {...props}
+        >
           {children}
           {closeButton ? (
             <BaseDialog.Close data-slot="dialog-close-button" aria-label="닫기" className={dialogStyles.close}>
