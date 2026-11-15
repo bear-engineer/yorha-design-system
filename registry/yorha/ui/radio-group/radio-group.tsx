@@ -2,14 +2,16 @@ import * as React from "react";
 import { Radio as BaseRadio } from "@base-ui/react/radio";
 import { RadioGroup as BaseRadioGroup } from "@base-ui/react/radio-group";
 import { cn, cnState } from "@/lib/utils";
+import { Glyph } from "@/components/ui/glyph";
 
 export interface RadioGroupProps extends React.ComponentProps<typeof BaseRadioGroup> {
   /** Layout direction; arrow keys work in both directions regardless. */
   orientation?: "vertical" | "horizontal";
 }
 
+// 8 px disc glyph in a 12 px box (even offset inside the 20 px drawn box). Opacity step only: no scale, no clip.
 const DOT =
-  "size-2 rounded-yorha bg-current opacity-0 [scale:calc(1_-_(1_-_var(--motion-scale-pop))_*_var(--motion-spatial))] transition-[opacity,scale] [transition-duration:max(var(--motion-select),var(--motion-reduced-fade)),var(--motion-select)] ease-yorha data-[checked]:scale-100 data-[checked]:opacity-100";
+  "grid place-items-center opacity-0 transition-opacity [transition-duration:max(var(--motion-select),var(--motion-reduced-fade))] ease-yorha-step-flip data-[checked]:opacity-100";
 
 /** Group of mutually exclusive options. Arrow keys move the selection. */
 export function RadioGroup({ className, orientation = "vertical", ...props }: RadioGroupProps) {
@@ -33,6 +35,7 @@ export interface RadioProps extends Omit<React.ComponentProps<typeof BaseRadio.R
  * One option. The selected row wipes to the ink fill left to right; the square
  * bullet uses currentColor so it inverts with the row.
  * The Base UI root is a 24px hit area holding the drawn 20px box (the focus ring is on that box, like Checkbox).
+ * Migration (v4): the bullet is the 8 px `disc` dot glyph (was a CSS square); it appears by an opacity step, no scale pop.
  * Migration (B25): the focus ring moved from the row to the 20px box; the indicator is 20px in every density (was 24 in
  * comfortable). No API change.
  */
@@ -69,7 +72,9 @@ export function Radio({ children, className, rowClassName, ...props }: RadioProp
               "group-data-[disabled]/box:border-yorha-disabled",
             )}
           >
-            <BaseRadio.Indicator keepMounted className={DOT} />
+            <BaseRadio.Indicator keepMounted className={DOT}>
+              <Glyph name="disc" />
+            </BaseRadio.Indicator>
           </span>
         </BaseRadio.Root>
       </span>

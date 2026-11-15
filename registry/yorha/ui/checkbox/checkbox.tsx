@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Checkbox as BaseCheckbox } from "@base-ui/react/checkbox";
 import { cn, cnState } from "@/lib/utils";
-import { CheckIcon, MinusIcon } from "@/components/ui/icons";
+import { Glyph } from "@/components/ui/glyph";
 
 export interface CheckboxProps extends Omit<React.ComponentProps<typeof BaseCheckbox.Root>, "children"> {
   /** Visible label; clicking it toggles the checkbox. */
@@ -10,12 +10,22 @@ export interface CheckboxProps extends Omit<React.ComponentProps<typeof BaseChec
   rowClassName?: string;
 }
 
-// Indicator: always mounted in a fixed cell; fades (and scales unless reduced/off) in place. Reduced keeps a short opacity fade.
-const INDICATOR_BASE =
-  "col-start-1 row-start-1 opacity-0 [scale:calc(1_-_(1_-_var(--motion-scale-pop))_*_var(--motion-spatial))] transition-[opacity,scale] [transition-duration:max(var(--motion-select),var(--motion-reduced-fade)),var(--motion-select)] ease-yorha";
+// Indicator: a 12 px dot glyph, always mounted in the fixed box. Checking reveals it left to right by a stepped clip-path
+// (4 steps, --yorha-step-reveal); unchecking is one opacity step. --motion-spatial is 0 in reduced/off, which keeps the clip open,
+// so reduced is a plain opacity fade and off is instant. No scale, no transform: the glyph never leaves its integer pixels.
+const INDICATOR_BASE = [
+  "col-start-1 row-start-1 opacity-0 [clip-path:inset(0_calc(100%_*_var(--motion-spatial))_0_0)]",
+  "[transition-property:opacity,clip-path] [transition-duration:max(var(--motion-select-exit),var(--motion-reduced-fade)),0s] [transition-delay:0s,var(--motion-select-exit)] ease-yorha-step-flip",
+].join(" ");
+const ON_CHECKED =
+  "group-data-[checked]/box:opacity-100 group-data-[checked]/box:[clip-path:inset(0_0_0_0)] group-data-[checked]/box:[transition-duration:var(--motion-reduced-fade),var(--motion-select)] group-data-[checked]/box:[transition-delay:0s,0s] group-data-[checked]/box:[transition-timing-function:var(--yorha-step-flip),var(--yorha-step-reveal)]";
+const ON_INDETERMINATE =
+  "group-data-[indeterminate]/box:opacity-100 group-data-[indeterminate]/box:[clip-path:inset(0_0_0_0)] group-data-[indeterminate]/box:[transition-duration:var(--motion-reduced-fade),var(--motion-select)] group-data-[indeterminate]/box:[transition-delay:0s,0s] group-data-[indeterminate]/box:[transition-timing-function:var(--yorha-step-flip),var(--yorha-step-reveal)]";
 
 /**
- * Square checkbox. Checked shows a check mark on ink; indeterminate shows a bar on ink.
+ * Square checkbox. Checked shows a `check` dot glyph on ink; indeterminate a `minus` glyph (12 px, integer pixels).
+ * Motion: checking reveals the glyph left to right in 4 clip steps; unchecking is one opacity step; reduced = opacity fade; off = instant.
+ * Migration (v4): the icon scale/opacity pop is gone; the root carries `data-yorha-value` (CheckboxGroup range selection).
  * The three states differ by shape and fill, not colour alone.
  * Structure: the Base UI root is a 24px hit area (SC 2.5.8) that holds the drawn 20px box, so the box never
  * changes size (the border stays ink when checked) and sits on the label's first line centre.
@@ -35,6 +45,7 @@ export function Checkbox({ children, className, rowClassName, ...props }: Checkb
             "group/box grid size-6 shrink-0 place-items-center rounded-yorha border-0 bg-transparent p-0 text-yorha-fg outline-none data-[disabled]:cursor-not-allowed data-[disabled]:text-yorha-disabled",
             className,
           )}
+          data-yorha-value={props.value}
           {...props}
         >
           <span
@@ -53,8 +64,8 @@ export function Checkbox({ children, className, rowClassName, ...props }: Checkb
             )}
           >
             <BaseCheckbox.Indicator keepMounted className="grid place-items-center">
-              <CheckIcon className={cn(INDICATOR_BASE, "group-data-[checked]/box:scale-100 group-data-[checked]/box:opacity-100")} />
-              <MinusIcon className={cn(INDICATOR_BASE, "group-data-[indeterminate]/box:scale-100 group-data-[indeterminate]/box:opacity-100")} />
+              <Glyph name="check" className={cn(INDICATOR_BASE, ON_CHECKED)} />
+              <Glyph name="minus" className={cn(INDICATOR_BASE, ON_INDETERMINATE)} />
             </BaseCheckbox.Indicator>
           </span>
         </BaseCheckbox.Root>

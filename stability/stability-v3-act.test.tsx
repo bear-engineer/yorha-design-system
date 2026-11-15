@@ -299,11 +299,13 @@ describe("FACT-09 box and label centring", () => {
 });
 
 describe("FACT-10/11/12 slider", () => {
-  it("fill snaps to whole segments; cursors; ring sits on the drawn thumb", async () => {
+  it("fill ends at the thumb centre; cursors; ring sits on the drawn thumb", async () => {
     const host = await render(createElement("div", { style: { width: 300 } }, createElement(Slider, { label: "볼륨", defaultValue: 47 })));
     const fill = q(host, '[data-slot="slider-fill"]');
     const track = q(host, '[data-slot="slider-track"]');
-    expect(fill.getBoundingClientRect().width % 8).toBe(0);
+    // v4 (V4-108): the fill follows the thumb centre instead of snapping to whole segments; the track still holds whole segments.
+    const thumbBox = q(host, '[data-slot="slider-thumb"]').getBoundingClientRect();
+    expect(Math.abs(fill.getBoundingClientRect().right - (thumbBox.x + thumbBox.width / 2))).toBeLessThanOrEqual(1);
     expect(track.getBoundingClientRect().width % 8).toBe(0);
     const control = q(host, '[data-slot="slider-control"]');
     expect(css(control).cursor).toBe("pointer");

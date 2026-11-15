@@ -90,17 +90,19 @@ describe("V4-105 checkbox glyph", () => {
       expect([r.width, r.height]).toEqual([12, 12]);
     }
     expect(seen.size, `4 discrete clip values: ${[...seen]}`).toBe(4);
-    expect(seen.has(hidden)).toBe(false);
+    expect(seen.has(hidden), "starts hidden").toBe(true);
+    expect(css(check).clipPath, "3/4 open at 0.8").not.toBe(hidden);
     anim!.finish();
   });
 
   it("reduced: opacity only, the clip never hides; off: instant", async () => {
     const reduced = await render(createElement(Checkbox, { defaultChecked: false }, "알림"), "reduced");
     const check = q<SVGSVGElement>(reduced, 'svg[data-glyph="check"]');
-    const open = css(check).clipPath;
+    const cut = (el: Element) => (css(el).clipPath.match(/[\d.]+/g) ?? []).reduce((a, n) => a + parseFloat(n), 0);
+    expect(cut(check), "clip open while unchecked").toBe(0);
     await userEvent.click(q(reduced, '[role="checkbox"]'));
     await frames(2);
-    expect(css(check).clipPath, "clip identical before and after").toBe(open);
+    expect(cut(check), "clip open after").toBe(0);
     expect(css(check).transitionProperty).toContain("opacity");
     const off = await render(createElement(Checkbox, { defaultChecked: true }, "알림"), "off");
     const g = q<SVGSVGElement>(off, 'svg[data-glyph="check"]');

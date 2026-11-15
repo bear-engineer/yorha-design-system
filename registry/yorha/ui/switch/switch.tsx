@@ -7,6 +7,44 @@ export interface SwitchProps extends Omit<React.ComponentProps<typeof BaseSwitch
   children: React.ReactNode;
   /** Class for the row (label) element. */
   rowClassName?: string;
+  /**
+   * The change is being applied elsewhere (a request): sets `aria-busy` and `data-pending`, ignores toggling (click, Space,
+   * label) and pulses a 4 px mark inside the thumb (two-state, `--yorha-step-flip`). Track and thumb never change size.
+   */
+  pending?: boolean;
+}
+
+/** Two-state pulse of the pending mark as a Web Animation (no keyframes in kit CSS); off = a steady mark, reduced = slow opacity fade. */
+function usePendingPulse(ref: React.RefObject<HTMLSpanElement | null>, pending: boolean) {
+  React.useEffect(() => {
+    const el = ref.current;
+    if (!el || !pending || typeof el.animate !== "function") return;
+    const html = document.documentElement;
+    let anim: Animation | undefined;
+    const sync = () => {
+      anim?.cancel();
+      anim = undefined;
+      el.style.opacity = "1";
+      const mode = html.dataset.motion ?? (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "reduced" : "full");
+      const css = getComputedStyle(html);
+      const loop = parseFloat(css.getPropertyValue("--motion-loop")) || 0;
+      if (mode === "off" || loop <= 0) return;
+      if (mode === "reduced") {
+        anim = el.animate([{ opacity: 0.35 }, { opacity: 1 }, { opacity: 0.35 }], { duration: loop, iterations: Infinity, easing: css.getPropertyValue("--yorha-ease-emphasized").trim() || "linear" });
+        return;
+      }
+      const flip = css.getPropertyValue("--yorha-step-flip").trim() || "linear";
+      anim = el.animate([{ opacity: 1, easing: flip }, { opacity: 0, easing: flip, offset: 0.5 }, { opacity: 1 }], { duration: loop / 2, iterations: Infinity });
+    };
+    const observer = new MutationObserver(sync);
+    observer.observe(html, { attributes: true, attributeFilter: ["data-motion"] });
+    sync();
+    return () => {
+      observer.disconnect();
+      anim?.cancel();
+      el.style.opacity = "";
+    };
+  }, [ref, pending]);
 }
 
 /**
@@ -14,8 +52,11 @@ export interface SwitchProps extends Omit<React.ComponentProps<typeof BaseSwitch
  * right, so the state reads from position and fill as well as colour.
  * The Base UI root is a 24px hit area holding the drawn 20px track (40 x 20, 12px thumb at a 3px inset), so the
  * track keeps its size when checked and sits on the label's first line centre.
+ * Migration (v4): new `pending` prop (see SwitchProps). The plain square thumb is confirmed (no thumb mark, no notch, no dither).
  */
-export function Switch({ children, className, rowClassName, ...props }: SwitchProps) {
+export function Switch({ children, className, rowClassName, pending = false, onCheckedChange, readOnly, ...props }: SwitchProps) {
+  const mark = React.useRef<HTMLSpanElement>(null);
+  usePendingPulse(mark, pending);
   return (
     <label
       className={cn(
@@ -31,6 +72,12 @@ export function Switch({ children, className, rowClassName, ...props }: SwitchPr
             className,
           )}
           {...props}
+          readOnly={readOnly || pending}
+          aria-busy={pending || undefined}
+          data-pending={pending ? "" : undefined}
+          onCheckedChange={(next, details) => {
+            if (!pending) onCheckedChange?.(next, details);
+          }}
         >
           <span
             data-slot="switch-track"
@@ -52,7 +99,14 @@ export function Switch({ children, className, rowClassName, ...props }: SwitchPr
                 "transition-transform duration-(--motion-select) ease-yorha",
                 "data-[checked]:translate-x-[22px]",
               )}
-            />
+            >
+              <span
+                ref={mark}
+                data-slot="switch-pending-mark"
+                aria-hidden="true"
+                className="m-1 block size-1 bg-yorha-bg opacity-0 group-data-[checked]/box:bg-yorha-ink"
+              />
+            </BaseSwitch.Thumb>
           </span>
         </BaseSwitch.Root>
       </span>
