@@ -169,3 +169,10 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+export const NumberTypeNoSpinners: Story = {
+  render: () => <Input type="number" aria-label="수량" defaultValue={3} />,
+  play: async ({ canvasElement }) => {
+    await expect(getComputedStyle(within(canvasElement).getByLabelText("수량")).appearance).toBe("textfield");
+  },
+};

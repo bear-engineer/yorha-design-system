@@ -219,3 +219,14 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+export const SubmitOnModEnter: Story = {
+  render: () => (
+    <form onSubmit={(e) => e.preventDefault()}>
+      <Textarea label="메모" description="Ctrl/Cmd+Enter로 전송, Enter는 줄바꿈" submitOnModEnter />
+    </form>
+  ),
+  play: async ({ canvasElement }) => {
+    await expect(within(canvasElement).getByLabelText("메모")).toHaveAttribute("aria-keyshortcuts", "Control+Enter Meta+Enter");
+  },
+};

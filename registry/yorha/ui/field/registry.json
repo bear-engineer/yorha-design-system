@@ -22,7 +22,7 @@
           "target": "@ui/field.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Compose Field parts directly, or use FieldFrame for the standard label, control, description and error stack. Set invalid (or pass error) to mark the control aria-invalid."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. Compose Field parts directly, or use FieldFrame for the standard label, control, description and error stack. Set invalid (or pass error) to mark the control aria-invalid. FieldCounter (n/max, tabular, width in ch; alert at 90 % and 100 % with one polite announcement each) goes in the description row. When a field turns invalid the error icon box flickers once (yorha-flicker via runFx; 1000 ms lockout per field; motion off = none). `reserveError` on FieldFrame (FieldErrorSlot) keeps one error line reserved. Validation timing is Base UI's: `validationMode` (\"onSubmit\" | \"onBlur\" | \"onChange\") and `validationDebounceTime` (ms, with onChange) on Field. FieldError without children renders the Form `errors` entry of its name."
     }
   ]
 }

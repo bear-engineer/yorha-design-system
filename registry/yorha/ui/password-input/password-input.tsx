@@ -148,13 +148,11 @@ export const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputPro
           {revealed ? <EyeOffIcon /> : <EyeIcon />}
         </InputGroupButton>
       </InputGroup>
-      <div role="status" className="empty:hidden">
+      {/* One status region: caps hint (visible, in flow) and the reveal state (sr-only). Without the hint the region is sr-only, so it never adds a flex gap. */}
+      <div role="status" className={caps ? undefined : "sr-only"}>
         {caps ? <FieldDescription>{capsLockMessage}</FieldDescription> : null}
+        <span className="sr-only">{announce}</span>
       </div>
-      {/* Out of flow (sr-only is absolute), so the first announcement cannot add a flex gap. */}
-      <span data-slot="password-reveal-status" role="status" className="sr-only">
-        {announce}
-      </span>
       {strength !== undefined ? (
         <div data-slot="password-strength" className="flex h-5 items-center gap-2 text-yorha-sm text-yorha-fg-soft">
           <span aria-hidden="true" className="flex gap-1">

@@ -23,7 +23,7 @@
           "target": "@ui/number-field.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Shift+Arrow takes the large step, Alt+Arrow the small step, dragging the label scrubs. For a bare `<Input type=\"number\">` the UA spin buttons are hidden; prefer NumberField for steppers. `reserveError` keeps an error line reserved."
     }
   ]
 }

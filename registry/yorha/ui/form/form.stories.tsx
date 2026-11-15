@@ -4,6 +4,7 @@ import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { expectTargetSize } from "../../../../.storybook/preview";
 import { Field, FieldControl, FieldDescription, FieldError, FieldLabel } from "@/components/ui/field";
 import { Form, FormSubmit } from "./form";
+import { FieldErrorSlot } from "@/components/ui/field";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
 const THEME_LABEL: Record<(typeof THEMES)[number], string> = {
@@ -168,5 +169,33 @@ export const States: Story = {
     await expect(first).toHaveAttribute("aria-invalid", "true");
     await expect(first.getAttribute("aria-describedby") ?? "").toContain(c.getAllByRole("alert")[0]!.id);
     await expectTargetSize(canvasElement);
+  },
+};
+
+export const AsyncSubmit: Story = {
+  render: () => (
+    <Form
+      className="w-72"
+      onFormSubmit={async (values) => {
+        await new Promise((r) => setTimeout(r, 400));
+        return values.name === "taken" ? { name: "이미 사용 중인 이름입니다" } : undefined;
+      }}
+    >
+      <Field name="name">
+        <FieldLabel>이름 ("taken"은 서버가 거절)</FieldLabel>
+        <FieldControl required />
+        <FieldErrorSlot reserve>
+          <FieldError className="mt-0" />
+        </FieldErrorSlot>
+      </Field>
+      <FormSubmit>저장</FormSubmit>
+    </Form>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    await userEvent.type(c.getByLabelText(/이름/), "taken{Enter}");
+    await waitFor(() => expect(canvasElement.querySelector("form")).toHaveAttribute("data-pending"));
+    await waitFor(() => expect(c.getByRole("alert")).toHaveTextContent("이미 사용 중인"));
+    await expect(c.getByLabelText(/이름/)).toHaveFocus();
   },
 };

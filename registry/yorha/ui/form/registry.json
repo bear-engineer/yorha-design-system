@@ -21,7 +21,7 @@
           "target": "@ui/form.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. `onFormSubmit` may return a Promise: data-pending + aria-busy on the form, FormSubmit shows loading, submits while pending are ignored, a resolved or rejected `{ name: message }` map is shown under the fields and focuses the first invalid control. Rejected by design: dirtyGuard (router/app concern), reset-with-undo."
     }
   ]
 }

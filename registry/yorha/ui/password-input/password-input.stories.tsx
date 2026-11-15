@@ -170,3 +170,37 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+export const AutoHide: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <PasswordInput label="자동 숨김(기본)" defaultValue="hunter2hunter2" />
+      <PasswordInput label="계속 표시" autoHide={false} defaultValue="hunter2hunter2" />
+      <button type="button" className="h-control-md border border-yorha-border px-3">다른 컨트롤</button>
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const input = c.getByLabelText("자동 숨김(기본)", { selector: "input" });
+    await userEvent.click(c.getAllByRole("button", { name: "비밀번호 표시" })[0]!);
+    await expect(input).toHaveAttribute("type", "text");
+    await userEvent.click(c.getByRole("button", { name: "다른 컨트롤" }));
+    await expect(input).toHaveAttribute("type", "password");
+  },
+};
+
+export const Strength: Story = {
+  render: () => {
+    const [v, setV] = React.useState("");
+    const level = Math.min(4, Math.floor(v.length / 3)) as 0 | 1 | 2 | 3 | 4;
+    return <PasswordInput label="새 비밀번호" autoComplete="new-password" value={v} onChange={(e) => setV(e.currentTarget.value)} strength={level} />;
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const bar = canvasElement.querySelector("[data-slot=password-strength]")!;
+    const h = bar.getBoundingClientRect().height;
+    await userEvent.type(c.getByLabelText("새 비밀번호", { selector: "input" }), "abcdefghi");
+    await expect(canvasElement.querySelectorAll("[data-segment][data-on]").length).toBe(3);
+    await expect(bar.getBoundingClientRect().height).toBe(h);
+  },
+};

@@ -152,3 +152,14 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+/** Shift+Arrow = large step, Alt+Arrow = small step, drag the label to scrub. */
+export const Modifiers: Story = {
+  args: { label: "수량", defaultValue: 10, step: 1, largeStep: 10, smallStep: 0.1 } as never,
+  play: async ({ canvasElement }) => {
+    const input = within(canvasElement).getByLabelText("수량", { selector: "input" });
+    input.focus();
+    await userEvent.keyboard("{Shift>}{ArrowUp}{/Shift}");
+    await expect(input).toHaveValue("20");
+  },
+};

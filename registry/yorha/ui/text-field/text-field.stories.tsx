@@ -221,3 +221,14 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+export const Clearable: Story = {
+  args: { label: "이름", clearable: true, defaultValue: "노아" },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const input = c.getByLabelText("이름", { selector: "input" });
+    await userEvent.click(c.getByRole("button", { name: "지우기" }));
+    await expect(input).toHaveValue("");
+    await expect(input).toHaveFocus();
+  },
+};

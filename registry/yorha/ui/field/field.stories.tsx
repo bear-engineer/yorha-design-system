@@ -13,6 +13,8 @@ import {
   Fieldset,
   FieldsetLegend,
 } from "./field";
+import { FieldCounter } from "./field";
+import { useState } from "react";
 
 const DESCRIPTION = "영문 대문자와 숫자 8자 이내";
 const THEMES = ["light", "dark", "high-contrast"] as const;
@@ -231,4 +233,43 @@ export const States: Story = {
     await expect(c.getByRole("textbox", { name: "잠김" })).toBeDisabled();
     await expectTargetSize(canvasElement);
   },
+};
+
+export const CounterAndReserve: Story = {
+  render: () => {
+    const [v, setV] = useState("");
+    return (
+      <div className="flex w-72 flex-col gap-4">
+        <FieldFrame
+          label="소개"
+          reserveError
+          error={v.length > 10 ? "10자를 넘을 수 없습니다" : undefined}
+          description={<FieldCounter value={v} max={10} />}
+        >
+          <FieldControl value={v} onChange={(e) => setV(e.currentTarget.value)} />
+        </FieldFrame>
+        <FieldFrame label="다음 필드">
+          <FieldControl />
+        </FieldFrame>
+      </div>
+    );
+  },
+  play: async ({ canvasElement }) => {
+    const c = within(canvasElement);
+    const next = c.getByLabelText("다음 필드");
+    const top = next.getBoundingClientRect().top;
+    await userEvent.type(c.getByLabelText("소개"), "12345678901");
+    await expect(next.getBoundingClientRect().top).toBe(top);
+  },
+};
+
+/** `validationMode` ("onSubmit" | "onBlur" | "onChange") and `validationDebounceTime` (ms, with onChange) belong to Field.Root. */
+export const ValidationTiming: Story = {
+  render: () => (
+    <Field name="code" validationMode="onChange" validationDebounceTime={400}>
+      <FieldLabel>코드(6자리, 입력 후 400ms에 검사)</FieldLabel>
+      <FieldControl required minLength={6} />
+      <FieldError />
+    </Field>
+  ),
 };

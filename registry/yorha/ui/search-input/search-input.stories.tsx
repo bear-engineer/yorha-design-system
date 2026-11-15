@@ -152,3 +152,17 @@ export const States: Story = {
     await expectTargetSize(canvasElement);
   },
 };
+
+export const Loading: Story = {
+  render: () => (
+    <div className="flex flex-col gap-4">
+      <SearchInput label="검색 중" loading defaultValue="yorha" />
+      <SearchInput label="대기" defaultValue="yorha" />
+    </div>
+  ),
+  play: async ({ canvasElement }) => {
+    const groups = canvasElement.querySelectorAll("[data-slot=input-group]");
+    await expect(groups[0]!.getBoundingClientRect().height).toBe(groups[1]!.getBoundingClientRect().height);
+    await expect(groups[0]!.querySelector("[data-slot=spinner]")).not.toBeNull();
+  },
+};

@@ -11,7 +11,8 @@
         "@yorha/utils",
         "@yorha/field",
         "@yorha/icons",
-        "@yorha/input-group"
+        "@yorha/input-group",
+        "@yorha/spinner"
       ],
       "files": [
         {
@@ -20,7 +21,7 @@
           "target": "@ui/search-input.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Escape clears a non-empty value and stops propagation so a surrounding Dialog stays open; with an empty value it passes through. Clearing returns focus to the input."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Escape clears a non-empty value and stops propagation so a surrounding Dialog stays open; with an empty value it passes through. Clearing returns focus to the input. `loading` swaps the search glyph for the Spinner in the same cell (no resize). V4 migration: new `loading`, `loadingLabel`, `reserveError`; a `shortcut` prop (V4-129) is not provided because useShortcut is not in the tree yet."
     }
   ]
 }

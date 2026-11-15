@@ -20,7 +20,7 @@
           "target": "@ui/password-input.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Default autoComplete is current-password; use new-password when choosing a password. The Caps Lock hint is announced through a persistent status region."
+      "docs": "Unofficial fan project, not affiliated with or endorsed by Square Enix or PlatinumGames. Built on Base UI; ornaments are drawn with CSS only. Default autoComplete is current-password; use new-password when choosing a password. The Caps Lock hint is announced through a persistent status region. `autoHide` (default true) hides a revealed password when focus leaves the group, on submit/reset of the owning form and when the tab is hidden; the type swaps without remount and the selection is restored; the state is announced (표시됨/숨김) through a polite sr-only status. `strength` 0-4 draws four fixed segments and a label (host computes the level; announced after 600 ms of stability). MIGRATION: a revealed password no longer stays revealed after Tab away; pass autoHide={false} to keep v3 behaviour."
     }
   ]
 }

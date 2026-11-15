@@ -12,7 +12,9 @@
       "registryDependencies": [
         "@yorha/field",
         "@yorha/utils",
-        "@yorha/base"
+        "@yorha/base",
+        "@yorha/icons",
+        "@yorha/input-group"
       ],
       "files": [
         {
@@ -21,7 +23,7 @@
           "target": "@ui/text-field.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. `clearable` adds a clear button inside an InputGroup (kept mounted, invisible while empty); `reserveError` keeps one error line reserved. Errors from `Form errors` now render under the field even without the `error` prop."
     }
   ]
 }

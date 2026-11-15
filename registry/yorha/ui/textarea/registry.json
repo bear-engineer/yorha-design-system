@@ -21,7 +21,7 @@
           "target": "@ui/textarea.tsx"
         }
       ],
-      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included."
+      "docs": "Unofficial fan project, not affiliated with Square Enix or PlatinumGames. Inspired by the YoRHa UI aesthetic; no original fonts, logos or assets are included. `submitOnModEnter`: Ctrl/Cmd+Enter calls form.requestSubmit() (not while an IME composes) and sets aria-keyshortcuts. Without CSS field-sizing support (`autoSize`) the textarea keeps its rows height and scrolls at max-h-64; the scroll cue (yorha-scroll-cue-y) marks clamped content in both cases."
     }
   ]
 }
