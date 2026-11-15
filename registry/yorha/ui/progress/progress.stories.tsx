@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, waitFor, within } from "storybook/test";
 import { Progress } from "@/components/ui/progress";
 
@@ -15,7 +16,10 @@ const meta = {
   parameters: { layout: "centered" },
   args: { label: "전송", value: 40, max: 100 },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -25,7 +29,22 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Progress">
+      <Row label="진행 · 40%"><div className="w-80"><Progress label="전송" value={40} max={100} /></div></Row>
+      <Row label="완료 · 100%"><div className="w-80"><Progress label="설치" value={100} max={100} /></div></Row>
+      <Row label="일시정지"><div className="w-80"><Progress label="업로드" value={65} max={100} status="paused" /></div></Row>
+      <Row label="오류"><div className="w-80"><Progress label="동기화" value={30} max={100} status="error" /></div></Row>
+      <Row label="진행 중 (불확정)"><div className="w-80"><Progress label="검색" value={null} /></div></Row>
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const bar = c.getByRole("progressbar", { name: "전송" });

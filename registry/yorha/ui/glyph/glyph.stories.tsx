@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect } from "storybook/test";
 import { Glyph, GLYPH_NAMES, type GlyphBox } from "./glyph";
 import { nativeBox } from "./glyphs";
@@ -18,7 +19,10 @@ const meta = {
     scale: { control: "inline-radio", options: [1, 2] },
   },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -28,7 +32,25 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: the full glyph set at 2x with names. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <div lang="ko" className="w-[44rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(5.5rem,1fr))] gap-3">
+        {GLYPH_NAMES.map((n) => (
+          <figure key={n} className="m-0 flex flex-col items-center gap-2 border border-yorha-border px-1 py-3">
+            <Glyph name={n} scale={2} />
+            <figcaption className="font-yorha-mono text-yorha-xs text-yorha-fg-muted">{n}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </div>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const svg = canvasElement.querySelector("svg[data-slot=glyph]")!;
     await expect(svg).toHaveAttribute("aria-hidden", "true");

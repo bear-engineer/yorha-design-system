@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { YorhaProvider } from "@/components/yorha-provider";
@@ -21,7 +22,19 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <div lang="ko" className="w-[36rem] max-w-[calc(100vw-2rem)] border border-yorha-border bg-yorha-panel text-yorha-fg">
+      <div className="border-b border-yorha-border px-4 py-2 font-yorha-mono text-yorha-xs text-yorha-fg-muted">통신 단말 · 채널 03</div>
+      <div className="p-4 font-yorha-mono text-yorha-base"><Typer text={SAMPLE} speed={20} /></div>
+    </div>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: (args) => (
     <div className="w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 font-yorha-mono text-yorha-base text-yorha-fg">
       <Typer {...args} />
@@ -53,7 +66,7 @@ function PausableTyper() {
 export const MultiLine360: Story = {
   args: { text: "Recovered sector log entry: the archive index was rebuilt after the fault and every record now resolves to a stable address in the lower grid.", speed: 4 },
   render: (args) => (
-    <div style={{ width: 360 }} className="bg-yorha-panel p-0 text-yorha-sm text-yorha-fg">
+    <div style={{ width: 360 }} className="max-w-full bg-yorha-panel p-0 text-yorha-sm text-yorha-fg">
       <Typer {...args} />
     </div>
   ),

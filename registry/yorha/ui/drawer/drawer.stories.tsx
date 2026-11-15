@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { OverlayHero, overlayHeroParameters } from "../../../../src/docs/overlay-hero";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expectTargetSize } from "../../../../.storybook/preview";
 import { Input } from "@/components/ui/input";
@@ -160,7 +161,35 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: the drawer open on the right of the unit screen. */
+export const Overview: Story = {
+  name: "열린 상태",
+  parameters: overlayHeroParameters,
+  render: () => (
+    <OverlayHero>
+      <Drawer side="right" defaultOpen>
+        <DrawerTrigger>유닛 목록 열기</DrawerTrigger>
+        <DrawerContent>
+          <DrawerTitle>유닛 목록</DrawerTitle>
+          <DrawerBody>
+            <DrawerDescription>격납고에 등록된 유닛을 확인한다.</DrawerDescription>
+            <ul className="mt-3 list-disc pl-5 text-yorha-sm">
+              <li>2B</li>
+              <li>9S</li>
+              <li>A2</li>
+            </ul>
+          </DrawerBody>
+          <DrawerFooter>
+            <DrawerClose>닫기</DrawerClose>
+          </DrawerFooter>
+        </DrawerContent>
+      </Drawer>
+    </OverlayHero>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     const t = trigger();

@@ -42,7 +42,9 @@ const MenuRadioGroup = MenuPrimitive.RadioGroup;
 // Anatomy: cursor gutter, indicator slot (only in popups that hold check/radio rows), label, trailing shortcut/chevron.
 const ROW =
   "group/row yorha-row cursor-default font-yorha text-yorha-sm tracking-yorha-body " +
-  "data-[popup-open]:bg-[length:100%_100%] data-[popup-open]:text-yorha-on-ink";
+  "data-[popup-open]:bg-[length:100%_100%] data-[popup-open]:text-yorha-on-ink " +
+  // The band is the focus indicator: the on-ink inset frame of `yorha-row` would read as a lighter seam inside it.
+  "[&[data-highlighted]:focus-visible:not([data-disabled])]:outline-[var(--yorha-ink)]";
 
 /** Cursor + indicator slot + label wrapper shared by every row. */
 function RowBody({ indicator, children }: { indicator?: ReactNode; children?: ReactNode }) {

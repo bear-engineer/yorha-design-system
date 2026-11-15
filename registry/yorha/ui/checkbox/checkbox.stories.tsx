@@ -1,4 +1,5 @@
 import { expectTargetSize } from "../../../../.storybook/preview";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import * as React from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
@@ -36,7 +37,10 @@ const meta = {
     disabled: BOOL,
   },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -46,7 +50,22 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  args: { children: "-" },
+  render: () => (
+    <Sheet title="Checkbox">
+      <Row label="해제"><Checkbox>알림 수신</Checkbox></Row>
+      <Row label="선택"><Checkbox defaultChecked>자동 저장</Checkbox></Row>
+      <Row label="비활성"><Checkbox disabled>베타 기능</Checkbox></Row>
+      <Row label="비활성 · 선택"><Checkbox disabled defaultChecked>필수 약관</Checkbox></Row>
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   args: { children: "알림 수신", defaultChecked: false },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);

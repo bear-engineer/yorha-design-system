@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, within } from "storybook/test";
 import { Ornament } from "./ornament";
 import { Separator } from "@/components/ui/separator";
@@ -14,7 +15,10 @@ const meta = {
     variant: { control: "inline-radio", options: ["band", "separator", "dot-rule"] },
   },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -24,7 +28,20 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Ornament">
+      <Row label="band" align="start"><div className="w-80"><Ornament variant="band" /></div></Row>
+      <Row label="separator" align="start"><div className="w-80"><Ornament variant="separator" /></div></Row>
+      <Row label="dot-rule" align="start"><div className="w-80"><Ornament variant="dot-rule" /></div></Row>
+    </Sheet>
+  ),
+};
+
 export const Band: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const band = canvasElement.querySelector<HTMLElement>('[data-slot="ornament"]');

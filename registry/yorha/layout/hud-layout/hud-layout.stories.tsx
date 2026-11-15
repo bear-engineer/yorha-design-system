@@ -26,8 +26,8 @@ function Hud({ hidden = false, onClose }: { hidden?: boolean; onClose?: () => vo
         </p>
       </HudRegion>
       <HudRegion corner="bottom-start" label="체력과 에너지">
-        <Meter label="체력" value={78} low={30} style={{ width: 192 }} />
-        <Meter label="에너지" value={45} low={20} style={{ width: 192 }} />
+        <Meter label="체력" value={78} style={{ width: 280 }} />
+        <Meter label="에너지" value={45} style={{ width: 280 }} />
       </HudRegion>
       <HudRegion corner="bottom-end" label="메시지">
         <p role="status" className="m-0 flex items-center gap-2 border border-yorha-border bg-yorha-panel px-2 py-1 text-yorha-sm text-yorha-fg">
@@ -51,10 +51,10 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 const BRACKETS = [
-  "start-0.5 top-0.5 border-s-2 border-t-2",
-  "end-0.5 top-0.5 border-e-2 border-t-2",
-  "bottom-0.5 start-0.5 border-b-2 border-s-2",
-  "bottom-0.5 end-0.5 border-b-2 border-e-2",
+  "start-1 top-1 border-s-2 border-t-2",
+  "end-1 top-1 border-e-2 border-t-2",
+  "bottom-1 start-1 border-b-2 border-s-2",
+  "bottom-1 end-1 border-b-2 border-e-2",
 ];
 
 /** A 960 x 540 game viewport: grid ground, scanlines and corner brackets under the HUD. */
@@ -70,6 +70,17 @@ const frame = (children: React.ReactNode, theme?: string) => (
       <span key={b} aria-hidden="true" className={`pointer-events-none absolute size-3 border-yorha-border ${b}`} />
     ))}
     <span className="sr-only">게임 화면 영역</span>
+    {/* centre reticle and objective marker: reads as a game view rather than an empty field */}
+    <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 size-16 -translate-x-1/2 -translate-y-1/2 text-yorha-fg-soft">
+      <span className="absolute left-1/2 top-0 h-3 w-px -translate-x-1/2 bg-current" />
+      <span className="absolute bottom-0 left-1/2 h-3 w-px -translate-x-1/2 bg-current" />
+      <span className="absolute left-0 top-1/2 h-px w-3 -translate-y-1/2 bg-current" />
+      <span className="absolute right-0 top-1/2 h-px w-3 -translate-y-1/2 bg-current" />
+      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"><Glyph name="diamond" /></span>
+    </div>
+    <p aria-hidden="true" className="pointer-events-none absolute left-1/2 top-[calc(50%+2.75rem)] m-0 -translate-x-1/2 border border-yorha-border bg-yorha-panel px-2 py-0.5 font-yorha-mono text-yorha-xs tabular-nums text-yorha-fg">
+      목표 · 지하 격납고 · 240m
+    </p>
     {children}
   </div>
 );

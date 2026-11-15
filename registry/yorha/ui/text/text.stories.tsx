@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, userEvent, within } from "storybook/test";
 import { Text } from "./text";
 
@@ -12,7 +13,10 @@ const meta = {
   tags: ["autodocs"],
   args: { children: "장비 상태 요약" },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -22,7 +26,24 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Text · size × tone" wide>
+      {(["xs", "sm", "base", "lg", "xl"] as const).map((s) => (
+        <Row key={s} label={s}>
+          {(["default", "muted", "strong"] as const).map((t) => (
+            <Text key={t} size={s} tone={t}>{`유닛 상태 ${t}`}</Text>
+          ))}
+        </Row>
+      ))}
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     await expect(within(canvasElement).getByText("장비 상태 요약")).toBeInTheDocument();
   },

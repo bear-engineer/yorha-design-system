@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { OverlayHero, overlayHeroParameters } from "../../../../src/docs/overlay-hero";
 import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import {
@@ -66,7 +67,29 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: the preview card open beside a link in running text. */
+export const Overview: Story = {
+  name: "열린 상태",
+  parameters: overlayHeroParameters,
+  render: () => (
+    <OverlayHero>
+      <p className="text-yorha-sm">
+        보고서 작성자는{" "}
+        <PreviewCard defaultOpen>
+          <PreviewCardTrigger href="#unit-2b">2B</PreviewCardTrigger>
+          <PreviewCardContent arrow>
+            <PreviewCardTitle>2B</PreviewCardTitle>
+            <PreviewCardDescription>전투 보조 유닛. 현재 위치는 지하 격납고다.</PreviewCardDescription>
+          </PreviewCardContent>
+        </PreviewCard>
+        이다.
+      </p>
+    </OverlayHero>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     await expect(card()).toBeNull();

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { OverlayHero, overlayHeroParameters } from "../../../../src/docs/overlay-hero";
 import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import {
@@ -79,7 +80,29 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: the alert dialog open over the unit screen. */
+export const Overview: Story = {
+  name: "열린 상태",
+  parameters: overlayHeroParameters,
+  render: () => (
+    <OverlayHero>
+      <AlertDialog defaultOpen>
+        <AlertDialogTrigger render={<Button variant="danger" />}>기록 삭제</AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogTitle>기록을 삭제할까?</AlertDialogTitle>
+          <AlertDialogDescription>삭제한 기록은 복구할 수 없다.</AlertDialogDescription>
+          <AlertDialogFooter>
+            <AlertDialogCancel render={<Button variant="ghost" />}>취소</AlertDialogCancel>
+            <AlertDialogAction render={<Button variant="danger" />}>삭제</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </OverlayHero>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async ({ canvasElement }) => {
     const trigger = within(canvasElement).getByRole("button", { name: "기록 삭제" });

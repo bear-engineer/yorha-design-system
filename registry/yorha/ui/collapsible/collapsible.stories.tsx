@@ -1,4 +1,5 @@
 import { expectTargetSize } from "../../../../.storybook/preview";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "./collapsible";
@@ -25,7 +26,19 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Collapsible">
+      <Row label="닫힘" align="start"><Demo /></Row>
+      <Row label="열림" align="start"><Demo defaultOpen /></Row>
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);

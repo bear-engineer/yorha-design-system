@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import type { ReactNode } from "react";
 import { expect, within } from "storybook/test";
 import { Vignette } from "@/components/ui/vignette";
@@ -37,7 +38,19 @@ async function expectDecorative(el: HTMLElement | null) {
   await expect(el!.querySelectorAll("a,button,input,select,textarea,[tabindex]")).toHaveLength(0);
 }
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <div className="grid w-[48rem] max-w-[calc(100vw-2rem)] grid-cols-2 gap-4">
+      <Frame>기본</Frame>
+      <Frame scanline>스캔라인</Frame>
+    </div>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: () => <Frame />,
   play: async ({ canvasElement }) => {
     const el = layer(canvasElement);

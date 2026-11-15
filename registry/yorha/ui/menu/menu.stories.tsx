@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { OverlayHero, overlayHeroParameters } from "../../../../src/docs/overlay-hero";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, fn, screen, userEvent, waitFor, within } from "storybook/test";
@@ -113,11 +114,14 @@ const meta = {
   tags: ["autodocs"],
   args: { onSelect: fn() },
   decorators: [
-    (Story) => (
-      <div className="min-h-72 bg-yorha-panel p-6 text-yorha-fg">
+    (Story, { parameters }) =>
+      parameters.layout === "fullscreen" ? (
         <Story />
-      </div>
-    ),
+      ) : (
+        <div className="min-h-72 bg-yorha-panel p-6 text-yorha-fg">
+          <Story />
+        </div>
+      ),
   ],
 } satisfies Meta<typeof MenuDemo>;
 export default meta;
@@ -125,7 +129,17 @@ type Story = StoryObj<typeof meta>;
 
 const body = (el: HTMLElement) => within(el.ownerDocument.body);
 
+/** Docs hero: the file menu open under its trigger in the app header. */
+export const Overview: Story = {
+  name: "열린 상태",
+  parameters: overlayHeroParameters,
+  render: () => (
+    <OverlayHero toolbar={<MenuDemo defaultOpen />} />
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const trigger = within(canvasElement).getByRole("button", { name: "파일 메뉴" });
     await expect(trigger).toHaveAttribute("aria-haspopup", "menu");

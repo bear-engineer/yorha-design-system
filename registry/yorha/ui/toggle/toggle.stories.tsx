@@ -1,4 +1,5 @@
 import { expectTargetSize } from "../../../../.storybook/preview";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Toggle } from "./toggle";
@@ -17,7 +18,10 @@ const meta = {
     disabled: BOOL,
   },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -27,7 +31,21 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  args: { children: "-" },
+  render: () => (
+    <Sheet title="Toggle">
+      <Row label="sm"><Toggle size="sm">자동 전투</Toggle><Toggle size="sm" defaultPressed>자동 회복</Toggle></Row>
+      <Row label="md"><Toggle>자동 전투</Toggle><Toggle defaultPressed>자동 회복</Toggle><Toggle disabled>잠김</Toggle></Row>
+      <Row label="lg"><Toggle size="lg">자동 전투</Toggle><Toggle size="lg" defaultPressed>자동 회복</Toggle></Row>
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   args: { children: "자동 전투", defaultPressed: false },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, waitFor, within } from "storybook/test";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -11,7 +12,10 @@ const meta = {
   parameters: { layout: "centered" },
   args: { label: "불러오는 중" },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -23,7 +27,20 @@ type Story = StoryObj<typeof meta>;
 
 const dotsOf = (el: HTMLElement) => Array.from(el.querySelectorAll<HTMLElement>("[data-yorha-dot]"));
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Spinner">
+      <Row label="sm"><Spinner size="sm" label="불러오는 중 (작게)" /><span className="text-yorha-sm">동기화 중</span></Row>
+      <Row label="md"><Spinner size="md" label="불러오는 중 (보통)" /><span className="text-yorha-sm">데이터를 가져오는 중</span></Row>
+      <Row label="lg"><Spinner size="lg" label="불러오는 중 (크게)" /><span className="text-yorha-sm">기록을 불러오는 중</span></Row>
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const status = c.getByRole("status", { name: "불러오는 중" });

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { Slider } from "./slider";
 
@@ -27,12 +28,26 @@ const meta = {
   title: "컴포넌트/폼/Slider",
   component: Slider,
   tags: ["autodocs"],
-  decorators: [(Story) => <div className="w-80 max-w-[calc(100vw-2rem)] max-w-full"><Story /></div>],
+  decorators: [(Story, { name }) => (name === "구성 한눈에" ? <Story /> : <div className="w-80 max-w-[calc(100vw-2rem)] max-w-full"><Story /></div>)],
 } satisfies Meta<typeof Slider>;
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  args: { label: "출력" },
+  render: () => (
+    <Sheet title="Slider">
+      <Row label="출력 · 50"><div className="w-72"><Slider label="출력" defaultValue={50} min={0} max={100} step={10} /></div></Row>
+      <Row label="음량 · 80"><div className="w-72"><Slider label="음량" defaultValue={80} min={0} max={100} step={10} /></div></Row>
+      <Row label="감도 · 20"><div className="w-72"><Slider label="감도" defaultValue={20} min={0} max={100} step={10} /></div></Row>
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   args: { label: "출력", defaultValue: 50, min: 0, max: 100, step: 10 },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);

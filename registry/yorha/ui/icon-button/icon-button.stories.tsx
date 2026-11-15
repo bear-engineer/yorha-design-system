@@ -1,4 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Glyph as KitGlyph } from "../glyph/glyph";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { IconButton } from "./icon-button";
 
@@ -17,7 +19,10 @@ const meta = {
   tags: ["autodocs"],
   args: { "aria-label": "닫기", children: <Glyph />, onClick: fn() },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -27,7 +32,25 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="IconButton · variant × size" wide>
+      {(["default", "primary", "ghost", "danger"] as const).map((v) => (
+        <Row key={v} label={v}>
+          {(["sm", "md", "lg"] as const).map((s) => (
+            <IconButton key={s} aria-label={`${v} ${s}`} variant={v} size={s} tooltip={false}><KitGlyph name="check" /></IconButton>
+          ))}
+          <IconButton aria-label={`${v} 비활성`} variant={v} disabled tooltip={false}><KitGlyph name="check" /></IconButton>
+        </Row>
+      ))}
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const btn = within(canvasElement).getByRole("button", { name: "닫기" });
     await expect(btn.tagName).toBe("BUTTON");

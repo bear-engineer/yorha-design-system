@@ -4,17 +4,56 @@ import { expectTargetSize } from "../../../../.storybook/preview";
 import { Link, useLocation, useNavigate } from "react-router";
 import { withRouter } from "../../../../.storybook/decorators";
 import { SystemMenuLayout, type SystemMenuSection } from "@/components/system-menu-layout";
+import { Button } from "@/components/ui/button";
+import { Glyph, type GlyphName } from "@/components/ui/glyph";
+import { Kbd } from "@/components/ui/kbd";
 
 const THEMES = ["light", "dark", "high-contrast"] as const;
+
+const Count = ({ n }: { n: number }) => <span className="font-yorha-mono tabular-nums">×{n}</span>;
+/** Plain text, not a Badge: the row description is dimmed (opacity-80), which would drop a bordered badge below 4.5:1. */
+const NewBadge = () => <span className="font-yorha-mono">신규</span>;
+
+/** Detail pane: glyph block, body copy, stat rows with tabular numerals. */
+function Detail({ glyph, body, stats }: { glyph: GlyphName; body: string; stats: [string, string][] }) {
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex items-start gap-4">
+        <span aria-hidden="true" className="grid size-20 shrink-0 place-items-center border border-yorha-border bg-yorha-panel">
+          <Glyph name={glyph} scale={2} />
+        </span>
+        <p className="m-0 text-yorha-sm">{body}</p>
+      </div>
+      <dl className="m-0 grid grid-cols-[1fr_auto] border-t border-yorha-border text-yorha-sm tabular-nums">
+        {stats.map(([k, v]) => (
+          <div key={k} className="col-span-2 grid grid-cols-subgrid border-b border-yorha-border py-1.5">
+            <dt className="text-yorha-fg-muted">{k}</dt>
+            <dd className="m-0 font-yorha-mono">{v}</dd>
+          </div>
+        ))}
+      </dl>
+      <div className="flex gap-2" lang="ko">
+        <Button size="sm" variant="primary">사용</Button>
+        <Button size="sm" variant="default">장착</Button>
+        <Button size="sm" variant="default">버리기</Button>
+      </div>
+    </div>
+  );
+}
 
 const SECTIONS: SystemMenuSection[] = [
   {
     id: "items",
     label: "아이템",
     items: [
-      { id: "kit", label: "회복 키트", description: "x3", content: <p>체력을 즉시 회복하는 휴대용 키트입니다. 전투 중에도 사용할 수 있습니다.</p> },
-      { id: "chip", label: "강화 칩", description: "x1", content: <p>장착 슬롯에 끼워 능력치를 높이는 소형 칩입니다.</p> },
-      { id: "key", label: "보안 키", disabled: true, content: <p>잠긴 구역을 여는 열쇠입니다.</p> },
+      { id: "kit", label: "회복 키트", description: <Count n={3} />, content: <Detail glyph="plus" body="체력을 즉시 회복하는 휴대용 키트입니다. 전투 중에도 사용할 수 있습니다." stats={[["회복량", "+120 HP"], ["사용 대기", "2.0 초"], ["보유", "3 / 9"]]} /> },
+      { id: "chip", label: "강화 칩", description: <NewBadge />, content: <Detail glyph="diamond-dot" body="장착 슬롯에 끼워 능력치를 높이는 소형 칩입니다." stats={[["공격력", "+8"], ["슬롯", "1 / 4"], ["보유", "1 / 9"]]} /> },
+      { id: "cell", label: "에너지 셀", description: <Count n={12} />, content: <Detail glyph="disc" body="포드와 무기의 에너지를 채우는 소모품입니다." stats={[["충전량", "+40 EN"], ["보유", "12 / 20"]]} /> },
+      { id: "scrap", label: "고철", description: <Count n={48} />, content: <Detail glyph="square" body="정비소에서 부품으로 교환할 수 있는 재료입니다." stats={[["교환 비율", "10 : 1"], ["보유", "48 / 99"]]} /> },
+      { id: "memo", label: "기록 메모", description: <Count n={5} />, content: <Detail glyph="info" body="작전 중 수집한 기록입니다. 지도 구역마다 한 장씩 있습니다." stats={[["수집", "5 / 12"]]} /> },
+      { id: "badge", label: "인식 배지", description: <Count n={1} />, content: <Detail glyph="diamond" body="유닛 식별용 배지입니다. 장비 슬롯에 걸 수 있습니다." stats={[["슬롯", "배지"], ["보유", "1 / 1"]]} /> },
+      { id: "part", label: "수리 부품", description: <Count n={7} />, content: <Detail glyph="plus" body="손상된 장비 내구도를 복구하는 부품입니다." stats={[["복구량", "+30%"], ["보유", "7 / 20"]]} /> },
+      { id: "key", label: "보안 키", disabled: true, description: "잠김", content: <p>잠긴 구역을 여는 열쇠입니다.</p> },
     ],
   },
   {
@@ -35,11 +74,17 @@ const SECTIONS: SystemMenuSection[] = [
   },
 ];
 
-/** A fixed 880 x 480 system-menu screen: hard 1px frame, offset shadow, paper ground. */
+/** A fixed 880 x 480 system-menu screen: hard 1px frame, offset shadow, paper ground, key-hint footer. */
 function Screen({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-[480px] w-[880px] max-w-full border border-yorha-border bg-yorha-bg p-6 text-yorha-fg shadow-yorha-md">
-      {children}
+    <div className="flex min-h-[480px] w-[880px] max-w-full flex-col border border-yorha-border bg-yorha-bg text-yorha-fg shadow-yorha-md">
+      {/* Every list row gets the same 1px rule (selected and disabled rows keep their own state colour). */}
+      <div className="flex-1 p-6 [&_[data-menu-item]:not([data-selected],[data-disabled])]:border-yorha-border">{children}</div>
+      <footer className="flex items-center gap-4 border-t border-yorha-border px-6 py-2 text-yorha-xs text-yorha-fg-muted">
+        <span><Kbd>↑</Kbd> <Kbd>↓</Kbd> 이동</span>
+        <span><Kbd>Enter</Kbd> 선택</span>
+        <span><Kbd>Esc</Kbd> 닫기</span>
+      </footer>
     </div>
   );
 }
@@ -67,7 +112,11 @@ export const Default: Story = {
     await expect(c.getAllByRole("tab")).toHaveLength(3);
     await expect(c.getByRole("tab", { name: "아이템" })).toHaveAttribute("aria-selected", "true");
     await expect(c.getByRole("listbox", { name: "아이템 목록" })).toBeInTheDocument();
-    await expect(c.getAllByRole("option")).toHaveLength(3);
+    // 7 items + the locked one; the first enabled row is selected and drives the detail pane
+    await expect(c.getAllByRole("option")).toHaveLength(8);
+    await expect(c.getByRole("option", { name: /회복 키트/ })).toHaveAttribute("aria-selected", "true");
+    await expect(c.getByRole("option", { name: /보안 키/ })).toHaveAttribute("aria-disabled", "true");
+    await expect(c.getByText("회복량")).toBeVisible();
     await expect(c.getByRole("region", { name: "회복 키트" })).toBeInTheDocument();
     await expect(c.getByText(/체력을 즉시 회복/)).toBeVisible();
   },

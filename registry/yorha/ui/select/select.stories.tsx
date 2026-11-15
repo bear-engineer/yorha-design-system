@@ -1,4 +1,5 @@
 import { expectTargetSize } from "../../../../.storybook/preview";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import {
@@ -122,7 +123,35 @@ const listbox = async () => {
 const highlighted = () => body().getAllByRole("option").findIndex((o) => o.hasAttribute("data-highlighted"));
 const optionNames = () => body().getAllByRole("option").map((o) => o.textContent?.trim());
 
+function Pick({ disabled, defaultValue }: { disabled?: boolean; defaultValue?: string }) {
+  return (
+    <Select items={UNITS} disabled={disabled} defaultValue={defaultValue}>
+      <SelectTrigger aria-label="유닛 선택">
+        <SelectValue placeholder="유닛을 선택" />
+      </SelectTrigger>
+      <SelectContent>
+        {UNITS.map((u) => (
+          <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
+}
+
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Select">
+      <Row label="기본"><div className="w-64"><Pick /></div></Row>
+      <Row label="선택됨"><div className="w-64"><Pick defaultValue="bunker" /></div></Row>
+      <Row label="비활성"><div className="w-64"><Pick disabled defaultValue="archive" /></div></Row>
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     const t = trigger();

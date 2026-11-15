@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { BootLog, type BootLogLine } from "@/components/ui/boot-log";
 
@@ -41,7 +42,24 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <div lang="ko" className="w-[40rem] max-w-[calc(100vw-2rem)] border border-yorha-border bg-yorha-panel font-yorha-mono text-yorha-sm text-yorha-fg">
+      <div className="flex items-center justify-between border-b border-yorha-border px-4 py-2 text-yorha-xs text-yorha-fg-muted">
+        <span>부팅 시퀀스 · YoRHa-02B</span>
+        <span className="tabular-nums">v4.2.1</span>
+      </div>
+      <div className="p-4">
+        <BootLog lines={LINES.slice(0, 8).map((l, i) => ({ ...l, at: i * 10 }))} speed={1} gap={0} label="부팅 로그" />
+      </div>
+    </div>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: (args) => (
     <div className="w-[36rem] max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 font-yorha-mono text-yorha-sm text-yorha-fg">
       <BootLog {...args} />

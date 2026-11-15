@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, within } from "storybook/test";
 import { Badge } from "./badge";
 
@@ -11,7 +12,10 @@ const meta = {
   args: { children: "대기" },
   argTypes: { variant: { control: "inline-radio", options: ["neutral", "alert"] } },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -21,7 +25,20 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Badge">
+      <Row label="neutral"><Badge variant="neutral">대기</Badge><Badge variant="neutral">정상</Badge><Badge variant="neutral">12</Badge></Row>
+      <Row label="alert"><Badge variant="alert">경고</Badge><Badge variant="alert">수리 필요</Badge><Badge variant="alert">NEW</Badge></Row>
+      <Row label="문장 속"><span className="flex items-center gap-2 text-yorha-sm">9S 정찰 유닛 <Badge variant="neutral">정상</Badge></span><span className="flex items-center gap-2 text-yorha-sm">A2 전투 유닛 <Badge variant="alert">수리 필요</Badge></span></Row>
+    </Sheet>
+  ),
+};
+
 export const Neutral: Story = {
+  tags: ["!autodocs"],
   args: { variant: "neutral" },
   play: async ({ canvasElement }) => {
     const badge = within(canvasElement).getByText("대기");
@@ -31,6 +48,7 @@ export const Neutral: Story = {
 };
 
 export const Alert: Story = {
+  tags: ["!autodocs"],
   args: { variant: "alert", children: "경고" },
   play: async ({ canvasElement }) => {
     const badge = within(canvasElement).getByText("경고");

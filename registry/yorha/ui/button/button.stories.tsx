@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "./button";
 
@@ -41,7 +42,10 @@ const meta = {
     size: { control: "inline-radio", options: [...SIZES] },
   },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -51,7 +55,25 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Button · variant × size × state" wide>
+      {(["default", "primary", "ghost", "danger"] as const).map((v) => (
+        <Row key={v} label={v}>
+          {(["sm", "md", "lg"] as const).map((s) => (
+            <Button key={s} variant={v} size={s}>{`확인 ${s}`}</Button>
+          ))}
+          <Button variant={v} disabled>비활성</Button>
+        </Row>
+      ))}
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const btn = within(canvasElement).getByRole("button", { name: "확인" });
     await expect(btn.tagName).toBe("BUTTON");

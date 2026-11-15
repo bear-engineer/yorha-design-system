@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, within } from "storybook/test";
 import { Separator } from "./separator";
 
@@ -27,7 +28,19 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Separator">
+      <Row label="수평" align="start"><div className="flex w-72 flex-col gap-3 text-yorha-sm"><p>유닛 정보</p><Separator /><p>작전 기록</p><Separator /><p>통신 로그</p></div></Row>
+      <Row label="수직"><div className="flex h-8 items-center gap-3 text-yorha-sm"><span>개요</span><Separator orientation="vertical" /><span>상세</span><Separator orientation="vertical" /><span>기록</span></div></Row>
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);

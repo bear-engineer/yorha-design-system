@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { OverlayHero, overlayHeroParameters } from "../../../../src/docs/overlay-hero";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
@@ -93,7 +94,24 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: the tooltip open over a header button. */
+export const Overview: Story = {
+  name: "열린 상태",
+  parameters: overlayHeroParameters,
+  render: () => (
+    <OverlayHero
+      toolbar={
+        <Tooltip defaultOpen>
+          <TooltipTrigger className={TRIGGER_CLASS}>{LABEL}</TooltipTrigger>
+          <TooltipContent>{DESCRIPTION}</TooltipContent>
+        </Tooltip>
+      }
+    />
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     const t = trigger();

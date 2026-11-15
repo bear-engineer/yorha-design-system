@@ -1,4 +1,5 @@
 import { expectTargetSize } from "../../../../.storybook/preview";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { Switch } from "./switch";
@@ -35,7 +36,10 @@ const meta = {
     disabled: BOOL,
   },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -45,7 +49,22 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  args: { children: "-" },
+  render: () => (
+    <Sheet title="Switch">
+      <Row label="꺼짐"><Switch>전원</Switch></Row>
+      <Row label="켜짐"><Switch defaultChecked>사운드</Switch></Row>
+      <Row label="비활성"><Switch disabled>원격 접속</Switch></Row>
+      <Row label="비활성 · 켜짐"><Switch disabled defaultChecked>보안 모드</Switch></Row>
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   args: { children: "전원", defaultChecked: false },
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);

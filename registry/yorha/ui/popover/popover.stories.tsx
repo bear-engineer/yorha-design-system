@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { OverlayHero, overlayHeroParameters } from "../../../../src/docs/overlay-hero";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
@@ -137,7 +138,28 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: the popover open under its header trigger. */
+export const Overview: Story = {
+  name: "열린 상태",
+  parameters: overlayHeroParameters,
+  render: () => (
+    <OverlayHero
+      toolbar={
+        <Popover defaultOpen>
+          <PopoverTrigger className={TRIGGER_CLASS}>유닛 정보</PopoverTrigger>
+          <PopoverContent initialFocus={false}>
+            <PopoverTitle>2B 상세</PopoverTitle>
+            <PopoverDescription>전투 보조 유닛. 현재 위치는 지하 격납고다.</PopoverDescription>
+            <PopoverClose>닫기</PopoverClose>
+          </PopoverContent>
+        </Popover>
+      }
+    />
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async () => {
     const t = trigger();

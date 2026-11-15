@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { OverlayHero, overlayHeroParameters } from "../../../../src/docs/overlay-hero";
 import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, screen, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "@/components/ui/button";
@@ -81,7 +82,32 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: the dialog open over the unit screen. */
+export const Overview: Story = {
+  name: "열린 상태",
+  parameters: overlayHeroParameters,
+  render: () => (
+    <OverlayHero>
+      <Dialog defaultOpen>
+        <DialogTrigger render={<Button />}>유닛 정보 열기</DialogTrigger>
+        <DialogContent>
+          <DialogTitle>유닛 정보</DialogTitle>
+          <DialogBody>
+            <DialogDescription>이 유닛의 식별 이름을 변경한다.</DialogDescription>
+            <Input aria-label="유닛 이름" defaultValue="2B" className="mt-4" />
+          </DialogBody>
+          <DialogFooter>
+            <DialogClose render={<Button variant="ghost" />}>취소</DialogClose>
+            <DialogClose render={<Button variant="primary" />}>저장</DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </OverlayHero>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: () => <Demo />,
   play: async ({ canvasElement }) => {
     const trigger = within(canvasElement).getByRole("button", { name: "유닛 정보 열기" });

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { OverlayHero, overlayHeroParameters } from "../../../../src/docs/overlay-hero";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expectTargetSize } from "../../../../.storybook/preview";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
@@ -102,7 +103,26 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: the context menu open on a unit card. */
+export const Overview: Story = {
+  name: "열린 상태",
+  parameters: overlayHeroParameters,
+  render: () => (
+    <OverlayHero>
+      <Demo />
+    </OverlayHero>
+  ),
+  // A context menu opens at the pointer, so the hero right-clicks the card (defaultOpen would anchor at 0,0).
+  play: async () => {
+    const card = area();
+    const r = card.getBoundingClientRect();
+    await userEvent.pointer({ keys: "[MouseRight]", target: card, coords: { clientX: r.left + r.width * 0.1, clientY: r.top + 32 } });
+    await menu();
+  },
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: (args) => <Demo {...args} />,
   play: async ({ args }) => {
     await expect(body().queryByRole("menu")).toBeNull();

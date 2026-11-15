@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, within } from "storybook/test";
 import { Kbd, KbdCombo } from "./kbd";
 
@@ -10,7 +11,10 @@ const meta = {
   tags: ["autodocs"],
   args: { children: "Enter" },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -20,7 +24,20 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Kbd">
+      <Row label="단일 키"><Kbd>Enter</Kbd><Kbd>Esc</Kbd><Kbd>Tab</Kbd><Kbd>Space</Kbd></Row>
+      <Row label="조합"><span className="text-yorha-sm"><Kbd>Ctrl</Kbd> + <Kbd>S</Kbd> 저장</span><span className="text-yorha-sm"><Kbd>Shift</Kbd> + <Kbd>F10</Kbd> 메뉴</span></Row>
+      <Row label="문장 속"><p className="text-yorha-sm">목록에서 <Kbd>↑</Kbd> <Kbd>↓</Kbd> 로 이동하고 <Kbd>Enter</Kbd> 로 선택한다.</p></Row>
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const el = within(canvasElement).getByText("Enter");
     await expect(el.tagName).toBe("KBD");

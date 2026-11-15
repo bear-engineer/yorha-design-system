@@ -1,5 +1,6 @@
 import { expectTargetSize } from "../../../../.storybook/preview";
-import { useRef, useState } from "react";
+import { OverlayHero, overlayHeroParameters } from "../../../../src/docs/overlay-hero";
+import { useEffect, useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fireEvent, screen, userEvent, waitFor, within } from "storybook/test";
 import { Button } from "@/components/ui/button";
@@ -83,11 +84,14 @@ const meta = {
   tags: ["autodocs"],
   args: { timeout: 5000 },
   decorators: [
-    (Story) => (
-      <div className="min-h-72 bg-yorha-panel p-6 text-yorha-fg">
+    (Story, { parameters }) =>
+      parameters.layout === "fullscreen" ? (
         <Story />
-      </div>
-    ),
+      ) : (
+        <div className="min-h-72 bg-yorha-panel p-6 text-yorha-fg">
+          <Story />
+        </div>
+      ),
   ],
 } satisfies Meta<typeof ToastDemo>;
 export default meta;
@@ -95,7 +99,46 @@ type Story = StoryObj<typeof meta>;
 
 const body = (el: HTMLElement) => within(el.ownerDocument.body);
 
+function HeroToasts() {
+  const toast = useToast();
+  const manager = useRef(toast);
+  useEffect(() => {
+    const toast = manager.current;
+    const items: [ToastType, string, string][] = [
+      ["info", "동기화 시작", "유닛 3기의 상태를 갱신하는 중이다."],
+      ["success", "저장 완료", "변경 사항이 기록되었습니다."],
+      ["alert", "연결 끊김", "지휘 센터와 통신할 수 없다."],
+    ];
+    const ids = items.map(([type, title, description]) => toast.add({ type, title, description, timeout: 0, priority: "low" }));
+    return () => ids.forEach((id) => toast.close(id));
+  }, []);
+  return null;
+}
+
+/** Docs hero: the stack open in the frame corner, over a unit list. */
+export const Overview: Story = {
+  name: "열린 상태",
+  parameters: overlayHeroParameters,
+  render: () => (
+    <ToastProvider>
+      <OverlayHero toolbar={<span className="text-yorha-sm text-yorha-fg-muted">알림 3건</span>} />
+      <HeroToasts />
+    </ToastProvider>
+  ),
+  // The stack is collapsed by design (rear toasts peek 8px); the hero rests the pointer on it so all three read.
+  play: async ({ canvasElement }) => {
+    const region = await body(canvasElement).findByRole("region", { name: "알림" });
+    await waitFor(() => expect(region.querySelectorAll("[data-slot=toast]")).toHaveLength(3));
+    await userEvent.hover(region.querySelector("[data-slot=toast]") as HTMLElement);
+    await waitFor(() => expect(region.querySelectorAll("[data-slot=toast][data-expanded]")).toHaveLength(3));
+    for (const type of ["info", "success", "alert"] as const) {
+      await waitFor(() => expect(region.querySelector(`[data-slot=toast][data-type=${type}]`)).toBeVisible());
+    }
+  },
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     await userEvent.click(within(canvasElement).getByRole("button", { name: LABEL.success }));
     const toast = await body(canvasElement).findByRole("dialog");

@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, waitFor, within } from "storybook/test";
 import { Skeleton, SkeletonGroup } from "@/components/ui/skeleton";
 
@@ -16,7 +17,30 @@ type Story = StoryObj<typeof meta>;
 
 const shimmerOf = (el: HTMLElement) => el.querySelector<HTMLElement>("[data-yorha-shimmer]");
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Skeleton">
+      <SkeletonGroup label="유닛 카드 로딩 중" className="flex gap-4 border border-yorha-border p-4">
+        <Skeleton className="size-16 shrink-0" />
+        <div className="flex flex-1 flex-col gap-2">
+          <Skeleton className="h-4 w-1/2" />
+          <Skeleton className="h-3 w-full" />
+          <Skeleton className="h-3 w-4/5" />
+        </div>
+      </SkeletonGroup>
+      <SkeletonGroup label="목록 로딩 중" className="flex flex-col gap-2 border border-yorha-border p-4">
+        <Skeleton className="h-4 w-full" />
+        <Skeleton className="h-4 w-11/12" />
+        <Skeleton className="h-4 w-2/3" />
+      </SkeletonGroup>
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   render: (args) => (
     <div className="w-80 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
       <Skeleton {...args} />

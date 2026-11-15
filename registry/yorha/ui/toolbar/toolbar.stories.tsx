@@ -19,7 +19,7 @@ const THEMES = ["light", "dark", "high-contrast"] as const;
 function EditorToolbar({ orientation }: { orientation?: "horizontal" | "vertical" }) {
   return (
     <div lang="ko">
-      <Toolbar aria-label="편집 도구" orientation={orientation}>
+      <Toolbar aria-label="편집 도구" orientation={orientation} className={orientation === "vertical" ? undefined : "w-full"}>
         <ToolbarGroup aria-label="서식">
           <ToolbarToggle value="bold" aria-label="굵게">B</ToolbarToggle>
           <ToolbarToggle value="italic" aria-label="기울임">I</ToolbarToggle>

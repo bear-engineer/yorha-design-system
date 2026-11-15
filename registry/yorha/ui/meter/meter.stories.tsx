@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, within } from "storybook/test";
 import { Meter } from "@/components/ui/meter";
 
@@ -12,7 +13,10 @@ const meta = {
   parameters: { layout: "centered" },
   args: { label: "HP", value: 120, min: 0, max: 150 },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="w-96 max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -22,7 +26,20 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Meter">
+      <Row label="정상 · 120/150"><div className="w-80"><Meter label="HP" value={120} min={0} max={150} /></div></Row>
+      <Row label="주의 · 60/150"><div className="w-80"><Meter label="HP" value={60} min={0} max={150} /></div></Row>
+      <Row label="위험 · 12/150"><div className="w-80"><Meter label="HP" value={12} min={0} max={150} /></div></Row>
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const c = within(canvasElement);
     const meter = c.getByRole("meter", { name: "HP" });

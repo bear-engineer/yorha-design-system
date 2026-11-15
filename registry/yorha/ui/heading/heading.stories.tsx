@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Row, Sheet } from "../../../../src/docs/sheet";
 import { expect, within } from "storybook/test";
 import { Heading } from "./heading";
 
@@ -14,7 +15,10 @@ const meta = {
     level: { control: "inline-radio", options: [...LEVELS] },
   },
   decorators: [
-    (Story) => (
+    (Story, { name }) =>
+      name === "구성 한눈에" ? (
+        <Story />
+      ) : (
       <div className="max-w-[calc(100vw-2rem)] bg-yorha-panel p-6 text-yorha-fg">
         <Story />
       </div>
@@ -24,7 +28,20 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Docs hero: labelled variants at a readable scale. */
+export const Overview: Story = {
+  name: "구성 한눈에",
+  render: () => (
+    <Sheet title="Heading · level 1–6" wide>
+      {([1, 2, 3, 4, 5, 6] as const).map((l) => (
+        <Row key={l} label={`level ${l}`}><Heading level={l}>장비 점검 보고</Heading></Row>
+      ))}
+    </Sheet>
+  ),
+};
+
 export const Default: Story = {
+  tags: ["!autodocs"],
   play: async ({ canvasElement }) => {
     const h = within(canvasElement).getByRole("heading", { level: 2, name: "장비 점검" });
     await expect(h.tagName).toBe("H2");
@@ -51,7 +68,7 @@ export const Levels: Story = {
 };
 
 export const LatinUppercaseTracked: Story = {
-  args: { children: "Unit Status" },
+  args: { lang: "en", children: "Unit Status" },
   play: async ({ canvasElement }) => {
     const h = within(canvasElement).getByRole("heading", { name: "Unit Status" });
     const cs = getComputedStyle(h);
@@ -74,9 +91,9 @@ export const KoreanNotUppercased: Story = {
 export const HardOffsetShadow: Story = {
   render: () => (
     <div className="flex flex-col gap-4">
-      <Heading level={1}>Shadowed</Heading>
+      <Heading level={1} lang="en">Shadowed</Heading>
       <Heading level={1} lang="ko">그림자 없음</Heading>
-      <Heading level={2}>Plain h2</Heading>
+      <Heading level={2} lang="en">Plain h2</Heading>
     </div>
   ),
   play: async ({ canvasElement }) => {
