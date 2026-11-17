@@ -4,7 +4,7 @@
 #   verify  - ubuntu-latest host: secrets scan, typecheck, unit, token drift,
 #             registry checks, Storybook a11y tests, static + GitHub-source e2e.
 #   vrt     - visual regression inside the Playwright container pinned to the
-#             repo's @playwright/test version (package.json: 1.65.1).
+#             repo's playwright version (pnpm-lock.yaml: 1.65.0; the image must match or its browsers are missing).
 #
 # Only GITHUB_TOKEN is used; no repository secrets are required.
 name: CI
@@ -26,7 +26,7 @@ env:
   NODE_VERSION: "22.22"
   PNPM_VERSION: "12.14.0"
   GITLEAKS_VERSION: "8.30.1"
-  PLAYWRIGHT_IMAGE: "mcr.microsoft.com/playwright:v1.65.1-noble"
+  PLAYWRIGHT_IMAGE: "mcr.microsoft.com/playwright:v1.65.0-noble"
 
 jobs:
   verify:
@@ -141,7 +141,7 @@ jobs:
     continue-on-error: true
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.65.1-noble
+      image: mcr.microsoft.com/playwright:v1.65.0-noble
       options: --user root
     timeout-minutes: 30
     steps:
