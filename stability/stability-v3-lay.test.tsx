@@ -4,7 +4,7 @@ import { mountStory, frames } from "./mount";
 
 /**
  * v3 layout, blocks and router family: geometry assertions for FL-01..FL-20
- * (see .hermes/cache/scratch/yorha-v3/audit/lay/findings.md). Every layout claim is a measurement.
+ * (findings from the v3 layout-family audit). Every layout claim is a measurement.
  */
 
 const q = <T extends Element = HTMLElement>(root: ParentNode, sel: string) => root.querySelector<T>(sel)!;

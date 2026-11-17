@@ -5,7 +5,7 @@ import { expectNoOverlap } from "../.storybook/geometry";
 
 /**
  * v3 data & display family: geometry and state assertions for the findings FD-01..FD-34
- * (see .hermes/cache/scratch/yorha-v3/audit/data/findings.md). Every layout claim is a measurement.
+ * (findings from the v3 data-family audit). Every layout claim is a measurement.
  */
 
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));

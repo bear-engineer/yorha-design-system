@@ -5,7 +5,7 @@
 ## 정본(SOT)
 - 디자인 정본은 Storybook이다. 토큰·컴포넌트·레이아웃·설치 가이드는 스토리/MDX에서 나온다.
 - 토큰 정본은 `tokens/*.tokens.json`(DTCG 2025.10) 하나다. `src/styles/tokens.generated.css`, `registry/yorha/base/base/registry.json`의 cssVars, `src/docs/foundations/*.generated.*`는 `pnpm tokens:build`로만 만든다. 생성물을 손으로 고치지 않는다.
-- 계획: `~/.hermes/research/yorha-design-system/plan.md`(수락본). 리서치: 같은 폴더의 `briefing.ko.md`, `dossier.md`.
+- 설계 해설과 가이드는 Storybook의 `가이드/*` 문서(`src/docs/guides/*.mdx`)에 있다. 기여 규칙은 `src/docs/guides/Contributing.mdx`.
 
 ## 구조
 - `registry/yorha/<group>/<name>/` = 레지스트리 항목 1개. `registry.json`(항목 정의), `<name>.tsx`(주 파일, 다른 항목은 이 파일만 import), `<name>.stories.tsx`(스토리 + play 테스트, 배포 안 됨).
@@ -27,3 +27,9 @@
 - `pnpm typecheck` · `pnpm test` (단위) · `pnpm test:storybook` (스토리 + a11y + play) · `pnpm build-storybook`
 - `pnpm tokens:build` · `pnpm registry:validate` · `pnpm registry:lint` · `pnpm registry:build`
 - `pnpm test:vrt` · `pnpm e2e:registry` · `pnpm lint:secrets`
+- `pnpm docs:axe` · `pnpm docs:scroll` · `pnpm docs:theme` (`pnpm build-storybook` 뒤) · `pnpm test:stability` · `pnpm test:text-spacing`
+- `pnpm release:notes --unreleased --tag vX.Y.Z` (다음 릴리스 노트 미리보기)
+
+## 원격·릴리스
+- 원격은 `github.com/bear-engineer/yorha-design-system`, 기본 브랜치 `main`. CI(`ci.yml`)와 Pages(`pages.yml`)는 `main` 푸시에서 돈다.
+- 릴리스는 CI가 녹색인 `main` 커밋에 `vX.Y.Z` 태그를 붙여 푸시한다. `release.yml`이 git-cliff(`cliff.toml`)로 노트를 만들고 레지스트리(`public/r`) 묶음을 첨부한다. 발행된 태그는 옮기지 않는다. 고칠 것이 있으면 새 패치 태그를 낸다.
