@@ -148,10 +148,10 @@ jobs:
       - name: Check out
         uses: actions/checkout@v4
 
-      - name: Activate pnpm via corepack
+      # The Playwright image's Node ships without corepack, so pnpm comes from npm (the job runs as root).
+      - name: Install pnpm
         run: |
-          corepack enable
-          corepack prepare "pnpm@${PNPM_VERSION}" --activate
+          npm install -g "pnpm@${PNPM_VERSION}"
           pnpm -v
 
       - name: Set up Node
