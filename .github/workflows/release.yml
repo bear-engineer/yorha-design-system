@@ -1,0 +1,112 @@
+# Release: pushing a version tag (v1.2.3, v1.2.3-rc.1) publishes a GitHub Release whose notes are generated from the
+# commits since the previous tag (git-cliff, cliff.toml) and attaches the built shadcn registry (public/r) for that tag.
+#
+#   git tag -a v0.1.0 -m "v0.1.0" <commit on main with green CI> && git push origin v0.1.0
+#
+# The tagged commit must already have a successful CI run; the job waits for a running one and refuses a red or
+# missing one. Re-run for an existing tag with workflow_dispatch (notes and asset are replaced).
+# Only GITHUB_TOKEN is used; no repository secrets are required.
+name: Release
+
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "이미 푸시된 버전 태그 (예: v0.1.0)"
+        required: true
+
+permissions:
+  contents: write
+  actions: read
+
+concurrency:
+  group: release-${{ github.event.inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "22.22"
+  PNPM_VERSION: "12.14.0"
+  GIT_CLIFF_VERSION: "2.14.2"
+
+jobs:
+  release:
+    name: release notes + registry asset
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      # TAG comes from a pushed tag or a dispatch input (both need write access). It reaches shell only through env and
+      # is checked against the version pattern before it is used as a checkout ref.
+      - name: Tag is a version tag
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-.+][0-9A-Za-z.-]+)?$ ]] || { echo "::error::not a version tag: $TAG"; exit 1; }
+
+      - name: Check out the tag (full history for the notes range)
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ env.TAG }}
+          fetch-depth: 0
+
+      - name: Tagged commit is on main
+        run: |
+          git fetch --no-tags origin main
+          git merge-base --is-ancestor "$TAG^{commit}" origin/main || { echo "::error::$TAG is not on main"; exit 1; }
+
+      - name: Tagged commit has a green CI run
+        run: |
+          sha=$(git rev-parse "$TAG^{commit}")
+          for i in $(seq 1 60); do
+            run=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${sha}&event=push&per_page=1" \
+              --jq '.workflow_runs[0] | select(.) | "\(.status) \(.conclusion)"')
+            case "$run" in
+              "completed success") echo "CI green for $sha"; exit 0 ;;
+              completed*) echo "::error::CI for $sha concluded: $run"; exit 1 ;;
+              "") echo "no CI run for $sha yet ($i/60)" ;;
+              *) echo "CI for $sha: $run ($i/60)" ;;
+            esac
+            sleep 30
+          done
+          echo "::error::CI for $sha did not finish green within 30 minutes"; exit 1
+
+      - name: Activate pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare "pnpm@${PNPM_VERSION}" --activate
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Generate release notes (git-cliff, previous tag..this tag)
+        # HEAD is the tag. Without an earlier version tag in its history, the whole history is this one release.
+        run: |
+          prev=$(git describe --tags --abbrev=0 --match 'v[0-9]*' "$TAG^" 2>/dev/null || true)
+          args=(--config cliff.toml --strip all -o "$RUNNER_TEMP/notes.md")
+          if [ -n "$prev" ]; then args+=(-- "$prev..$TAG"); fi
+          echo "previous tag: ${prev:-none}"
+          npx -y "git-cliff@${GIT_CLIFF_VERSION}" "${args[@]}"
+          test -s "$RUNNER_TEMP/notes.md"
+          cat "$RUNNER_TEMP/notes.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build the registry for this tag
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm registry:build
+          tar -czf "$RUNNER_TEMP/yorha-registry-${TAG}.tar.gz" -C public r
+
+      - name: Publish the GitHub Release
+        run: |
+          asset="$RUNNER_TEMP/yorha-registry-${TAG}.tar.gz"
+          pre=""; [[ "$TAG" == *-* ]] && pre="--prerelease"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md" $pre
+            gh release upload "$TAG" "$asset" --clobber
+          else
+            gh release create "$TAG" "$asset" --verify-tag --title "$TAG" --notes-file "$RUNNER_TEMP/notes.md" $pre
+          fi

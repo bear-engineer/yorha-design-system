@@ -28,7 +28,8 @@
     "coverage:base-ui": "node scripts/base-ui-coverage.mjs",
     "registry:build": "shadcn build -o public/r",
     "e2e:registry": "bash e2e/install.sh",
-    "lint:secrets": "gitleaks detect --no-banner --redact"
+    "lint:secrets": "gitleaks detect --no-banner --redact",
+    "release:notes": "pnpm dlx git-cliff@2.14.2 --config cliff.toml"
   },
   "dependencies": {
     "@base-ui/react": "1.9.0",

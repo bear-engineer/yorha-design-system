@@ -1,0 +1,61 @@
+# git-cliff configuration: release notes for GitHub Releases (.github/workflows/release.yml).
+# Local preview of the next release:  pnpm release:notes --unreleased --tag v0.1.0
+# Commits land on main directly (no PRs), so notes come from commit subjects, grouped by prefix.
+
+[changelog]
+header = ""
+body = """
+{% set repo = "https://github.com/bear-engineer/yorha-design-system" -%}
+{% if version -%}
+## {{ version }} ({{ timestamp | date(format="%Y-%m-%d") }})
+{% else -%}
+## 미출시 변경
+{% endif -%}
+{% if previous.version -%}
+비교: [{{ previous.version }}...{{ version }}]({{ repo }}/compare/{{ previous.version }}...{{ version }}) · 커밋 {{ commits | length }}건
+{% else -%}
+첫 공개 릴리스 · 커밋 {{ commits | length }}건
+{% endif %}
+{% for group, commits in commits | group_by(attribute="group") %}
+### {{ group | striptags | trim }}
+{% if commits | length > 15 -%}
+<details><summary>{{ commits | length }}건 펼치기</summary>
+
+{% endif -%}
+{% for commit in commits -%}
+- {{ commit.message | split(pat="\n") | first | trim }} ([`{{ commit.id | truncate(length=7, end="") }}`]({{ repo }}/commit/{{ commit.id }}))
+{% endfor -%}
+{% if commits | length > 15 %}
+</details>
+{% endif %}
+{% endfor %}
+"""
+footer = ""
+trim = true
+
+[git]
+conventional_commits = false
+filter_unconventional = false
+split_commits = false
+# Internal workflow labels ("[yorha-v4/f-ovl]") and audit id lists ("V4-195 V4-196") are bookkeeping, not release notes.
+commit_preprocessors = [
+  { pattern = '\s*\[[^\]\n]*\]', replace = "" },
+  { pattern = '(\s+[A-Z][A-Z0-9]*-[0-9]+(\.\.[A-Z0-9-]+)?,?)+\s*$', replace = "" },
+]
+# Order by the hidden <!-- n --> prefix; striptags removes it in the heading.
+commit_parsers = [
+  { message = '^(?i)merge ', skip = true },
+  { message = '^(feat|feature)(\(.*\))?!?:', group = "<!-- 0 -->새 기능" },
+  { message = '^fix(\(.*\))?!?:', group = "<!-- 1 -->수정" },
+  { message = '^(perf|refactor)(\(.*\))?!?:', group = "<!-- 2 -->개선·리팩터링" },
+  { message = '^docs(\(.*\))?!?:', group = "<!-- 3 -->문서" },
+  { message = '(?i)^(re-?shoot vrt|vrt\b|test\(vrt)', group = "<!-- 5 -->시각 회귀(VRT) 기준" },
+  { message = '^(test(\(.*\))?!?:|RED\b)', group = "<!-- 4 -->테스트" },
+  { message = '^(build|chore|ci|style)(\(.*\))?!?:', group = "<!-- 6 -->빌드·관리" },
+  { message = '.*', group = "<!-- 7 -->기타 변경" },
+]
+protect_breaking_commits = false
+filter_commits = false
+tag_pattern = "v[0-9]+\\.[0-9]+\\.[0-9]+.*"
+topo_order = false
+sort_commits = "oldest"
